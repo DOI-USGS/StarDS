@@ -1,0 +1,33 @@
+channels:
+  - conda-forge
+  - usgs-astrogeology
+ 
+dependencies:
+  - cmake
+  - cspice
+  - cpp-filesystem
+  - cspice 
+  - cxx-compiler
+  - doxygen
+  - highfive
+  - fmt==9.1.0
+  - libhiredis
+  - ninja
+  - pip
+  - pytest
+  - python
+  - swig
+  - jsonschema
+  - cereal
+  - spdlog
+  # API dependencies
+  - fastapi
+  - pydantic==2.6.3
+  - uvicorn
+  - numpy
+  - pip:
+    - mkdocs 
+    - mkdocs-swagger-ui-tag
+    - mkdoxy
+    - check-jsonschema
+    - mkdocs-material
