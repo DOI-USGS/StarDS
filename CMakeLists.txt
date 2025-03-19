@@ -46,142 +46,52 @@ message(STATUS "Using install prefix: ${CMAKE_INSTALL_PREFIX}")
 
 option (CAMERASTATEFILE_BUILD_LIB "Build the CameraStateFile Library" ON)
 
-if(CAMERASTATEFILE_BUILD_LIB)
 
-  set(JSON_BuildTests OFF CACHE INTERNAL "")
+set(JSON_BuildTests OFF CACHE INTERNAL "")
 
-  add_subdirectory("submodules/gularkfilesystem")
-  add_subdirectory("submodules/json")
-  
-  find_package(CSpice REQUIRED)
-  find_package(fmt REQUIRED)
-  find_package(cereal REQUIRED)
-  find_package(spdlog REQUIRED)
-  find_package(HighFive REQUIRED)
+add_subdirectory("submodules/gularkfilesystem")
 
-  set(CAMERASTATEFILE_INSTALL_INCLUDE_DIR "include/CameraStateFile")
-  set(CAMERASTATEFILE_SRC_FILES   ${CMAKE_CURRENT_SOURCE_DIR}/CameraStateFile/src/camerastatefile.cpp 
-                          ${CMAKE_CURRENT_SOURCE_DIR}/CameraStateFile/src/utils.cpp
-                          ${CMAKE_CURRENT_SOURCE_DIR}/CameraStateFile/src/io.cpp
-                          ${CMAKE_CURRENT_SOURCE_DIR}/CameraStateFile/src/query.cpp
-                          ${CMAKE_CURRENT_SOURCE_DIR}/CameraStateFile/src/spice_types.cpp
-                          ${CMAKE_CURRENT_SOURCE_DIR}/CameraStateFile/src/memoized_functions.cpp
-                          ${CMAKE_CURRENT_SOURCE_DIR}/CameraStateFile/src/config.cpp
-                          ${CMAKE_CURRENT_SOURCE_DIR}/CameraStateFile/src/inventory.cpp
-                          ${CMAKE_CURRENT_SOURCE_DIR}/CameraStateFile/src/inventoryimpl.cpp
-                          ${CMAKE_CURRENT_SOURCE_DIR}/CameraStateFile/src/api.cpp)
+set(CAMERASTATEFILE_INSTALL_INCLUDE_DIR "include/CameraStateFile")
 
 
-  set(CAMERASTATEFILE_HEADER_FILES ${CAMERASTATEFILE_BUILD_INCLUDE_DIR}/camerastatefile.h
-                           ${CAMERASTATEFILE_BUILD_INCLUDE_DIR}/utils.h
-                           ${CAMERASTATEFILE_BUILD_INCLUDE_DIR}/memoized_functions.h
-                           ${CAMERASTATEFILE_BUILD_INCLUDE_DIR}/io.h
-                           ${CAMERASTATEFILE_BUILD_INCLUDE_DIR}/spice_types.h
-                           ${CAMERASTATEFILE_BUILD_INCLUDE_DIR}/query.h
-                           ${CAMERASTATEFILE_BUILD_INCLUDE_DIR}/config.h
-                           ${CAMERASTATEFILE_BUILD_INCLUDE_DIR}/inventory.h
-                           ${CAMERASTATEFILE_BUILD_INCLUDE_DIR}/inventoryimpl.h
-                           ${CAMERASTATEFILE_BUILD_INCLUDE_DIR}/api.h)
+set(CAMERASTATEFILE_HEADER_FILES ${CAMERASTATEFILE_BUILD_INCLUDE_DIR}/scs.h)
+add_library(CameraStateFile INTERFACE)
+target_include_directories(CameraStateFile INTERFACE ${CAMERASTATEFILE_BUILD_INCLUDE_DIR})
 
-  set(CAMERASTATEFILE_PRIVATE_HEADER_FILES ${CAMERASTATEFILE_BUILD_INCLUDE_DIR}/memo.h
-                                   ${CAMERASTATEFILE_BUILD_INCLUDE_DIR}/restincurl.h)
+# set(CAMERASTATEFILE_PRIVATE_HEADER_FILES ${CAMERASTATEFILE_BUILD_INCLUDE_DIR}/memo.h
+#                                  ${CAMERASTATEFILE_BUILD_INCLUDE_DIR}/restincurl.h)
 
-  set(CAMERASTATEFILE_CONFIG_FILES ${CMAKE_CURRENT_SOURCE_DIR}/CameraStateFile/db/apollo15.json 
-                           ${CMAKE_CURRENT_SOURCE_DIR}/CameraStateFile/db/apollo16.json
-                           ${CMAKE_CURRENT_SOURCE_DIR}/CameraStateFile/db/apollo17.json
-                           ${CMAKE_CURRENT_SOURCE_DIR}/CameraStateFile/db/base.json
-                           ${CMAKE_CURRENT_SOURCE_DIR}/CameraStateFile/db/cassini.json
-                           ${CMAKE_CURRENT_SOURCE_DIR}/CameraStateFile/db/chandrayaan1.json
-                           ${CMAKE_CURRENT_SOURCE_DIR}/CameraStateFile/db/clem1.json
-                           ${CMAKE_CURRENT_SOURCE_DIR}/CameraStateFile/db/galileo.json
-                           ${CMAKE_CURRENT_SOURCE_DIR}/CameraStateFile/db/hayabusa.json
-                           ${CMAKE_CURRENT_SOURCE_DIR}/CameraStateFile/db/hayabusa2.json
-                           ${CMAKE_CURRENT_SOURCE_DIR}/CameraStateFile/db/juno.json
-                           ${CMAKE_CURRENT_SOURCE_DIR}/CameraStateFile/db/kaguya.json
-                           ${CMAKE_CURRENT_SOURCE_DIR}/CameraStateFile/db/lro.json
-                           ${CMAKE_CURRENT_SOURCE_DIR}/CameraStateFile/db/lo.json
-                           ${CMAKE_CURRENT_SOURCE_DIR}/CameraStateFile/db/mer1.json
-                           ${CMAKE_CURRENT_SOURCE_DIR}/CameraStateFile/db/mer2.json
-                           ${CMAKE_CURRENT_SOURCE_DIR}/CameraStateFile/db/mess.json
-                           ${CMAKE_CURRENT_SOURCE_DIR}/CameraStateFile/db/mex.json
-                           ${CMAKE_CURRENT_SOURCE_DIR}/CameraStateFile/db/mgs.json
-                           ${CMAKE_CURRENT_SOURCE_DIR}/CameraStateFile/db/mro.json
-                           ${CMAKE_CURRENT_SOURCE_DIR}/CameraStateFile/db/msl.json
-                           ${CMAKE_CURRENT_SOURCE_DIR}/CameraStateFile/db/newhorizons.json
-                           ${CMAKE_CURRENT_SOURCE_DIR}/CameraStateFile/db/odyssey.json
-                           ${CMAKE_CURRENT_SOURCE_DIR}/CameraStateFile/db/smart1.json
-                           ${CMAKE_CURRENT_SOURCE_DIR}/CameraStateFile/db/tgo.json
-                           ${CMAKE_CURRENT_SOURCE_DIR}/CameraStateFile/db/viking1.json
-                           ${CMAKE_CURRENT_SOURCE_DIR}/CameraStateFile/db/viking2.json
-                           ${CMAKE_CURRENT_SOURCE_DIR}/CameraStateFile/db/voyager1.json
-                           ${CMAKE_CURRENT_SOURCE_DIR}/CameraStateFile/db/voyager2.json
-                           )
 
-  set(CAMERASTATEFILE_KERNELS ${CMAKE_CURRENT_SOURCE_DIR}/CameraStateFile/db/kernels/naif0011.tls)
+set_target_properties(CameraStateFile PROPERTIES
+                                VERSION ${PROJECT_VERSION}
+                                SOVERSION 0)
 
-  add_library(CameraStateFile SHARED ${CAMERASTATEFILE_SRC_FILES})
-
-  set_target_properties(CameraStateFile PROPERTIES
-                                  VERSION ${PROJECT_VERSION}
-                                  SOVERSION 0)
-
-  target_compile_definitions(CameraStateFile PRIVATE SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_TRACE 
-                                     PUBLIC -D_SOURCE_PREFIX="${CMAKE_CURRENT_SOURCE_DIR}")
-  
 target_include_directories(CameraStateFile
-                            PUBLIC
-                            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/CameraStateFile/include>
-                            $<INSTALL_INTERFACE:include>
-                            PRIVATE
-                            ${CMAKE_CURRENT_SOURCE_DIR}/submodules/BTree/include/
-                            cereal
-                            )
+                          INTERFACE
+                          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/CameraStateFile/include>
+                          $<INSTALL_INTERFACE:include>
+                          )
+ 
+install(TARGETS CameraStateFile LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
+install(DIRECTORY ${CAMERASTATEFILE_INCLUDE_DIR} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
-  target_link_libraries(CameraStateFile
-                        PUBLIC
-                        fmt::fmt-header-only
-                        nlohmann_json::nlohmann_json
-                        PRIVATE
-                        cspice
-                        spdlog::spdlog_header_only
-                        HighFive
-                        )
-   
-  install(TARGETS CameraStateFile LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
-  install(DIRECTORY ${CAMERASTATEFILE_INCLUDE_DIR} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+# Generate the package config
+configure_file(cmake/config.cmake.in
+              ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.cmake
+              @ONLY)
 
-  # Generate the package config
-  configure_file(cmake/config.cmake.in
-                ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.cmake
-                @ONLY)
+# Install the package config
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.cmake
+              DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
 
-  # Install the package config
-  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.cmake
-                DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
+# Install the headers
+install(FILES ${CAMERASTATEFILE_HEADER_FILES} DESTINATION ${CAMERASTATEFILE_INSTALL_INCLUDE_DIR})
 
-  # Install the headers
-  install(FILES ${CAMERASTATEFILE_HEADER_FILES} DESTINATION ${CAMERASTATEFILE_INSTALL_INCLUDE_DIR})
+# # Install the target
+# install(EXPORT CameraStateFile
+#         NAMESPACE usgs::
+#         DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
 
-  # Install the json db files
-  install(FILES ${CAMERASTATEFILE_CONFIG_FILES} DESTINATION "etc/CameraStateFile/db")
-
-  # Install the shipped kernels
-  install(FILES ${CAMERASTATEFILE_KERNELS} DESTINATION "etc/CameraStateFile/db/kernels")
-
-  # Install the library
-  install(TARGETS CameraStateFile nlohmann_json ghc_filesystem
-          EXPORT cameraStateFileTargets
-          LIBRARY  DESTINATION ${CMAKE_INSTALL_LIBDIR}
-          INCLUDES DESTINATION ${CAMERASTATEFILE_INSTALL_INCLUDE_DIR})
-
-  # Install the target
-  install(EXPORT cameraStateFileTargets
-          NAMESPACE spice::
-          DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
-
-else()
-  message(STATUS "Skipping Library")
-endif()
 
 ###############
 # Tests Build #

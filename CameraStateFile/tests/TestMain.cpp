@@ -1,11 +1,10 @@
 #include <gtest/gtest.h>
 #include "Fixtures.h"
 
-#include <spdlog/spdlog.h>
 
 int main(int argc, char **argv) {
-   spdlog::set_level(spdlog::level::trace);
-   spdlog::set_pattern("CameraStateFile-TESTS [%H:%M:%S %z] [%l] [%s@%# %!] %v"); 
+   // spdlog::set_level(spdlog::level::trace);
+   // spdlog::set_pattern("CameraStateFile-TESTS [%H:%M:%S %z] [%l] [%s@%# %!] %v"); 
    
    testing::Environment* const spiceql_env = testing::AddGlobalTestEnvironment(new TempTestingFiles);
 

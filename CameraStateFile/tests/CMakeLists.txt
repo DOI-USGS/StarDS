@@ -9,37 +9,27 @@ get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTO
 foreach(dir ${dirs})
   message(STATUS "dir='${dir}'")
 endforeach()
-set(SPICEQL_TEST_DIRECTORY ${CMAKE_SOURCE_DIR}/CameraStateFile/tests/)
+set(CAMERASTATEFILE_TEST_DIRECTORY ${CMAKE_SOURCE_DIR}/CameraStateFile/tests/)
 
 # collect all of the test sources
-set (SPICEQL_TEST_SOURCE    ${SPICEQL_TEST_DIRECTORY}/TestUtilities.cpp
-                            ${SPICEQL_TEST_DIRECTORY}/Fixtures.cpp
-                            ${SPICEQL_TEST_DIRECTORY}/UtilTests.cpp
-                            ${SPICEQL_TEST_DIRECTORY}/QueryTests.cpp
-                            ${SPICEQL_TEST_DIRECTORY}/IoTests.cpp
-                            ${SPICEQL_TEST_DIRECTORY}/KernelTests.cpp
-                            ${SPICEQL_TEST_DIRECTORY}/MemoTests.cpp
-                            ${SPICEQL_TEST_DIRECTORY}/InventoryTests.cpp 
-                            ${SPICEQL_TEST_DIRECTORY}/FunctionalTestsConfig.cpp)
+set (CAMERASTATEFILE_TEST_SOURCE    ${CAMERASTATEFILE_TEST_DIRECTORY}/UnitTestSCS.cpp
+                                    ${CAMERASTATEFILE_TEST_DIRECTORY}/Fixtures.cpp
+                            )
 
 # setup test executable
-add_executable(runCameraStateFileTests TestMain.cpp ${SPICEQL_TEST_SOURCE})
+add_executable(runCameraStateFileTests TestMain.cpp ${CAMERASTATEFILE_TEST_SOURCE})
 
 target_compile_definitions(runCameraStateFileTests PUBLIC SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_TRACE)
 
 target_link_libraries(runCameraStateFileTests
                       PRIVATE
                       CameraStateFile
-                      cspice
                       gtest
                       gmock
                       Threads::Threads
-                      spdlog::spdlog_header_only
-                      HighFive
                       )
 
 
-target_include_directories(runCameraStateFileTests PRIVATE ${CMAKE_SOURCE_DIR}/submodules/hippomocks/ 
-                                                   ${CMAKE_SOURCE_DIR}/submodules/BTree/include/)
+target_include_directories(runCameraStateFileTests PRIVATE ${CMAKE_SOURCE_DIR}/submodules/gularkfilesystem/include/)
 
 gtest_discover_tests(runCameraStateFileTests WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/CameraStateFile/tests/)
