@@ -54,7 +54,9 @@ add_subdirectory("submodules/gularkfilesystem")
 set(CAMERASTATEFILE_INSTALL_INCLUDE_DIR "include/CameraStateFile")
 
 
-set(CAMERASTATEFILE_HEADER_FILES ${CAMERASTATEFILE_BUILD_INCLUDE_DIR}/scs.h)
+set(CAMERASTATEFILE_HEADER_FILES ${CAMERASTATEFILE_BUILD_INCLUDE_DIR}/scs.h
+                                 ${CAMERASTATEFILE_BUILD_INCLUDE_DIR}/ezgz.hpp
+                                 ${CAMERASTATEFILE_BUILD_INCLUDE_DIR}/deflate.hpp)
 add_library(CameraStateFile INTERFACE)
 target_include_directories(CameraStateFile INTERFACE ${CAMERASTATEFILE_BUILD_INCLUDE_DIR})
 
