@@ -11,9 +11,211 @@
 #include <variant>
 #include <vector>
 #include <chrono>
+#include <shared_mutex>
+#include <mutex>
 
+const std::string PROJECT_NAME = "SCS 0.1.0";
 
-const std::string PROJECT_NAME = "SCS";
+//==============================================================================
+// HTTP Stream Implementation
+//==============================================================================
+// force it for now
+#define ENABLE_CURL 1
+
+#ifdef ENABLE_CURL
+#include <curl/curl.h>
+#include <string>
+#include <vector>
+#include <streambuf>
+#include <iostream>
+#include <memory>
+
+/**
+ * @brief Custom streambuf implementation for HTTP requests with range support
+ */
+class HttpStreamBuf : public std::streambuf {
+private:
+    CURL* m_curl;
+    std::string m_url;
+    std::vector<char> m_buffer;
+    size_t m_position;
+    size_t m_content_length;
+    
+    static size_t WriteCallback(char* ptr, size_t size, size_t nmemb, void* userdata) {
+        std::vector<char>* buffer = static_cast<std::vector<char>*>(userdata);
+        size_t bytes = size * nmemb;
+        buffer->insert(buffer->end(), ptr, ptr + bytes);
+        return bytes;
+    }
+    
+    static size_t HeaderCallback(char* buffer, size_t size, size_t nitems, void* userdata) {
+        size_t bytes = size * nitems;
+        std::string header(buffer, bytes);
+        HttpStreamBuf* stream = static_cast<HttpStreamBuf*>(userdata);
+        
+        // Extract Content-Length if present
+        if (header.find("Content-Length:") == 0 || header.find("content-length:") == 0) {
+            std::string length = header.substr(header.find(":") + 1);
+            stream->m_content_length = std::stoul(length);
+        }
+        return bytes;
+    }
+    
+    bool fetchRange(size_t start, size_t end) {
+        m_buffer.clear();
+        
+        // Set range header
+        std::string range = "Range: bytes=" + std::to_string(start) + "-" + std::to_string(end);
+        struct curl_slist* headers = nullptr;
+        headers = curl_slist_append(headers, range.c_str());
+        curl_easy_setopt(m_curl, CURLOPT_HTTPHEADER, headers);
+        
+        // Perform request
+        CURLcode res = curl_easy_perform(m_curl);
+        curl_slist_free_all(headers);
+        
+        if (res != CURLE_OK) {
+            return false;
+        }
+        
+        // Set buffer pointers
+        if (!m_buffer.empty()) {
+            setg(m_buffer.data(), m_buffer.data(), m_buffer.data() + m_buffer.size());
+            return true;
+        }
+        return false;
+    }
+    
+protected:
+    virtual int_type underflow() override {
+        if (gptr() < egptr()) {
+            return traits_type::to_int_type(*gptr());
+        }
+        
+        // Calculate next range to fetch
+        size_t start = m_position;
+        size_t end = std::min(start + 8192, m_content_length - 1);
+        
+        if (start >= m_content_length) {
+            return traits_type::eof();
+        }
+        
+        if (!fetchRange(start, end)) {
+            return traits_type::eof();
+        }
+        
+        m_position = end + 1;
+        return traits_type::to_int_type(*gptr());
+    }
+    
+    // Override seekpos to support seeking to absolute positions
+    virtual pos_type seekpos(pos_type pos, std::ios_base::openmode which = std::ios_base::in) override {
+        if (which & std::ios_base::in) {
+            // Check if position is valid
+            if (pos >= 0 && pos < static_cast<pos_type>(m_content_length)) {
+                // Clear current buffer
+                setg(nullptr, nullptr, nullptr);
+                m_position = static_cast<size_t>(pos);
+                return pos;
+            }
+        }
+        return pos_type(off_type(-1));
+    }
+    
+    // Override seekoff to support seeking relative to current position or start/end
+    virtual pos_type seekoff(off_type off, std::ios_base::seekdir dir, 
+                            std::ios_base::openmode which = std::ios_base::in) override {
+        if (which & std::ios_base::in) {
+            pos_type new_pos;
+            
+            // Calculate new position based on direction
+            switch (dir) {
+                case std::ios_base::beg:
+                    new_pos = off;
+                    break;
+                case std::ios_base::cur:
+                    // If we have a buffer, adjust for current get position
+                    if (gptr() && egptr()) {
+                        new_pos = m_position - (egptr() - gptr()) + off;
+                    } else {
+                        new_pos = m_position + off;
+                    }
+                    break;
+                case std::ios_base::end:
+                    new_pos = m_content_length + off;
+                    break;
+                default:
+                    return pos_type(off_type(-1));
+            }
+            
+            // Check if new position is valid
+            if (new_pos >= 0 && new_pos < static_cast<pos_type>(m_content_length)) {
+                // Clear current buffer
+                setg(nullptr, nullptr, nullptr);
+                m_position = static_cast<size_t>(new_pos);
+                return new_pos;
+            }
+        }
+        return pos_type(off_type(-1));
+    }
+    
+public:
+    HttpStreamBuf(const std::string& url) 
+        : m_url(url), m_position(0), m_content_length(0) {
+        m_buffer.reserve(8192);
+        
+        // Initialize curl
+        m_curl = curl_easy_init();
+        if (!m_curl) {
+            throw std::runtime_error("Failed to initialize curl");
+        }
+        
+        // Set basic options
+        curl_easy_setopt(m_curl, CURLOPT_URL, m_url.c_str());
+        curl_easy_setopt(m_curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+        curl_easy_setopt(m_curl, CURLOPT_WRITEDATA, &m_buffer);
+        curl_easy_setopt(m_curl, CURLOPT_HEADERFUNCTION, HeaderCallback);
+        curl_easy_setopt(m_curl, CURLOPT_HEADERDATA, this);
+        curl_easy_setopt(m_curl, CURLOPT_FOLLOWLOCATION, 1L);
+        
+        // Make HEAD request to get content length
+        curl_easy_setopt(m_curl, CURLOPT_NOBODY, 1L);
+        curl_easy_perform(m_curl);
+        curl_easy_setopt(m_curl, CURLOPT_NOBODY, 0L);
+    }
+    
+    // Get the total size of the remote file
+    size_t size() const {
+        return m_content_length;
+    }
+    
+    ~HttpStreamBuf() {
+        if (m_curl) {
+            curl_easy_cleanup(m_curl);
+        }
+    }
+};
+
+/**
+ * @brief Input stream for HTTP resources with range request support
+ */
+class HttpStream : public std::istream {
+private:
+    HttpStreamBuf m_streambuf;
+    
+public:
+    HttpStream(const std::string& url) 
+        : std::istream(nullptr), m_streambuf(url) {
+        rdbuf(&m_streambuf);
+    }
+    
+    // Get the total size of the remote file
+    size_t size() const {
+        return m_streambuf.size();
+    }
+};
+#endif // ENABLE_CURL
+
 
 
 //==============================================================================
@@ -62,7 +264,7 @@ namespace logger {
           auto time = std::chrono::system_clock::to_time_t(now);
           
           std::stringstream ss;
-          ss << "[" << PROJECT_NAME << ":" << LOG_LEVEL_STRINGS[level] << "]"
+          ss << "[" << PROJECT_NAME << "][" << LOG_LEVEL_STRINGS[level] << "]"
              << "[" << std::put_time(std::localtime(&time), "%Y-%m-%d %H:%M:%S") << "]"
              << "[" << func << ":" << line << "] ";
           log_impl(ss, args...);
@@ -81,12 +283,17 @@ namespace logger {
   }
 }
 
-// Logging macros for different severity levels
-#define LOG_TRACE(...) logger::log_internal(logger::TRACE, __LINE__, __func__, __VA_ARGS__)
-#define LOG_DEBUG(...) logger::log_internal(logger::DEBUG, __LINE__, __func__, __VA_ARGS__)
-#define LOG_INFO(...)  logger::log_internal(logger::INFO,  __LINE__, __func__, __VA_ARGS__)
-#define LOG_WARN(...)  logger::log_internal(logger::WARN,  __LINE__, __func__, __VA_ARGS__)
-#define LOG_ERROR(...) logger::log_internal(logger::ERROR, __LINE__, __func__, __VA_ARGS__)
+// Logging macros for different severity levels that avoid code generation if level is too low
+#define LOG_TRACE(...) \
+    do { if (logger::TRACE >= logger::current_log_level) logger::log_internal(logger::TRACE, __LINE__, __func__, __VA_ARGS__); } while(0)
+#define LOG_DEBUG(...) \
+    do { if (logger::DEBUG >= logger::current_log_level) logger::log_internal(logger::DEBUG, __LINE__, __func__, __VA_ARGS__); } while(0)
+#define LOG_INFO(...) \
+    do { if (logger::INFO >= logger::current_log_level) logger::log_internal(logger::INFO, __LINE__, __func__, __VA_ARGS__); } while(0)
+#define LOG_WARN(...) \
+    do { if (logger::WARN >= logger::current_log_level) logger::log_internal(logger::WARN, __LINE__, __func__, __VA_ARGS__); } while(0)
+#define LOG_ERROR(...) \
+    do { if (logger::ERROR >= logger::current_log_level) logger::log_internal(logger::ERROR, __LINE__, __func__, __VA_ARGS__); } while(0)
 
 
 
@@ -195,10 +402,22 @@ public:
      * @return Total bytes
      */
     size_t totalBytes() const {
-        return sizeof(size_t) +                      // Number of dimensions
-               sizeof(size_t) * shape.size() +       // Shape dimensions
-               sizeof(size_t) * strides.size() +     // Strides
-               sizeof(T) * data.size();              // Actual data
+        if constexpr (std::is_same_v<T, std::string>) {
+            size_t string_bytes = 0;
+            for (const auto& str : data) {
+                string_bytes += str.size() + sizeof(size_t); // String length + string data
+            }
+            
+            return sizeof(size_t) +                      // Number of dimensions
+                   sizeof(size_t) * shape.size() +       // Shape dimensions
+                   sizeof(size_t) * strides.size() +     // Strides
+                   string_bytes;                         // Actual string data
+        } else {
+            return sizeof(size_t) +                      // Number of dimensions
+                   sizeof(size_t) * shape.size() +       // Shape dimensions
+                   sizeof(size_t) * strides.size() +     // Strides
+                   sizeof(T) * data.size();              // Actual data
+        }
     }
 
     /**
@@ -207,7 +426,7 @@ public:
      */
     friend std::ostream& operator<<(std::ostream& os, const NDArray<T>& arr) {
         LOG_TRACE("Writing NDArray<", typeid(T).name(), "> to output stream");
-        
+            
         // Write number of dimensions
         size_t num_dims = arr.shape.size();
         os.write(reinterpret_cast<const char*>(&num_dims), sizeof(num_dims));
@@ -220,10 +439,32 @@ public:
         // Write strides
         os.write(reinterpret_cast<const char*>(arr.strides.data()), sizeof(size_t) * num_dims);
         LOG_TRACE("Wrote strides of size ", sizeof(size_t) * num_dims);
-        
-        // Write data
-        os.write(reinterpret_cast<const char*>(arr.data.data()), sizeof(T) * arr.data.size());
-        LOG_TRACE("Wrote data of size ", sizeof(T) * arr.data.size());
+
+        if constexpr (std::is_same_v<T, std::string>) {
+            // Write data (strings need special handling)
+            for (const auto& str : arr.data) {
+                size_t str_len = str.size();
+                os.write(reinterpret_cast<const char*>(&str_len), sizeof(str_len));
+                os.write(str.data(), str_len);
+            }
+        } else {
+            // Write data in chunks
+            constexpr size_t CHUNK_SIZE = 1024 * 1024; // 1MB chunks
+            const size_t total_bytes = sizeof(T) * arr.data.size();
+            const char* data_ptr = reinterpret_cast<const char*>(arr.data.data());
+            
+            size_t bytes_written = 0;
+            while (bytes_written < total_bytes) {
+                size_t bytes_to_write = std::min(CHUNK_SIZE, total_bytes - bytes_written);
+                os.write(data_ptr + bytes_written, bytes_to_write);
+                bytes_written += bytes_to_write;
+                
+                LOG_TRACE("Wrote data chunk of size ", bytes_to_write, 
+                          " (", bytes_written, "/", total_bytes, " bytes)");
+            }
+            
+            LOG_TRACE("Completed writing data of size ", total_bytes);
+        }
         return os;
     }
 
@@ -248,239 +489,27 @@ public:
         arr.strides.resize(num_dims);
         is.read(reinterpret_cast<char*>(arr.strides.data()), sizeof(size_t) * num_dims);
         LOG_TRACE("Read strides array of ", sizeof(size_t) * num_dims, " bytes");
-        
+
         // Calculate total size and read data
         size_t total_size = arr.computeTotalSize();
-        arr.data.resize(total_size);
-        is.read(reinterpret_cast<char*>(arr.data.data()), sizeof(T) * total_size);
-        LOG_TRACE("Read data array of size ", sizeof(T) * total_size);
-        return is;
-    }
-
-private:
-    /**
-     * @brief Calculate strides based on shape
-     */
-    void calculateStrides() {
-        strides.resize(shape.size());
-        if (shape.empty()) return;
-        
-        strides[shape.size() - 1] = 1;
-        for (int i = static_cast<int>(shape.size()) - 2; i >= 0; --i) {
-            strides[i] = strides[i + 1] * shape[i + 1];
-        }
-    }
-
-    /**
-     * @brief Compute total size of the array
-     * @return Total number of elements
-     */
-    size_t computeTotalSize() const {
-        if (shape.empty()) return 0;
-        size_t size = 1;
-        for (auto dim : shape) {
-            size *= dim;
-        }
-        return size;
-    }
-
-    /**
-     * @brief Convert multi-dimensional index to flat index
-     * @param indices Indices for each dimension
-     * @return Flat index
-     */
-    size_t flattenIndex(const std::vector<size_t>& indices) const {
-        if (indices.size() != shape.size()) {
-            throw std::runtime_error("Index dimensions do not match array dimensions");
-        }
-        
-        size_t flat_index = 0;
-        for (size_t i = 0; i < indices.size(); ++i) {
-            if (indices[i] >= shape[i]) {
-                throw std::runtime_error("Index out of bounds");
+        if constexpr (std::is_same_v<T, std::string>) {            
+            arr.data.resize(total_size);
+            for (size_t i = 0; i < total_size; ++i) {
+                size_t str_len;
+                is.read(reinterpret_cast<char*>(&str_len), sizeof(str_len));
+                
+                std::string str(str_len, '\0');
+                is.read(&str[0], str_len);
+                arr.data[i] = std::move(str);
+                LOG_TRACE("Read string ", i, " with length ", str_len);
             }
-            flat_index += indices[i] * strides[i];
-        }
-        
-        return flat_index;
-    }
-};
-
-
-// Specialization for std::string to handle binary serialization properly
-template<>
-class NDArray<std::string> {
-public:
-    // Public attributes
-    std::vector<std::string> data;  // Flat 1D storage for string elements
-    std::vector<size_t> shape;      // Dimensions of the array
-    std::vector<size_t> strides;    // Number of elements to step in each dimension
-
-    /**
-     * @brief Default constructor
-     */
-    NDArray() = default;
-
-    /**
-     * @brief Constructor with shape
-     * @param shape_in Dimensions of the array
-     */
-    explicit NDArray(const std::vector<size_t>& shape_in) : shape(shape_in) {
-        calculateStrides();
-        size_t total_size = computeTotalSize();
-        data.resize(total_size);
-    }
-
-    /**
-     * @brief Constructor with shape and initial value
-     * @param shape_in Dimensions of the array
-     * @param initial_value Value to initialize all elements with
-     */
-    NDArray(const std::vector<size_t>& shape_in, const std::string& initial_value) : shape(shape_in) {
-        calculateStrides();
-        size_t total_size = computeTotalSize();
-        data.resize(total_size, initial_value);
-    }
-
-    /**
-     * @brief Constructor with data and shape
-     * @param data_in Flat data to use
-     * @param shape_in Dimensions of the array
-     */
-    NDArray(const std::vector<std::string>& data_in, const std::vector<size_t>& shape_in) : data(data_in), shape(shape_in) {
-        calculateStrides();
-        if (data.size() != computeTotalSize()) {
-            throw std::runtime_error("Data size does not match the specified shape");
-        }
-    }
-
-
-    /**
-     * @brief Copy constructor
-     * @param other NDArray to copy from
-     */
-    NDArray(const NDArray& other) : data(other.data), shape(other.shape), strides(other.strides) {
-    }
-
-    /**
-     * @brief Access element using multi-dimensional index
-     * @param indices Indices for each dimension
-     * @return Reference to the element
-     */
-    std::string& at(const std::vector<size_t>& indices) {
-        return data[flattenIndex(indices)];
-    }
-
-    /**
-     * @brief Access element using multi-dimensional index (const version)
-     * @param indices Indices for each dimension
-     * @return Const reference to the element
-     */
-    const std::string& at(const std::vector<size_t>& indices) const {
-        return data[flattenIndex(indices)];
-    }
-
-    /**
-     * @brief Reshape the array to new dimensions
-     * @param new_shape New dimensions
-     */
-    void reshape(const std::vector<size_t>& new_shape) {
-        size_t new_size = 1;
-        for (auto dim : new_shape) {
-            new_size *= dim;
-        }
-        
-        if (new_size != data.size()) {
-            throw std::runtime_error("Cannot reshape array to requested dimensions");
-        }
-        
-        shape = new_shape;
-        calculateStrides();
-    }
-
-    /**
-     * @brief Calculate total bytes needed to store the array
-     * @return Total bytes
-     */
-    size_t totalBytes() const {
-        size_t string_bytes = 0;
-        for (const auto& str : data) {
-            string_bytes += str.size() + sizeof(size_t); // String length + string data
-        }
-        
-        return sizeof(size_t) +                      // Number of dimensions
-               sizeof(size_t) * shape.size() +       // Shape dimensions
-               sizeof(size_t) * strides.size() +     // Strides
-               string_bytes;                         // Actual string data
-    }
-
-    /**
-     * @brief Write array to output stream
-     * @param os Output stream
-     */
-    friend std::ostream& operator<<(std::ostream& os, const NDArray<std::string>& arr) {
-        // Write number of dimensions
-        size_t num_dims = arr.shape.size();
-        os.write(reinterpret_cast<const char*>(&num_dims), sizeof(num_dims));
-        
-        // Write shape
-        os.write(reinterpret_cast<const char*>(arr.shape.data()), sizeof(size_t) * num_dims);
-        
-        // Write strides
-        os.write(reinterpret_cast<const char*>(arr.strides.data()), sizeof(size_t) * num_dims);
-        
-        // Write data (strings need special handling)
-        size_t num_strings = arr.data.size();
-        // os.write(reinterpret_cast<const char*>(&num_strings), sizeof(num_strings));
-        
-        for (const auto& str : arr.data) {
-            size_t str_len = str.size();
-            os.write(reinterpret_cast<const char*>(&str_len), sizeof(str_len));
-            os.write(str.data(), str_len);
-        }
-        
-        return os;
-    }
-
-    /**
-     * @brief Read array from input stream
-     * @param is Input stream
-     */
-    friend std::istream& operator>>(std::istream& is, NDArray<std::string>& arr) {
-        LOG_TRACE("Reading NDArray<std::string> from input stream");
-        
-        // Read number of dimensions
-        size_t num_dims;
-        is.read(reinterpret_cast<char*>(&num_dims), sizeof(num_dims));
-        LOG_TRACE("Read number of dimensions: ", num_dims);
-        
-        // Read shape
-        arr.shape.resize(num_dims);
-        is.read(reinterpret_cast<char*>(arr.shape.data()), sizeof(size_t) * num_dims);
-        LOG_TRACE("Read shape with ", num_dims, " dimensions");
-        
-        // Read strides
-        arr.strides.resize(num_dims);
-        is.read(reinterpret_cast<char*>(arr.strides.data()), sizeof(size_t) * num_dims);
-        LOG_TRACE("Read strides");
-        
-        // Read data (strings need special handling)
-        size_t num_strings = arr.computeTotalSize();
-        // is.read(reinterpret_cast<char*>(&num_strings), sizeof(num_strings));
-        // LOG_TRACE("Reading ", num_strings, " strings");
-        
-        arr.data.resize(num_strings);
-        for (size_t i = 0; i < num_strings; ++i) {
-            size_t str_len;
-            is.read(reinterpret_cast<char*>(&str_len), sizeof(str_len));
             
-            std::string str(str_len, '\0');
-            is.read(&str[0], str_len);
-            arr.data[i] = std::move(str);
-            LOG_TRACE("Read string ", i, " with length ", str_len);
+            LOG_TRACE("Finished reading NDArray<std::string>");
+        } else {
+            arr.data.resize(total_size);
+            is.read(reinterpret_cast<char*>(arr.data.data()), sizeof(T) * total_size);
+            LOG_TRACE("Read data array of size ", sizeof(T) * total_size);
         }
-        
-        LOG_TRACE("Finished reading NDArray<std::string>");
         return is;
     }
 
@@ -533,10 +562,6 @@ private:
     }
 };
 
-
-//==============================================================================
-// Type Traits and Helpers
-//==============================================================================
 
 //==============================================================================
 // Type Definitions
@@ -546,64 +571,6 @@ using ValueVariant = std::variant<
     NDArray<char>, NDArray<int>, NDArray<long>, NDArray<long long>,
     NDArray<float>, NDArray<double>, NDArray<std::string>
 >;
-
-
-
-/**
- * @brief Type trait to check if a type is serializable
- */
-template<typename T, typename = void>
-struct is_serializable : std::false_type {};
-
-template<typename T>
-struct is_serializable<T, 
-    std::void_t<decltype(std::declval<std::ostream&>() << std::declval<T>()),
-                decltype(std::declval<std::istream&>() >> std::declval<T>())>> 
-    : std::true_type {};
-
-/**
- * @brief Type trait to check if a type is a vector
- */
-template<typename T>
-struct is_vector : std::false_type {};
-
-template<typename T>
-struct is_vector<std::vector<T>> : std::true_type {};
-
-/**
- * @brief Hash function for variants
- */
-struct VariantHash {
-    template<typename... Ts>
-    std::size_t operator()(const std::variant<Ts...>& v) const {
-        return std::visit([](const auto& x) { return std::hash<std::decay_t<decltype(x)>>{}(x); }, v);
-    }
-};
-
-/**
- * @brief Equality comparison for variants
- */
-struct VariantEqual {
-    template<typename... Ts>
-    bool operator()(const std::variant<Ts...>& a, const std::variant<Ts...>& b) const {
-        return a == b;
-    }
-};
-
-/**
- * @brief Helper to get dimensions of n-dimensional array
- */
-template<typename T>
-struct ArrayTraits {
-    static constexpr size_t dimensions = 0;
-    using BaseType = T;
-};
-
-template<typename T>
-struct ArrayTraits<std::vector<T>> {
-    static constexpr size_t dimensions = ArrayTraits<T>::dimensions + 1;
-    using BaseType = typename ArrayTraits<T>::BaseType;
-};
 
 //==============================================================================
 // SCStore Class
@@ -627,6 +594,7 @@ public:
     std::map<std::string, std::shared_ptr<ValueVariant>> m_cache;
     size_t m_header_size = 0; // Size of the header section in bytes
     bool m_header_dirty = false; // Flag to indicate if header size needs recalculation
+    mutable std::shared_mutex m_mutex; // Mutex for thread safety
 
     /**
      * @brief Deserializes a key from the input stream
@@ -642,30 +610,14 @@ public:
         LOG_TRACE("Deserialized key of length: ", len, " and value: ", key);
         return key;
     }
-
-    /**
-     * @brief Gets dimensions and sizes of an array
-     * @param arr Array to analyze
-     * @param sizes Vector to store sizes in
-     */
-    template<typename T>
-    void getArrayInfo(const T& arr, std::vector<size_t>& sizes) {
-        LOG_TRACE("Getting array info for type ", typeid(T).name());
-        if constexpr (is_vector<T>::value) {
-            sizes.push_back(arr.size());
-            if (!arr.empty()) {
-                getArrayInfo(arr[0], sizes);
-            }
-        }
-    }
-
-
+    
     /**
      * @brief Calculates the size of the header based on current index
      * @return Size of the header in bytes
      */
     size_t calculateHeaderSize() {
         LOG_TRACE("Calculating header size");
+        
         size_t size = sizeof(m_header_size);  // Size of header size field
         size += sizeof(uint64_t);             // Size of count field
         
@@ -685,29 +637,71 @@ public:
      */
     void loadIndex() {
         LOG_TRACE("Loading index for file ", m_filename);
-        std::fstream file(m_filename, std::ios::binary | std::ios::in);
-        if (!file.is_open()) return;
+        std::unique_lock<std::shared_mutex> lock(m_mutex);
+        
+        std::unique_ptr<std::istream> file;
+        
+        // Check if this is a HTTP URL
+        if (m_filename.substr(0, 9) == "/vsicurl/") {
+            #ifdef ENABLE_CURL
+            std::string url = m_filename.substr(9);
+            LOG_TRACE("Opening HTTP stream for URL: ", url);
+            file = std::make_unique<HttpStream>(url);
+            #else
+            throw std::runtime_error("CURL support not enabled, cannot open HTTP URL");
+            #endif
+        } else {
+            file = std::make_unique<std::ifstream>(m_filename, std::ios::binary);
+        }
+        
+        if (!file->good()) return;
 
-        // Read header size first
-        file.read(reinterpret_cast<char*>(&m_header_size), sizeof(m_header_size));
+        // First read the initial 512 bytes into a heap-allocated buffer
+        constexpr size_t INITIAL_READ_SIZE = 512;
+        auto initial_buffer = std::make_unique<char[]>(INITIAL_READ_SIZE);
+        file->read(initial_buffer.get(), INITIAL_READ_SIZE);
+        size_t bytes_read = file->gcount();
+        
+        // Create a stream from the initial buffer
+        std::stringstream initial_stream;
+        initial_stream.rdbuf()->pubsetbuf(const_cast<char*>(initial_buffer.get()), bytes_read);
+        // Read header size from the initial buffer
+        initial_stream.read(reinterpret_cast<char*>(&m_header_size), sizeof(m_header_size));
+        
+        std::stringstream header_stream;
+        
+        // If header is larger than our initial read, read the full header
+        if (m_header_size > INITIAL_READ_SIZE) {
+            LOG_TRACE("Header size (", m_header_size, ") exceeds initial read (", INITIAL_READ_SIZE, "), reading full header");
+            file->seekg(0);  // Go back to beginning of file
+            auto header_buffer = std::make_unique<char[]>(m_header_size);
+            file->read(header_buffer.get(), m_header_size);
+            header_stream.write(header_buffer.get(), m_header_size);
+        } else {
+            // Use the data we already read
+            LOG_TRACE("Using initial read for header, size: ", m_header_size);
+            header_stream.write(initial_buffer.get(), bytes_read);
+        }
+        
+        // Reset stream position to after header size
+        header_stream.seekg(sizeof(m_header_size));
         
         // Read number of entries
         uint64_t count = 0;
-        file.read(reinterpret_cast<char*>(&count), sizeof(count));
+        header_stream.read(reinterpret_cast<char*>(&count), sizeof(count));
         
         LOG_TRACE("Found ", count, " entries in index");
         for (size_t i = 0; i < count; i++) {
-            std::string key = deserializeKey(file);
+            std::string key = deserializeKey(header_stream);
             size_t position;
             size_t bytes;
 
-            file.read(reinterpret_cast<char*>(&position), sizeof(position));
-            file.read(reinterpret_cast<char*>(&bytes), sizeof(bytes));
+            header_stream.read(reinterpret_cast<char*>(&position), sizeof(position));
+            header_stream.read(reinterpret_cast<char*>(&bytes), sizeof(bytes));
             m_index[key] = std::make_tuple(position, bytes, false);
             LOG_TRACE("Loaded key ", key, " with position ", position, " and bytes ", bytes);
         }
         
-        file.close();
         m_header_dirty = false;
         LOG_TRACE("Index loaded successfully");
     }
@@ -716,6 +710,15 @@ public:
      * @brief Writes all data to the file
      */
     void flush() {
+        // lock for writing
+        std::unique_lock<std::shared_mutex> lock(m_mutex);
+        
+        // Don't attempt to write to HTTP URLs
+        if (m_filename.substr(0, 9) == "/vsicurl/") {
+            LOG_WARN("Cannot write to HTTP URL: ", m_filename);
+            return;
+        }
+        
         // Recalculate header size if needed
         if (m_header_dirty) {
             m_header_size = calculateHeaderSize();
@@ -812,6 +815,7 @@ public:
      */
     template<typename V>
     void put(const std::string& key, const V& value) {
+        std::unique_lock<std::shared_mutex> lock(m_mutex);
         m_cache[key] = std::make_shared<ValueVariant>(value);
         m_index[key] = std::make_tuple(0, value.totalBytes(), true);
         m_header_dirty = true;
@@ -825,26 +829,66 @@ public:
     template<typename V>
     std::shared_ptr<V> get(const std::string& key) {
         LOG_TRACE("Getting value for key ", key);
-        if (!(m_index.count(key) > 0)) return nullptr;
-        // Check if the value is already in the cache
-        auto cache_it = m_cache.find(key);
-        if (cache_it == m_cache.end()) {
-            // Not in cache, load from file
+        
+        // First check if the key exists with a shared lock
+        {
+            std::shared_lock<std::shared_mutex> lock(m_mutex);
+            if (!(m_index.count(key) > 0)) return nullptr;
+            
+            // Check if the value is already in the cache
+            auto cache_it = m_cache.find(key);
+            if (cache_it != m_cache.end()) {
+                // Value is in cache, try to get it
+                if (auto val = std::get_if<V>(m_cache[key].get())) {
+                    return std::make_shared<V>(*val);
+                }
+                LOG_TRACE("Value type mismatch for key ", key);
+                return nullptr;
+            }
+        }
+        
+        { // Not in cache, need to load from file with exclusive lock
+            std::unique_lock<std::shared_mutex> lock(m_mutex);
+        
+            // Check again in case another thread loaded it while we were waiting
+            if (m_cache.find(key) != m_cache.end()) {
+                if (auto val = std::get_if<V>(m_cache[key].get())) {
+                    return std::make_shared<V>(*val);
+                }
+                LOG_TRACE("Value type mismatch for key ", key);
+                return nullptr;
+            }
+        
             LOG_TRACE("Value not in cache, loading from file for key ", key);
-            std::ifstream file(m_filename, std::ios::binary);
-            if (!file) {
+            
+            std::unique_ptr<std::istream> file;
+            
+            // Check if this is a HTTP URL
+            if (m_filename.substr(0, 9) == "/vsicurl/") {
+                #ifdef ENABLE_CURL
+                std::string url = m_filename.substr(9);
+                LOG_TRACE("Opening HTTP stream for URL: ", url);
+                file = std::make_unique<HttpStream>(url);
+                #else
+                throw std::runtime_error("CURL support not enabled, cannot open HTTP URL");
+                #endif
+            } else {
+                file = std::make_unique<std::ifstream>(m_filename, std::ios::binary);
+            }
+            
+            if (!file->good()) {
                 LOG_TRACE("Failed to open file for reading");
                 return nullptr;
             }
-            
+        
             auto [position, size, dirty] = m_index[key];
             LOG_TRACE("Reading key=", key, ", position=", position, ", size=", size, ", dirty=", dirty);
             if (position > 0) {  // Position 0 means not yet written to file
-                file.seekg(position);
+                file->seekg(position);
                 // Deserialize the value from file
-                    
+                LOG_TRACE("Position after seek: ", file->tellg());
                 std::shared_ptr<V> value_ptr = std::make_shared<V>();
-                file >> *value_ptr;
+                *file >> *value_ptr;
                 m_cache[key] = std::make_shared<ValueVariant>(*value_ptr);
                 LOG_TRACE("Deserialized value of type ", typeid(V).name(), " with size ", value_ptr->totalBytes());
                 return value_ptr;
@@ -853,13 +897,6 @@ public:
                 return nullptr;
             }
         }
-        
-        // Now try to get the value from cache
-        if (auto val = std::get_if<V>(m_cache[key].get())) {
-            return std::make_shared<V>(*val);
-        }
-        LOG_TRACE("No value found for key ", key);
-        return nullptr;
     }
 
     /**
@@ -868,6 +905,7 @@ public:
      * @return True if the key exists, false otherwise
      */
     bool contains(const std::string& key) const {
+        std::shared_lock<std::shared_mutex> lock(m_mutex);
         return m_index.count(key) > 0;
     }
 
@@ -876,10 +914,12 @@ public:
      * @param key Key to remove
      */
     void remove(const std::string& key) {
+        std::unique_lock<std::shared_mutex> lock(m_mutex);
         if (m_index.count(key)) {
             m_cache.erase(key);
             m_index.erase(key);
             m_header_dirty = true; // Header size will change with removed key
+            lock.unlock(); // Unlock before flush to avoid deadlock
             flush();
         }
     }
@@ -889,6 +929,7 @@ public:
      * @return Number of key-value pairs
      */
     size_t size() const {
+        std::shared_lock<std::shared_mutex> lock(m_mutex);
         return m_index.size();
     }
 };

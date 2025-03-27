@@ -46,6 +46,13 @@ message(STATUS "Using install prefix: ${CMAKE_INSTALL_PREFIX}")
 
 option (CAMERASTATEFILE_BUILD_LIB "Build the CameraStateFile Library" ON)
 
+# Option to enable curl support
+option (CAMERASTATEFILE_ENABLE_CURL "Enable curl support for HTTP streaming" ON)
+if(CAMERASTATEFILE_ENABLE_CURL)
+  add_definitions(-DENABLE_CURL)
+  # Find curl package if needed
+  find_package(CURL REQUIRED)
+endif()
 
 set(JSON_BuildTests OFF CACHE INTERNAL "")
 
@@ -73,6 +80,11 @@ target_include_directories(CameraStateFile
                           $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/CameraStateFile/include>
                           $<INSTALL_INTERFACE:include>
                           )
+
+if(CAMERASTATEFILE_ENABLE_CURL)
+  target_link_libraries(CameraStateFile INTERFACE ${CURL_LIBRARIES})
+  target_include_directories(CameraStateFile INTERFACE ${CURL_INCLUDE_DIRS})
+endif()
  
 install(TARGETS CameraStateFile LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 install(DIRECTORY ${CAMERASTATEFILE_INCLUDE_DIR} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
@@ -124,4 +136,3 @@ endif()
 # else()
 #   message(STATUS "Skipping Bindings")
 # endif()
-

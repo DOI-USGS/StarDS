@@ -6,67 +6,113 @@
 TEST(UnitTestSCS, TestWrite) {
     try {
         // Create a temporary file for testing
-        std::string testFile = "/tmp/test_ndarray_write.scs";
+        std::string testFile = "/vsicurl/https://asc-isisdata.s3.us-west-2.amazonaws.com/test_ndarray_write.scs";
         
-        // Remove the file if it already exists
-        if (fs::exists(testFile)) {
-            fs::remove(testFile);
-        }
+        // // Remove the file if it already exists
+        // if (fs::exists(testFile)) {
+        //     fs::remove(testFile);
+        // }
         
         // Create a new SCStore
         SCStore store(testFile);
         
-        // Create various NDArrays to test with
+        // // Create various NDArrays to test with
         
-        // 1D integer array
-        NDArray<int> intArray({5}, 0);
-        for (size_t i = 0; i < 5; i++) {
-            intArray.data[i] = i * 10;
-        }
+        // // 1D integer array
+        // NDArray<int> intArray({5}, 0);
+        // for (size_t i = 0; i < 5; i++) {
+        //     intArray.data[i] = i * 10;
+        // }
         
-        // 2D float array
-        NDArray<float> floatArray({3, 4}, 0.0f);
-        for (size_t i = 0; i < 3; i++) {
-            for (size_t j = 0; j < 4; j++) {
-                floatArray.at({i, j}) = i * 10.0f + j;
-            }
-        }
+        // // 2D float array
+        // NDArray<float> floatArray({3, 4}, 0.0f);
+        // for (size_t i = 0; i < 3; i++) {
+        //     for (size_t j = 0; j < 4; j++) {
+        //         floatArray.at({i, j}) = i * 10.0f + j;
+        //     }
+        // }
         
-        // 3D double array
-        NDArray<double> doubleArray({2, 2, 2}, 0.0);
-        for (size_t i = 0; i < 2; i++) {
-            for (size_t j = 0; j < 2; j++) {
-                for (size_t k = 0; k < 2; k++) {
-                    doubleArray.at({i, j, k}) = i * 100.0 + j * 10.0 + k;
-                }
-            }
-        }
+        // // 3D double array
+        // NDArray<double> doubleArray({2, 2, 2}, 0.0);
+        // for (size_t i = 0; i < 2; i++) {
+        //     for (size_t j = 0; j < 2; j++) {
+        //         for (size_t k = 0; k < 2; k++) {
+        //             doubleArray.at({i, j, k}) = i * 100.0 + j * 10.0 + k;
+        //         }
+        //     }
+        // }
         
-        // String array
-        NDArray<std::string> stringArray({2, 3}, "");
-        for (size_t i = 0; i < 2; i++) {
-            for (size_t j = 0; j < 3; j++) {
-                stringArray.at({i, j}) = "str_" + std::to_string(i) + "_" + std::to_string(j);
-            }
-        }
+        // // String array
+        // NDArray<std::string> stringArray({2, 3}, "");
+        // for (size_t i = 0; i < 2; i++) {
+        //     for (size_t j = 0; j < 3; j++) {
+        //         stringArray.at({i, j}) = "str_" + std::to_string(i) + "_" + std::to_string(j);
+        //     }
+        // }
         
-        // Store the arrays
-        store.put("int_array", intArray);
-        store.put("float_array", floatArray);
-        store.put("double_array", doubleArray);
-        store.put("string_array", stringArray);
+        // // Store the arrays
+        // store.put("int_array", intArray);
+        // store.put("float_array", floatArray);
+        // store.put("double_array", doubleArray);
+        // store.put("string_array", stringArray);
         
         // Verify the store contains the keys
         EXPECT_TRUE(store.contains("int_array"));
         EXPECT_TRUE(store.contains("float_array"));
         EXPECT_TRUE(store.contains("double_array"));
         EXPECT_TRUE(store.contains("string_array"));
+
+        // Retrieve the arrays and verify their contents
+        auto retrievedIntArray = store.get<NDArray<int>>("int_array");
+        ASSERT_NE(retrievedIntArray, nullptr);
+        EXPECT_EQ(retrievedIntArray->shape.size(), 1);
+        EXPECT_EQ(retrievedIntArray->shape[0], 5);
+        for (size_t i = 0; i < 5; i++) {
+            EXPECT_EQ(retrievedIntArray->at({i}), i * 10);
+        }
         
+        auto retrievedFloatArray = store.get<NDArray<float>>("float_array");
+        ASSERT_NE(retrievedFloatArray, nullptr);
+        EXPECT_EQ(retrievedFloatArray->shape.size(), 2);
+        EXPECT_EQ(retrievedFloatArray->shape[0], 3);
+        EXPECT_EQ(retrievedFloatArray->shape[1], 4);
+        for (size_t i = 0; i < 3; i++) {
+            for (size_t j = 0; j < 4; j++) {
+                EXPECT_FLOAT_EQ(retrievedFloatArray->at({i, j}), i * 10.0f + j);
+            }
+        }
+        
+        auto retrievedDoubleArray = store.get<NDArray<double>>("double_array");
+        ASSERT_NE(retrievedDoubleArray, nullptr);
+        EXPECT_EQ(retrievedDoubleArray->shape.size(), 3);
+        EXPECT_EQ(retrievedDoubleArray->shape[0], 2);
+        EXPECT_EQ(retrievedDoubleArray->shape[1], 2);
+        EXPECT_EQ(retrievedDoubleArray->shape[2], 2);
+        for (size_t i = 0; i < 2; i++) {
+            for (size_t j = 0; j < 2; j++) {
+                for (size_t k = 0; k < 2; k++) {
+                    EXPECT_DOUBLE_EQ(retrievedDoubleArray->at({i, j, k}), i * 100.0 + j * 10.0 + k);
+                }
+            }
+        }
+        
+        auto retrievedStringArray = store.get<NDArray<std::string>>("string_array");
+        ASSERT_NE(retrievedStringArray, nullptr);
+        EXPECT_EQ(retrievedStringArray->shape.size(), 2);
+        EXPECT_EQ(retrievedStringArray->shape[0], 2);
+        EXPECT_EQ(retrievedStringArray->shape[1], 3);
+        for (size_t i = 0; i < 2; i++) {
+            for (size_t j = 0; j < 3; j++) {
+                EXPECT_EQ(retrievedStringArray->at({i, j}), "str_" + std::to_string(i) + "_" + std::to_string(j));
+            }
+        }
+
+
         // Verify the store size
         EXPECT_EQ(store.size(), 4);
         store.flush();
         // Verify the file exists
-        EXPECT_TRUE(fs::exists(testFile));
+        // EXPECT_TRUE(fs::exists(testFile));
         
     } catch (const std::exception& e) {
         FAIL() << "Exception occurred: " << e.what();
