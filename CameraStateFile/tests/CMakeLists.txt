@@ -3,8 +3,6 @@ cmake_minimum_required(VERSION 3.10)
 # A lot of linux OSes do not support C++20
 set(CMAKE_CXX_STANDARD 20)
 
-find_package(CSpice REQUIRED)
-
 get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
 foreach(dir ${dirs})
   message(STATUS "dir='${dir}'")

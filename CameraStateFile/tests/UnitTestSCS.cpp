@@ -6,55 +6,55 @@
 TEST(UnitTestSCS, TestWrite) {
     try {
         // Create a temporary file for testing
-        std::string testFile = "/vsicurl/https://asc-isisdata.s3.us-west-2.amazonaws.com/test_ndarray_write.scs";
+        std::string testFile = "/tmp/test_ndarray_write.scs"; //  "/vsicurl/https://asc-isisdata.s3.us-west-2.amazonaws.com/test_ndarray_write.scs";
         
-        // // Remove the file if it already exists
-        // if (fs::exists(testFile)) {
-        //     fs::remove(testFile);
-        // }
+        // Remove the file if it already exists
+        if (fs::exists(testFile)) {
+            fs::remove(testFile);
+        }
         
         // Create a new SCStore
         SCStore store(testFile);
         
-        // // Create various NDArrays to test with
+        // Create various NDArrays to test with
         
-        // // 1D integer array
-        // NDArray<int> intArray({5}, 0);
-        // for (size_t i = 0; i < 5; i++) {
-        //     intArray.data[i] = i * 10;
-        // }
+        // 1D integer array
+        NDArray<int> intArray({5}, 0);
+        for (size_t i = 0; i < 5; i++) {
+            intArray.data[i] = i * 10;
+        }
         
-        // // 2D float array
-        // NDArray<float> floatArray({3, 4}, 0.0f);
-        // for (size_t i = 0; i < 3; i++) {
-        //     for (size_t j = 0; j < 4; j++) {
-        //         floatArray.at({i, j}) = i * 10.0f + j;
-        //     }
-        // }
+        // 2D float array
+        NDArray<float> floatArray({3, 4}, 0.0f);
+        for (size_t i = 0; i < 3; i++) {
+            for (size_t j = 0; j < 4; j++) {
+                floatArray.at({i, j}) = i * 10.0f + j;
+            }
+        }
         
-        // // 3D double array
-        // NDArray<double> doubleArray({2, 2, 2}, 0.0);
-        // for (size_t i = 0; i < 2; i++) {
-        //     for (size_t j = 0; j < 2; j++) {
-        //         for (size_t k = 0; k < 2; k++) {
-        //             doubleArray.at({i, j, k}) = i * 100.0 + j * 10.0 + k;
-        //         }
-        //     }
-        // }
+        // 3D double array
+        NDArray<double> doubleArray({2, 2, 2}, 0.0);
+        for (size_t i = 0; i < 2; i++) {
+            for (size_t j = 0; j < 2; j++) {
+                for (size_t k = 0; k < 2; k++) {
+                    doubleArray.at({i, j, k}) = i * 100.0 + j * 10.0 + k;
+                }
+            }
+        }
         
-        // // String array
-        // NDArray<std::string> stringArray({2, 3}, "");
-        // for (size_t i = 0; i < 2; i++) {
-        //     for (size_t j = 0; j < 3; j++) {
-        //         stringArray.at({i, j}) = "str_" + std::to_string(i) + "_" + std::to_string(j);
-        //     }
-        // }
+        // String array
+        NDArray<std::string> stringArray({2, 3}, "");
+        for (size_t i = 0; i < 2; i++) {
+            for (size_t j = 0; j < 3; j++) {
+                stringArray.at({i, j}) = "str_" + std::to_string(i) + "_" + std::to_string(j);
+            }
+        }
         
-        // // Store the arrays
-        // store.put("int_array", intArray);
-        // store.put("float_array", floatArray);
-        // store.put("double_array", doubleArray);
-        // store.put("string_array", stringArray);
+        // Store the arrays
+        store.put("int_array", intArray);
+        store.put("float_array", floatArray);
+        store.put("double_array", doubleArray);
+        store.put("string_array", stringArray);
         
         // Verify the store contains the keys
         EXPECT_TRUE(store.contains("int_array"));
@@ -112,7 +112,7 @@ TEST(UnitTestSCS, TestWrite) {
         EXPECT_EQ(store.size(), 4);
         store.flush();
         // Verify the file exists
-        // EXPECT_TRUE(fs::exists(testFile));
+        EXPECT_TRUE(fs::exists(testFile));
         
     } catch (const std::exception& e) {
         FAIL() << "Exception occurred: " << e.what();
@@ -122,7 +122,7 @@ TEST(UnitTestSCS, TestWrite) {
 TEST(SCStoreTest, ReadTest) {
     try {
         // Create a temporary file for testing
-        fs::path testFile = "/tmp/persistence_test.scs";
+        fs::path testFile = "/tmp/persistence_test.cld";
         
         // Remove the file if it already exists
         if (fs::exists(testFile)) {
@@ -213,6 +213,66 @@ TEST(SCStoreTest, ReadTest) {
         // Clean up
         fs::remove(testFile);
         
+    } catch (const std::exception& e) {
+        FAIL() << "Exception occurred: " << e.what();
+    }
+}
+
+
+TEST(SCStoreTest, HeaderReadWriteTest) {
+    try {
+        // Create a temporary file path
+        fs::path testFile = "/tmp/header_rw_test.scs";
+
+        // Clean up any existing test file
+        if (fs::exists(testFile)) {
+            fs::remove(testFile);
+        }
+
+        // Write a store with a few keys, but don't write any data (just header/index)
+        {
+            SCStore store(testFile.string());
+            NDArray<int> intArray({2}, 1);
+            NDArray<float> floatArray({1}, 2.0f);
+            store.put("header_key1", intArray);
+            store.put("header_key2", floatArray);
+            // Only flush, don't access or write any values
+            store.flush();
+        }
+
+        // Reopen and only check the header/index, not the data
+        {
+            SCStore store(testFile.string());
+            // The index should contain the keys
+            EXPECT_EQ(store.size(), 2);
+            EXPECT_TRUE(store.contains("header_key1"));
+            EXPECT_TRUE(store.contains("header_key2"));
+
+            // Check that the index entries are correct (positions and sizes are nonzero)
+            auto it1 = store.m_index.find("header_key1");
+            auto it2 = store.m_index.find("header_key2");
+            EXPECT_NE(it1, store.m_index.end());
+            EXPECT_NE(it2, store.m_index.end());
+
+            // The tuple is (position, bytes, dirty)
+            size_t pos1, bytes1, pos2, bytes2;
+            bool dirty1, dirty2;
+            std::tie(pos1, bytes1, dirty1) = it1->second;
+            std::tie(pos2, bytes2, dirty2) = it2->second;
+
+            // Positions should be >= header size, bytes should be > 0, dirty should be false
+            EXPECT_GT(bytes1, 0u);
+            EXPECT_GT(bytes2, 0u);
+            EXPECT_FALSE(dirty1);
+            EXPECT_FALSE(dirty2);
+
+            // The header should not be dirty after reading
+            EXPECT_FALSE(store.m_header_dirty);
+        }
+
+        // Clean up
+        // fs::remove(testFile);
+
     } catch (const std::exception& e) {
         FAIL() << "Exception occurred: " << e.what();
     }

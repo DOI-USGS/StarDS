@@ -13,8 +13,15 @@
 #include <chrono>
 #include <shared_mutex>
 #include <mutex>
+#include "ezgz.hpp"
 
 const std::string PROJECT_NAME = "SCS 0.1.0";
+const char* MAGIC_STRING = "CLOUDS++";
+const size_t MAGIC_STRING_LENGTH = 8;
+
+constexpr const char* MAGIC_UNCOMPRESSED = "CLD0";
+constexpr const char* MAGIC_GZIPPED = "CLDG";
+
 
 //==============================================================================
 // HTTP Stream Implementation
@@ -513,7 +520,6 @@ public:
         return is;
     }
 
-private:
     /**
      * @brief Calculate strides based on shape
      */
@@ -586,7 +592,10 @@ using ValueVariant = std::variant<
  */
 class SCStore {
 private:
-    static constexpr size_t BLOCK_SIZE = 64 * 1024; // 64KB blocks
+    static constexpr size_t DEFAULT_BLOCK_SIZE = 64 * 1024; // 64KB blocks
+
+    std::string m_compression = "none"; // "none" or "gz"
+    size_t m_block_size = DEFAULT_BLOCK_SIZE;
     static constexpr size_t LARGE_ARRAY_THRESHOLD = 1024;
 public: 
     std::string m_filename;
@@ -619,6 +628,8 @@ public:
         LOG_TRACE("Calculating header size");
         
         size_t size = sizeof(m_header_size);  // Size of header size field
+        size += MAGIC_STRING_LENGTH;        // magic string
+        size += 4;                            // compression type
         size += sizeof(uint64_t);             // Size of count field
         
         for (const auto& [key, _] : m_index) {
@@ -626,6 +637,7 @@ public:
             size += sizeof(size_t);           // key size
             size += sizeof(size_t);           // position
             size += sizeof(size_t);           // bytes
+            // size += 4;                        // compression type
         }
         
         LOG_TRACE("Header size calculated to ", size);
@@ -637,7 +649,6 @@ public:
      */
     void loadIndex() {
         LOG_TRACE("Loading index for file ", m_filename);
-        std::unique_lock<std::shared_mutex> lock(m_mutex);
         
         std::unique_ptr<std::istream> file;
         
@@ -654,20 +665,46 @@ public:
             file = std::make_unique<std::ifstream>(m_filename, std::ios::binary);
         }
         
-        if (!file->good()) return;
+        if (!file->good()) {
+            return;
+        }
 
         // First read the initial 512 bytes into a heap-allocated buffer
-        constexpr size_t INITIAL_READ_SIZE = 512;
-        auto initial_buffer = std::make_unique<char[]>(INITIAL_READ_SIZE);
-        file->read(initial_buffer.get(), INITIAL_READ_SIZE);
+        constexpr size_t INITIAL_READ_SIZE = 2056;
+        char initial_buffer[INITIAL_READ_SIZE];
+        file->read(initial_buffer, INITIAL_READ_SIZE);
         size_t bytes_read = file->gcount();
         
+        LOG_TRACE("Read initial ", bytes_read, " bytes");
+
         // Create a stream from the initial buffer
         std::stringstream initial_stream;
-        initial_stream.rdbuf()->pubsetbuf(const_cast<char*>(initial_buffer.get()), bytes_read);
-        // Read header size from the initial buffer
-        initial_stream.read(reinterpret_cast<char*>(&m_header_size), sizeof(m_header_size));
+        initial_stream.rdbuf()->sputn(initial_buffer, bytes_read);        
+        initial_stream.seekg(0);
+        initial_stream.clear();
         
+        char magic[MAGIC_STRING_LENGTH];
+        initial_stream.read(magic, MAGIC_STRING_LENGTH);
+        std::string magic_string(magic, MAGIC_STRING_LENGTH);
+        LOG_TRACE("Read magic string: ", magic_string);
+        if(magic_string != MAGIC_STRING) {
+            LOG_ERROR("Magic string mismatch, expected ", MAGIC_STRING, " but got ", magic_string);
+            throw std::runtime_error("Magic string mismatch");
+        }
+
+        char compression[4];
+        initial_stream.read(compression, 4); 
+        std::string compression_string(compression, 4);
+        m_compression = compression_string;
+        LOG_TRACE("Found compression type: ", compression_string);
+
+        initial_stream.read(reinterpret_cast<char*>(&m_header_size), sizeof(m_header_size));
+        if (m_header_size == 0) {
+            LOG_ERROR("Header size is 0, file is empty");
+            throw std::runtime_error("Header size is 0, file is empty");
+        }
+        LOG_TRACE("Found header size: ", m_header_size);
+
         std::stringstream header_stream;
         
         // If header is larger than our initial read, read the full header
@@ -680,14 +717,12 @@ public:
         } else {
             // Use the data we already read
             LOG_TRACE("Using initial read for header, size: ", m_header_size);
-            header_stream.write(initial_buffer.get(), bytes_read);
+            header_stream.write(initial_buffer, m_header_size);
         }
         
         // Reset stream position to after header size
-        header_stream.seekg(sizeof(m_header_size));
-        
-        // Read number of entries
-        uint64_t count = 0;
+        header_stream.seekg(MAGIC_STRING_LENGTH+4+sizeof(m_header_size), std::ios::beg); 
+        size_t count;
         header_stream.read(reinterpret_cast<char*>(&count), sizeof(count));
         
         LOG_TRACE("Found ", count, " entries in index");
@@ -711,13 +746,7 @@ public:
      */
     void flush() {
         // lock for writing
-        std::unique_lock<std::shared_mutex> lock(m_mutex);
-        
-        // Don't attempt to write to HTTP URLs
-        if (m_filename.substr(0, 9) == "/vsicurl/") {
-            LOG_WARN("Cannot write to HTTP URL: ", m_filename);
-            return;
-        }
+        std::unique_lock<std::shared_mutex> lock(m_mutex); 
         
         // Recalculate header size if needed
         if (m_header_dirty) {
@@ -732,9 +761,17 @@ public:
         }
 
         LOG_TRACE("Writing header section");
+        
+        file.write(MAGIC_STRING, MAGIC_STRING_LENGTH);
+
+        // Write compression type
+        if (m_compression == "gz") {
+            file.write(MAGIC_GZIPPED, 4);
+        } else {
+            file.write(MAGIC_UNCOMPRESSED, 4);
+        }
 
         // Write header size
-        file.seekp(0);
         LOG_TRACE("Writing header size: ", m_header_size);
         file.write(reinterpret_cast<const char*>(&m_header_size), sizeof(m_header_size));
         
@@ -782,7 +819,64 @@ public:
             LOG_TRACE("Writing value for key=", key, ", position=", indexpos, ", bytes=", bytes);
             // Write the value
             std::visit([this, &file](const auto& value) {
-                file << value;
+                using V = std::decay_t<decltype(value)>;
+                if constexpr (
+                    std::is_same_v<V, NDArray<char>> || std::is_same_v<V, NDArray<int>> ||
+                    std::is_same_v<V, NDArray<long>> || std::is_same_v<V, NDArray<long long>> ||
+                    std::is_same_v<V, NDArray<float>> || std::is_same_v<V, NDArray<double>> ||
+                    std::is_same_v<V, NDArray<std::string>>
+                ) {
+                    if (m_compression == "gz") {
+                        // Block-compressed NDArray write
+                        // Write a magic number for block compression (0x424C4B43 = 'BLKC')
+                        uint32_t block_magic = 0x424C4B43;
+                        file.write(reinterpret_cast<const char*>(&block_magic), sizeof(block_magic));
+                        // Serialize NDArray to a buffer
+                        std::vector<char> buffer;
+                        if constexpr (std::is_same_v<V, NDArray<std::string>>) {
+                            for (const auto& str : value.data) {
+                                size_t str_len = str.size();
+                                size_t pos = buffer.size();
+                                buffer.resize(pos + sizeof(str_len));
+                                std::memcpy(buffer.data() + pos, &str_len, sizeof(str_len));
+                                pos = buffer.size();
+                                buffer.resize(pos + str_len);
+                                std::memcpy(buffer.data() + pos, str.data(), str_len);
+                            }
+                        } else {
+                            buffer.resize(sizeof(decltype(value.data[0])) * value.data.size());
+                            std::memcpy(buffer.data(), value.data.data(), sizeof(decltype(value.data[0])) * value.data.size());
+                        }
+                        size_t total_bytes = buffer.size();
+                        size_t num_blocks = (total_bytes + m_block_size - 1) / m_block_size;
+                        file.write(reinterpret_cast<const char*>(&num_blocks), sizeof(num_blocks));
+                        std::vector<size_t> uncompressed_sizes(num_blocks), compressed_sizes(num_blocks);
+                        std::vector<std::vector<uint8_t>> compressed_blocks(num_blocks);
+                        for (size_t i = 0; i < num_blocks; ++i) {
+                            size_t start = i * m_block_size;
+                            size_t end = std::min(start + m_block_size, total_bytes);
+                            size_t this_uncompressed = end - start;
+                            std::span<const char> block_span(buffer.data() + start, this_uncompressed);
+                            auto compressed = EzGz::writeDeflateIntoVector<EzGz::DefaultCompressionSettings>(block_span);
+                            uncompressed_sizes[i] = this_uncompressed;
+                            compressed_sizes[i] = compressed.size();
+                            compressed_blocks[i] = std::move(compressed);
+                        }
+                        for (size_t i = 0; i < num_blocks; ++i) {
+                            file.write(reinterpret_cast<const char*>(&uncompressed_sizes[i]), sizeof(size_t));
+                            file.write(reinterpret_cast<const char*>(&compressed_sizes[i]), sizeof(size_t));
+                        }
+                        for (size_t i = 0; i < num_blocks; ++i) {
+                            file.write(reinterpret_cast<const char*>(compressed_blocks[i].data()), compressed_blocks[i].size());
+                        }
+                    } else {
+                        // Uncompressed NDArray write (as before)
+                        file << value;
+                    }
+                } else {
+                    // Scalar write (as before)
+                    file << value;
+                }
             }, *value_ptr);
         }
         
@@ -790,14 +884,16 @@ public:
         file.close();
         LOG_TRACE("Flushed and closed file");
     }
-
+    
 
     /**
-     * @brief Constructor
+     * @brief Constructor with compression options
      * @param fname Filename to use for storage
+     * @param compression Compression type ("none" or "gz")
+     * @param block_size Block size for compression
      */
-    explicit SCStore(const std::string& fname) 
-        : m_filename(fname), m_header_dirty(true) {
+    SCStore(const std::string& fname, const std::string& compression = "none", size_t block_size = DEFAULT_BLOCK_SIZE)
+        : m_filename(fname), m_header_dirty(true), m_compression(compression), m_block_size(block_size) {
         loadIndex();
     }
 
@@ -806,6 +902,16 @@ public:
      */
     ~SCStore() {
         // flush();
+    }
+
+    /**
+     * @brief Sets the compression type and block size
+     * @param compression Compression type ("none" or "gz")
+     * @param block_size Block size for compression
+     */
+    void set_compression(const std::string& compression, size_t block_size = DEFAULT_BLOCK_SIZE) {
+        m_compression = compression;
+        m_block_size = block_size;
     }
 
     /**
@@ -876,19 +982,80 @@ public:
                 file = std::make_unique<std::ifstream>(m_filename, std::ios::binary);
             }
             
-            if (!file->good()) {
-                LOG_TRACE("Failed to open file for reading");
-                return nullptr;
-            }
+            if (!file->good()) return nullptr;
         
+            // Seek to index
+            file->seekg(MAGIC_STRING_LENGTH+4, std::ios::beg);
             auto [position, size, dirty] = m_index[key];
-            LOG_TRACE("Reading key=", key, ", position=", position, ", size=", size, ", dirty=", dirty);
-            if (position > 0) {  // Position 0 means not yet written to file
-                file->seekg(position);
-                // Deserialize the value from file
+            if (position > 0) {
+                file->seekg(position, std::ios::beg);
                 LOG_TRACE("Position after seek: ", file->tellg());
                 std::shared_ptr<V> value_ptr = std::make_shared<V>();
-                *file >> *value_ptr;
+                if constexpr (
+                    std::is_same_v<V, NDArray<char>> || std::is_same_v<V, NDArray<int>> ||
+                    std::is_same_v<V, NDArray<long>> || std::is_same_v<V, NDArray<long long>> ||
+                    std::is_same_v<V, NDArray<float>> || std::is_same_v<V, NDArray<double>> ||
+                    std::is_same_v<V, NDArray<std::string>>
+                ) {
+                    if (m_compression == "gz") {
+                        // Block-compressed NDArray read
+                        uint32_t block_magic = 0;
+                        file->read(reinterpret_cast<char*>(&block_magic), sizeof(block_magic));
+                        if (block_magic != 0x424C4B43) {
+                            throw std::runtime_error("Missing block compression magic");
+                        }
+                        // Read NDArray shape/strides as in operator>>
+                        size_t num_dims;
+                        file->read(reinterpret_cast<char*>(&num_dims), sizeof(num_dims));
+                        value_ptr->shape.resize(num_dims);
+                        file->read(reinterpret_cast<char*>(value_ptr->shape.data()), sizeof(size_t) * num_dims);
+                        value_ptr->strides.resize(num_dims);
+                        file->read(reinterpret_cast<char*>(value_ptr->strides.data()), sizeof(size_t) * num_dims);
+                        size_t total_size = value_ptr->computeTotalSize();
+                        size_t num_blocks = 0;
+                        file->read(reinterpret_cast<char*>(&num_blocks), sizeof(num_blocks));
+                        std::vector<size_t> uncompressed_sizes(num_blocks), compressed_sizes(num_blocks);
+                        for (size_t i = 0; i < num_blocks; ++i) {
+                            file->read(reinterpret_cast<char*>(&uncompressed_sizes[i]), sizeof(size_t));
+                            file->read(reinterpret_cast<char*>(&compressed_sizes[i]), sizeof(size_t));
+                        }
+                        std::vector<char> buffer;
+                        buffer.reserve(total_size * (std::is_same_v<V, NDArray<std::string>> ? 1 : sizeof(decltype(value_ptr->data[0]))));
+                        for (size_t i = 0; i < num_blocks; ++i) {
+                            std::vector<uint8_t> compressed_block(compressed_sizes[i]);
+                            file->read(reinterpret_cast<char*>(compressed_block.data()), compressed_sizes[i]);
+                            std::span<const uint8_t> compressed_span(compressed_block.data(), compressed_block.size());
+                            std::vector<char> decompressed_block = EzGz::readDeflateIntoVector(compressed_span);
+                            buffer.insert(buffer.end(), decompressed_block.begin(), decompressed_block.end());
+                        }
+                        if constexpr (std::is_same_v<V, NDArray<std::string>>) {
+                            value_ptr->data.resize(total_size);
+                            size_t pos = 0;
+                            for (size_t i = 0; i < total_size; ++i) {
+                                size_t str_len;
+                                std::memcpy(&str_len, &buffer[pos], sizeof(str_len));
+                                pos += sizeof(str_len);
+                                std::string str(buffer.data() + pos, str_len);
+                                value_ptr->data[i] = std::move(str);
+                                pos += str_len;
+                            }
+                        } else {
+                            value_ptr->data.resize(total_size);
+                            size_t data_size = sizeof(decltype(value_ptr->data[0])) * total_size;
+                            if (buffer.size() != data_size) {
+                                LOG_ERROR("Decompressed size mismatch: expected ", data_size, " bytes, got ", buffer.size(), " bytes");
+                                throw std::runtime_error("Decompressed data size mismatch");
+                            }
+                            std::memcpy(value_ptr->data.data(), buffer.data(), data_size);
+                        }
+                    } else {
+                        // Uncompressed NDArray read (as before)
+                        *file >> *value_ptr;
+                    }
+                } else {
+                    // Scalar read (as before)
+                    *file >> *value_ptr;
+                }
                 m_cache[key] = std::make_shared<ValueVariant>(*value_ptr);
                 LOG_TRACE("Deserialized value of type ", typeid(V).name(), " with size ", value_ptr->totalBytes());
                 return value_ptr;
