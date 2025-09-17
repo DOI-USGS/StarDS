@@ -46,13 +46,7 @@ message(STATUS "Using install prefix: ${CMAKE_INSTALL_PREFIX}")
 
 option (CAMERASTATEFILE_BUILD_LIB "Build the CameraStateFile Library" ON)
 
-# Option to enable curl support
-option (CAMERASTATEFILE_ENABLE_CURL "Enable curl support for HTTP streaming" ON)
-if(CAMERASTATEFILE_ENABLE_CURL)
-  add_definitions(-DENABLE_CURL)
-  # Find curl package if needed
-  find_package(CURL REQUIRED)
-endif()
+
 
 set(JSON_BuildTests OFF CACHE INTERNAL "")
 
@@ -78,14 +72,29 @@ set_target_properties(CameraStateFile PROPERTIES
 target_include_directories(CameraStateFile
                           INTERFACE
                           $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/CameraStateFile/include>
-                          $<INSTALL_INTERFACE:include>
-                          )
+                          $<INSTALL_INTERFACE:include>)
 
+
+# Option to enable curl support
+option (CAMERASTATEFILE_ENABLE_CURL "Enable curl support for HTTP streaming" ON)
 if(CAMERASTATEFILE_ENABLE_CURL)
+  add_definitions(-DENABLE_CURL)
+  # Find curl package if needed
+  find_package(CURL REQUIRED)
   target_link_libraries(CameraStateFile INTERFACE ${CURL_LIBRARIES})
   target_include_directories(CameraStateFile INTERFACE ${CURL_INCLUDE_DIRS})
 endif()
  
+# Option to enable zlib support
+option (CAMERASTATEFILE_ENABLE_ZLIB "Enable zlib support for compression" ON)
+if(CAMERASTATEFILE_ENABLE_ZLIB)
+  add_definitions(-DENABLE_ZLIB)
+  find_package(ZLIB REQUIRED)
+  target_include_directories(CameraStateFile INTERFACE ${ZLIB_INCLUDE_DIRS})
+  target_link_libraries(CameraStateFile INTERFACE ${ZLIB_LIBRARIES})
+endif()
+
+
 install(TARGETS CameraStateFile LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 install(DIRECTORY ${CAMERASTATEFILE_INCLUDE_DIR} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 

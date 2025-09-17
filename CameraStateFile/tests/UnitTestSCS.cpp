@@ -6,7 +6,7 @@
 TEST(UnitTestSCS, TestWrite) {
     try {
         // Create a temporary file for testing
-        std::string testFile = "/tmp/test_ndarray_write.scs"; //  "/vsicurl/https://asc-isisdata.s3.us-west-2.amazonaws.com/test_ndarray_write.scs";
+        std::string testFile = "/tmp/test_ndarray_write.cld"; //  "/vsicurl/https://asc-isisdata.s3.us-west-2.amazonaws.com/test_ndarray_write.cld";
         
         // Remove the file if it already exists
         if (fs::exists(testFile)) {
@@ -14,7 +14,7 @@ TEST(UnitTestSCS, TestWrite) {
         }
         
         // Create a new SCStore
-        SCStore store(testFile);
+        SCStore store(testFile, "CLDG");
         
         // Create various NDArrays to test with
         
@@ -119,6 +119,69 @@ TEST(UnitTestSCS, TestWrite) {
     }
 }
 
+
+TEST(SCStoreTest, LargeArrayAndStringTest) {
+    try {
+        fs::path testFile = "/tmp/large_test_1000000_CLD0.cld";
+        if (fs::exists(testFile)) {
+            fs::remove(testFile);
+        }
+        size_t num_elements = 1000000;
+        
+        // 1 element array of type string, with a 1 million character string
+        NDArray<std::string> bigStringArray({1});
+        std::string bigString(num_elements, 'x');
+        for (size_t i = 0; i < bigString.size(); ++i) {
+            bigString[i] = 'a' + (i % 26);
+        }
+        bigStringArray.at({0}) = bigString;
+
+        NDArray<int> bigArray({num_elements}, 0);
+        for (size_t i = 0; i < num_elements; ++i) {
+            bigArray.at({i}) = static_cast<int>(i);
+        }
+
+        // Write phase
+        {
+            SCStore store(testFile.string(), "CLD0");
+
+            store.put("big_array", bigArray);
+            store.put("big_string", bigStringArray);
+
+            store.flush();
+        }
+
+        // Read phase
+        {
+            SCStore store(testFile.string());
+
+            // Read and check array
+            auto retrievedArray = store.get<NDArray<int>>("big_array");
+            ASSERT_NE(retrievedArray, nullptr);
+            ASSERT_EQ(retrievedArray->shape.size(), 1);
+            ASSERT_EQ(retrievedArray->shape[0], num_elements);
+            for (size_t i = 0; i < num_elements; ++i) {
+                EXPECT_EQ(retrievedArray->at({i}), static_cast<int>(i));
+            }
+
+            // Read and check string
+            auto retrievedString = store.get<NDArray<std::string>>("big_string");
+            ASSERT_NE(retrievedString, nullptr);
+            ASSERT_EQ(retrievedString->shape.size(), 1);
+            ASSERT_EQ(retrievedString->shape[0], 1);
+            EXPECT_EQ(retrievedString->at({0}), bigString);
+            }
+
+        // Clean up
+        // if (fs::exists(testFile)) {
+        //     fs::remove(testFile);
+        // }
+    } catch (const std::exception& e) {
+        FAIL() << "Exception occurred: " << e.what();
+    }
+}
+
+
 TEST(SCStoreTest, ReadTest) {
     try {
         // Create a temporary file for testing
@@ -131,7 +194,7 @@ TEST(SCStoreTest, ReadTest) {
         
         // Create arrays and store them
         {
-            SCStore store(testFile.string());
+            SCStore store(testFile.string(), "CLDG");
             
             // 1D int array
             NDArray<int> intArray({5}, 0);
@@ -222,7 +285,7 @@ TEST(SCStoreTest, ReadTest) {
 TEST(SCStoreTest, HeaderReadWriteTest) {
     try {
         // Create a temporary file path
-        fs::path testFile = "/tmp/header_rw_test.scs";
+        fs::path testFile = "/tmp/header_rw_test.cld";
 
         // Clean up any existing test file
         if (fs::exists(testFile)) {
@@ -231,7 +294,7 @@ TEST(SCStoreTest, HeaderReadWriteTest) {
 
         // Write a store with a few keys, but don't write any data (just header/index)
         {
-            SCStore store(testFile.string());
+            SCStore store(testFile.string(), "CLDG");
             NDArray<int> intArray({2}, 1);
             NDArray<float> floatArray({1}, 2.0f);
             store.put("header_key1", intArray);
@@ -271,7 +334,7 @@ TEST(SCStoreTest, HeaderReadWriteTest) {
         }
 
         // Clean up
-        // fs::remove(testFile);
+        fs::remove(testFile);
 
     } catch (const std::exception& e) {
         FAIL() << "Exception occurred: " << e.what();
@@ -282,7 +345,7 @@ TEST(SCStoreTest, HeaderReadWriteTest) {
 TEST(SCStoreTest, EmptyIndexTest) {
     try {
         // Create a temporary file path
-        fs::path testFile = "/tmp/empty_index_test.scs";
+        fs::path testFile = "/tmp/empty_index_test.cld";
         
         // Clean up any existing test file
         if (fs::exists(testFile)) {
@@ -332,6 +395,26 @@ TEST(SCStoreTest, EmptyIndexTest) {
         // Clean up
         fs::remove(testFile);
         
+    } catch (const std::exception& e) {
+        FAIL() << "Exception occurred: " << e.what();
+    }
+}
+
+
+TEST(SCStoreTest, PrintFileContents) {
+    try {
+        fs::path testFile = "/vsicurl/https://asc-isisdata.s3.us-west-2.amazonaws.com/astro_data/cloud_tests/large_test_CLDG.cld";
+
+        SCStore store(testFile.string());
+        
+        auto array = store.get<NDArray<int>>("big_array");
+        ASSERT_NE(array, nullptr);
+        EXPECT_EQ(array->shape.size(), 1);
+        EXPECT_EQ(array->shape[0], 100000);
+        for (size_t i = 0; i < 100000; ++i) {
+            ASSERT_EQ(array->at({i}), static_cast<int>(i));
+        }
+
     } catch (const std::exception& e) {
         FAIL() << "Exception occurred: " << e.what();
     }
