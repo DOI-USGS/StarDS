@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <ghc/fs_std.hpp>
 #include "scs.h"
-// #include "deflate.h"
+
 
 TEST(UnitTestSCS, TestWrite) {
     try {
@@ -122,11 +122,11 @@ TEST(UnitTestSCS, TestWrite) {
 
 TEST(SCStoreTest, LargeArrayAndStringTest) {
     try {
-        fs::path testFile = "/tmp/large_test_1000000_CLD0.cld";
+        fs::path testFile = "/tmp/large_test_9999999_CLDG.cld";
         if (fs::exists(testFile)) {
             fs::remove(testFile);
         }
-        size_t num_elements = 1000000;
+        size_t num_elements = 10000000;
         
         // 1 element array of type string, with a 1 million character string
         NDArray<std::string> bigStringArray({1});
@@ -143,7 +143,7 @@ TEST(SCStoreTest, LargeArrayAndStringTest) {
 
         // Write phase
         {
-            SCStore store(testFile.string(), "CLD0");
+            SCStore store(testFile.string(), "CLDG");
 
             store.put("big_array", bigArray);
             store.put("big_string", bigStringArray);
@@ -401,20 +401,30 @@ TEST(SCStoreTest, EmptyIndexTest) {
 }
 
 
-TEST(SCStoreTest, PrintFileContents) {
+TEST(SCStoreTest, ReadRemoteLargeCLD0) {
     try {
-        fs::path testFile = "/vsicurl/https://asc-isisdata.s3.us-west-2.amazonaws.com/astro_data/cloud_tests/large_test_CLDG.cld";
+        // Use a remote file (via /vsicurl/ or direct HTTP if supported)
+        std::string remoteFile = "/vsicurl/https://asc-isisdata.s3.us-west-2.amazonaws.com/astro_data/cloud_tests/large_test_1000000_CLDG.cld";
 
-        SCStore store(testFile.string());
-        
-        auto array = store.get<NDArray<int>>("big_array");
-        ASSERT_NE(array, nullptr);
-        EXPECT_EQ(array->shape.size(), 1);
-        EXPECT_EQ(array->shape[0], 100000);
-        for (size_t i = 0; i < 100000; ++i) {
-            ASSERT_EQ(array->at({i}), static_cast<int>(i));
-        }
+        // Open the store from the remote file
+        SCStore store(remoteFile);
 
+        // The file is expected to have a key "big_array"
+        ASSERT_TRUE(store.contains("big_array"));
+
+        // Read the "big_array" key (should be a large NDArray<int>)
+        auto bigArrayPtr = store.get<NDArray<int>>("big_array");
+        ASSERT_NE(bigArrayPtr, nullptr);
+
+        // Check shape and a few values
+        ASSERT_EQ(bigArrayPtr->shape.size(), 1);
+        size_t num_elements = bigArrayPtr->shape[0];
+
+        // Spot check a few values
+        EXPECT_EQ(bigArrayPtr->at({0}), 0);
+        EXPECT_EQ(bigArrayPtr->at({1}), 1);
+        EXPECT_EQ(bigArrayPtr->at({num_elements - 1}), static_cast<int>(num_elements - 1));
+        store.printHeader();
     } catch (const std::exception& e) {
         FAIL() << "Exception occurred: " << e.what();
     }

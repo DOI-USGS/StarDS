@@ -13,7 +13,14 @@
 #include <chrono>
 #include <shared_mutex>
 #include <mutex>
-#include "ezgz.hpp"
+
+// force it for now
+#define ENABLE_CURL 1
+#define ENABLE_ZLIB 1
+
+#ifdef ENABLE_ZLIB
+#include <zlib.h>
+#endif
 
 const std::string PROJECT_NAME = "SCS 0.1.0";
 const char* MAGIC_STRING = "CLOUDS++";
@@ -24,10 +31,88 @@ constexpr const char* MAGIC_GZIPPED = "CLDG";
 
 
 //==============================================================================
+// Logging System
+//==============================================================================
+
+namespace logger {
+    enum LogLevel { TRACE=0, DEBUG, INFO, WARN, ERROR };
+    static inline LogLevel current_log_level = TRACE;
+    
+    static constexpr const char* LOG_LEVEL_STRINGS[] = {"TRACE", "DEBUG", "INFO", "WARN", "ERROR"};
+    
+    /**
+     * @brief Base implementation for logging a single value
+     * @param os Output stream to write to
+     * @param first Value to log
+     */
+    template<typename T>
+    void log_impl(std::ostream& os, const T& first) {
+        os << first;
+    }
+    
+    /**
+     * @brief Recursive implementation for logging multiple values
+     * @param os Output stream to write to
+     * @param first First value to log
+     * @param args Remaining values to log
+     */
+    template<typename T, typename... Args>
+    void log_impl(std::ostream& os, const T& first, const Args&... args) {
+        os << first;
+        log_impl(os, args...);
+    }
+    
+    /**
+     * @brief Internal logging function that formats and outputs log messages
+     * @param level Log level of the message
+     * @param line Source code line number
+     * @param func Function name
+     * @param args Values to log
+     */
+    template<typename... Args>
+    void log_internal(LogLevel level, int line, const char* func, const Args&... args) {
+        if (level >= current_log_level) {
+            auto now = std::chrono::system_clock::now();
+            auto time = std::chrono::system_clock::to_time_t(now);
+            
+            std::stringstream ss;
+            ss << "[" << PROJECT_NAME << "][" << LOG_LEVEL_STRINGS[level] << "]"
+               << "[" << std::put_time(std::localtime(&time), "%Y-%m-%d %H:%M:%S") << "]"
+               << "[" << func << ":" << line << "] ";
+            log_impl(ss, args...);
+            ss << std::endl;
+            
+            std::cerr << ss.str();
+        }
+    }
+    
+    /**
+     * @brief Sets the current log level
+     * @param level New log level to use
+     */
+    void set_log_level(LogLevel level) {
+        current_log_level = level;
+    }
+  }
+  
+  // Logging macros for different severity levels that avoid code generation if level is too low
+  #define LOG_TRACE(...) \
+      do { if (logger::TRACE >= logger::current_log_level) logger::log_internal(logger::TRACE, __LINE__, __func__, __VA_ARGS__); } while(0)
+  #define LOG_DEBUG(...) \
+      do { if (logger::DEBUG >= logger::current_log_level) logger::log_internal(logger::DEBUG, __LINE__, __func__, __VA_ARGS__); } while(0)
+  #define LOG_INFO(...) \
+      do { if (logger::INFO >= logger::current_log_level) logger::log_internal(logger::INFO, __LINE__, __func__, __VA_ARGS__); } while(0)
+  #define LOG_WARN(...) \
+      do { if (logger::WARN >= logger::current_log_level) logger::log_internal(logger::WARN, __LINE__, __func__, __VA_ARGS__); } while(0)
+  #define LOG_ERROR(...) \
+      do { if (logger::ERROR >= logger::current_log_level) logger::log_internal(logger::ERROR, __LINE__, __func__, __VA_ARGS__); } while(0)
+  
+  
+
+//==============================================================================
 // HTTP Stream Implementation
 //==============================================================================
-// force it for now
-#define ENABLE_CURL 1
+
 
 #ifdef ENABLE_CURL
 #include <curl/curl.h>
@@ -69,10 +154,11 @@ private:
     }
     
     bool fetchRange(size_t start, size_t end) {
-        m_buffer.clear();
+        // m_buffer.resize(end - start + 1);
         
         // Set range header
         std::string range = "Range: bytes=" + std::to_string(start) + "-" + std::to_string(end);
+        LOG_TRACE("Fetching range: ", range);
         struct curl_slist* headers = nullptr;
         headers = curl_slist_append(headers, range.c_str());
         curl_easy_setopt(m_curl, CURLOPT_HTTPHEADER, headers);
@@ -95,13 +181,14 @@ private:
     
 protected:
     virtual int_type underflow() override {
+        LOG_TRACE("Calling Underflow");
         if (gptr() < egptr()) {
             return traits_type::to_int_type(*gptr());
         }
         
         // Calculate next range to fetch
         size_t start = m_position;
-        size_t end = std::min(start + 8192, m_content_length - 1);
+        size_t end = m_content_length - 1;
         
         if (start >= m_content_length) {
             return traits_type::eof();
@@ -225,84 +312,6 @@ public:
 
 
 
-//==============================================================================
-// Logging System
-//==============================================================================
-
-namespace logger {
-  enum LogLevel { TRACE=0, DEBUG, INFO, WARN, ERROR };
-  static inline LogLevel current_log_level = TRACE;
-  
-  static constexpr const char* LOG_LEVEL_STRINGS[] = {"TRACE", "DEBUG", "INFO", "WARN", "ERROR"};
-  
-  /**
-   * @brief Base implementation for logging a single value
-   * @param os Output stream to write to
-   * @param first Value to log
-   */
-  template<typename T>
-  void log_impl(std::ostream& os, const T& first) {
-      os << first;
-  }
-  
-  /**
-   * @brief Recursive implementation for logging multiple values
-   * @param os Output stream to write to
-   * @param first First value to log
-   * @param args Remaining values to log
-   */
-  template<typename T, typename... Args>
-  void log_impl(std::ostream& os, const T& first, const Args&... args) {
-      os << first;
-      log_impl(os, args...);
-  }
-  
-  /**
-   * @brief Internal logging function that formats and outputs log messages
-   * @param level Log level of the message
-   * @param line Source code line number
-   * @param func Function name
-   * @param args Values to log
-   */
-  template<typename... Args>
-  void log_internal(LogLevel level, int line, const char* func, const Args&... args) {
-      if (level >= current_log_level) {
-          auto now = std::chrono::system_clock::now();
-          auto time = std::chrono::system_clock::to_time_t(now);
-          
-          std::stringstream ss;
-          ss << "[" << PROJECT_NAME << "][" << LOG_LEVEL_STRINGS[level] << "]"
-             << "[" << std::put_time(std::localtime(&time), "%Y-%m-%d %H:%M:%S") << "]"
-             << "[" << func << ":" << line << "] ";
-          log_impl(ss, args...);
-          ss << std::endl;
-          
-          std::cerr << ss.str();
-      }
-  }
-  
-  /**
-   * @brief Sets the current log level
-   * @param level New log level to use
-   */
-  void set_log_level(LogLevel level) {
-      current_log_level = level;
-  }
-}
-
-// Logging macros for different severity levels that avoid code generation if level is too low
-#define LOG_TRACE(...) \
-    do { if (logger::TRACE >= logger::current_log_level) logger::log_internal(logger::TRACE, __LINE__, __func__, __VA_ARGS__); } while(0)
-#define LOG_DEBUG(...) \
-    do { if (logger::DEBUG >= logger::current_log_level) logger::log_internal(logger::DEBUG, __LINE__, __func__, __VA_ARGS__); } while(0)
-#define LOG_INFO(...) \
-    do { if (logger::INFO >= logger::current_log_level) logger::log_internal(logger::INFO, __LINE__, __func__, __VA_ARGS__); } while(0)
-#define LOG_WARN(...) \
-    do { if (logger::WARN >= logger::current_log_level) logger::log_internal(logger::WARN, __LINE__, __func__, __VA_ARGS__); } while(0)
-#define LOG_ERROR(...) \
-    do { if (logger::ERROR >= logger::current_log_level) logger::log_internal(logger::ERROR, __LINE__, __func__, __VA_ARGS__); } while(0)
-
-
 
 //==============================================================================
 // NDArray Class - A basic n-dimensional array implementation
@@ -405,26 +414,31 @@ public:
     }
 
     /**
-     * @brief Calculate total bytes needed to store the array
-     * @return Total bytes
+     * @brief Calculate total bytes needed to store the array, optionally compressed
+     * @param compression Compression type ("CLD0", "CLDG", etc.)
+     * @return Total bytes (compressed if compression is specified)
      */
     size_t totalBytes() const {
+        // Compute uncompressed size
+        size_t uncompressed_size = 0;
         if constexpr (std::is_same_v<T, std::string>) {
             size_t string_bytes = 0;
             for (const auto& str : data) {
                 string_bytes += str.size() + sizeof(size_t); // String length + string data
             }
-            
-            return sizeof(size_t) +                      // Number of dimensions
-                   sizeof(size_t) * shape.size() +       // Shape dimensions
-                   sizeof(size_t) * strides.size() +     // Strides
-                   string_bytes;                         // Actual string data
+            uncompressed_size = sizeof(size_t) +                      // Number of dimensions
+                                sizeof(size_t) * shape.size() +       // Shape dimensions
+                                sizeof(size_t) * strides.size() +     // Strides
+                                string_bytes;                         // Actual string data
         } else {
-            return sizeof(size_t) +                      // Number of dimensions
-                   sizeof(size_t) * shape.size() +       // Shape dimensions
-                   sizeof(size_t) * strides.size() +     // Strides
-                   sizeof(T) * data.size();              // Actual data
+            uncompressed_size = sizeof(size_t) +                      // Number of dimensions
+                                sizeof(size_t) * shape.size() +       // Shape dimensions
+                                sizeof(size_t) * strides.size() +     // Strides
+                                sizeof(T) * data.size();              // Actual data
         }
+        
+        LOG_TRACE("Uncompressed size: ", uncompressed_size);
+        return uncompressed_size;
     }
 
     /**
@@ -432,45 +446,56 @@ public:
      * @param os Output stream
      */
     friend std::ostream& operator<<(std::ostream& os, const NDArray<T>& arr) {
-        LOG_TRACE("Writing NDArray<", typeid(T).name(), "> to output stream");
-            
+        LOG_TRACE("Writing NDArray<", typeid(T).name(), "> to output stream at position ", os.tellp());
+        size_t total_bytes = 0; 
+        size_t size_to_write = 0;
+
         // Write number of dimensions
         size_t num_dims = arr.shape.size();
-        os.write(reinterpret_cast<const char*>(&num_dims), sizeof(num_dims));
-        LOG_TRACE("Wrote number of dimensions: ", num_dims, " of size ", sizeof(num_dims));
+        size_to_write = sizeof(num_dims);
+        os.write(reinterpret_cast<const char*>(&num_dims), size_to_write);
+        LOG_TRACE("Wrote number of dimensions: ", num_dims, " with total number of elements ", sizeof(num_dims));
+        total_bytes += size_to_write;
         
         // Write shape
-        os.write(reinterpret_cast<const char*>(arr.shape.data()), sizeof(size_t) * num_dims);
+        size_to_write = sizeof(size_t) * num_dims;
+        os.write(reinterpret_cast<const char*>(arr.shape.data()), size_to_write);
         LOG_TRACE("Wrote shape of size ", sizeof(size_t) * num_dims);
+        total_bytes += size_to_write;
         
         // Write strides
-        os.write(reinterpret_cast<const char*>(arr.strides.data()), sizeof(size_t) * num_dims);
+        size_to_write = sizeof(size_t) * num_dims;
+        os.write(reinterpret_cast<const char*>(arr.strides.data()), size_to_write);
         LOG_TRACE("Wrote strides of size ", sizeof(size_t) * num_dims);
+        total_bytes += size_to_write;
 
         if constexpr (std::is_same_v<T, std::string>) {
             // Write data (strings need special handling)
             for (const auto& str : arr.data) {
                 size_t str_len = str.size();
                 os.write(reinterpret_cast<const char*>(&str_len), sizeof(str_len));
+                total_bytes += sizeof(str_len);
                 os.write(str.data(), str_len);
             }
         } else {
             // Write data in chunks
-            constexpr size_t CHUNK_SIZE = 1024 * 1024; // 1MB chunks
-            const size_t total_bytes = sizeof(T) * arr.data.size();
+            constexpr size_t CHUNK_SIZE = 1024 ; // 1MB chunks
+            size_to_write = sizeof(T) * arr.data.size();
             const char* data_ptr = reinterpret_cast<const char*>(arr.data.data());
-            
+            total_bytes += size_to_write;
+
             size_t bytes_written = 0;
-            while (bytes_written < total_bytes) {
-                size_t bytes_to_write = std::min(CHUNK_SIZE, total_bytes - bytes_written);
+            while (bytes_written < size_to_write) {
+                size_t bytes_to_write = std::min(CHUNK_SIZE, size_to_write - bytes_written);
                 os.write(data_ptr + bytes_written, bytes_to_write);
                 bytes_written += bytes_to_write;
                 
                 LOG_TRACE("Wrote data chunk of size ", bytes_to_write, 
-                          " (", bytes_written, "/", total_bytes, " bytes)");
+                          " (", bytes_written, "/", size_to_write, " bytes)");
+                          
             }
-            
-            LOG_TRACE("Completed writing data of size ", total_bytes);
+            LOG_TRACE("Completed writing data of size ", size_to_write);
+            LOG_TRACE("Total bytes written: ", total_bytes);
         }
         return os;
     }
@@ -594,7 +619,7 @@ class SCStore {
 private:
     static constexpr size_t DEFAULT_BLOCK_SIZE = 64 * 1024; // 64KB blocks
 
-    std::string m_compression = "none"; // "none" or "gz"
+    std::string m_compression = "none"; // "none" or "CLDG"
     size_t m_block_size = DEFAULT_BLOCK_SIZE;
     static constexpr size_t LARGE_ARRAY_THRESHOLD = 1024;
 public: 
@@ -628,7 +653,7 @@ public:
         LOG_TRACE("Calculating header size");
         
         size_t size = sizeof(m_header_size);  // Size of header size field
-        size += MAGIC_STRING_LENGTH;        // magic string
+        size += MAGIC_STRING_LENGTH;          // magic string
         size += 4;                            // compression type
         size += sizeof(uint64_t);             // Size of count field
         
@@ -637,7 +662,7 @@ public:
             size += sizeof(size_t);           // key size
             size += sizeof(size_t);           // position
             size += sizeof(size_t);           // bytes
-            // size += 4;                        // compression type
+            // size += 4;                     // compression type
         }
         
         LOG_TRACE("Header size calculated to ", size);
@@ -696,7 +721,13 @@ public:
         initial_stream.read(compression, 4); 
         std::string compression_string(compression, 4);
         m_compression = compression_string;
+        
         LOG_TRACE("Found compression type: ", compression_string);
+        if(compression_string != MAGIC_UNCOMPRESSED && compression_string != MAGIC_GZIPPED) {
+            LOG_ERROR("Invalid compression type: ", compression_string);
+            throw std::runtime_error("Invalid compression type");
+        }
+        m_compression = compression_string;
 
         initial_stream.read(reinterpret_cast<char*>(&m_header_size), sizeof(m_header_size));
         if (m_header_size == 0) {
@@ -741,6 +772,28 @@ public:
         LOG_TRACE("Index loaded successfully");
     }
 
+    void printHeader() const {
+        std::shared_lock<std::shared_mutex> lock(m_mutex);
+
+        std::cout << "==== SCS File Header ====" << std::endl;
+        std::cout << "Filename: " << m_filename << std::endl;
+        std::cout << "Compression: " << m_compression << std::endl;
+        std::cout << "Header size: " << m_header_size << std::endl;
+        std::cout << "Index entries: " << m_index.size() << std::endl;
+        size_t idx = 0;
+        for (const auto& [key, entry] : m_index) {
+            size_t position, bytes;
+            bool dirty;
+            std::tie(position, bytes, dirty) = entry;
+            std::cout << "  [" << idx++ << "] Key: \"" << key << "\""
+                      << ", Position: " << position
+                      << ", Bytes: " << bytes
+                      << ", Dirty: " << (dirty ? "true" : "false") << std::endl;
+        }
+        std::cout << "=========================" << std::endl;
+    }
+
+
     /**
      * @brief Writes all data to the file
      */
@@ -765,11 +818,8 @@ public:
         file.write(MAGIC_STRING, MAGIC_STRING_LENGTH);
 
         // Write compression type
-        if (m_compression == "gz") {
-            file.write(MAGIC_GZIPPED, 4);
-        } else {
-            file.write(MAGIC_UNCOMPRESSED, 4);
-        }
+        LOG_TRACE("Writing compression type: ", m_compression);
+        file.write(m_compression.data(), m_compression.size());
 
         // Write header size
         LOG_TRACE("Writing header size: ", m_header_size);
@@ -792,11 +842,14 @@ public:
             auto [_, bytes, dirty] = index_entry;
             m_index[key] = std::make_tuple(pos, bytes, false);
 
-            LOG_TRACE("Writing index entry for key=", key, ", position=", pos, ", bytes=", bytes);
+            LOG_TRACE("Writing index entry:  key=", key, ", position=", pos, ", bytes=", bytes);
             file.write(reinterpret_cast<const char*>(&pos), sizeof(pos));
             file.write(reinterpret_cast<const char*>(&bytes), sizeof(bytes));
             pos += bytes;
         }
+
+        LOG_TRACE("File position after writing index: ", file.tellp());
+        LOG_TRACE("Computed Header size: ", m_header_size);
         
         // sanity check the file position
         if(file.tellp() != m_header_size) {
@@ -807,18 +860,20 @@ public:
         // Write data after the header
         for (const auto& [key, value_ptr] : m_cache) {
             size_t current_pos = file.tellp();
+            LOG_TRACE("Reading value for key from index: key=", key, ", current position=", current_pos);
             
-            LOG_TRACE("Writing value for key ", key, " at position ", current_pos);
             // Update index with new position
             auto [indexpos, bytes, dirty] = m_index[key];
             if(indexpos != current_pos) {
-                LOG_ERROR("Index position mismatch for key ", key, " expected ", indexpos, " but got ", current_pos);
+                LOG_ERROR("Index position mismatch for key ", key, ", expected ", indexpos, " but got ", current_pos);
                 throw std::runtime_error("Index position mismatch");
             }
 
-            LOG_TRACE("Writing value for key=", key, ", position=", indexpos, ", bytes=", bytes);
+            LOG_TRACE("Writing value for key: key=", key, ", position=", indexpos, ", bytes=", bytes);
+            // need to make the capture happy 
+            size_t bytes_to_write = bytes;
             // Write the value
-            std::visit([this, &file](const auto& value) {
+            std::visit([this, &file, &bytes_to_write](const auto& value) {
                 using V = std::decay_t<decltype(value)>;
                 if constexpr (
                     std::is_same_v<V, NDArray<char>> || std::is_same_v<V, NDArray<int>> ||
@@ -826,49 +881,54 @@ public:
                     std::is_same_v<V, NDArray<float>> || std::is_same_v<V, NDArray<double>> ||
                     std::is_same_v<V, NDArray<std::string>>
                 ) {
-                    if (m_compression == "gz") {
-                        // Block-compressed NDArray write
-                        // Write a magic number for block compression (0x424C4B43 = 'BLKC')
-                        uint32_t block_magic = 0x424C4B43;
-                        file.write(reinterpret_cast<const char*>(&block_magic), sizeof(block_magic));
-                        // Serialize NDArray to a buffer
-                        std::vector<char> buffer;
-                        if constexpr (std::is_same_v<V, NDArray<std::string>>) {
-                            for (const auto& str : value.data) {
-                                size_t str_len = str.size();
-                                size_t pos = buffer.size();
-                                buffer.resize(pos + sizeof(str_len));
-                                std::memcpy(buffer.data() + pos, &str_len, sizeof(str_len));
-                                pos = buffer.size();
-                                buffer.resize(pos + str_len);
-                                std::memcpy(buffer.data() + pos, str.data(), str_len);
-                            }
-                        } else {
-                            buffer.resize(sizeof(decltype(value.data[0])) * value.data.size());
-                            std::memcpy(buffer.data(), value.data.data(), sizeof(decltype(value.data[0])) * value.data.size());
+                    if (m_compression == MAGIC_GZIPPED) {
+                    #ifdef ENABLE_ZLIB
+                        LOG_TRACE("Compressing NDArray data using zlib and writing");
+                        // Compress the NDArray data using zlib and write to file
+                        std::ostringstream oss;
+                        oss << value;
+                        LOG_TRACE("Wrote uncompressed data to temp buffer");
+                        std::string uncompressed_data = oss.str();
+
+                        uLongf uncompressed_size = static_cast<uLongf>(uncompressed_data.size());
+                        uLongf compressed_bound = compressBound(uncompressed_size);
+                        std::vector<Bytef> compressed_data(compressed_bound);
+
+                        int z_result = compress2(
+                            compressed_data.data(),
+                            &compressed_bound,
+                            reinterpret_cast<const Bytef*>(uncompressed_data.data()),
+                            uncompressed_size,
+                            Z_BEST_COMPRESSION
+                        );
+
+                        if (z_result != Z_OK) {
+                            throw std::runtime_error("zlib compression failed");
                         }
-                        size_t total_bytes = buffer.size();
-                        size_t num_blocks = (total_bytes + m_block_size - 1) / m_block_size;
-                        file.write(reinterpret_cast<const char*>(&num_blocks), sizeof(num_blocks));
-                        std::vector<size_t> uncompressed_sizes(num_blocks), compressed_sizes(num_blocks);
-                        std::vector<std::vector<uint8_t>> compressed_blocks(num_blocks);
-                        for (size_t i = 0; i < num_blocks; ++i) {
-                            size_t start = i * m_block_size;
-                            size_t end = std::min(start + m_block_size, total_bytes);
-                            size_t this_uncompressed = end - start;
-                            std::span<const char> block_span(buffer.data() + start, this_uncompressed);
-                            auto compressed = EzGz::writeDeflateIntoVector<EzGz::DefaultCompressionSettings>(block_span);
-                            uncompressed_sizes[i] = this_uncompressed;
-                            compressed_sizes[i] = compressed.size();
-                            compressed_blocks[i] = std::move(compressed);
+
+                        // Write the size of the compressed data
+                        size_t compressed_size = static_cast<size_t>(compressed_bound);
+                        file.write(reinterpret_cast<const char*>(&compressed_size), sizeof(compressed_size));
+
+                        // Write the size of the uncompressed data
+                        size_t uncompressed_size_write = static_cast<size_t>(uncompressed_size);
+                        file.write(reinterpret_cast<const char*>(&uncompressed_size_write), sizeof(uncompressed_size_write));
+
+                        // Write the compressed data itself
+                        file.write(reinterpret_cast<const char*>(compressed_data.data()), compressed_size);
+                        
+                        // Pad the rest with zero bytes if compressed data is smaller than expected
+                        size_t bytes_written = compressed_size + sizeof(size_t) + sizeof(size_t);
+                        LOG_TRACE("Wrote compressed data to file with size ", bytes_written);
+
+                        if (bytes_written < bytes_to_write) {
+                            std::vector<char> padding(bytes_to_write - bytes_written, 0);
+                            file.write(padding.data(), padding.size());
+                            LOG_TRACE("Padded compressed data with ", padding.size(), " zero bytes");
                         }
-                        for (size_t i = 0; i < num_blocks; ++i) {
-                            file.write(reinterpret_cast<const char*>(&uncompressed_sizes[i]), sizeof(size_t));
-                            file.write(reinterpret_cast<const char*>(&compressed_sizes[i]), sizeof(size_t));
-                        }
-                        for (size_t i = 0; i < num_blocks; ++i) {
-                            file.write(reinterpret_cast<const char*>(compressed_blocks[i].data()), compressed_blocks[i].size());
-                        }
+                    #else
+                        throw std::runtime_error("deflate compression requested but zlib is not enabled (ENABLE_ZLIB not defined)");
+                    #endif
                     } else {
                         // Uncompressed NDArray write (as before)
                         file << value;
@@ -889,11 +949,13 @@ public:
     /**
      * @brief Constructor with compression options
      * @param fname Filename to use for storage
-     * @param compression Compression type ("none" or "gz")
+     * @param compression Compression type ("CLD0" or "CLDG")
      * @param block_size Block size for compression
      */
-    SCStore(const std::string& fname, const std::string& compression = "none", size_t block_size = DEFAULT_BLOCK_SIZE)
-        : m_filename(fname), m_header_dirty(true), m_compression(compression), m_block_size(block_size) {
+    SCStore(const std::string& fname, const std::string& compression = MAGIC_UNCOMPRESSED, size_t block_size = DEFAULT_BLOCK_SIZE)
+        : m_filename(fname), m_header_dirty(true), m_block_size(block_size) {
+        
+        set_compression(compression);
         loadIndex();
     }
 
@@ -906,10 +968,15 @@ public:
 
     /**
      * @brief Sets the compression type and block size
-     * @param compression Compression type ("none" or "gz")
+     * @param compression Compression type ("CLD0" or "CLDG")
      * @param block_size Block size for compression
      */
     void set_compression(const std::string& compression, size_t block_size = DEFAULT_BLOCK_SIZE) {
+        if(compression != MAGIC_UNCOMPRESSED && compression != MAGIC_GZIPPED) {
+            LOG_ERROR("Invalid compression type: ", compression);
+            throw std::runtime_error("Invalid compression type");
+        }
+
         m_compression = compression;
         m_block_size = block_size;
     }
@@ -923,7 +990,21 @@ public:
     void put(const std::string& key, const V& value) {
         std::unique_lock<std::shared_mutex> lock(m_mutex);
         m_cache[key] = std::make_shared<ValueVariant>(value);
-        m_index[key] = std::make_tuple(0, value.totalBytes(), true);
+        size_t total_bytes = value.totalBytes();
+        if(m_compression == MAGIC_GZIPPED) {
+            #ifdef ENABLE_ZLIB
+            LOG_TRACE("Getting total size with compression");
+
+            // Estimate compressed size using zlib's compressBound
+            uLongf comp_bound = compressBound(static_cast<uLongf>(value.totalBytes()));
+            LOG_TRACE("Compressed size: ", static_cast<size_t>(comp_bound));
+            total_bytes = static_cast<size_t>(comp_bound);
+            total_bytes += sizeof(size_t) + sizeof(size_t); // size of compressed data and uncompressed data
+            #else
+            throw std::runtime_error("deflate compression requested but zlib is not enabled (ENABLE_ZLIB not defined)");
+            #endif
+        } 
+        m_index[key] = std::make_tuple(0, total_bytes, true);
         m_header_dirty = true;
     }
 
@@ -984,7 +1065,7 @@ public:
             
             if (!file->good()) return nullptr;
         
-            // Seek to index
+            // Seek to index, past magic string and compression flag
             file->seekg(MAGIC_STRING_LENGTH+4, std::ios::beg);
             auto [position, size, dirty] = m_index[key];
             if (position > 0) {
@@ -997,57 +1078,63 @@ public:
                     std::is_same_v<V, NDArray<float>> || std::is_same_v<V, NDArray<double>> ||
                     std::is_same_v<V, NDArray<std::string>>
                 ) {
-                    if (m_compression == "gz") {
-                        // Block-compressed NDArray read
-                        uint32_t block_magic = 0;
-                        file->read(reinterpret_cast<char*>(&block_magic), sizeof(block_magic));
-                        if (block_magic != 0x424C4B43) {
-                            throw std::runtime_error("Missing block compression magic");
+                    if (m_compression == MAGIC_GZIPPED) {
+                        #ifdef ENABLE_ZLIB
+                        // Read the compressed data size
+                        LOG_TRACE("Reading compressed data size");
+                        size_t compressed_size = 0;
+                        file->read(reinterpret_cast<char*>(&compressed_size), sizeof(size_t));
+                        if (file->gcount() != sizeof(size_t) || compressed_size == 0) {
+                            throw std::runtime_error("Failed to read compressed NDArray size");
                         }
-                        // Read NDArray shape/strides as in operator>>
-                        size_t num_dims;
-                        file->read(reinterpret_cast<char*>(&num_dims), sizeof(num_dims));
-                        value_ptr->shape.resize(num_dims);
-                        file->read(reinterpret_cast<char*>(value_ptr->shape.data()), sizeof(size_t) * num_dims);
-                        value_ptr->strides.resize(num_dims);
-                        file->read(reinterpret_cast<char*>(value_ptr->strides.data()), sizeof(size_t) * num_dims);
-                        size_t total_size = value_ptr->computeTotalSize();
-                        size_t num_blocks = 0;
-                        file->read(reinterpret_cast<char*>(&num_blocks), sizeof(num_blocks));
-                        std::vector<size_t> uncompressed_sizes(num_blocks), compressed_sizes(num_blocks);
-                        for (size_t i = 0; i < num_blocks; ++i) {
-                            file->read(reinterpret_cast<char*>(&uncompressed_sizes[i]), sizeof(size_t));
-                            file->read(reinterpret_cast<char*>(&compressed_sizes[i]), sizeof(size_t));
+
+                        size_t uncompressed_size = 0;
+                        file->read(reinterpret_cast<char*>(&uncompressed_size), sizeof(size_t));
+                        if (file->gcount() != sizeof(size_t) || uncompressed_size == 0) {
+                            throw std::runtime_error("Failed to read compressed NDArray size");
                         }
-                        std::vector<char> buffer;
-                        buffer.reserve(total_size * (std::is_same_v<V, NDArray<std::string>> ? 1 : sizeof(decltype(value_ptr->data[0]))));
-                        for (size_t i = 0; i < num_blocks; ++i) {
-                            std::vector<uint8_t> compressed_block(compressed_sizes[i]);
-                            file->read(reinterpret_cast<char*>(compressed_block.data()), compressed_sizes[i]);
-                            std::span<const uint8_t> compressed_span(compressed_block.data(), compressed_block.size());
-                            std::vector<char> decompressed_block = EzGz::readDeflateIntoVector(compressed_span);
-                            buffer.insert(buffer.end(), decompressed_block.begin(), decompressed_block.end());
+
+                        LOG_TRACE("Read compressed data size: ", compressed_size);
+                        LOG_TRACE("Read uncompressed data size: ", uncompressed_size);
+                        
+                        // Read the compressed data
+                        std::vector<char> compressed_data(compressed_size);
+                        file->read(compressed_data.data(), compressed_size);
+                        LOG_TRACE("Returned buffer size: ", compressed_data.size());
+
+                        if (static_cast<size_t>(compressed_data.size()) != compressed_size) {
+                            throw std::runtime_error("Failed to read compressed NDArray data. Expected " + std::to_string(compressed_size) + " bytes, got " + std::to_string(file->gcount()));
                         }
-                        if constexpr (std::is_same_v<V, NDArray<std::string>>) {
-                            value_ptr->data.resize(total_size);
-                            size_t pos = 0;
-                            for (size_t i = 0; i < total_size; ++i) {
-                                size_t str_len;
-                                std::memcpy(&str_len, &buffer[pos], sizeof(str_len));
-                                pos += sizeof(str_len);
-                                std::string str(buffer.data() + pos, str_len);
-                                value_ptr->data[i] = std::move(str);
-                                pos += str_len;
-                            }
-                        } else {
-                            value_ptr->data.resize(total_size);
-                            size_t data_size = sizeof(decltype(value_ptr->data[0])) * total_size;
-                            if (buffer.size() != data_size) {
-                                LOG_ERROR("Decompressed size mismatch: expected ", data_size, " bytes, got ", buffer.size(), " bytes");
-                                throw std::runtime_error("Decompressed data size mismatch");
-                            }
-                            std::memcpy(value_ptr->data.data(), buffer.data(), data_size);
+
+                        // Decompress using zlib
+                        std::vector<char> uncompressed_data(uncompressed_size);
+
+                        uLongf dest_len = static_cast<uLongf>(uncompressed_size);
+                        int z_result = uncompress(
+                            reinterpret_cast<Bytef*>(uncompressed_data.data()), &dest_len,
+                            reinterpret_cast<const Bytef*>(compressed_data.data()), static_cast<uLongf>(compressed_size)
+                        );
+
+                        if (z_result == Z_MEM_ERROR) {
+                            throw std::runtime_error("zlib decompression error: Z_MEM_ERROR (insufficient memory)");
+                        } else if (z_result == Z_BUF_ERROR) {
+                            throw std::runtime_error("zlib decompression error: Z_BUF_ERROR (output buffer too small)");
+                        } else if (z_result == Z_DATA_ERROR) {
+                            throw std::runtime_error("zlib decompression error: Z_DATA_ERROR (input data corrupted or incomplete)");
+                        } else if (z_result != Z_OK) {
+                            throw std::runtime_error("zlib decompression error: Unknown zlib error code " + std::to_string(z_result));
                         }
+                        
+                        if (dest_len != uncompressed_size) {
+                            throw std::runtime_error("Decompressed NDArray data size mismatch: got " + std::to_string(dest_len) + ", expected " + std::to_string(uncompressed_size));
+                        }
+
+                        // Now, create a stream from the uncompressed data and deserialize
+                        std::istringstream iss(std::string(uncompressed_data.data(), uncompressed_data.size()));
+                        iss >> *value_ptr;
+                        #else
+                        throw std::runtime_error("Zlib support not enabled, cannot decompress gzipped NDArray");
+                        #endif
                     } else {
                         // Uncompressed NDArray read (as before)
                         *file >> *value_ptr;
@@ -1057,7 +1144,7 @@ public:
                     *file >> *value_ptr;
                 }
                 m_cache[key] = std::make_shared<ValueVariant>(*value_ptr);
-                LOG_TRACE("Deserialized value of type ", typeid(V).name(), " with size ", value_ptr->totalBytes());
+                LOG_TRACE("Deserialized value of type ", typeid(V).name());
                 return value_ptr;
             } else {
                 LOG_TRACE("Value not yet written to file for key ", key);
