@@ -932,3 +932,5 @@ install_manifest.txt
 *.tm_build_errors
 *.tm_properties
 
+submodules/
+
