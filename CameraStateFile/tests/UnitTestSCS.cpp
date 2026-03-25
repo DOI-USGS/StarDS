@@ -506,3 +506,194 @@ TEST(SCStoreTest, EmptyStoreTest) {
         FAIL() << "Exception occurred: " << e.what();
     }
 }
+
+TEST(SCStoreTest, IteratorSupportTest) {
+    try {
+        std::string testFile = "/tmp/test_iterator.scs";
+
+        if (fs::exists(testFile)) {
+            fs::remove(testFile);
+        }
+
+        SCStore store(testFile, CompressionAlgorithm::GZIP, 1024);
+
+        // Create multiple arrays
+        ndarray<int> arr1({5});
+        ndarray<double> arr2({3, 4});
+        ndarray<float> arr3({2, 2, 2});
+
+        for (size_t i = 0; i < 5; ++i) {
+            arr1(i) = i * 10;
+        }
+
+        for (size_t i = 0; i < 3; ++i) {
+            for (size_t j = 0; j < 4; ++j) {
+                arr2(i, j) = i * 10.0 + j;
+            }
+        }
+
+        for (size_t i = 0; i < 2; ++i) {
+            for (size_t j = 0; j < 2; ++j) {
+                for (size_t k = 0; k < 2; ++k) {
+                    arr3(i, j, k) = i * 100.0f + j * 10.0f + k;
+                }
+            }
+        }
+
+        store.put("array_1", arr1);
+        store.put("array_2", arr2);
+        store.put("array_3", arr3);
+        store.flush();
+
+        // Test iterator with range-based for loop
+        std::vector<std::string> keys;
+        for (const auto& [key, entry] : store) {
+            keys.push_back(key);
+            EXPECT_GT(entry.total_bytes, 0);
+        }
+
+        EXPECT_EQ(keys.size(), 3);
+        EXPECT_NE(std::find(keys.begin(), keys.end(), "array_1"), keys.end());
+        EXPECT_NE(std::find(keys.begin(), keys.end(), "array_2"), keys.end());
+        EXPECT_NE(std::find(keys.begin(), keys.end(), "array_3"), keys.end());
+
+        // Test explicit iterator
+        size_t count = 0;
+        for (auto it = store.begin(); it != store.end(); ++it) {
+            EXPECT_FALSE(it->first.empty());
+            count++;
+        }
+        EXPECT_EQ(count, 3);
+
+        // Test const iterator
+        const SCStore& const_store = store;
+        count = 0;
+        for (auto it = const_store.cbegin(); it != const_store.cend(); ++it) {
+            EXPECT_FALSE(it->first.empty());
+            count++;
+        }
+        EXPECT_EQ(count, 3);
+
+        // Test reading arrays through iterator
+        for (const auto& [key, entry] : store) {
+            if (key == "array_1") {
+                auto data = store.get<ndarray<int>>(key);
+                ASSERT_NE(data, nullptr);
+                EXPECT_EQ(data->shape(0), 5);
+                EXPECT_EQ((*data)(0), 0);
+                EXPECT_EQ((*data)(4), 40);
+            } else if (key == "array_2") {
+                auto data = store.get<ndarray<double>>(key);
+                ASSERT_NE(data, nullptr);
+                EXPECT_EQ(data->dimension(), 2);
+                EXPECT_EQ(data->shape(0), 3);
+                EXPECT_EQ(data->shape(1), 4);
+            } else if (key == "array_3") {
+                auto data = store.get<ndarray<float>>(key);
+                ASSERT_NE(data, nullptr);
+                EXPECT_EQ(data->dimension(), 3);
+            }
+        }
+
+        // Clean up
+        fs::remove(testFile);
+
+    } catch (const std::exception& e) {
+        FAIL() << "Exception occurred: " << e.what();
+    }
+}
+
+
+TEST(SCStoreTest, RAIIAutoFlushTest) {
+    try {
+        std::string testFile = "/tmp/test_raii.scs";
+
+        if (fs::exists(testFile)) {
+            fs::remove(testFile);
+        }
+
+        // Create arrays and store them - NO explicit flush()
+        {
+            SCStore store(testFile, CompressionAlgorithm::GZIP, 1024);
+
+            ndarray<int> arr1({10});
+            ndarray<double> arr2({5, 5});
+
+            for (size_t i = 0; i < 10; ++i) {
+                arr1(i) = i * 3;
+            }
+
+            for (size_t i = 0; i < 5; ++i) {
+                for (size_t j = 0; j < 5; ++j) {
+                    arr2(i, j) = i * 10.0 + j;
+                }
+            }
+
+            store.put("raii_array_1", arr1);
+            store.put("raii_array_2", arr2);
+
+            // NOTE: No explicit flush() call - destructor should handle it
+        } // Store destructor called here - should auto-flush
+
+        // Verify file exists and data is persisted
+        EXPECT_TRUE(fs::exists(testFile));
+
+        // Reopen and verify data was flushed by destructor
+        {
+            SCStore store(testFile);
+
+            EXPECT_TRUE(store.contains("raii_array_1"));
+            EXPECT_TRUE(store.contains("raii_array_2"));
+
+            auto arr1 = store.get<ndarray<int>>("raii_array_1");
+            ASSERT_NE(arr1, nullptr);
+            EXPECT_EQ(arr1->size(), 10);
+            EXPECT_EQ((*arr1)(0), 0);
+            EXPECT_EQ((*arr1)(9), 27);
+
+            auto arr2 = store.get<ndarray<double>>("raii_array_2");
+            ASSERT_NE(arr2, nullptr);
+            EXPECT_EQ(arr2->shape(0), 5);
+            EXPECT_EQ(arr2->shape(1), 5);
+            EXPECT_DOUBLE_EQ((*arr2)(0, 0), 0.0);
+            EXPECT_DOUBLE_EQ((*arr2)(4, 4), 44.0);
+        }
+
+        // Clean up
+        fs::remove(testFile);
+
+    } catch (const std::exception& e) {
+        FAIL() << "Exception occurred: " << e.what();
+    }
+}
+
+
+TEST(SCStoreTest, IteratorWithEmptyStoreTest) {
+    try {
+        std::string testFile = "/tmp/test_empty_iterator.scs";
+
+        if (fs::exists(testFile)) {
+            fs::remove(testFile);
+        }
+
+        SCStore store(testFile, CompressionAlgorithm::GZIP, 1024);
+
+        // Test iterator on empty store
+        size_t count = 0;
+        for (const auto& [key, entry] : store) {
+            (void)key;
+            (void)entry;
+            count++;
+        }
+        EXPECT_EQ(count, 0);
+
+        // Test begin == end on empty store
+        EXPECT_EQ(store.begin(), store.end());
+
+        // Clean up
+        fs::remove(testFile);
+
+    } catch (const std::exception& e) {
+        FAIL() << "Exception occurred: " << e.what();
+    }
+}

@@ -1218,6 +1218,10 @@ private:
     size_t m_default_block_size = DEFAULT_BLOCK_SIZE;
     static constexpr size_t LARGE_ARRAY_THRESHOLD = 1024;
 public:
+    // Type aliases for iterators
+    using iterator = std::map<std::string, IndexEntry>::iterator;
+    using const_iterator = std::map<std::string, IndexEntry>::const_iterator;
+
     std::string m_filename;
     std::map<std::string, IndexEntry> m_index; // key -> IndexEntry with block metadata
     std::map<std::string, std::shared_ptr<ValueVariant>> m_cache;
@@ -1509,10 +1513,15 @@ public:
     }
 
     /**
-     * @brief Destructor - writes all pending changes to disk
+     * @brief Destructor - writes all pending changes to disk (RAII)
      */
     ~SCStore() {
-        // flush();
+        try {
+            flush();
+        } catch (const std::exception& e) {
+            // Log error but don't throw from destructor
+            std::cerr << "Error flushing store in destructor: " << e.what() << std::endl;
+        }
     }
 
     /**
@@ -1704,6 +1713,54 @@ public:
     bool contains(const std::string& key) const {
         std::shared_lock<std::shared_mutex> lock(m_mutex);
         return m_index.count(key) > 0;
+    }
+
+    /**
+     * @brief Returns an iterator to the beginning of the index
+     * @return Iterator to the first key-value pair
+     */
+    iterator begin() {
+        return m_index.begin();
+    }
+
+    /**
+     * @brief Returns an iterator to the end of the index
+     * @return Iterator to one past the last key-value pair
+     */
+    iterator end() {
+        return m_index.end();
+    }
+
+    /**
+     * @brief Returns a const iterator to the beginning of the index
+     * @return Const iterator to the first key-value pair
+     */
+    const_iterator begin() const {
+        return m_index.begin();
+    }
+
+    /**
+     * @brief Returns a const iterator to the end of the index
+     * @return Const iterator to one past the last key-value pair
+     */
+    const_iterator end() const {
+        return m_index.end();
+    }
+
+    /**
+     * @brief Returns a const iterator to the beginning of the index
+     * @return Const iterator to the first key-value pair
+     */
+    const_iterator cbegin() const {
+        return m_index.cbegin();
+    }
+
+    /**
+     * @brief Returns a const iterator to the end of the index
+     * @return Const iterator to one past the last key-value pair
+     */
+    const_iterator cend() const {
+        return m_index.cend();
     }
 
     /**

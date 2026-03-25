@@ -10,8 +10,11 @@ A high-performance, header-only C++ library for storing multi-dimensional arrays
 - **Zero Dependencies**: Header-only library (compression optional via zlib)
 - **Type Safe**: Template-based with compile-time type checking
 - **Persistent Storage**: Automatic serialization to disk with efficient binary format
+- **RAII**: Automatic flush on scope exit - no manual cleanup required
+- **Iterator Support**: Range-based for loops over store keys and metadata
 - **Thread Safe**: Read-write locking for concurrent access
 - **Remote Access**: Built-in support for reading from HTTP/S3 via `/vsicurl/` paths (requires libcurl)
+- **Format Conversion**: Built-in tools to convert between SCS, JSON, and MessagePack formats
 
 ### Array Features
 - **Static Factories**: `zeros()`, `ones()`, `arange()`, `full()`, `empty()`
@@ -83,6 +86,50 @@ for (const auto& val : arr) {
 
 // STL algorithms
 auto max_val = *std::max_element(arr.begin(), arr.end());
+```
+
+### Iterating Through Store Keys
+
+```cpp
+SCStore store("data.scs", CompressionAlgorithm::GZIP, 1024);
+
+// Add some arrays
+store.put("array1", ndarray<int>::zeros({100}));
+store.put("array2", ndarray<double>::ones({50}));
+store.put("array3", ndarray<float>::arange(0.0f, 10.0f, 0.1f));
+
+// Iterate through all keys
+for (const auto& [key, entry] : store) {
+    std::cout << "Key: " << key << std::endl;
+    std::cout << "  Type: " << datatype_to_string(entry.datatype) << std::endl;
+    std::cout << "  Size: " << entry.total_bytes << " bytes" << std::endl;
+    std::cout << "  Compression: " << (entry.compression == CompressionAlgorithm::GZIP ? "GZIP" : "None") << std::endl;
+
+    // Load and process array
+    auto data = store.get<ndarray<int>>(key);
+    if (data) {
+        std::cout << "  Elements: " << data->size() << std::endl;
+    }
+}
+```
+
+### RAII Auto-Flush
+
+```cpp
+// Store automatically flushes when going out of scope
+{
+    SCStore store("data.scs", CompressionAlgorithm::GZIP, 1024);
+
+    store.put("array1", ndarray<int>::zeros({100}));
+    store.put("array2", ndarray<double>::ones({50}));
+
+    // No need to call flush() explicitly
+} // Destructor automatically flushes data to disk
+
+// Data is now persisted
+SCStore store2("data.scs");
+assert(store2.contains("array1")); // true
+assert(store2.contains("array2")); // true
 ```
 
 ### Shape Manipulation
@@ -204,8 +251,38 @@ std::shared_ptr<ndarray<T>> get(const std::string& key);
 // Check existence
 bool contains(const std::string& key);
 
-// Flush to disk
+// Flush to disk (called automatically by destructor)
 void flush();
+```
+
+#### Lifecycle (RAII)
+```cpp
+// Constructor - opens or creates file
+SCStore(const std::string& filename, ...);
+
+// Destructor - automatically flushes to disk
+~SCStore();  // RAII: No need to call flush() explicitly
+```
+
+#### Iterator Support
+```cpp
+// Type aliases
+using iterator = std::map<std::string, IndexEntry>::iterator;
+using const_iterator = std::map<std::string, IndexEntry>::const_iterator;
+
+// Iterator methods
+iterator begin();
+iterator end();
+const_iterator begin() const;
+const_iterator end() const;
+const_iterator cbegin() const;
+const_iterator cend() const;
+
+// Usage: Iterate through all keys
+for (const auto& [key, entry] : store) {
+    // Access key and IndexEntry metadata
+    auto data = store.get<ndarray<double>>(key);
+}
 ```
 
 #### Compression Algorithms
@@ -344,7 +421,8 @@ sudo make install
 | Option | Default | Description |
 |--------|---------|-------------|
 | `CAMERASTATEFILE_BUILD_TESTS` | `ON` | Build unit tests |
-| `CAMERASTATEFILE_BUILD_TOOLS` | `ON` | Build command-line tools |
+| `CAMERASTATEFILE_BUILD_TOOLS` | `ON` | Build command-line tools (scsls) |
+| `CAMERASTATEFILE_BUILD_TRANSLATE` | `ON` | Build format conversion tool (scs_translate) |
 | `CAMERASTATEFILE_ENABLE_ZLIB` | `ON` | Enable GZIP compression |
 | `CAMERASTATEFILE_ENABLE_CURL` | `ON` | Enable remote file access |
 
@@ -386,6 +464,94 @@ scsls -d matrix data.scs
 # Print all data
 scsls -a data.scs
 ```
+
+### scs_translate
+
+Convert between SCS and other formats (JSON, CSV, MessagePack).
+
+**Building with Translation Support:**
+```bash
+# Enable during CMake configuration
+cmake .. -DCAMERASTATEFILE_BUILD_TRANSLATE=ON
+
+# MessagePack support is optional (auto-detected)
+# Install msgpack-c for MessagePack format support
+```
+
+**Basic Usage:**
+```bash
+# Convert SCS to JSON
+scs_translate data.scs data.json
+
+# Convert JSON to SCS
+scs_translate data.json data.scs
+
+# Convert with compression
+scs_translate -c gzip data.json data.scs
+
+# Convert with custom block size
+scs_translate -c gzip -b 4096 data.json data.scs
+
+# CSV support (2D arrays only)
+scs_translate data.csv data.scs
+scs_translate data.scs data.csv
+
+# MessagePack support (if built with msgpack)
+scs_translate data.scs data.msgpack
+scs_translate data.msgpack data.scs
+```
+
+**JSON Formats:**
+
+The tool supports two JSON formats:
+
+1. **Structured Format** (explicit dtype/shape):
+```json
+{
+  "format": "scs",
+  "version": "1.0",
+  "arrays": {
+    "my_array": {
+      "dtype": "float64",
+      "shape": [10, 20],
+      "data": [0.0, 1.0, 2.0, ...]
+    }
+  }
+}
+```
+
+2. **Simple Format** (auto type detection, NEW):
+```json
+{
+  "image_lines": 368056,
+  "sensor_name": "TMC_NADIR",
+  "focal_length": 0.074,
+  "line_scan_rate": [0.5, -595.5, 0.003],
+  "quaternions": [
+    [0.965, -0.187, 0.041, -0.177],
+    [0.965, -0.187, 0.042, -0.178]
+  ]
+}
+```
+
+**Simple Format Features:**
+- ✅ Scalars automatically become 1-element arrays
+- ✅ Auto type detection (int64, float64, string)
+- ✅ Supports 1D and 2D arrays
+- ✅ Compatible with existing JSON files
+- ✅ Nested objects flattened with colon notation (e.g., `body_rotation:quaternions`)
+
+**Options:**
+- `-h, --help`: Show help message
+- `-f, --format <fmt>`: Specify output format (json, msgpack)
+- `-c, --compression <alg>`: Compression for SCS output (none, gzip)
+- `-b, --block-size <size>`: Block size in bytes (default: 1MB)
+
+**Use Cases:**
+- **Data Exchange**: Share arrays with non-C++ environments
+- **Debugging**: Inspect array contents in human-readable format
+- **Archival**: Convert to JSON for long-term storage
+- **Interoperability**: Exchange data with Python, JavaScript, etc.
 
 ---
 
