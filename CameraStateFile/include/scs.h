@@ -106,8 +106,263 @@ namespace logger {
       do { if (logger::WARN >= logger::current_log_level) logger::log_internal(logger::WARN, __LINE__, __func__, __VA_ARGS__); } while(0)
   #define LOG_ERROR(...) \
       do { if (logger::ERROR >= logger::current_log_level) logger::log_internal(logger::ERROR, __LINE__, __func__, __VA_ARGS__); } while(0)
-  
-  
+
+
+
+//==============================================================================
+// Architecture-Independent Data Types
+//==============================================================================
+
+enum class DataType : uint8_t {
+    // Integer types (explicit bit width)
+    INT8 = 0,
+    INT16 = 1,
+    INT32 = 2,
+    INT64 = 3,
+    UINT8 = 4,
+    UINT16 = 5,
+    UINT32 = 6,
+    UINT64 = 7,
+
+    // Floating point (IEEE 754)
+    FLOAT32 = 8,
+    FLOAT64 = 9,
+
+    // String (UTF-8)
+    STRING = 10,
+};
+
+enum class CompressionAlgorithm : uint8_t {
+    NONE = 0,
+    GZIP = 1,
+    ZSTD = 2,
+    LZ4 = 3,
+};
+
+/**
+ * @brief Get string representation of DataType
+ * @param dtype DataType to convert
+ * @return String representation
+ */
+inline const char* datatype_to_string(DataType dtype) {
+    switch(dtype) {
+        case DataType::INT8: return "int8";
+        case DataType::INT16: return "int16";
+        case DataType::INT32: return "int32";
+        case DataType::INT64: return "int64";
+        case DataType::UINT8: return "uint8";
+        case DataType::UINT16: return "uint16";
+        case DataType::UINT32: return "uint32";
+        case DataType::UINT64: return "uint64";
+        case DataType::FLOAT32: return "float32";
+        case DataType::FLOAT64: return "float64";
+        case DataType::STRING: return "string";
+        default: return "unknown";
+    }
+}
+
+/**
+ * @brief Get element size in bytes for a DataType
+ * @param dtype DataType to query
+ * @return Size in bytes (0 for variable-length types like STRING)
+ */
+inline size_t datatype_size(DataType dtype) {
+    switch(dtype) {
+        case DataType::INT8:
+        case DataType::UINT8: return 1;
+        case DataType::INT16:
+        case DataType::UINT16: return 2;
+        case DataType::INT32:
+        case DataType::UINT32:
+        case DataType::FLOAT32: return 4;
+        case DataType::INT64:
+        case DataType::UINT64:
+        case DataType::FLOAT64: return 8;
+        case DataType::STRING: return 0; // Variable length
+        default: return 0;
+    }
+}
+
+//==============================================================================
+// Type Mapping Between C++ and Portable Types
+//==============================================================================
+
+template<typename T>
+struct TypeToDataType {
+    // Default - will cause compile error for unsupported types
+};
+
+// Specializations for explicit-width types
+template<> struct TypeToDataType<int8_t> {
+    static constexpr DataType value = DataType::INT8;
+};
+template<> struct TypeToDataType<int16_t> {
+    static constexpr DataType value = DataType::INT16;
+};
+template<> struct TypeToDataType<int32_t> {
+    static constexpr DataType value = DataType::INT32;
+};
+template<> struct TypeToDataType<int64_t> {
+    static constexpr DataType value = DataType::INT64;
+};
+template<> struct TypeToDataType<uint8_t> {
+    static constexpr DataType value = DataType::UINT8;
+};
+template<> struct TypeToDataType<uint16_t> {
+    static constexpr DataType value = DataType::UINT16;
+};
+template<> struct TypeToDataType<uint32_t> {
+    static constexpr DataType value = DataType::UINT32;
+};
+template<> struct TypeToDataType<uint64_t> {
+    static constexpr DataType value = DataType::UINT64;
+};
+template<> struct TypeToDataType<float> {
+    static constexpr DataType value = DataType::FLOAT32;
+};
+template<> struct TypeToDataType<double> {
+    static constexpr DataType value = DataType::FLOAT64;
+};
+template<> struct TypeToDataType<std::string> {
+    static constexpr DataType value = DataType::STRING;
+};
+
+//==============================================================================
+// Block Compression Metadata
+//==============================================================================
+
+/**
+ * @brief Metadata for a single compressed block
+ */
+struct BlockInfo {
+    size_t offset;              // Offset within this key's data section
+    size_t compressed_size;     // Compressed size (may equal uncompressed if not compressed)
+    size_t uncompressed_size;   // Original block size
+
+    void write(std::ostream& os) const {
+        os.write(reinterpret_cast<const char*>(&offset), sizeof(offset));
+        os.write(reinterpret_cast<const char*>(&compressed_size), sizeof(compressed_size));
+        os.write(reinterpret_cast<const char*>(&uncompressed_size), sizeof(uncompressed_size));
+    }
+
+    void read(std::istream& is) {
+        is.read(reinterpret_cast<char*>(&offset), sizeof(offset));
+        is.read(reinterpret_cast<char*>(&compressed_size), sizeof(compressed_size));
+        is.read(reinterpret_cast<char*>(&uncompressed_size), sizeof(uncompressed_size));
+    }
+};
+
+/**
+ * @brief Index entry with block compression support and shape information
+ */
+struct IndexEntry {
+    size_t position;                    // Position in file where data starts
+    size_t total_bytes;                 // Total bytes (all blocks + metadata)
+    DataType datatype;                  // Base element type
+    std::vector<size_t> shape;          // Array dimensions (empty = scalar)
+    CompressionAlgorithm compression;   // Compression algorithm
+    size_t block_size;                  // Uncompressed block size (0 = no blocking)
+    std::vector<BlockInfo> blocks;      // Per-block metadata
+    bool dirty;                         // In-memory changes not yet flushed
+
+    // Helper to check if scalar
+    bool is_scalar() const {
+        return shape.empty();
+    }
+
+    // Helper to get total number of elements
+    size_t num_elements() const {
+        if (shape.empty()) return 1; // scalar
+        size_t total = 1;
+        for (size_t dim : shape) {
+            total *= dim;
+        }
+        return total;
+    }
+
+    void write(std::ostream& os) const {
+        os.write(reinterpret_cast<const char*>(&position), sizeof(position));
+        os.write(reinterpret_cast<const char*>(&total_bytes), sizeof(total_bytes));
+        os.write(reinterpret_cast<const char*>(&datatype), sizeof(datatype));
+
+        // Write shape (ndim = 0 means scalar)
+        size_t ndim = shape.size();
+        os.write(reinterpret_cast<const char*>(&ndim), sizeof(ndim));
+        if (ndim > 0) {
+            os.write(reinterpret_cast<const char*>(shape.data()), sizeof(size_t) * ndim);
+        }
+
+        os.write(reinterpret_cast<const char*>(&compression), sizeof(compression));
+        os.write(reinterpret_cast<const char*>(&block_size), sizeof(block_size));
+
+        // Write number of blocks
+        size_t num_blocks = blocks.size();
+        os.write(reinterpret_cast<const char*>(&num_blocks), sizeof(num_blocks));
+
+        // Write each block info
+        for (const auto& block : blocks) {
+            block.write(os);
+        }
+    }
+
+    void read(std::istream& is) {
+        is.read(reinterpret_cast<char*>(&position), sizeof(position));
+        is.read(reinterpret_cast<char*>(&total_bytes), sizeof(total_bytes));
+        is.read(reinterpret_cast<char*>(&datatype), sizeof(datatype));
+
+        // Read shape (ndim = 0 means scalar)
+        size_t ndim;
+        is.read(reinterpret_cast<char*>(&ndim), sizeof(ndim));
+        if (ndim > 0) {
+            shape.resize(ndim);
+            is.read(reinterpret_cast<char*>(shape.data()), sizeof(size_t) * ndim);
+        } else {
+            shape.clear(); // Explicitly make empty for scalar
+        }
+
+        is.read(reinterpret_cast<char*>(&compression), sizeof(compression));
+        is.read(reinterpret_cast<char*>(&block_size), sizeof(block_size));
+
+        // Read number of blocks
+        size_t num_blocks;
+        is.read(reinterpret_cast<char*>(&num_blocks), sizeof(num_blocks));
+
+        // Read each block info
+        blocks.resize(num_blocks);
+        for (auto& block : blocks) {
+            block.read(is);
+        }
+    }
+
+    size_t serialized_size() const {
+        return sizeof(position) + sizeof(total_bytes) + sizeof(datatype) +
+               sizeof(size_t) + (shape.size() * sizeof(size_t)) +
+               sizeof(compression) + sizeof(block_size) + sizeof(size_t) +
+               (blocks.size() * (sizeof(size_t) * 3));
+    }
+
+    // Helper to print metadata
+    void print() const {
+        std::cout << "  Type: " << datatype_to_string(datatype);
+        if (shape.empty()) {
+            std::cout << " (scalar)";
+        } else {
+            std::cout << "[";
+            for (size_t i = 0; i < shape.size(); ++i) {
+                if (i > 0) std::cout << ", ";
+                std::cout << shape[i];
+            }
+            std::cout << "]";
+        }
+        std::cout << std::endl;
+        std::cout << "  Elements: " << num_elements() << std::endl;
+        std::cout << "  Compression: " << (int)compression << std::endl;
+        std::cout << "  Block size: " << block_size << std::endl;
+        std::cout << "  Num blocks: " << blocks.size() << std::endl;
+        std::cout << "  Total bytes: " << total_bytes << std::endl;
+    }
+};
+
 
 //==============================================================================
 // HTTP Stream Implementation
@@ -326,6 +581,9 @@ public:
 template<typename T>
 class NDArray {
 public:
+    // Type alias for element type
+    using value_type = T;
+
     // Public attributes
     std::vector<T> data;           // Flat 1D storage for array elements
     std::vector<size_t> shape;     // Dimensions of the array
@@ -599,9 +857,159 @@ public:
 //==============================================================================
 
 using ValueVariant = std::variant<
-    NDArray<char>, NDArray<int>, NDArray<long>, NDArray<long long>,
-    NDArray<float>, NDArray<double>, NDArray<std::string>
+    NDArray<int8_t>, NDArray<int16_t>, NDArray<int32_t>, NDArray<int64_t>,
+    NDArray<uint8_t>, NDArray<uint16_t>, NDArray<uint32_t>, NDArray<uint64_t>,
+    NDArray<float>, NDArray<double>,
+    NDArray<std::string>
 >;
+
+//==============================================================================
+// Block Compression Functions
+//==============================================================================
+
+/**
+ * @brief Compresses data in blocks and returns block metadata
+ * @param data Raw uncompressed data
+ * @param data_size Size of raw data
+ * @param algorithm Compression algorithm to use
+ * @param block_size Size of each uncompressed block
+ * @return Pair of compressed data and block metadata
+ */
+inline std::pair<std::vector<char>, std::vector<BlockInfo>>
+compressBlocks(const char* data, size_t data_size,
+               CompressionAlgorithm algorithm, size_t block_size) {
+
+    std::vector<char> compressed_output;
+    std::vector<BlockInfo> block_infos;
+
+    size_t num_blocks = (data_size + block_size - 1) / block_size;
+    LOG_TRACE("Compressing ", data_size, " bytes into ", num_blocks, " blocks");
+
+    for (size_t i = 0; i < num_blocks; ++i) {
+        size_t offset_in = i * block_size;
+        size_t block_uncompressed_size = std::min(block_size, data_size - offset_in);
+
+        BlockInfo info;
+        info.offset = compressed_output.size();
+        info.uncompressed_size = block_uncompressed_size;
+
+        if (algorithm == CompressionAlgorithm::GZIP) {
+            #ifdef ENABLE_ZLIB
+            uLongf compressed_bound = compressBound(block_uncompressed_size);
+            std::vector<Bytef> temp_compressed(compressed_bound);
+
+            int result = compress2(
+                temp_compressed.data(),
+                &compressed_bound,
+                reinterpret_cast<const Bytef*>(data + offset_in),
+                block_uncompressed_size,
+                Z_BEST_COMPRESSION
+            );
+
+            if (result != Z_OK) {
+                throw std::runtime_error("Block compression failed");
+            }
+
+            info.compressed_size = compressed_bound;
+
+            // Append compressed block to output
+            compressed_output.insert(
+                compressed_output.end(),
+                temp_compressed.begin(),
+                temp_compressed.begin() + compressed_bound
+            );
+            #else
+            throw std::runtime_error("zlib not enabled");
+            #endif
+        } else if (algorithm == CompressionAlgorithm::NONE) {
+            // No compression - just copy
+            info.compressed_size = block_uncompressed_size;
+            compressed_output.insert(
+                compressed_output.end(),
+                data + offset_in,
+                data + offset_in + block_uncompressed_size
+            );
+        } else {
+            throw std::runtime_error("Unsupported compression algorithm");
+        }
+
+        block_infos.push_back(info);
+        LOG_TRACE("Block ", i, ": ", info.uncompressed_size, " -> ", info.compressed_size,
+                  " bytes (", (100.0 * info.compressed_size / info.uncompressed_size), "%)");
+    }
+
+    return {compressed_output, block_infos};
+}
+
+/**
+ * @brief Decompresses specific blocks from compressed data
+ * @param compressed_data Full compressed data
+ * @param blocks Block metadata
+ * @param algorithm Compression algorithm used
+ * @param block_indices Which blocks to decompress (empty = all)
+ * @return Decompressed data
+ */
+inline std::vector<char> decompressBlocks(
+    const std::vector<char>& compressed_data,
+    const std::vector<BlockInfo>& blocks,
+    CompressionAlgorithm algorithm,
+    const std::vector<size_t>& block_indices = {}) {
+
+    std::vector<char> decompressed_output;
+
+    // If no specific blocks requested, decompress all
+    std::vector<size_t> indices_to_decompress = block_indices;
+    if (indices_to_decompress.empty()) {
+        for (size_t i = 0; i < blocks.size(); ++i) {
+            indices_to_decompress.push_back(i);
+        }
+    }
+
+    // Calculate total output size
+    size_t total_size = 0;
+    for (size_t idx : indices_to_decompress) {
+        total_size += blocks[idx].uncompressed_size;
+    }
+    decompressed_output.reserve(total_size);
+
+    for (size_t idx : indices_to_decompress) {
+        const BlockInfo& block = blocks[idx];
+
+        if (algorithm == CompressionAlgorithm::GZIP) {
+            #ifdef ENABLE_ZLIB
+            std::vector<char> block_output(block.uncompressed_size);
+            uLongf dest_len = block.uncompressed_size;
+
+            int result = uncompress(
+                reinterpret_cast<Bytef*>(block_output.data()),
+                &dest_len,
+                reinterpret_cast<const Bytef*>(compressed_data.data() + block.offset),
+                block.compressed_size
+            );
+
+            if (result != Z_OK) {
+                throw std::runtime_error("Block decompression failed: block " + std::to_string(idx));
+            }
+
+            decompressed_output.insert(decompressed_output.end(),
+                                      block_output.begin(), block_output.end());
+            #else
+            throw std::runtime_error("zlib not enabled");
+            #endif
+        } else if (algorithm == CompressionAlgorithm::NONE) {
+            // No compression - just copy
+            decompressed_output.insert(
+                decompressed_output.end(),
+                compressed_data.begin() + block.offset,
+                compressed_data.begin() + block.offset + block.compressed_size
+            );
+        } else {
+            throw std::runtime_error("Unsupported compression algorithm");
+        }
+    }
+
+    return decompressed_output;
+}
 
 //==============================================================================
 // SCStore Class
@@ -619,12 +1027,12 @@ class SCStore {
 private:
     static constexpr size_t DEFAULT_BLOCK_SIZE = 64 * 1024; // 64KB blocks
 
-    std::string m_compression = "none"; // "none" or "CLDG"
-    size_t m_block_size = DEFAULT_BLOCK_SIZE;
+    CompressionAlgorithm m_default_compression = CompressionAlgorithm::NONE;
+    size_t m_default_block_size = DEFAULT_BLOCK_SIZE;
     static constexpr size_t LARGE_ARRAY_THRESHOLD = 1024;
-public: 
+public:
     std::string m_filename;
-    std::map<std::string, std::tuple<size_t, size_t, bool, size_t>> m_index; // key -> {position, bytes, dirty flag, type}
+    std::map<std::string, IndexEntry> m_index; // key -> IndexEntry with block metadata
     std::map<std::string, std::shared_ptr<ValueVariant>> m_cache;
     size_t m_header_size = 0; // Size of the header section in bytes
     bool m_header_dirty = false; // Flag to indicate if header size needs recalculation
@@ -651,20 +1059,18 @@ public:
      */
     size_t calculateHeaderSize() {
         LOG_TRACE("Calculating header size");
-        
-        size_t size = sizeof(m_header_size);  // Size of header size field
-        size += MAGIC_STRING_LENGTH;          // magic string
-        size += 4;                            // compression type
-        size += sizeof(uint64_t);             // Size of count field
-        
-        for (const auto& [key, _] : m_index) {
-            size += key.length();             // Key data
-            size += sizeof(size_t);           // key size
-            size += sizeof(size_t);           // position
-            size += sizeof(size_t);           // bytes
-            // size += 4;                     // compression type
+
+        size_t size = MAGIC_STRING_LENGTH;        // magic string
+        size += sizeof(uint8_t);                  // format version
+        size += sizeof(m_header_size);            // Size of header size field
+        size += sizeof(uint64_t);                 // Size of count field
+
+        for (const auto& [key, entry] : m_index) {
+            size += sizeof(size_t);               // key size
+            size += key.length();                 // Key data
+            size += entry.serialized_size();      // IndexEntry serialized size
         }
-        
+
         LOG_TRACE("Header size calculated to ", size);
         return size;
     }
@@ -717,17 +1123,10 @@ public:
             throw std::runtime_error("Magic string mismatch");
         }
 
-        char compression[4];
-        initial_stream.read(compression, 4); 
-        std::string compression_string(compression, 4);
-        m_compression = compression_string;
-        
-        LOG_TRACE("Found compression type: ", compression_string);
-        if(compression_string != MAGIC_UNCOMPRESSED && compression_string != MAGIC_GZIPPED) {
-            LOG_ERROR("Invalid compression type: ", compression_string);
-            throw std::runtime_error("Invalid compression type");
-        }
-        m_compression = compression_string;
+        // Read format version (added in v2)
+        uint8_t format_version = 1; // Default to v1 for old files
+        initial_stream.read(reinterpret_cast<char*>(&format_version), sizeof(format_version));
+        LOG_TRACE("Found format version: ", (int)format_version);
 
         initial_stream.read(reinterpret_cast<char*>(&m_header_size), sizeof(m_header_size));
         if (m_header_size == 0) {
@@ -752,20 +1151,21 @@ public:
         }
         
         // Reset stream position to after header size
-        header_stream.seekg(MAGIC_STRING_LENGTH+4+sizeof(m_header_size), std::ios::beg); 
+        header_stream.seekg(MAGIC_STRING_LENGTH+sizeof(format_version)+sizeof(m_header_size), std::ios::beg);
         size_t count;
         header_stream.read(reinterpret_cast<char*>(&count), sizeof(count));
-        
+
         LOG_TRACE("Found ", count, " entries in index");
         for (size_t i = 0; i < count; i++) {
             std::string key = deserializeKey(header_stream);
-            size_t position;
-            size_t bytes;
 
-            header_stream.read(reinterpret_cast<char*>(&position), sizeof(position));
-            header_stream.read(reinterpret_cast<char*>(&bytes), sizeof(bytes));
-            m_index[key] = std::make_tuple(position, bytes, false);
-            LOG_TRACE("Loaded key ", key, " with position ", position, " and bytes ", bytes);
+            // Read IndexEntry
+            IndexEntry entry;
+            entry.read(header_stream);
+            entry.dirty = false;
+
+            m_index[key] = entry;
+            LOG_TRACE("Loaded key ", key, " with position ", entry.position, " and bytes ", entry.total_bytes);
         }
         
         m_header_dirty = false;
@@ -777,18 +1177,12 @@ public:
 
         std::cout << "==== SCS File Header ====" << std::endl;
         std::cout << "Filename: " << m_filename << std::endl;
-        std::cout << "Compression: " << m_compression << std::endl;
         std::cout << "Header size: " << m_header_size << std::endl;
         std::cout << "Index entries: " << m_index.size() << std::endl;
         size_t idx = 0;
         for (const auto& [key, entry] : m_index) {
-            size_t position, bytes;
-            bool dirty;
-            std::tie(position, bytes, dirty) = entry;
-            std::cout << "  [" << idx++ << "] Key: \"" << key << "\""
-                      << ", Position: " << position
-                      << ", Bytes: " << bytes
-                      << ", Dirty: " << (dirty ? "true" : "false") << std::endl;
+            std::cout << "  [" << idx++ << "] Key: \"" << key << "\"" << std::endl;
+            entry.print();
         }
         std::cout << "=========================" << std::endl;
     }
@@ -799,58 +1193,95 @@ public:
      */
     void flush() {
         // lock for writing
-        std::unique_lock<std::shared_mutex> lock(m_mutex); 
-        
-        // Recalculate header size if needed
-        if (m_header_dirty) {
-            m_header_size = calculateHeaderSize();
-            m_header_dirty = false;
+        std::unique_lock<std::shared_mutex> lock(m_mutex);
+
+        // First pass: Serialize and compress all data to get actual sizes
+        std::map<std::string, std::vector<char>> compressed_data;
+
+        for (auto& [key, value_ptr] : m_cache) {
+            // Serialize the value to get raw data
+            std::ostringstream oss;
+            std::visit([&oss](const auto& value) {
+                oss << value;
+            }, *value_ptr);
+            std::string serialized = oss.str();
+
+            IndexEntry& entry = m_index[key];
+
+            // Compress in blocks if needed
+            if (entry.compression != CompressionAlgorithm::NONE && entry.block_size > 0) {
+                auto [compressed, block_infos] = compressBlocks(
+                    serialized.data(), serialized.size(),
+                    entry.compression, entry.block_size);
+
+                entry.blocks = std::move(block_infos);
+                entry.total_bytes = compressed.size();
+                compressed_data[key] = std::move(compressed);
+
+                LOG_TRACE("Compressed key '", key, "': ", serialized.size(), " -> ", entry.total_bytes, " bytes");
+            } else {
+                // No compression
+                BlockInfo single_block;
+                single_block.offset = 0;
+                single_block.compressed_size = serialized.size();
+                single_block.uncompressed_size = serialized.size();
+                entry.blocks = {single_block};
+                entry.total_bytes = serialized.size();
+                compressed_data[key] = std::vector<char>(serialized.begin(), serialized.end());
+            }
         }
 
+        // Recalculate header size with updated entry sizes
+        m_header_size = calculateHeaderSize();
+        m_header_dirty = false;
+
+        // Second pass: Write everything to file
         std::fstream file(m_filename, std::ios::binary | std::ios::out);
-        
+
         if (!file.is_open()) {
             throw std::runtime_error("Failed to open file for writing");
         }
 
         LOG_TRACE("Writing header section");
-        
+
         file.write(MAGIC_STRING, MAGIC_STRING_LENGTH);
 
-        // Write compression type
-        LOG_TRACE("Writing compression type: ", m_compression);
-        file.write(m_compression.data(), m_compression.size());
+        // Write format version
+        uint8_t format_version = 2; // v2 with block compression
+        file.write(reinterpret_cast<const char*>(&format_version), sizeof(format_version));
+        LOG_TRACE("Writing format version: ", (int)format_version);
 
         // Write header size
         LOG_TRACE("Writing header size: ", m_header_size);
         file.write(reinterpret_cast<const char*>(&m_header_size), sizeof(m_header_size));
-        
+
         // Write index section
         uint64_t count = m_index.size();
         file.write(reinterpret_cast<const char*>(&count), sizeof(uint64_t));
-        
+
         LOG_TRACE("Writing ", count, " entries in index");
         size_t pos = m_header_size;
-        
-        for (const auto& [key, index_entry] : m_index) {
+
+        for (auto& [key, index_entry] : m_index) {
             LOG_TRACE("Serializing key ", key);
             size_t len = key.length();
             file.write(reinterpret_cast<const char*>(&len), sizeof(len));
             file.write(key.data(), len);
-            
-            // Write position, size, and dirty flag from index_entry
-            auto [_, bytes, dirty] = index_entry;
-            m_index[key] = std::make_tuple(pos, bytes, false);
 
-            LOG_TRACE("Writing index entry:  key=", key, ", position=", pos, ", bytes=", bytes);
-            file.write(reinterpret_cast<const char*>(&pos), sizeof(pos));
-            file.write(reinterpret_cast<const char*>(&bytes), sizeof(bytes));
-            pos += bytes;
+            // Update position and clear dirty flag
+            index_entry.position = pos;
+            index_entry.dirty = false;
+
+            // Write IndexEntry
+            LOG_TRACE("Writing index entry:  key=", key, ", position=", pos, ", bytes=", index_entry.total_bytes);
+            index_entry.write(file);
+
+            pos += index_entry.total_bytes;
         }
 
         LOG_TRACE("File position after writing index: ", file.tellp());
         LOG_TRACE("Computed Header size: ", m_header_size);
-        
+
         // sanity check the file position
         if(file.tellp() != m_header_size) {
             LOG_ERROR("File position mismatch after writing index, expected ", m_header_size, " but got ", file.tellp());
@@ -858,88 +1289,21 @@ public:
         }
 
         // Write data after the header
-        for (const auto& [key, value_ptr] : m_cache) {
+        for (const auto& [key, data] : compressed_data) {
             size_t current_pos = file.tellp();
-            LOG_TRACE("Reading value for key from index: key=", key, ", current position=", current_pos);
-            
-            // Update index with new position
-            auto [indexpos, bytes, dirty] = m_index[key];
-            if(indexpos != current_pos) {
-                LOG_ERROR("Index position mismatch for key ", key, ", expected ", indexpos, " but got ", current_pos);
+            const IndexEntry& entry = m_index[key];
+
+            if(entry.position != current_pos) {
+                LOG_ERROR("Index position mismatch for key ", key, ", expected ", entry.position, " but got ", current_pos);
                 throw std::runtime_error("Index position mismatch");
             }
 
-            LOG_TRACE("Writing value for key: key=", key, ", position=", indexpos, ", bytes=", bytes);
-            // need to make the capture happy 
-            size_t bytes_to_write = bytes;
-            // Write the value
-            std::visit([this, &file, &bytes_to_write](const auto& value) {
-                using V = std::decay_t<decltype(value)>;
-                if constexpr (
-                    std::is_same_v<V, NDArray<char>> || std::is_same_v<V, NDArray<int>> ||
-                    std::is_same_v<V, NDArray<long>> || std::is_same_v<V, NDArray<long long>> ||
-                    std::is_same_v<V, NDArray<float>> || std::is_same_v<V, NDArray<double>> ||
-                    std::is_same_v<V, NDArray<std::string>>
-                ) {
-                    if (m_compression == MAGIC_GZIPPED) {
-                    #ifdef ENABLE_ZLIB
-                        LOG_TRACE("Compressing NDArray data using zlib and writing");
-                        // Compress the NDArray data using zlib and write to file
-                        std::ostringstream oss;
-                        oss << value;
-                        LOG_TRACE("Wrote uncompressed data to temp buffer");
-                        std::string uncompressed_data = oss.str();
+            LOG_TRACE("Writing data for key: key=", key, ", position=", entry.position, ", bytes=", entry.total_bytes);
 
-                        uLongf uncompressed_size = static_cast<uLongf>(uncompressed_data.size());
-                        uLongf compressed_bound = compressBound(uncompressed_size);
-                        std::vector<Bytef> compressed_data(compressed_bound);
-
-                        int z_result = compress2(
-                            compressed_data.data(),
-                            &compressed_bound,
-                            reinterpret_cast<const Bytef*>(uncompressed_data.data()),
-                            uncompressed_size,
-                            Z_BEST_COMPRESSION
-                        );
-
-                        if (z_result != Z_OK) {
-                            throw std::runtime_error("zlib compression failed");
-                        }
-
-                        // Write the size of the compressed data
-                        size_t compressed_size = static_cast<size_t>(compressed_bound);
-                        file.write(reinterpret_cast<const char*>(&compressed_size), sizeof(compressed_size));
-
-                        // Write the size of the uncompressed data
-                        size_t uncompressed_size_write = static_cast<size_t>(uncompressed_size);
-                        file.write(reinterpret_cast<const char*>(&uncompressed_size_write), sizeof(uncompressed_size_write));
-
-                        // Write the compressed data itself
-                        file.write(reinterpret_cast<const char*>(compressed_data.data()), compressed_size);
-                        
-                        // Pad the rest with zero bytes if compressed data is smaller than expected
-                        size_t bytes_written = compressed_size + sizeof(size_t) + sizeof(size_t);
-                        LOG_TRACE("Wrote compressed data to file with size ", bytes_written);
-
-                        if (bytes_written < bytes_to_write) {
-                            std::vector<char> padding(bytes_to_write - bytes_written, 0);
-                            file.write(padding.data(), padding.size());
-                            LOG_TRACE("Padded compressed data with ", padding.size(), " zero bytes");
-                        }
-                    #else
-                        throw std::runtime_error("deflate compression requested but zlib is not enabled (ENABLE_ZLIB not defined)");
-                    #endif
-                    } else {
-                        // Uncompressed NDArray write (as before)
-                        file << value;
-                    }
-                } else {
-                    // Scalar write (as before)
-                    file << value;
-                }
-            }, *value_ptr);
+            // Write the pre-compressed data
+            file.write(data.data(), data.size());
         }
-        
+
         file.flush();
         file.close();
         LOG_TRACE("Flushed and closed file");
@@ -949,13 +1313,11 @@ public:
     /**
      * @brief Constructor with compression options
      * @param fname Filename to use for storage
-     * @param compression Compression type ("CLD0" or "CLDG")
-     * @param block_size Block size for compression
+     * @param compression Default compression algorithm
+     * @param block_size Default block size for compression
      */
-    SCStore(const std::string& fname, const std::string& compression = MAGIC_UNCOMPRESSED, size_t block_size = DEFAULT_BLOCK_SIZE)
-        : m_filename(fname), m_header_dirty(true), m_block_size(block_size) {
-        
-        set_compression(compression);
+    SCStore(const std::string& fname, CompressionAlgorithm compression = CompressionAlgorithm::NONE, size_t block_size = DEFAULT_BLOCK_SIZE)
+        : m_filename(fname), m_header_dirty(true), m_default_compression(compression), m_default_block_size(block_size) {
         loadIndex();
     }
 
@@ -967,44 +1329,86 @@ public:
     }
 
     /**
-     * @brief Sets the compression type and block size
-     * @param compression Compression type ("CLD0" or "CLDG")
+     * @brief Sets the default compression type and block size for new keys
+     * @param compression Compression algorithm
      * @param block_size Block size for compression
      */
-    void set_compression(const std::string& compression, size_t block_size = DEFAULT_BLOCK_SIZE) {
-        if(compression != MAGIC_UNCOMPRESSED && compression != MAGIC_GZIPPED) {
-            LOG_ERROR("Invalid compression type: ", compression);
-            throw std::runtime_error("Invalid compression type");
-        }
-
-        m_compression = compression;
-        m_block_size = block_size;
+    void set_default_compression(CompressionAlgorithm compression, size_t block_size = DEFAULT_BLOCK_SIZE) {
+        m_default_compression = compression;
+        m_default_block_size = block_size;
     }
 
     /**
      * @brief Stores a value with the given key
      * @param key Key to store
-     * @param value Value to store
+     * @param value Value to store (NDArray)
+     * @param compression Compression algorithm (uses default if NONE)
+     * @param block_size Block size for compression (uses default if 0)
      */
     template<typename V>
-    void put(const std::string& key, const V& value) {
+    void put(const std::string& key, const V& value,
+             CompressionAlgorithm compression = CompressionAlgorithm::NONE,
+             size_t block_size = 0) {
         std::unique_lock<std::shared_mutex> lock(m_mutex);
-        m_cache[key] = std::make_shared<ValueVariant>(value);
-        size_t total_bytes = value.totalBytes();
-        if(m_compression == MAGIC_GZIPPED) {
-            #ifdef ENABLE_ZLIB
-            LOG_TRACE("Getting total size with compression");
 
-            // Estimate compressed size using zlib's compressBound
-            uLongf comp_bound = compressBound(static_cast<uLongf>(value.totalBytes()));
-            LOG_TRACE("Compressed size: ", static_cast<size_t>(comp_bound));
-            total_bytes = static_cast<size_t>(comp_bound);
-            total_bytes += sizeof(size_t) + sizeof(size_t); // size of compressed data and uncompressed data
-            #else
-            throw std::runtime_error("deflate compression requested but zlib is not enabled (ENABLE_ZLIB not defined)");
-            #endif
-        } 
-        m_index[key] = std::make_tuple(0, total_bytes, true);
+        // Use defaults if not specified
+        if (compression == CompressionAlgorithm::NONE) {
+            compression = m_default_compression;
+        }
+        if (block_size == 0) {
+            block_size = m_default_block_size;
+        }
+
+        // Cache the value
+        m_cache[key] = std::make_shared<ValueVariant>(value);
+
+        // Extract type information
+        using ElementType = typename V::value_type; // Assumes V is NDArray<T>
+        DataType dtype = TypeToDataType<ElementType>::value;
+        std::vector<size_t> shape = value.shape;
+
+        LOG_TRACE("Storing key '", key, "' as ", datatype_to_string(dtype),
+                  " array with ", shape.size(), " dimensions");
+
+        // Serialize to get size
+        std::ostringstream oss;
+        oss << value;
+        std::string serialized = oss.str();
+
+        // Compute compressed size if needed
+        size_t total_bytes = serialized.size();
+        std::vector<BlockInfo> blocks;
+
+        if (compression != CompressionAlgorithm::NONE && serialized.size() > block_size) {
+            // Will compress in blocks
+            auto [compressed, block_infos] = compressBlocks(
+                serialized.data(), serialized.size(), compression, block_size);
+            total_bytes = compressed.size();
+            blocks = std::move(block_infos);
+
+            LOG_TRACE("Compressed ", serialized.size(), " -> ", total_bytes, " bytes in ",
+                      blocks.size(), " blocks");
+        } else {
+            // Single block, no compression
+            BlockInfo single_block;
+            single_block.offset = 0;
+            single_block.compressed_size = serialized.size();
+            single_block.uncompressed_size = serialized.size();
+            blocks.push_back(single_block);
+        }
+
+        // Create index entry
+        IndexEntry entry;
+        entry.position = 0;  // Will be updated during flush
+        entry.total_bytes = total_bytes;
+        entry.datatype = dtype;
+        entry.shape = std::move(shape);
+        entry.compression = compression;
+        entry.block_size = block_size;
+        entry.blocks = std::move(blocks);
+        entry.dirty = true;
+
+        m_index[key] = std::move(entry);
         m_header_dirty = true;
     }
 
@@ -1064,85 +1468,36 @@ public:
             }
             
             if (!file->good()) return nullptr;
-        
-            // Seek to index, past magic string and compression flag
-            file->seekg(MAGIC_STRING_LENGTH+4, std::ios::beg);
-            auto [position, size, dirty] = m_index[key];
-            if (position > 0) {
-                file->seekg(position, std::ios::beg);
+
+            // Get the index entry
+            const IndexEntry& entry = m_index[key];
+            if (entry.position > 0) {
+                file->seekg(entry.position, std::ios::beg);
                 LOG_TRACE("Position after seek: ", file->tellg());
-                std::shared_ptr<V> value_ptr = std::make_shared<V>();
-                if constexpr (
-                    std::is_same_v<V, NDArray<char>> || std::is_same_v<V, NDArray<int>> ||
-                    std::is_same_v<V, NDArray<long>> || std::is_same_v<V, NDArray<long long>> ||
-                    std::is_same_v<V, NDArray<float>> || std::is_same_v<V, NDArray<double>> ||
-                    std::is_same_v<V, NDArray<std::string>>
-                ) {
-                    if (m_compression == MAGIC_GZIPPED) {
-                        #ifdef ENABLE_ZLIB
-                        // Read the compressed data size
-                        LOG_TRACE("Reading compressed data size");
-                        size_t compressed_size = 0;
-                        file->read(reinterpret_cast<char*>(&compressed_size), sizeof(size_t));
-                        if (file->gcount() != sizeof(size_t) || compressed_size == 0) {
-                            throw std::runtime_error("Failed to read compressed NDArray size");
-                        }
 
-                        size_t uncompressed_size = 0;
-                        file->read(reinterpret_cast<char*>(&uncompressed_size), sizeof(size_t));
-                        if (file->gcount() != sizeof(size_t) || uncompressed_size == 0) {
-                            throw std::runtime_error("Failed to read compressed NDArray size");
-                        }
-
-                        LOG_TRACE("Read compressed data size: ", compressed_size);
-                        LOG_TRACE("Read uncompressed data size: ", uncompressed_size);
-                        
-                        // Read the compressed data
-                        std::vector<char> compressed_data(compressed_size);
-                        file->read(compressed_data.data(), compressed_size);
-                        LOG_TRACE("Returned buffer size: ", compressed_data.size());
-
-                        if (static_cast<size_t>(compressed_data.size()) != compressed_size) {
-                            throw std::runtime_error("Failed to read compressed NDArray data. Expected " + std::to_string(compressed_size) + " bytes, got " + std::to_string(file->gcount()));
-                        }
-
-                        // Decompress using zlib
-                        std::vector<char> uncompressed_data(uncompressed_size);
-
-                        uLongf dest_len = static_cast<uLongf>(uncompressed_size);
-                        int z_result = uncompress(
-                            reinterpret_cast<Bytef*>(uncompressed_data.data()), &dest_len,
-                            reinterpret_cast<const Bytef*>(compressed_data.data()), static_cast<uLongf>(compressed_size)
-                        );
-
-                        if (z_result == Z_MEM_ERROR) {
-                            throw std::runtime_error("zlib decompression error: Z_MEM_ERROR (insufficient memory)");
-                        } else if (z_result == Z_BUF_ERROR) {
-                            throw std::runtime_error("zlib decompression error: Z_BUF_ERROR (output buffer too small)");
-                        } else if (z_result == Z_DATA_ERROR) {
-                            throw std::runtime_error("zlib decompression error: Z_DATA_ERROR (input data corrupted or incomplete)");
-                        } else if (z_result != Z_OK) {
-                            throw std::runtime_error("zlib decompression error: Unknown zlib error code " + std::to_string(z_result));
-                        }
-                        
-                        if (dest_len != uncompressed_size) {
-                            throw std::runtime_error("Decompressed NDArray data size mismatch: got " + std::to_string(dest_len) + ", expected " + std::to_string(uncompressed_size));
-                        }
-
-                        // Now, create a stream from the uncompressed data and deserialize
-                        std::istringstream iss(std::string(uncompressed_data.data(), uncompressed_data.size()));
-                        iss >> *value_ptr;
-                        #else
-                        throw std::runtime_error("Zlib support not enabled, cannot decompress gzipped NDArray");
-                        #endif
-                    } else {
-                        // Uncompressed NDArray read (as before)
-                        *file >> *value_ptr;
-                    }
-                } else {
-                    // Scalar read (as before)
-                    *file >> *value_ptr;
+                // Read compressed data
+                std::vector<char> compressed_data(entry.total_bytes);
+                file->read(compressed_data.data(), entry.total_bytes);
+                if (static_cast<size_t>(file->gcount()) != entry.total_bytes) {
+                    throw std::runtime_error("Failed to read data. Expected " +
+                                           std::to_string(entry.total_bytes) + " bytes, got " +
+                                           std::to_string(file->gcount()));
                 }
+
+                // Decompress if needed
+                std::vector<char> decompressed;
+                if (entry.compression != CompressionAlgorithm::NONE && !entry.blocks.empty()) {
+                    decompressed = decompressBlocks(compressed_data, entry.blocks, entry.compression);
+                    LOG_TRACE("Decompressed ", compressed_data.size(), " -> ", decompressed.size(), " bytes");
+                } else {
+                    decompressed = std::move(compressed_data);
+                }
+
+                // Deserialize from decompressed data
+                std::istringstream iss(std::string(decompressed.data(), decompressed.size()));
+                std::shared_ptr<V> value_ptr = std::make_shared<V>();
+                iss >> *value_ptr;
+
                 m_cache[key] = std::make_shared<ValueVariant>(*value_ptr);
                 LOG_TRACE("Deserialized value of type ", typeid(V).name());
                 return value_ptr;
