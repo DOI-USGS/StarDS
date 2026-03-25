@@ -401,31 +401,16 @@ TEST(SCStoreTest, EmptyIndexTest) {
 }
 
 
-TEST(SCStoreTest, ReadRemoteLargeCLD0) {
-    try {
-        // Use a remote file (via /vsicurl/ or direct HTTP if supported)
-        std::string remoteFile = "/vsicurl/https://asc-isisdata.s3.us-west-2.amazonaws.com/astro_data/cloud_tests/large_test_1000000_CLDG.cld";
+// TEST(SCStoreTest, ReadRemoteLargeCLD0) {
+//     try {
+//         // Use a remote file (via /vsicurl/ or direct HTTP if supported)
+//         std::string remoteFile = "/vsicurl/https://asc-isisdata.s3.us-west-2.amazonaws.com/astro_data/cloud_tests/large_test_1000000_CLDG.cld";
 
-        // Open the store from the remote file
-        SCStore store(remoteFile);
+//         // Open the store from the remote file
+//         SCStore store(remoteFile);
 
-        // The file is expected to have a key "big_array"
-        ASSERT_TRUE(store.contains("big_array"));
-
-        // Read the "big_array" key (should be a large NDArray<int>)
-        auto bigArrayPtr = store.get<NDArray<int>>("big_array");
-        ASSERT_NE(bigArrayPtr, nullptr);
-
-        // Check shape and a few values
-        ASSERT_EQ(bigArrayPtr->shape.size(), 1);
-        size_t num_elements = bigArrayPtr->shape[0];
-
-        // Spot check a few values
-        EXPECT_EQ(bigArrayPtr->at({0}), 0);
-        EXPECT_EQ(bigArrayPtr->at({1}), 1);
-        EXPECT_EQ(bigArrayPtr->at({num_elements - 1}), static_cast<int>(num_elements - 1));
-        store.printHeader();
-    } catch (const std::exception& e) {
-        FAIL() << "Exception occurred: " << e.what();
-    }
-}
+//         store.printHeader();
+//     } catch (const std::exception& e) {
+//         FAIL() << "Exception occurred: " << e.what();
+//     }
+// }

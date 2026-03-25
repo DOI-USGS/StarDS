@@ -624,7 +624,7 @@ private:
     static constexpr size_t LARGE_ARRAY_THRESHOLD = 1024;
 public: 
     std::string m_filename;
-    std::map<std::string, std::tuple<size_t, size_t, bool>> m_index; // key -> {position, bytes, dirty flag}
+    std::map<std::string, std::tuple<size_t, size_t, bool, size_t>> m_index; // key -> {position, bytes, dirty flag, type}
     std::map<std::string, std::shared_ptr<ValueVariant>> m_cache;
     size_t m_header_size = 0; // Size of the header section in bytes
     bool m_header_dirty = false; // Flag to indicate if header size needs recalculation

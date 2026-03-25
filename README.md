@@ -23,10 +23,10 @@ int main() {
     SCStore<int, double, std::string, std::vector<int>> store("data.bin");
     
     // Store different value types
-    store.put("int_value", 42);
-    store.put("double_value", 3.14159);
-    store.put("string_value", "Hello, World!");
-    store.put("array_value", std::vector<int>{1, 2, 3, 4, 5});
+    store.put("int_array", std::vector<int>{10, 20, 30, 40, 50});
+    store.put("double_array", std::vector<double>{1.1, 2.2, 3.3, 4.4});
+    store.put("string_array", std::vector<std::string>{"foo", "bar", "baz"});
+    store.put("nested_array", std::vector<std::vector<int>>{{1, 2}, {3, 4}, {5, 6}});
     
     // Retrieve values
     auto int_val = store.get<int>("int_value");
