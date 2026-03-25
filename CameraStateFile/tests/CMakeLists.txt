@@ -11,6 +11,7 @@ set(CAMERASTATEFILE_TEST_DIRECTORY ${CMAKE_SOURCE_DIR}/CameraStateFile/tests/)
 
 # collect all of the test sources
 set (CAMERASTATEFILE_TEST_SOURCE    ${CAMERASTATEFILE_TEST_DIRECTORY}/UnitTestSCS.cpp
+                                    ${CAMERASTATEFILE_TEST_DIRECTORY}/UnitTestBlockCompression.cpp
                                     ${CAMERASTATEFILE_TEST_DIRECTORY}/Fixtures.cpp
                             )
 

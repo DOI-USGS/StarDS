@@ -1,0 +1,44 @@
+# Simple Makefile for SCS command-line tools
+
+CXX = g++
+CXXFLAGS = -std=c++20 -I. -DENABLE_CURL -DENABLE_ZLIB -O2
+LDFLAGS = -lz -lcurl
+
+TOOLS = scs_inspect test_block_compression
+
+.PHONY: all clean tools
+
+all: tools
+
+tools: $(TOOLS)
+
+scs_inspect: scs_inspect.cpp CameraStateFile/include/scs.h
+	$(CXX) $(CXXFLAGS) $< -o $@ $(LDFLAGS)
+	@echo "✓ Built scs_inspect"
+
+test_block_compression: test_block_compression.cpp CameraStateFile/include/scs.h
+	$(CXX) $(CXXFLAGS) $< -o $@ $(LDFLAGS)
+	@echo "✓ Built test_block_compression"
+
+clean:
+	rm -f $(TOOLS) *.scs
+	@echo "✓ Cleaned build artifacts"
+
+install: tools
+	@echo "Installing tools to /usr/local/bin (requires sudo)"
+	sudo cp scs_inspect /usr/local/bin/
+	@echo "✓ Installed scs_inspect to /usr/local/bin"
+
+.PHONY: help
+help:
+	@echo "SCS Tools Build System"
+	@echo ""
+	@echo "Targets:"
+	@echo "  all (default)  - Build all tools"
+	@echo "  tools          - Build command-line tools"
+	@echo "  clean          - Remove built binaries"
+	@echo "  install        - Install tools to /usr/local/bin"
+	@echo ""
+	@echo "Tools:"
+	@echo "  scs_inspect            - Inspect SCS file contents"
+	@echo "  test_block_compression - Test block compression"

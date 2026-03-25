@@ -134,6 +134,18 @@ else()
   message(STATUS "Skipping Tests")
 endif()
 
+###############
+# Tools Build #
+###############
+
+cmake_dependent_option (CAMERASTATEFILE_BUILD_TOOLS "Build the CameraStateFile Command-Line Tools" ON CAMERASTATEFILE_BUILD_LIB OFF)
+
+if(CAMERASTATEFILE_BUILD_TOOLS)
+  add_subdirectory(tools)
+else()
+  message(STATUS "Skipping Tools")
+endif()
+
 # ##################
 # # Bindings Build #
 # ##################
