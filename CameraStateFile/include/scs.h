@@ -568,39 +568,45 @@ public:
 
 
 //==============================================================================
-// NDArray Class - A basic n-dimensional array implementation
+// ndarray Class - Modern n-dimensional array implementation
 //==============================================================================
 
 /**
- * @brief A basic n-dimensional array class similar to NumPy
- * 
- * This class implements a n-dimensional array stored as a flat 1D vector
- * with NumPy-style indexing capabilities.
+ * @brief Modern n-dimensional array class with xtensor-style API
+ *
+ * This class implements an n-dimensional array stored as a flat 1D vector
+ * with operator() indexing, iterators, and static factory methods.
  */
 template<typename T>
-class NDArray {
+class ndarray {
 public:
-    // Type alias for element type
+    // Type aliases
     using value_type = T;
+    using iterator = typename std::vector<T>::iterator;
+    using const_iterator = typename std::vector<T>::const_iterator;
+    using reverse_iterator = typename std::vector<T>::reverse_iterator;
+    using const_reverse_iterator = typename std::vector<T>::const_reverse_iterator;
 
-    // Public attributes
-    std::vector<T> data;           // Flat 1D storage for array elements
-    std::vector<size_t> shape;     // Dimensions of the array
-    std::vector<size_t> strides;   // Number of elements to step in each dimension
+private:
+    // Private members
+    std::vector<T> m_data;           // Flat 1D storage for array elements
+    std::vector<size_t> m_shape;     // Dimensions of the array
+    std::vector<size_t> m_strides;   // Number of elements to step in each dimension
 
+public:
     /**
      * @brief Default constructor
      */
-    NDArray() = default;
+    ndarray() = default;
 
     /**
      * @brief Constructor with shape
      * @param shape_in Dimensions of the array
      */
-    explicit NDArray(const std::vector<size_t>& shape_in) : shape(shape_in) {
+    explicit ndarray(const std::vector<size_t>& shape_in) : m_shape(shape_in) {
         calculateStrides();
         size_t total_size = computeTotalSize();
-        data.resize(total_size);
+        m_data.resize(total_size);
     }
 
     /**
@@ -608,10 +614,10 @@ public:
      * @param shape_in Dimensions of the array
      * @param initial_value Value to initialize all elements with
      */
-    NDArray(const std::vector<size_t>& shape_in, const T& initial_value) : shape(shape_in) {
+    ndarray(const std::vector<size_t>& shape_in, const T& initial_value) : m_shape(shape_in) {
         calculateStrides();
         size_t total_size = computeTotalSize();
-        data.resize(total_size, initial_value);
+        m_data.resize(total_size, initial_value);
     }
 
     /**
@@ -619,81 +625,238 @@ public:
      * @param data_in Flat data to use
      * @param shape_in Dimensions of the array
      */
-    NDArray(const std::vector<T>& data_in, const std::vector<size_t>& shape_in) : data(data_in), shape(shape_in) {
+    ndarray(const std::vector<T>& data_in, const std::vector<size_t>& shape_in) : m_data(data_in), m_shape(shape_in) {
         calculateStrides();
-        if (data.size() != computeTotalSize()) {
+        if (m_data.size() != computeTotalSize()) {
             throw std::runtime_error("Data size does not match the specified shape");
         }
     }
 
     /**
      * @brief Copy constructor
-     * @param other NDArray to copy from
+     * @param other ndarray to copy from
      */
-    NDArray(const NDArray& other) : data(other.data), shape(other.shape), strides(other.strides) {
+    ndarray(const ndarray& other) : m_data(other.m_data), m_shape(other.m_shape), m_strides(other.m_strides) {
     }
 
+    // ========== Accessors ==========
 
     /**
-     * @brief Access element using multi-dimensional index
-     * @param indices Indices for each dimension
-     * @return Reference to the element
+     * @brief Get reference to internal data vector
+     */
+    std::vector<T>& data() { return m_data; }
+    const std::vector<T>& data() const { return m_data; }
+
+    /**
+     * @brief Get raw pointer to data
+     */
+    T* data_ptr() { return m_data.data(); }
+    const T* data_ptr() const { return m_data.data(); }
+
+    /**
+     * @brief Get shape vector
+     */
+    const std::vector<size_t>& shape() const { return m_shape; }
+
+    /**
+     * @brief Get specific dimension size
+     */
+    size_t shape(size_t dim) const {
+        if (dim >= m_shape.size()) {
+            throw std::runtime_error("Dimension index out of bounds");
+        }
+        return m_shape[dim];
+    }
+
+    /**
+     * @brief Get strides vector
+     */
+    const std::vector<size_t>& strides() const { return m_strides; }
+
+    /**
+     * @brief Get number of dimensions
+     */
+    size_t dimension() const { return m_shape.size(); }
+
+    /**
+     * @brief Get total number of elements
+     */
+    size_t size() const {
+        if (m_shape.empty()) return 0;
+        size_t total = 1;
+        for (auto dim : m_shape) {
+            total *= dim;
+        }
+        return total;
+    }
+
+    // ========== Indexing ==========
+
+    /**
+     * @brief Variadic operator() for multi-dimensional indexing
+     */
+    template<typename... Indices>
+    T& operator()(Indices... indices) {
+        return m_data[flattenIndex(std::forward<Indices>(indices)...)];
+    }
+
+    template<typename... Indices>
+    const T& operator()(Indices... indices) const {
+        return m_data[flattenIndex(std::forward<Indices>(indices)...)];
+    }
+
+    /**
+     * @brief Flat indexing for 1D access
+     */
+    T& flat(size_t index) {
+        if (index >= m_data.size()) {
+            throw std::runtime_error("Flat index out of bounds");
+        }
+        return m_data[index];
+    }
+
+    const T& flat(size_t index) const {
+        if (index >= m_data.size()) {
+            throw std::runtime_error("Flat index out of bounds");
+        }
+        return m_data[index];
+    }
+
+    /**
+     * @brief Legacy at() method for backward compatibility (DEPRECATED)
+     * @deprecated Use operator() instead
      */
     T& at(const std::vector<size_t>& indices) {
-        return data[flattenIndex(indices)];
+        return m_data[flattenIndex(indices)];
     }
 
-    /**
-     * @brief Access element using multi-dimensional index (const version)
-     * @param indices Indices for each dimension
-     * @return Const reference to the element
-     */
     const T& at(const std::vector<size_t>& indices) const {
-        return data[flattenIndex(indices)];
+        return m_data[flattenIndex(indices)];
+    }
+
+    // ========== Iterators ==========
+
+    iterator begin() { return m_data.begin(); }
+    const_iterator begin() const { return m_data.begin(); }
+    const_iterator cbegin() const { return m_data.cbegin(); }
+
+    iterator end() { return m_data.end(); }
+    const_iterator end() const { return m_data.end(); }
+    const_iterator cend() const { return m_data.cend(); }
+
+    reverse_iterator rbegin() { return m_data.rbegin(); }
+    const_reverse_iterator rbegin() const { return m_data.rbegin(); }
+    reverse_iterator rend() { return m_data.rend(); }
+    const_reverse_iterator rend() const { return m_data.rend(); }
+
+    // ========== Static Factories ==========
+
+    /**
+     * @brief Create zero-initialized array
+     */
+    static ndarray<T> zeros(const std::vector<size_t>& shape) {
+        return ndarray<T>(shape, T{0});
     }
 
     /**
-     * @brief Reshape the array to new dimensions
-     * @param new_shape New dimensions
+     * @brief Create one-initialized array
+     */
+    static ndarray<T> ones(const std::vector<size_t>& shape) {
+        return ndarray<T>(shape, T{1});
+    }
+
+    /**
+     * @brief Create array filled with specific value
+     */
+    static ndarray<T> full(const std::vector<size_t>& shape, const T& value) {
+        return ndarray<T>(shape, value);
+    }
+
+    /**
+     * @brief Create uninitialized array
+     */
+    static ndarray<T> empty(const std::vector<size_t>& shape) {
+        return ndarray<T>(shape);
+    }
+
+    /**
+     * @brief Create range array (numeric types only)
+     */
+    template<typename U = T>
+    static typename std::enable_if<std::is_arithmetic<U>::value, ndarray<T>>::type
+    arange(T start, T stop, T step = T{1}) {
+        if (step == T{0}) {
+            throw std::runtime_error("Step cannot be zero");
+        }
+
+        size_t count = static_cast<size_t>(std::ceil((stop - start) / step));
+        ndarray<T> result({count});
+
+        T value = start;
+        for (size_t i = 0; i < count; ++i) {
+            result.m_data[i] = value;
+            value += step;
+        }
+
+        return result;
+    }
+
+    // ========== Shape Operations ==========
+
+    /**
+     * @brief Reshape array (no reallocation)
      */
     void reshape(const std::vector<size_t>& new_shape) {
         size_t new_size = 1;
         for (auto dim : new_shape) {
             new_size *= dim;
         }
-        
-        if (new_size != data.size()) {
-            throw std::runtime_error("Cannot reshape array to requested dimensions");
+
+        if (new_size != m_data.size()) {
+            throw std::runtime_error("Cannot reshape: size mismatch");
         }
-        
-        shape = new_shape;
+
+        m_shape = new_shape;
         calculateStrides();
     }
 
     /**
-     * @brief Calculate total bytes needed to store the array, optionally compressed
-     * @param compression Compression type ("CLD0", "CLDG", etc.)
-     * @return Total bytes (compressed if compression is specified)
+     * @brief Resize array (with reallocation)
+     */
+    void resize(const std::vector<size_t>& new_shape, const T& fill_value = T{}) {
+        size_t new_size = 1;
+        for (auto dim : new_shape) {
+            new_size *= dim;
+        }
+
+        m_data.resize(new_size, fill_value);
+        m_shape = new_shape;
+        calculateStrides();
+    }
+
+    /**
+     * @brief Calculate total bytes needed to store the array
+     * @return Total bytes (uncompressed)
      */
     size_t totalBytes() const {
         // Compute uncompressed size
         size_t uncompressed_size = 0;
-        if constexpr (std::is_same_v<T, std::string>) {
+        if constexpr (std::is_same<T, std::string>::value) {
             size_t string_bytes = 0;
-            for (const auto& str : data) {
+            for (const auto& str : m_data) {
                 string_bytes += str.size() + sizeof(size_t); // String length + string data
             }
             uncompressed_size = sizeof(size_t) +                      // Number of dimensions
-                                sizeof(size_t) * shape.size() +       // Shape dimensions
-                                sizeof(size_t) * strides.size() +     // Strides
+                                sizeof(size_t) * m_shape.size() +     // Shape dimensions
+                                sizeof(size_t) * m_strides.size() +   // Strides
                                 string_bytes;                         // Actual string data
         } else {
             uncompressed_size = sizeof(size_t) +                      // Number of dimensions
-                                sizeof(size_t) * shape.size() +       // Shape dimensions
-                                sizeof(size_t) * strides.size() +     // Strides
-                                sizeof(T) * data.size();              // Actual data
+                                sizeof(size_t) * m_shape.size() +     // Shape dimensions
+                                sizeof(size_t) * m_strides.size() +   // Strides
+                                sizeof(T) * m_data.size();            // Actual data
         }
-        
+
         LOG_TRACE("Uncompressed size: ", uncompressed_size);
         return uncompressed_size;
     }
@@ -702,33 +865,33 @@ public:
      * @brief Write array to output stream
      * @param os Output stream
      */
-    friend std::ostream& operator<<(std::ostream& os, const NDArray<T>& arr) {
-        LOG_TRACE("Writing NDArray<", typeid(T).name(), "> to output stream at position ", os.tellp());
-        size_t total_bytes = 0; 
+    friend std::ostream& operator<<(std::ostream& os, const ndarray<T>& arr) {
+        LOG_TRACE("Writing ndarray<", typeid(T).name(), "> to output stream at position ", os.tellp());
+        size_t total_bytes = 0;
         size_t size_to_write = 0;
 
         // Write number of dimensions
-        size_t num_dims = arr.shape.size();
+        size_t num_dims = arr.m_shape.size();
         size_to_write = sizeof(num_dims);
         os.write(reinterpret_cast<const char*>(&num_dims), size_to_write);
         LOG_TRACE("Wrote number of dimensions: ", num_dims, " with total number of elements ", sizeof(num_dims));
         total_bytes += size_to_write;
-        
+
         // Write shape
         size_to_write = sizeof(size_t) * num_dims;
-        os.write(reinterpret_cast<const char*>(arr.shape.data()), size_to_write);
+        os.write(reinterpret_cast<const char*>(arr.m_shape.data()), size_to_write);
         LOG_TRACE("Wrote shape of size ", sizeof(size_t) * num_dims);
         total_bytes += size_to_write;
-        
+
         // Write strides
         size_to_write = sizeof(size_t) * num_dims;
-        os.write(reinterpret_cast<const char*>(arr.strides.data()), size_to_write);
+        os.write(reinterpret_cast<const char*>(arr.m_strides.data()), size_to_write);
         LOG_TRACE("Wrote strides of size ", sizeof(size_t) * num_dims);
         total_bytes += size_to_write;
 
-        if constexpr (std::is_same_v<T, std::string>) {
+        if constexpr (std::is_same<T, std::string>::value) {
             // Write data (strings need special handling)
-            for (const auto& str : arr.data) {
+            for (const auto& str : arr.m_data) {
                 size_t str_len = str.size();
                 os.write(reinterpret_cast<const char*>(&str_len), sizeof(str_len));
                 total_bytes += sizeof(str_len);
@@ -736,9 +899,9 @@ public:
             }
         } else {
             // Write data in chunks
-            constexpr size_t CHUNK_SIZE = 1024 ; // 1MB chunks
-            size_to_write = sizeof(T) * arr.data.size();
-            const char* data_ptr = reinterpret_cast<const char*>(arr.data.data());
+            constexpr size_t CHUNK_SIZE = 1024; // 1KB chunks
+            size_to_write = sizeof(T) * arr.m_data.size();
+            const char* data_ptr = reinterpret_cast<const char*>(arr.m_data.data());
             total_bytes += size_to_write;
 
             size_t bytes_written = 0;
@@ -746,10 +909,10 @@ public:
                 size_t bytes_to_write = std::min(CHUNK_SIZE, size_to_write - bytes_written);
                 os.write(data_ptr + bytes_written, bytes_to_write);
                 bytes_written += bytes_to_write;
-                
-                LOG_TRACE("Wrote data chunk of size ", bytes_to_write, 
+
+                LOG_TRACE("Wrote data chunk of size ", bytes_to_write,
                           " (", bytes_written, "/", size_to_write, " bytes)");
-                          
+
             }
             LOG_TRACE("Completed writing data of size ", size_to_write);
             LOG_TRACE("Total bytes written: ", total_bytes);
@@ -761,57 +924,58 @@ public:
      * @brief Read array from input stream
      * @param is Input stream
      */
-    friend std::istream& operator>>(std::istream& is, NDArray<T>& arr) {
-        LOG_TRACE("Reading NDArray<", typeid(T).name(), "> from input stream from byte position ", is.tellg());
-         
+    friend std::istream& operator>>(std::istream& is, ndarray<T>& arr) {
+        LOG_TRACE("Reading ndarray<", typeid(T).name(), "> from input stream from byte position ", is.tellg());
+
         // Read number of dimensions
         size_t num_dims;
         is.read(reinterpret_cast<char*>(&num_dims), sizeof(num_dims));
         LOG_TRACE("Read number of dimensions: ", num_dims);
-        
+
         // Read shape
-        arr.shape.resize(num_dims);
-        is.read(reinterpret_cast<char*>(arr.shape.data()), sizeof(size_t) * num_dims);
+        arr.m_shape.resize(num_dims);
+        is.read(reinterpret_cast<char*>(arr.m_shape.data()), sizeof(size_t) * num_dims);
         LOG_TRACE("Read shape array of ", sizeof(size_t) * num_dims, " bytes");
-        
+
         // Read strides
-        arr.strides.resize(num_dims);
-        is.read(reinterpret_cast<char*>(arr.strides.data()), sizeof(size_t) * num_dims);
+        arr.m_strides.resize(num_dims);
+        is.read(reinterpret_cast<char*>(arr.m_strides.data()), sizeof(size_t) * num_dims);
         LOG_TRACE("Read strides array of ", sizeof(size_t) * num_dims, " bytes");
 
         // Calculate total size and read data
         size_t total_size = arr.computeTotalSize();
-        if constexpr (std::is_same_v<T, std::string>) {            
-            arr.data.resize(total_size);
+        if constexpr (std::is_same<T, std::string>::value) {
+            arr.m_data.resize(total_size);
             for (size_t i = 0; i < total_size; ++i) {
                 size_t str_len;
                 is.read(reinterpret_cast<char*>(&str_len), sizeof(str_len));
-                
+
                 std::string str(str_len, '\0');
                 is.read(&str[0], str_len);
-                arr.data[i] = std::move(str);
+                arr.m_data[i] = std::move(str);
                 LOG_TRACE("Read string ", i, " with length ", str_len);
             }
-            
-            LOG_TRACE("Finished reading NDArray<std::string>");
+
+            LOG_TRACE("Finished reading ndarray<std::string>");
         } else {
-            arr.data.resize(total_size);
-            is.read(reinterpret_cast<char*>(arr.data.data()), sizeof(T) * total_size);
+            arr.m_data.resize(total_size);
+            is.read(reinterpret_cast<char*>(arr.m_data.data()), sizeof(T) * total_size);
             LOG_TRACE("Read data array of size ", sizeof(T) * total_size);
         }
         return is;
     }
 
+private:
     /**
      * @brief Calculate strides based on shape
      */
     void calculateStrides() {
-        strides.resize(shape.size());
-        if (shape.empty()) return;
-        
-        strides[shape.size() - 1] = 1;
-        for (int i = static_cast<int>(shape.size()) - 2; i >= 0; --i) {
-            strides[i] = strides[i + 1] * shape[i + 1];
+        m_strides.resize(m_shape.size());
+        if (m_shape.empty()) return;
+
+        m_strides[m_shape.size() - 1] = 1;
+        for (int i = static_cast<int>(m_shape.size()) - 2; i >= 0; --i) {
+            m_strides[i] = m_strides[i + 1] * m_shape[i + 1];
         }
     }
 
@@ -820,9 +984,9 @@ public:
      * @return Total number of elements
      */
     size_t computeTotalSize() const {
-        if (shape.empty()) return 0;
+        if (m_shape.empty()) return 0;
         size_t size = 1;
-        for (auto dim : shape) {
+        for (auto dim : m_shape) {
             size *= dim;
         }
         return size;
@@ -834,18 +998,42 @@ public:
      * @return Flat index
      */
     size_t flattenIndex(const std::vector<size_t>& indices) const {
-        if (indices.size() != shape.size()) {
+        if (indices.size() != m_shape.size()) {
             throw std::runtime_error("Index dimensions do not match array dimensions");
         }
-        
+
         size_t flat_index = 0;
         for (size_t i = 0; i < indices.size(); ++i) {
-            if (indices[i] >= shape[i]) {
+            if (indices[i] >= m_shape[i]) {
                 throw std::runtime_error("Index out of bounds");
             }
-            flat_index += indices[i] * strides[i];
+            flat_index += indices[i] * m_strides[i];
         }
-        
+
+        return flat_index;
+    }
+
+    /**
+     * @brief Variadic flattenIndex for parameter pack
+     */
+    template<typename... Indices>
+    size_t flattenIndex(Indices... indices) const {
+        std::array<size_t, sizeof...(Indices)> idx_array = {
+            static_cast<size_t>(indices)...
+        };
+
+        if (idx_array.size() != m_shape.size()) {
+            throw std::runtime_error("Index dimensions do not match array dimensions");
+        }
+
+        size_t flat_index = 0;
+        for (size_t i = 0; i < idx_array.size(); ++i) {
+            if (idx_array[i] >= m_shape[i]) {
+                throw std::runtime_error("Index out of bounds");
+            }
+            flat_index += idx_array[i] * m_strides[i];
+        }
+
         return flat_index;
     }
 };
@@ -856,10 +1044,10 @@ public:
 //==============================================================================
 
 using ValueVariant = std::variant<
-    NDArray<int8_t>, NDArray<int16_t>, NDArray<int32_t>, NDArray<int64_t>,
-    NDArray<uint8_t>, NDArray<uint16_t>, NDArray<uint32_t>, NDArray<uint64_t>,
-    NDArray<float>, NDArray<double>,
-    NDArray<std::string>
+    ndarray<int8_t>, ndarray<int16_t>, ndarray<int32_t>, ndarray<int64_t>,
+    ndarray<uint8_t>, ndarray<uint16_t>, ndarray<uint32_t>, ndarray<uint64_t>,
+    ndarray<float>, ndarray<double>,
+    ndarray<std::string>
 >;
 
 //==============================================================================
@@ -1362,9 +1550,10 @@ public:
         m_cache[key] = std::make_shared<ValueVariant>(value);
 
         // Extract type information
-        using ElementType = typename V::value_type; // Assumes V is NDArray<T>
+        using ElementType = typename V::value_type; // Assumes V is ndarray<T>
         DataType dtype = TypeToDataType<ElementType>::value;
-        std::vector<size_t> shape = value.shape;
+        const auto& value_shape = value.shape();
+        std::vector<size_t> shape(value_shape.begin(), value_shape.end());
 
         LOG_TRACE("Storing key '", key, "' as ", datatype_to_string(dtype),
                   " array with ", shape.size(), " dimensions");

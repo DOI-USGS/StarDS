@@ -56,7 +56,6 @@ set(CAMERASTATEFILE_INSTALL_INCLUDE_DIR "include/CameraStateFile")
 
 
 set(CAMERASTATEFILE_HEADER_FILES ${CAMERASTATEFILE_BUILD_INCLUDE_DIR}/scs.h
-                                 ${CAMERASTATEFILE_BUILD_INCLUDE_DIR}/ezgz.hpp
                                  ${CAMERASTATEFILE_BUILD_INCLUDE_DIR}/deflate.hpp)
 add_library(CameraStateFile INTERFACE)
 target_include_directories(CameraStateFile INTERFACE ${CAMERASTATEFILE_BUILD_INCLUDE_DIR})
@@ -141,7 +140,7 @@ endif()
 cmake_dependent_option (CAMERASTATEFILE_BUILD_TOOLS "Build the CameraStateFile Command-Line Tools" ON CAMERASTATEFILE_BUILD_LIB OFF)
 
 if(CAMERASTATEFILE_BUILD_TOOLS)
-  add_subdirectory(tools)
+  add_subdirectory(bin)
 else()
   message(STATUS "Skipping Tools")
 endif()

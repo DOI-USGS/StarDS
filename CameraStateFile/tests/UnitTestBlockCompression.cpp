@@ -29,9 +29,9 @@ TEST_F(BlockCompressionTest, Store1DDoubleArrayWithGZIP) {
     SCStore store(testFile, CompressionAlgorithm::GZIP, 1024);
 
     // Create a 1D array of doubles
-    NDArray<double> arr({100});
+    ndarray<double> arr({100});
     for (size_t i = 0; i < 100; ++i) {
-        arr.data[i] = static_cast<double>(i) * 1.5;
+        arr.flat(i) = static_cast<double>(i) * 1.5;
     }
 
     // Store the array
@@ -44,16 +44,16 @@ TEST_F(BlockCompressionTest, Store1DDoubleArrayWithGZIP) {
     store.flush();
 
     // Read back the data
-    auto retrieved = store.get<NDArray<double>>("double_array");
+    auto retrieved = store.get<ndarray<double>>("double_array");
     ASSERT_NE(retrieved, nullptr);
 
     // Verify shape
-    ASSERT_EQ(retrieved->shape.size(), 1);
-    EXPECT_EQ(retrieved->shape[0], 100);
+    ASSERT_EQ(retrieved->shape().size(), 1);
+    EXPECT_EQ(retrieved->shape(0), 100);
 
     // Verify data integrity
     for (size_t i = 0; i < 100; ++i) {
-        EXPECT_NEAR(retrieved->data[i], static_cast<double>(i) * 1.5, 1e-10);
+        EXPECT_NEAR(retrieved->flat(i), static_cast<double>(i) * 1.5, 1e-10);
     }
 }
 
@@ -62,9 +62,9 @@ TEST_F(BlockCompressionTest, Store2DInt32MatrixWithGZIP) {
     SCStore store(testFile, CompressionAlgorithm::GZIP, 1024);
 
     // Create a 2D array of int32
-    NDArray<int32_t> arr({10, 20});
-    for (size_t i = 0; i < arr.data.size(); ++i) {
-        arr.data[i] = static_cast<int32_t>(i);
+    ndarray<int32_t> arr({10, 20});
+    for (size_t i = 0; i < arr.size(); ++i) {
+        arr.flat(i) = static_cast<int32_t>(i);
     }
 
     // Store the array
@@ -77,17 +77,17 @@ TEST_F(BlockCompressionTest, Store2DInt32MatrixWithGZIP) {
     store.flush();
 
     // Read back the data
-    auto retrieved = store.get<NDArray<int32_t>>("int32_matrix");
+    auto retrieved = store.get<ndarray<int32_t>>("int32_matrix");
     ASSERT_NE(retrieved, nullptr);
 
     // Verify shape
-    ASSERT_EQ(retrieved->shape.size(), 2);
-    EXPECT_EQ(retrieved->shape[0], 10);
-    EXPECT_EQ(retrieved->shape[1], 20);
+    ASSERT_EQ(retrieved->shape().size(), 2);
+    EXPECT_EQ(retrieved->shape(0), 10);
+    EXPECT_EQ(retrieved->shape(1), 20);
 
     // Verify data integrity
-    for (size_t i = 0; i < arr.data.size(); ++i) {
-        EXPECT_EQ(retrieved->data[i], static_cast<int32_t>(i));
+    for (size_t i = 0; i < arr.size(); ++i) {
+        EXPECT_EQ(retrieved->flat(i), static_cast<int32_t>(i));
     }
 }
 
@@ -96,9 +96,9 @@ TEST_F(BlockCompressionTest, Store3DFloat32TensorUncompressed) {
     SCStore store(testFile, CompressionAlgorithm::GZIP, 1024);
 
     // Create a 3D array with explicit no compression
-    NDArray<float> arr({5, 4, 3});
-    for (size_t i = 0; i < arr.data.size(); ++i) {
-        arr.data[i] = static_cast<float>(i) / 10.0f;
+    ndarray<float> arr({5, 4, 3});
+    for (size_t i = 0; i < arr.size(); ++i) {
+        arr.flat(i) = static_cast<float>(i) / 10.0f;
     }
 
     // Store with explicit no compression
@@ -111,18 +111,18 @@ TEST_F(BlockCompressionTest, Store3DFloat32TensorUncompressed) {
     store.flush();
 
     // Read back the data
-    auto retrieved = store.get<NDArray<float>>("float32_tensor");
+    auto retrieved = store.get<ndarray<float>>("float32_tensor");
     ASSERT_NE(retrieved, nullptr);
 
     // Verify shape
-    ASSERT_EQ(retrieved->shape.size(), 3);
-    EXPECT_EQ(retrieved->shape[0], 5);
-    EXPECT_EQ(retrieved->shape[1], 4);
-    EXPECT_EQ(retrieved->shape[2], 3);
+    ASSERT_EQ(retrieved->shape().size(), 3);
+    EXPECT_EQ(retrieved->shape(0), 5);
+    EXPECT_EQ(retrieved->shape(1), 4);
+    EXPECT_EQ(retrieved->shape(2), 3);
 
     // Verify data integrity
-    for (size_t i = 0; i < arr.data.size(); ++i) {
-        EXPECT_NEAR(retrieved->data[i], static_cast<float>(i) / 10.0f, 1e-6f);
+    for (size_t i = 0; i < arr.size(); ++i) {
+        EXPECT_NEAR(retrieved->flat(i), static_cast<float>(i) / 10.0f, 1e-6f);
     }
 }
 
@@ -131,21 +131,21 @@ TEST_F(BlockCompressionTest, MixedCompressionMultipleKeys) {
     SCStore store(testFile, CompressionAlgorithm::GZIP, 1024);
 
     // Store multiple arrays with different compression settings
-    NDArray<double> arr1({100});
+    ndarray<double> arr1({100});
     for (size_t i = 0; i < 100; ++i) {
-        arr1.data[i] = static_cast<double>(i) * 1.5;
+        arr1.flat(i) = static_cast<double>(i) * 1.5;
     }
     store.put("double_array", arr1);
 
-    NDArray<int32_t> arr2({10, 20});
-    for (size_t i = 0; i < arr2.data.size(); ++i) {
-        arr2.data[i] = static_cast<int32_t>(i);
+    ndarray<int32_t> arr2({10, 20});
+    for (size_t i = 0; i < arr2.size(); ++i) {
+        arr2.flat(i) = static_cast<int32_t>(i);
     }
     store.put("int32_matrix", arr2);
 
-    NDArray<float> arr3({5, 4, 3});
-    for (size_t i = 0; i < arr3.data.size(); ++i) {
-        arr3.data[i] = static_cast<float>(i) / 10.0f;
+    ndarray<float> arr3({5, 4, 3});
+    for (size_t i = 0; i < arr3.size(); ++i) {
+        arr3.flat(i) = static_cast<float>(i) / 10.0f;
     }
     store.put("float32_tensor", arr3, CompressionAlgorithm::NONE);
 
@@ -158,31 +158,31 @@ TEST_F(BlockCompressionTest, MixedCompressionMultipleKeys) {
     EXPECT_TRUE(store.contains("float32_tensor"));
 
     // Read back and verify all data
-    auto read_arr1 = store.get<NDArray<double>>("double_array");
+    auto read_arr1 = store.get<ndarray<double>>("double_array");
     ASSERT_NE(read_arr1, nullptr);
-    EXPECT_EQ(read_arr1->shape.size(), 1);
-    EXPECT_EQ(read_arr1->shape[0], 100);
+    EXPECT_EQ(read_arr1->shape().size(), 1);
+    EXPECT_EQ(read_arr1->shape(0), 100);
     for (size_t i = 0; i < 100; ++i) {
-        EXPECT_NEAR(read_arr1->data[i], static_cast<double>(i) * 1.5, 1e-10);
+        EXPECT_NEAR(read_arr1->flat(i), static_cast<double>(i) * 1.5, 1e-10);
     }
 
-    auto read_arr2 = store.get<NDArray<int32_t>>("int32_matrix");
+    auto read_arr2 = store.get<ndarray<int32_t>>("int32_matrix");
     ASSERT_NE(read_arr2, nullptr);
-    EXPECT_EQ(read_arr2->shape.size(), 2);
-    EXPECT_EQ(read_arr2->shape[0], 10);
-    EXPECT_EQ(read_arr2->shape[1], 20);
-    for (size_t i = 0; i < arr2.data.size(); ++i) {
-        EXPECT_EQ(read_arr2->data[i], static_cast<int32_t>(i));
+    EXPECT_EQ(read_arr2->shape().size(), 2);
+    EXPECT_EQ(read_arr2->shape(0), 10);
+    EXPECT_EQ(read_arr2->shape(1), 20);
+    for (size_t i = 0; i < arr2.size(); ++i) {
+        EXPECT_EQ(read_arr2->flat(i), static_cast<int32_t>(i));
     }
 
-    auto read_arr3 = store.get<NDArray<float>>("float32_tensor");
+    auto read_arr3 = store.get<ndarray<float>>("float32_tensor");
     ASSERT_NE(read_arr3, nullptr);
-    EXPECT_EQ(read_arr3->shape.size(), 3);
-    EXPECT_EQ(read_arr3->shape[0], 5);
-    EXPECT_EQ(read_arr3->shape[1], 4);
-    EXPECT_EQ(read_arr3->shape[2], 3);
-    for (size_t i = 0; i < arr3.data.size(); ++i) {
-        EXPECT_NEAR(read_arr3->data[i], static_cast<float>(i) / 10.0f, 1e-6f);
+    EXPECT_EQ(read_arr3->shape().size(), 3);
+    EXPECT_EQ(read_arr3->shape(0), 5);
+    EXPECT_EQ(read_arr3->shape(1), 4);
+    EXPECT_EQ(read_arr3->shape(2), 3);
+    for (size_t i = 0; i < arr3.size(); ++i) {
+        EXPECT_NEAR(read_arr3->flat(i), static_cast<float>(i) / 10.0f, 1e-6f);
     }
 }
 
@@ -191,9 +191,9 @@ TEST_F(BlockCompressionTest, VerifyBlockMetadata) {
     SCStore store(testFile, CompressionAlgorithm::GZIP, 1024);
 
     // Store an array
-    NDArray<int32_t> arr({10, 20});
-    for (size_t i = 0; i < arr.data.size(); ++i) {
-        arr.data[i] = static_cast<int32_t>(i);
+    ndarray<int32_t> arr({10, 20});
+    for (size_t i = 0; i < arr.size(); ++i) {
+        arr.flat(i) = static_cast<int32_t>(i);
     }
     store.put("int32_matrix", arr);
     store.flush();
@@ -234,9 +234,9 @@ TEST_F(BlockCompressionTest, CompressionRatio) {
     SCStore store(testFile, CompressionAlgorithm::GZIP, 1024);
 
     // Store a large array with pattern data (compressible)
-    NDArray<double> arr({1000});
+    ndarray<double> arr({1000});
     for (size_t i = 0; i < 1000; ++i) {
-        arr.data[i] = static_cast<double>(i % 10);  // Repeating pattern
+        arr.flat(i) = static_cast<double>(i % 10);  // Repeating pattern
     }
     store.put("compressible_data", arr);
     store.flush();
