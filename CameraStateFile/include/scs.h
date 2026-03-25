@@ -24,12 +24,9 @@
 #include <zlib.h>
 #endif
 
-const std::string PROJECT_NAME = "SCS 0.1.0";
-const char* MAGIC_STRING = "CLOUDS++";
-const size_t MAGIC_STRING_LENGTH = 8;
-
-constexpr const char* MAGIC_UNCOMPRESSED = "CLD0";
-constexpr const char* MAGIC_GZIPPED = "CLDG";
+inline const std::string PROJECT_NAME = "SCS 0.1.0";
+inline const char* MAGIC_STRING = "CLOUDS++";
+inline const size_t MAGIC_STRING_LENGTH = 8;
 
 
 //==============================================================================
@@ -92,7 +89,7 @@ namespace logger {
      * @brief Sets the current log level
      * @param level New log level to use
      */
-    void set_log_level(LogLevel level) {
+    inline void set_log_level(LogLevel level) {
         current_log_level = level;
     }
   }
