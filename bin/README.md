@@ -1,50 +1,50 @@
-# CameraStateFile Command-Line Tools
+# STAR Command-Line Tools
 
-This directory contains command-line tools for working with SCS (Simple Columnar Store) files.
+This directory contains command-line tools for working with STAR files.
 
 ## Tools
 
-### 1. scsls
-**Purpose**: Inspect and list contents of SCS files
+### 1. starls
+**Purpose**: Inspect and list contents of STAR files
 
 **Usage**:
 ```bash
 # List all keys
-scsls data.scs
+starls data.star
 
 # Verbose output with metadata
-scsls -v data.scs
+starls -v data.star
 
 # Print specific key data
-scsls -d array_name data.scs
+starls -d array_name data.star
 
 # Print all data
-scsls -a data.scs
+starls -a data.star
 ```
 
 **Build**: Always built when `CAMERASTATEFILE_BUILD_TOOLS=ON` (default)
 
 ---
 
-### 2. scs_translate
+### 2. star_translate
 **Purpose**: Convert between SCS and other formats (JSON, MessagePack)
 
 **Usage**:
 ```bash
 # SCS to JSON
-scs_translate data.scs data.json
+star_translate data.star data.json
 
 # JSON to SCS
-scs_translate data.json data.scs
+star_translate data.json data.star
 
 # With compression
-scs_translate -c gzip data.json data.scs
+star_translate -c gzip data.json data.star
 
 # With custom block size
-scs_translate -c gzip -b 4096 data.json data.scs
+star_translate -c gzip -b 4096 data.json data.star
 
 # MessagePack (if built with msgpack support)
-scs_translate data.scs data.msgpack
+star_translate data.star data.msgpack
 ```
 
 **Build**: Controlled by `CAMERASTATEFILE_BUILD_TRANSLATE=ON` (default)
@@ -70,11 +70,11 @@ make
 ### Build Specific Tool
 
 ```bash
-# Build only scsls
-make scsls
+# Build only starls
+make starls
 
-# Build only scs_translate
-make scs_translate
+# Build only star_translate
+make star_translate
 ```
 
 ### Install
@@ -106,7 +106,7 @@ Full validation suite with all features:
 
 ```bash
 cd build
-../bin/validate_scs_translate.sh
+../bin/validate_star_translate.sh
 ```
 
 **Time**: ~30-60 seconds
@@ -126,7 +126,7 @@ Run via CTest:
 
 ```bash
 cd build
-ctest -R scs_translate_validation -V
+ctest -R star_translate_validation -V
 ```
 
 Or run all tests:
@@ -163,7 +163,7 @@ make example_json_conversion
 ### Test Scripts
 
 1. **quick_test_translate.sh** - Fast smoke test (~5s)
-2. **validate_scs_translate.sh** - Comprehensive validation (~60s)
+2. **validate_star_translate.sh** - Comprehensive validation (~60s)
 3. **test_translate.sh** - Manual interactive testing
 
 ---
@@ -174,7 +174,7 @@ make example_json_conversion
 
 To add a new format (e.g., HDF5):
 
-1. Add conversion functions to `scs_translate.cpp`:
+1. Add conversion functions to `star_translate.cpp`:
    ```cpp
    void scs_to_hdf5(const std::string& input, const std::string& output);
    void hdf5_to_scs(const std::string& input, const std::string& output);
@@ -201,9 +201,9 @@ To add a new format (e.g., HDF5):
 Enable verbose output:
 
 ```bash
-# For scs_translate
+# For star_translate
 export CAMERASTATEFILE_LOG_LEVEL=DEBUG
-./bin/scs_translate data.scs data.json
+./bin/star_translate data.star data.json
 ```
 
 Check conversion output:
@@ -213,7 +213,7 @@ Check conversion output:
 cat data.json | jq '.arrays | keys'
 
 # Compare file sizes
-ls -lh data.scs data.json
+ls -lh data.star data.json
 ```
 
 Validate JSON structure:
@@ -235,14 +235,14 @@ bin/
 ├── CMakeLists.txt                  # Build configuration
 ├── README.md                       # This file
 │
-├── scsls.cpp                       # SCS inspector tool
-├── scs_translate.cpp               # Format converter tool
+├── starls.cpp                       # SCS inspector tool
+├── star_translate.cpp               # Format converter tool
 │
 ├── example_json_conversion.cpp     # Example program
 ├── test_translate_roundtrip.cpp    # Integration test
 │
 ├── quick_test_translate.sh         # Quick smoke test
-├── validate_scs_translate.sh       # Full validation suite
+├── validate_star_translate.sh       # Full validation suite
 ├── test_translate.sh               # Manual test helper
 │
 └── TRANSLATE_TOOL_SUMMARY.md       # Detailed documentation
@@ -252,14 +252,14 @@ bin/
 
 ## Troubleshooting
 
-### "scs_translate not found"
+### "star_translate not found"
 
 **Problem**: Tool not in PATH after installation
 
 **Solution**:
 ```bash
 # Check installation location
-find build/install -name scs_translate
+find build/install -name star_translate
 
 # Add to PATH or use full path
 export PATH="$PATH:$(pwd)/build/install/bin"
@@ -291,7 +291,7 @@ brew install msgpack
 conda install -c conda-forge msgpack-cxx
 
 # Rebuild
-cd build && cmake .. && make scs_translate
+cd build && cmake .. && make star_translate
 ```
 
 ### Build Errors
@@ -323,10 +323,10 @@ For files > 1GB:
 
 ```bash
 # Use larger block size for better compression ratio
-scs_translate -c gzip -b 65536 large.json large.scs
+star_translate -c gzip -b 65536 large.json large.star
 
 # Or no compression for faster conversion
-scs_translate -c none large.json large.scs
+star_translate -c none large.json large.star
 ```
 
 ### Batch Conversion
@@ -335,13 +335,13 @@ Convert multiple files:
 
 ```bash
 # SCS to JSON
-for file in *.scs; do
-    scs_translate "$file" "${file%.scs}.json"
+for file in *.star; do
+    star_translate "$file" "${file%.star}.json"
 done
 
 # JSON to SCS with compression
 for file in *.json; do
-    scs_translate -c gzip "$file" "${file%.json}.scs"
+    star_translate -c gzip "$file" "${file%.json}.star"
 done
 ```
 
