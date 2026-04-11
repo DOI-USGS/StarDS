@@ -199,19 +199,6 @@ else()
   message(STATUS "Skipping Tests")
 endif()
 
-####################
-# Benchmarks Build #
-####################
-
-cmake_dependent_option (STAR_BUILD_BENCHMARKS "Build the Star Benchmarks" ON STAR_BUILD_LIB OFF)
-
-if(STAR_BUILD_BENCHMARKS)
-  find_package (Threads)
-  add_subdirectory(Star/benchmarks)
-else()
-  message(STATUS "Skipping Benchmarks")
-endif()
-
 ###############
 # Tools Build #
 ###############
