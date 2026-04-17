@@ -6,9 +6,66 @@ except ImportError:
 
 from .enums import DataType, FileMode
 import numpy as np
-from typing import Optional, Union, List
+from typing import Optional, Union, List, Dict, Any
 from .ndarray import NDArray
 from .metadata import MetadataValue
+
+
+class MetadataAccessor:
+    """
+    Pythonic wrapper for C++ MetadataAccessor.
+
+    Provides dictionary-like access to metadata: ds.meta["key"] = value
+    """
+
+    def __init__(self, cpp_meta, parent_dataset):
+        """
+        Args:
+            cpp_meta: C++ MetadataAccessor instance
+            parent_dataset: Parent StarDataset instance (for put_metadata/get logic)
+        """
+        self._cpp_meta = cpp_meta
+        self._parent = parent_dataset
+
+    def __setitem__(self, key: str, value: Union[np.ndarray, NDArray, list, str, int, float]):
+        """Store value in metadata block: ds.meta["key"] = value"""
+        self._parent.put_metadata(key, value)
+
+    def __getitem__(self, key: str) -> np.ndarray:
+        """Retrieve value from metadata block: value = ds.meta["key"]"""
+        meta = self._cpp_meta.get(key)
+        if meta is None:
+            raise KeyError(f"Key not found: {key}")
+        return MetadataValue(meta).to_numpy()
+
+    def __contains__(self, key: str) -> bool:
+        """Check if key exists: "key" in ds.meta"""
+        return self._cpp_meta.contains(key)
+
+    def keys(self) -> List[str]:
+        """Get all metadata keys"""
+        return self._parent.get_metadata_keys()
+
+    def __len__(self) -> int:
+        """Get count of metadata entries"""
+        return self._parent.get_metadata_count()
+
+    # Expose C++ methods for direct access if needed
+    def get(self, key: str):
+        """Direct access to C++ get() method"""
+        return self._cpp_meta.get(key)
+
+    def put(self, key: str, value):
+        """Direct access to C++ put() methods - use __setitem__ instead"""
+        raise NotImplementedError("Use ds.meta['key'] = value instead")
+
+    def remove(self, key: str):
+        """Remove metadata entry"""
+        self._cpp_meta.remove(key)
+
+    def clear(self):
+        """Clear all metadata"""
+        self._cpp_meta.clear()
 
 
 class StarDataset:
@@ -38,6 +95,8 @@ class StarDataset:
         # Use the open static factory method
         # SWIG exposes static methods as class methods
         self._store = _star.StarDataset.open(filename, mode)
+        # Wrap the C++ MetadataAccessor with Python wrapper for ds.meta["key"] = value
+        self.meta = MetadataAccessor(self._store.meta, self)
 
     @classmethod
     def create(cls, filename: str, config=None):
@@ -57,6 +116,8 @@ class StarDataset:
             instance._store = _star.StarDataset.create(filename)
         else:
             instance._store = _star.StarDataset.create(filename, config)
+        # Wrap the C++ MetadataAccessor
+        instance.meta = MetadataAccessor(instance._store.meta, instance)
         return instance
 
     @classmethod
@@ -74,6 +135,8 @@ class StarDataset:
         instance = cls.__new__(cls)
         instance._mode = mode
         instance._store = _star.StarDataset.open(filename, mode)
+        # Wrap the C++ MetadataAccessor
+        instance.meta = MetadataAccessor(instance._store.meta, instance)
         return instance
 
     def __enter__(self):
@@ -83,9 +146,12 @@ class StarDataset:
         if self._mode != "r":
             self.flush()
 
-    def put(self, key: str, value: Union[np.ndarray, NDArray]):
+    def put(self, key: str, value: Union[np.ndarray, NDArray, list, str, int, float]):
         """Store an array (stored separately, not in metadata block)"""
-        if isinstance(value, np.ndarray):
+        # Convert Python types to NDArray
+        if isinstance(value, (list, str, int, float)):
+            value = NDArray.from_numpy(value)
+        elif isinstance(value, np.ndarray):
             value = NDArray.from_numpy(value)
 
         # Determine the dtype and call appropriate put_array method
@@ -112,12 +178,17 @@ class StarDataset:
             self._store.put_array_float32(key, value._impl)
         elif cpp_type == 'NDArrayFloat64':
             self._store.put_array_float64(key, value._impl)
+        elif cpp_type == 'NDArrayString':
+            self._store.put_array_string(key, value._impl)
         else:
             raise ValueError(f"Unsupported array type: {cpp_type}")
 
-    def put_metadata(self, key: str, value: Union[np.ndarray, NDArray]):
+    def put_metadata(self, key: str, value: Union[np.ndarray, NDArray, list, str, int, float]):
         """Store an array in metadata block (for small arrays/scalars)"""
-        if isinstance(value, np.ndarray):
+        # Convert Python types to NDArray
+        if isinstance(value, (list, str, int, float)):
+            value = NDArray.from_numpy(value)
+        elif isinstance(value, np.ndarray):
             value = NDArray.from_numpy(value)
 
         # Determine the dtype and call appropriate meta.put method
@@ -144,6 +215,8 @@ class StarDataset:
             self._store.meta.put_float32(key, value._impl)
         elif cpp_type == 'NDArrayFloat64':
             self._store.meta.put_float64(key, value._impl)
+        elif cpp_type == 'NDArrayString':
+            self._store.meta.put_string(key, value._impl)
         else:
             raise ValueError(f"Unsupported array type: {cpp_type}")
 
@@ -245,24 +318,42 @@ class StarDataset:
         """
         return self.get(key)
 
-    def __setitem__(self, key: str, value: Union[np.ndarray, NDArray]):
+    def __setitem__(self, key: str, value: Union[np.ndarray, NDArray, list, str, int, float]):
         """
         Store array using dictionary syntax.
-        Small arrays go to metadata block, large arrays stored separately for slicing.
+
+        Stores arrays in separate storage (supports slicing).
+        Raw Python scalars and strings are not allowed - use arrays or ds.meta instead.
 
         Examples:
-            >>> store["my_array"] = np.array([1, 2, 3])
-        """
-        # Auto-route: small arrays (<64KB) to metadata, large arrays separately
-        if isinstance(value, np.ndarray):
-            byte_size = value.nbytes
-        else:
-            byte_size = value._impl.size() * value._impl.dtype().itemsize
+            >>> store["data"] = [1, 2, 3]           # ✓ List → separate storage
+            >>> store["data"] = np.array([1, 2])    # ✓ NumPy array → separate storage
+            >>> store["scalar"] = np.array(5)       # ✓ 0-d array → separate storage
+            >>> store["test"] = 5                   # ✗ Error: use ds.meta["test"] = 5
+            >>> store["label"] = "hello"            # ✗ Error: use ds.meta["label"] = "hello"
 
-        if byte_size < 65536:  # 64KB threshold
-            self.put_metadata(key, value)
-        else:
-            self.put(key, value)
+        For metadata storage (accepts scalars):
+            >>> store.meta["test"] = 5              # ✓ Scalar → metadata
+            >>> store.meta["label"] = "hello"       # ✓ String → metadata
+            >>> store.meta["tags"] = ["a", "b"]     # ✓ String list → metadata
+        """
+        # Reject raw Python scalars and strings
+        if isinstance(value, (int, float, bool, np.number)):
+            raise TypeError(
+                f"Cannot store raw Python scalar. Either:\n"
+                f"  • Use NumPy array: ds['{key}'] = np.array({value})\n"
+                f"  • Use metadata: ds.meta['{key}'] = {value}  (recommended for scalars)"
+            )
+
+        if isinstance(value, str):
+            raise TypeError(
+                f"Cannot store raw Python string. Either:\n"
+                f"  • Use array: ds['{key}'] = ['{value}']\n"
+                f"  • Use metadata: ds.meta['{key}'] = '{value}'  (recommended for strings)"
+            )
+
+        # All other types (arrays, lists) go to separate storage
+        self.put(key, value)
 
     def get_metadata_keys(self) -> List[str]:
         """Get keys stored in metadata block"""
@@ -271,6 +362,38 @@ class StarDataset:
     def get_metadata_count(self) -> int:
         """Get count of metadata entries"""
         return self._store.get_metadata_count()
+
+    def get_all_metadata(self) -> Dict[str, Any]:
+        """
+        Get all metadata entries at once as a dictionary.
+
+        Loads the entire metadata block from disk on first call,
+        subsequent calls use cached data. Returns native Python dict
+        with numpy arrays as values.
+
+        Returns:
+            Dict[str, np.ndarray]: Dictionary mapping keys to numpy arrays
+
+        Example:
+            >>> store = StarDataset.open('file.star')
+            >>> all_meta = store.get_all_metadata()
+            >>> print(all_meta.keys())
+            dict_keys(['key1', 'key2', 'key3'])
+            >>> print(all_meta['key1'])
+            array([1, 2, 3])
+        """
+        # Get all metadata keys
+        keys = self.get_metadata_keys()
+
+        # Get each value and convert to numpy array
+        # Note: This is efficient because metadata block is already loaded by first get()
+        result = {}
+        for key in keys:
+            meta = self._store.meta.get(key)
+            if meta is not None:
+                result[key] = MetadataValue(meta).to_numpy()
+
+        return result
 
     def is_metadata_loaded(self) -> bool:
         """Check if metadata block is loaded in memory"""

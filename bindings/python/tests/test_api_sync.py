@@ -10,8 +10,8 @@ def test_metadata_keys(tmp_path):
 
     test_file = str(tmp_path / "metadata_keys.star")
     store = pystar.StarDataset(test_file)
-    store["key1"] = np.array([1])
-    store["key2"] = np.array([2])
+    store.put_metadata("key1", np.array([1]))
+    store.put_metadata("key2", np.array([2]))
     store.flush()
 
     meta_keys = store.get_metadata_keys()
@@ -28,10 +28,10 @@ def test_metadata_count(tmp_path):
     store = pystar.StarDataset(test_file)
     assert store.get_metadata_count() == 0
 
-    store["key1"] = np.array([1])
+    store.put_metadata("key1", np.array([1]))
     assert store.get_metadata_count() == 1
 
-    store["key2"] = np.array([2])
+    store.put_metadata("key2", np.array([2]))
     assert store.get_metadata_count() == 2
     store.close()
 
@@ -217,10 +217,10 @@ def test_metadata_keys_persistence(tmp_path):
 
     test_file = str(tmp_path / "persist_keys.star")
 
-    # Write data
+    # Write data to metadata block explicitly
     store1 = pystar.StarDataset(test_file)
-    store1["array1"] = np.array([1, 2, 3])
-    store1["array2"] = np.array([4, 5, 6])
+    store1.put_metadata("array1", np.array([1, 2, 3]))
+    store1.put_metadata("array2", np.array([4, 5, 6]))
     store1.flush()
     store1.close()
 
@@ -231,6 +231,146 @@ def test_metadata_keys_persistence(tmp_path):
     assert "array2" in keys
     assert store2.get_metadata_count() == 2
     store2.close()
+
+
+def test_get_all_metadata(tmp_path):
+    """Test get_all_metadata returns dict of all metadata"""
+    import pystar
+
+    file_path = str(tmp_path / "test_get_all.star")
+
+    # Create store with metadata
+    store = pystar.StarDataset.create(file_path)
+    store.put_metadata("scalar_int", np.array(42, dtype=np.int32))
+    store.put_metadata("scalar_float", np.array(3.14, dtype=np.float64))
+    store.put_metadata("array", np.array([1, 2, 3], dtype=np.int64))
+    store.flush()
+    store.close()
+
+    # Reopen and test get_all_metadata
+    store = pystar.StarDataset.open(file_path)
+
+    # Verify metadata not loaded yet
+    assert not store.is_metadata_loaded()
+
+    # Get all metadata
+    all_meta = store.get_all_metadata()
+
+    # Verify metadata now loaded
+    assert store.is_metadata_loaded()
+
+    # Verify returns native dict
+    assert isinstance(all_meta, dict)
+    assert len(all_meta) == 3
+    assert "scalar_int" in all_meta
+    assert "scalar_float" in all_meta
+    assert "array" in all_meta
+
+    # Verify values
+    assert all_meta["scalar_int"].to_numpy() == 42
+    assert np.isclose(all_meta["scalar_float"].to_numpy(), 3.14)
+    assert np.array_equal(all_meta["array"].to_numpy(), [1, 2, 3])
+
+    # Call again to verify cached (no redundant disk read)
+    all_meta2 = store.get_all_metadata()
+    assert len(all_meta2) == 3
+
+    store.close()
+
+
+def test_string_type_support(tmp_path):
+    """Test storing strings and string arrays"""
+    import pystar
+    import numpy as np
+
+    file_path = str(tmp_path / "test_strings.star")
+    store = pystar.StarDataset.create(file_path)
+
+    # Strings must use metadata (single string or lists)
+    store.meta["label"] = "experiment_A"
+    store.meta["tags"] = ["red", "blue", "green"]
+    store.meta["names"] = np.array(["alice", "bob", "charlie"])
+
+    # Python list of numbers works in separate storage
+    store["data"] = [1, 2, 3, 4, 5]
+
+    store.flush()
+    store.close()
+
+    # Verify
+    store = pystar.StarDataset.open(file_path)
+
+    assert store.meta["label"].tolist() == ["experiment_A"]
+    assert store.meta["tags"].tolist() == ["red", "blue", "green"]
+    assert store.meta["names"].tolist() == ["alice", "bob", "charlie"]
+    assert store["data"].tolist() == [1, 2, 3, 4, 5]
+
+    store.close()
+
+
+def test_no_automatic_metadata_routing(tmp_path):
+    """Test that __setitem__ throws errors for raw scalars/strings"""
+    import pystar
+    import numpy as np
+    import pytest
+
+    file_path = str(tmp_path / "test_no_auto.star")
+    store = pystar.StarDataset.create(file_path)
+
+    # Raw Python scalars should throw error
+    with pytest.raises(TypeError, match="raw Python scalar"):
+        store["test"] = 5
+
+    # Raw Python strings should throw error
+    with pytest.raises(TypeError, match="raw Python string"):
+        store["label"] = "hello"
+
+    # 0-d NumPy arrays are ALLOWED (not raw Python scalars)
+    store["scalar_array"] = np.array(42)
+    assert store["scalar_array"].tolist() == [42]  # Wrapped as 1-element array
+
+    # Lists and arrays work
+    store["test"] = [5]  # List
+    store["matrix"] = np.array([[1, 2], [3, 4]])  # Multi-d array
+
+    # Metadata accepts scalars directly
+    store.meta["scalar"] = 99
+    store.meta["label"] = "hello"
+
+    # Verify
+    assert store["test"].tolist() == [5]
+    assert store["scalar_array"].item() == 42  # 0-d array
+    assert store.meta["scalar"].item() == 99
+    assert store.meta["label"].tolist() == ["hello"]
+
+    store.close()
+
+
+def test_scalar_string_errors(tmp_path):
+    """Test that scalars and strings produce helpful error messages"""
+    import pystar
+    import pytest
+
+    file_path = str(tmp_path / "test_errors.star")
+    store = pystar.StarDataset.create(file_path)
+
+    # Test scalar error message
+    with pytest.raises(TypeError) as exc_info:
+        store["count"] = 42
+
+    error_msg = str(exc_info.value)
+    assert "raw Python scalar" in error_msg
+    assert "ds.meta" in error_msg
+
+    # Test string error message
+    with pytest.raises(TypeError) as exc_info:
+        store["name"] = "test"
+
+    error_msg = str(exc_info.value)
+    assert "raw Python string" in error_msg
+    assert "ds.meta" in error_msg
+
+    store.close()
 
 
 if __name__ == "__main__":

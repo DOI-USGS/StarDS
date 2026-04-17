@@ -3448,6 +3448,8 @@ public:
     std::map<std::string, MetadataValue> get_batch(
         const std::vector<std::string>& keys);
 
+    std::map<std::string, MetadataValue> get_all();
+
     // Management operations
     void remove(const std::string& key);
     void clear();
@@ -4518,6 +4520,14 @@ public:
                             in.seekg(m_cold.file_positions[i]);  // Read from OLD position
                             in.read(array_data.data(), array_data.size());
                         }
+
+                        // Adjust block offsets for new contiguous layout
+                        // The copied data is now a sequential buffer starting at offset 0
+                        size_t current_offset = 0;
+                        for (auto& block : blocks) {
+                            block.offset = current_offset;
+                            current_offset += block.compressed_size;
+                        }
                     }
 
                     // Store actual block infos
@@ -4573,6 +4583,14 @@ public:
                         if (in) {
                             in.seekg(m_cold.file_positions[i]);  // Read from OLD position
                             in.read(array_data.data(), array_data.size());
+                        }
+
+                        // Adjust block offsets for new contiguous layout
+                        // The copied data is now a sequential buffer starting at offset 0
+                        size_t current_offset = 0;
+                        for (auto& block : blocks) {
+                            block.offset = current_offset;
+                            current_offset += block.compressed_size;
                         }
                     }
 
@@ -4754,6 +4772,14 @@ public:
                         if (in) {
                             in.seekg(m_cold.file_positions[i]);  // Read from OLD position
                             in.read(array_data.data(), array_data.size());
+                        }
+
+                        // Adjust block offsets for new contiguous layout
+                        // The copied data is now a sequential buffer starting at offset 0
+                        size_t current_offset = 0;
+                        for (auto& block : blocks) {
+                            block.offset = current_offset;
+                            current_offset += block.compressed_size;
                         }
                     }
 
@@ -6475,6 +6501,37 @@ inline std::map<std::string, MetadataValue> MetadataAccessor::get_batch(
             if (legacy_meta) {
                 results[key] = *legacy_meta;
             }
+        }
+    }
+
+    return results;
+}
+
+inline std::map<std::string, MetadataValue> MetadataAccessor::get_all() {
+    std::shared_lock<std::shared_mutex> lock(m_store->m_mutex);
+
+    // Ensure metadata block is loaded (idempotent, cached)
+    m_store->load_metadata_block();
+
+    std::map<std::string, MetadataValue> results;
+
+    // SoA pattern: iterate through all entries
+    for (size_t i = 0; i < m_store->m_hot.keys.size(); ++i) {
+        // Filter for metadata block entries only
+        if (m_store->m_cold.stored_in_metadata_flags[i] == 1) {
+            const std::string& key = m_store->m_hot.keys[i];
+
+            // Access hot data (cache-efficient)
+            DataType dtype = m_store->m_hot.dtypes[i];
+            size_t data_idx = m_store->m_hot.data_indices[i];
+
+            // Build MetadataValue
+            MetadataValue meta;
+            meta.data = m_store->m_data_storage[data_idx];
+            meta.dtype = dtype;
+            meta.shape = m_store->m_cold.shapes[i];
+
+            results[key] = meta;
         }
     }
 

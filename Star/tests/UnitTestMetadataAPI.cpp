@@ -226,3 +226,53 @@ TEST_F(MetadataAPITest, IterateOverAllMetadataWithTypeChecking) {
         }
     }
 }
+
+TEST_F(MetadataAPITest, GetAllMetadata) {
+    auto store = StarDataset::create(testFile);
+
+    // Put several metadata entries
+    store->meta.put("key1", NDArray<int32_t>({}, 42));
+    store->meta.put("key2", NDArray<double>({}, 3.14));
+    store->meta.put("key3", NDArray<std::string>({}, "hello"));
+
+    NDArray<int32_t> arr({3});
+    arr.flat(0) = 1; arr.flat(1) = 2; arr.flat(2) = 3;
+    store->meta.put("key4", arr);
+
+    store->flush();
+
+    // Test get_all on same instance
+    auto all_meta = store->meta.get_all();
+    EXPECT_EQ(all_meta.size(), 4);
+    EXPECT_TRUE(all_meta.count("key1") > 0);
+    EXPECT_TRUE(all_meta.count("key2") > 0);
+    EXPECT_TRUE(all_meta.count("key3") > 0);
+    EXPECT_TRUE(all_meta.count("key4") > 0);
+
+    // Verify values
+    EXPECT_EQ(all_meta["key1"].as<int32_t>().flat(0), 42);
+    EXPECT_NEAR(all_meta["key2"].as<double>().flat(0), 3.14, 1e-10);
+    EXPECT_EQ(all_meta["key3"].as<std::string>().flat(0), "hello");
+    EXPECT_EQ(all_meta["key4"].as<int32_t>().flat(0), 1);
+    EXPECT_EQ(all_meta["key4"].as<int32_t>().flat(1), 2);
+    EXPECT_EQ(all_meta["key4"].as<int32_t>().flat(2), 3);
+
+    // Test get_all after reopening (verify disk read and caching)
+    store.reset();
+
+    auto store2 = StarDataset::open(testFile);
+    EXPECT_FALSE(store2->is_metadata_loaded());  // Not loaded yet
+
+    auto all_meta2 = store2->meta.get_all();
+    EXPECT_TRUE(store2->is_metadata_loaded());  // Now loaded
+    EXPECT_EQ(all_meta2.size(), 4);
+
+    // Verify values after reload
+    EXPECT_EQ(all_meta2["key1"].as<int32_t>().flat(0), 42);
+    EXPECT_NEAR(all_meta2["key2"].as<double>().flat(0), 3.14, 1e-10);
+
+    // Call again to verify no redundant disk read (cached)
+    auto all_meta3 = store2->meta.get_all();
+    EXPECT_EQ(all_meta3.size(), 4);
+    EXPECT_EQ(all_meta3["key1"].as<int32_t>().flat(0), 42);
+}

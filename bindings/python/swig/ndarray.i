@@ -36,6 +36,7 @@ using namespace star;
 %template(put_uint64)  MetadataAccessor::put<NDArray<uint64_t>>;
 %template(put_float32) MetadataAccessor::put<NDArray<float>>;
 %template(put_float64) MetadataAccessor::put<NDArray<double>>;
+%template(put_string)  MetadataAccessor::put<NDArray<std::string>>;
 
 // Instantiate StarDataset::put for all types (stores separately, not in metadata block)
 %template(put_array_int8)    StarDataset::put<int8_t>;
@@ -48,10 +49,12 @@ using namespace star;
 %template(put_array_uint64)  StarDataset::put<uint64_t>;
 %template(put_array_float32) StarDataset::put<float>;
 %template(put_array_float64) StarDataset::put<double>;
+%template(put_array_string)  StarDataset::put<std::string>;
 
 // Instantiate std::map for batch operations
 %template(MapStringNDArrayInt64) std::map<std::string, NDArray<int64_t>>;
 %template(MapStringNDArrayFloat64) std::map<std::string, NDArray<double>>;
+%template(MapStringNDArrayString) std::map<std::string, NDArray<std::string>>;
 %template(MapStringMetadataValue) std::map<std::string, MetadataValue>;
 
 // Instantiate MetadataAccessor::put_batch for all types
@@ -65,4 +68,5 @@ using namespace star;
 %template(put_batch_uint64)  MetadataAccessor::put_batch<NDArray<uint64_t>>;
 %template(put_batch_float32) MetadataAccessor::put_batch<NDArray<float>>;
 %template(put_batch_float64) MetadataAccessor::put_batch<NDArray<double>>;
+%template(put_batch_string)  MetadataAccessor::put_batch<NDArray<std::string>>;
 

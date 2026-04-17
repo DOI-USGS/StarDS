@@ -21,6 +21,7 @@ DTYPE_TO_NDARRAY = {
     np.dtype('uint64'): (DataType.UINT64, _star.NDArrayUInt64, _star.VectorUInt64),
     np.dtype('float32'): (DataType.FLOAT32, _star.NDArrayFloat32, _star.VectorFloat32),
     np.dtype('float64'): (DataType.FLOAT64, _star.NDArrayFloat64, _star.VectorFloat64),
+    np.dtype('object'): (DataType.STRING, _star.NDArrayString, _star.VectorString),
 }
 
 
@@ -41,16 +42,53 @@ class NDArray:
         self._impl = cpp_array
 
     @staticmethod
-    def from_numpy(arr: np.ndarray) -> 'NDArray':
+    def from_numpy(arr) -> 'NDArray':
         """
-        Create NDArray from NumPy array using zero-copy buffer protocol.
+        Create NDArray from NumPy array, Python list, or string.
 
         Args:
-            arr: NumPy array
+            arr: NumPy array, Python list, tuple, or string
 
         Returns:
             NDArray: Wrapped C++ ndarray
         """
+        # Handle Python lists/scalars by converting to NumPy first
+        if not isinstance(arr, np.ndarray):
+            if isinstance(arr, str):
+                # Single string -> 1-element array
+                arr = np.array([arr], dtype=object)
+            elif isinstance(arr, (list, tuple)):
+                # Try to infer dtype from first element
+                if len(arr) > 0 and isinstance(arr[0], str):
+                    arr = np.array(arr, dtype=object)
+                else:
+                    arr = np.array(arr)
+            else:
+                # Scalar
+                arr = np.array(arr)
+
+        # Convert string dtypes to object
+        if arr.dtype.kind in ('U', 'S'):  # Unicode or byte strings
+            arr = arr.astype(object)
+
+        # For strings, use element-by-element copy (no buffer protocol)
+        if arr.dtype == np.dtype('object'):
+            # Ensure contiguous for iteration
+            arr = np.ascontiguousarray(arr)
+
+            # Create C++ NDArrayString
+            shape = list(arr.shape)
+            cpp_ndarray = _star.NDArrayString(shape)
+
+            # Copy strings element-by-element using data() vector access
+            flat_arr = arr.flatten()
+            data_vec = cpp_ndarray.data()
+            for i, val in enumerate(flat_arr):
+                data_vec[i] = str(val)
+
+            return NDArray(cpp_ndarray)
+
+        # For numeric types, use fast buffer protocol
         # Ensure contiguous array
         arr = np.ascontiguousarray(arr)
 
