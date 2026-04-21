@@ -50,6 +50,10 @@ class MetadataAccessor:
         """Get count of metadata entries"""
         return self._parent.get_metadata_count()
 
+    def __iter__(self):
+        """Iterate over metadata keys: for key in ds.meta"""
+        return iter(self.keys())
+
     # Expose C++ methods for direct access if needed
     def get(self, key: str):
         """Direct access to C++ get() method"""
@@ -309,6 +313,10 @@ class StarDataset:
         """Check if key exists"""
         return self._store.meta.contains(key)
 
+    def __iter__(self):
+        """Iterate over all keys: for key in ds"""
+        return iter(self.keys())
+
     def __getitem__(self, key: str) -> np.ndarray:
         """
         Get array using dictionary syntax.
@@ -434,13 +442,33 @@ class StarDataset:
 
     def close(self):
         """
-        Flush and close the dataset.
+        Explicitly close the dataset and release all resources.
 
-        After calling close(), no further operations should be performed.
-        This is automatically called when using context managers.
+        After closing, the dataset cannot be used. Create a new StarDataset
+        object to access the file again.
+
+        This method is idempotent (safe to call multiple times).
+
+        Resource cleanup includes:
+        - Flushing all pending writes to disk
+        - Destroying thread pool
+        - Closing file handles
+        - Clearing memory caches
+
+        This is automatically called when using context managers or when the
+        object is destroyed.
+
+        Example:
+            ds = StarDataset.open("data.star")
+            data = ds["array"]
+            ds.close()
+
+            # To access again, create a new object
+            ds = StarDataset.open("data.star")
+            data = ds["array"]
         """
-        if self._mode != "r":
-            self.flush()
+        if self._store is not None:
+            self._store.close()
 
 
 __all__ = ['StarDataset']

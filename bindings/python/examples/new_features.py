@@ -1,8 +1,9 @@
 """
-Example demonstrating new Python API features:
+Example demonstrating standard STARDS Python API features:
 1. Dictionary-style accessors: ds["key"] = array
-2. Logger control: pystar.set_log_level()
-3. Explicit close(): ds.close()
+2. Metadata storage: ds.meta["key"] = value
+3. Iteration: for key in ds
+4. Logger control: pystar.set_log_level()
 """
 import pystar
 import numpy as np
@@ -27,53 +28,57 @@ def main():
         temp_file = f.name
 
     try:
-        # Feature 2: Dictionary-style accessors
+        # Feature 2: Dictionary-style accessors and metadata
         print("=" * 60)
-        print("Feature 2: Dictionary-Style Accessors")
+        print("Feature 2: Dictionary-Style Access & Metadata")
         print("=" * 60)
 
         # Create dataset
-        store = pystar.StarDataset(temp_file, "rw")
+        store = pystar.StarDataset.create(temp_file)
 
-        # OLD WAY (still works):
-        # store.put("old_style", np.array([1, 2, 3]))
-
-        # NEW WAY: Dictionary-style assignment
+        # Dictionary-style assignment for arrays
         print("Storing arrays with dict syntax: ds['key'] = array")
         store["numbers"] = np.array([1, 2, 3, 4, 5], dtype=np.int64)
         store["matrix"] = np.random.rand(3, 3)
         store["tensor"] = np.arange(24).reshape(2, 3, 4).astype(np.float32)
 
-        # Feature 3: Explicit close()
+        # Metadata storage for scalars and strings
+        print("\nStoring metadata: ds.meta['key'] = value")
+        store.meta["version"] = 1
+        store.meta["experiment"] = "demo"
+        store.meta["tags"] = ["example", "test"]
+
+        # Explicit close()
         print("\nClosing dataset explicitly with .close()")
         store.close()
         print("Dataset closed successfully\n")
 
         # Open again and read with dictionary syntax
         print("=" * 60)
-        print("Reading with Dictionary-Style Accessors")
+        print("Feature 3: Reading & Iteration")
         print("=" * 60)
 
-        store = pystar.StarDataset(temp_file, "r")
+        store = pystar.StarDataset.open(temp_file, mode="r")
 
-        # OLD WAY (still works):
-        # numbers = store.get("numbers")
-
-        # NEW WAY: Dictionary-style access
+        # Dictionary-style access for arrays
         print("Reading arrays with dict syntax: array = ds['key']")
         numbers = store["numbers"]
         print(f"Numbers: {numbers}")
 
-        matrix = store["matrix"]
-        print(f"\nMatrix shape: {matrix.shape}")
-        print(matrix)
+        # Iterate over all array keys
+        print("\nIterating over arrays:")
+        for key in store:
+            data = store[key]
+            print(f"  {key}: shape={data.shape}, dtype={data.dtype}")
 
-        tensor = store["tensor"]
-        print(f"\nTensor shape: {tensor.shape}")
+        # Access metadata
+        print("\nMetadata:")
+        for key in store.meta:
+            print(f"  {key}: {store.meta[key]}")
 
-        # Check if key exists using 'in' operator
-        print(f"\n'numbers' in store: {'numbers' in store}")
-        print(f"'nonexistent' in store: {'nonexistent' in store}")
+        # Get all metadata at once
+        all_meta = store.get_all_metadata()
+        print(f"\nAll metadata: {all_meta}")
 
         # Close without context manager
         store.close()

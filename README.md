@@ -193,7 +193,7 @@ for (const auto& [key, entry] : store) {
 STAR supports both **string modes** (Python-style) and **enum modes** for opening files:
 
 ```cpp
-// String modes (convenient, backward compatible)
+// String modes 
 StarDataset store1("data.star", "r");   // Read-only
 StarDataset store2("data.star", "w");   // Read-write (create if missing)
 StarDataset store3("data.star", "rw");  // Read-write (explicit)
@@ -266,25 +266,35 @@ aws_secret_access_key = KEY
 import numpy as np
 from pystar import StarDataset
 
-# Create and store arrays
-with StarDataset("data.star") as store:
-    store.put("matrix", np.random.rand(100, 100))
-    store.put("vector", np.arange(1000))
+# Create dataset and store arrays
+with StarDataset.create("data.star") as ds:
+    # Dictionary-style access
+    ds["matrix"] = np.random.rand(100, 100)
+    ds["vector"] = np.arange(1000)
+    
+    # Metadata storage (for scalars, small data)
+    ds.meta["sensor_id"] = 12345
+    ds.meta["timestamp"] = "2024-04-21"
 
 # Read back
-with StarDataset("data.star", mode="r") as store:
-    matrix = store.get("matrix")
-    print(f"Stored {len(store)} arrays")
-    print(f"Keys: {store.keys()}")
+with StarDataset.open("data.star", mode="r") as ds:
+    matrix = ds["matrix"]
+    sensor_id = ds.meta["sensor_id"]
+    
+    # Iterate over all arrays
+    for key in ds:
+        print(f"{key}: {ds[key].shape}")
 
 # S3 access
-with StarDataset("/vsis3/my-bucket/data.star", mode="r") as store:
-    data = store.get("sensor_data")
+with StarDataset.open("/vsis3/my-bucket/data.star", mode="r") as ds:
+    data = ds["sensor_data"]
 
 # HTTP access
-with StarDataset("/vsicurl/https://example.com/data.star", mode="r") as store:
-    data = store.get("array_name")
+with StarDataset.open("/vsicurl/https://example.com/data.star", mode="r") as ds:
+    data = ds["array_name"]
 ```
+
+**See [QUICKSTART.md](QUICKSTART.md) for a complete getting started guide.**
 
 ---
 

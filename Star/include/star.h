@@ -3503,6 +3503,7 @@ public:
     // Configuration and state
     StarConfig m_config;                                        // Current configuration for this dataset
     bool m_flushed = false;                                     // Track if already flushed (prevents redundant flushes)
+    std::atomic<bool> m_is_closed{false};                       // Track if dataset is closed (prevents operations after close)
     std::unique_ptr<ThreadPool> m_thread_pool;                  // Thread pool for parallel operations
 
     /**
@@ -3515,6 +3516,19 @@ public:
         return m_thread_pool &&
                num_blocks >= g_min_blocks_for_threading &&
                data_size >= g_min_bytes_for_threading;
+    }
+
+    /**
+     * @brief Ensure the dataset is open for operations
+     * @throws std::runtime_error if the dataset is closed
+     */
+    void ensureOpen() const {
+        if (m_is_closed.load(std::memory_order_acquire)) {
+            throw std::runtime_error(
+                "StarDataset is closed. Cannot perform operations on closed dataset. "
+                "Use open() or create() to reopen."
+            );
+        }
     }
 
     /**
@@ -4186,7 +4200,19 @@ public:
      * @brief Writes all data to the file (including metadata block)
      */
     void flush() {
+        ensureOpen();  // Check if dataset is open
         std::unique_lock<std::shared_mutex> lock(m_mutex);
+        flush_internal();
+    }
+
+private:
+    /**
+     * @brief Internal flush implementation (no closed state check, no locking)
+     * Must be called with m_mutex already held
+     * Used by close() which already holds the lock
+     */
+    void flush_internal() {
+        // Caller must hold m_mutex
 
         // Early return if already flushed
         if (m_flushed) {
@@ -4867,6 +4893,7 @@ public:
                   metadata_indices.size(), " metadata entries");
     }
 
+public:
     /**
      * @brief Save to a different file (local or S3)
      *
@@ -5164,12 +5191,75 @@ public:
      */
     ~StarDataset() {
         try {
-            flush();
+            if (!m_is_closed.load(std::memory_order_acquire)) {
+                close();  // Call close() which handles flush + cleanup
+            }
         } catch (const std::exception& e) {
             // Log error but don't throw from destructor
-            std::cerr << "Error flushing store in destructor: " << e.what() << std::endl;
+            std::cerr << "Error closing store in destructor: " << e.what() << std::endl;
         }
     }
+
+    /**
+     * @brief Explicitly close the dataset and release all resources
+     *
+     * After calling close(), the dataset cannot be used until reopened via reopen().
+     * This method is idempotent - safe to call multiple times.
+     *
+     * Resource cleanup includes:
+     * - Flushing all pending writes to disk
+     * - Destroying thread pool
+     * - Closing file handles
+     * - Clearing memory caches
+     */
+    void close() {
+        // Early exit if already closed (idempotent)
+        if (m_is_closed.load(std::memory_order_acquire)) {
+            return;
+        }
+
+        // Lock for exclusive access during close
+        std::unique_lock<std::shared_mutex> lock(m_mutex);
+
+        // Double-check after acquiring lock
+        if (m_is_closed.load(std::memory_order_relaxed)) {
+            return;
+        }
+
+        // Flush any pending writes (only if writable)
+        if (!isReadOnly()) {
+            flush_internal();  // Use internal flush to avoid ensureOpen() check
+        }
+
+        // Explicitly destroy resources
+        m_thread_pool.reset();      // Destroy thread pool
+        m_hot.keys.clear();
+        m_hot.dtypes.clear();
+        m_hot.locations.clear();
+        m_hot.dirty_flags.clear();
+        m_hot.loaded_flags.clear();
+        m_hot.data_indices.clear();
+        m_cold.shapes.clear();
+        m_cold.file_positions.clear();
+        m_cold.compressed_sizes.clear();
+        m_cold.uncompressed_sizes.clear();
+        m_cold.compressions.clear();
+        m_cold.block_infos.clear();
+        m_cold.stored_in_metadata_flags.clear();
+        m_data_storage.clear();
+        m_key_to_index.clear();
+        m_serialize_buffer.clear();
+        m_compress_buffer.clear();
+
+        // Reset file header state
+        m_file_header = FileHeader();  // Reset to default
+        m_header_size = 0;
+        m_header_dirty = false;
+
+        // Mark as closed (use release to sync with ensureOpen's acquire)
+        m_is_closed.store(true, std::memory_order_release);
+    }
+
 
     /**
      * @brief Store array as separate compressed array (not in metadata block)
@@ -5182,6 +5272,7 @@ public:
      */
     template<typename T>
     void put(const std::string& key, NDArray<T>&& value) {
+        ensureOpen();  // Check if dataset is open
         std::unique_lock<std::shared_mutex> lock(m_mutex);
         m_flushed = false;  // Data changed, needs flush
 
@@ -5290,6 +5381,7 @@ public:
      */
     template<typename T>
     NDArray<T> get(const std::string& key) {
+        ensureOpen();  // Check if dataset is open
         std::shared_lock<std::shared_mutex> lock(m_mutex);
 
         auto it = m_key_to_index.find(key);
@@ -5330,6 +5422,7 @@ public:
      * @return Vector of key names
      */
     std::vector<std::string> get_metadata_keys() const {
+        ensureOpen();  // Check if dataset is open
         std::vector<std::string> keys;
         // Iterate SoA and collect keys stored in metadata block
         for (size_t i = 0; i < m_hot.keys.size(); i++) {
@@ -5359,6 +5452,7 @@ public:
      * @return Vector of all keys in the store
      */
     std::vector<std::string> get_all_keys() {
+        ensureOpen();  // Check if dataset is open
         // Simply return all keys from SoA (both metadata and separate storage)
         return m_hot.keys;
     }
@@ -5394,6 +5488,7 @@ public:
      */
     template<typename T>
     NDArray<T> get_slice(const std::string& key, const std::vector<Slice>& slices) {
+        ensureOpen();  // Check if dataset is open
         // Validation using SoA
         auto it = m_key_to_index.find(key);
         if (it == m_key_to_index.end()) {
@@ -6265,6 +6360,7 @@ static inline std::vector<size_t> extract_shape_from_variant(const ValueVariant&
 
 template<typename V>
 void MetadataAccessor::put(const std::string& key, const V& value) {
+    m_store->ensureOpen();  // Check if dataset is open
     std::unique_lock<std::shared_mutex> lock(m_store->m_mutex);
 
     // Structure of Arrays: single lookup, cache-friendly updates
@@ -6365,6 +6461,7 @@ void MetadataAccessor::put(const std::string& key, const V& value) {
 }
 
 inline std::shared_ptr<MetadataValue> MetadataAccessor::get(const std::string& key) {
+    m_store->ensureOpen();  // Check if dataset is open
     std::shared_lock<std::shared_mutex> lock(m_store->m_mutex);
 
     auto it = m_store->m_key_to_index.find(key);
@@ -6617,6 +6714,7 @@ inline void MetadataAccessor::clear() {
 }
 
 inline bool MetadataAccessor::contains(const std::string& key) {
+    m_store->ensureOpen();  // Check if dataset is open
     std::shared_lock<std::shared_mutex> lock(m_store->m_mutex);
 
     // SoA pattern: single lookup in m_key_to_index

@@ -1,48 +1,61 @@
 #!/usr/bin/env python3
 """
-Basic usage example for CameraStateFile Python bindings.
+Basic usage example for STARDS Python bindings.
 
 This example demonstrates:
-- Creating a Store
+- Creating a dataset
 - Storing and retrieving arrays
-- Using different data types
+- Using metadata for scalars and strings
 - Context manager usage
+- Iteration over keys
 """
 
 import numpy as np
 from pystar import StarDataset
 
 def main():
-    # Create a new store (or open existing)
-    print("Creating store...")
-    with StarDataset("example_basic.star") as store:
-        # Store some arrays
+    # Create a new dataset
+    print("Creating dataset...")
+    with StarDataset.create("example_basic.star") as ds:
+        # Store arrays using dictionary syntax
         print("\nStoring arrays...")
-        store.put("integers", np.array([1, 2, 3, 4, 5], dtype=np.int32))
-        store.put("floats", np.random.rand(10))
-        store.put("matrix", np.ones((5, 5), dtype=np.float64))
-        store.put("3d_array", np.zeros((3, 4, 5)))
+        ds["integers"] = np.array([1, 2, 3, 4, 5], dtype=np.int32)
+        ds["floats"] = np.random.rand(10)
+        ds["matrix"] = np.ones((5, 5), dtype=np.float64)
+        ds["3d_array"] = np.zeros((3, 4, 5))
 
-        # Store is automatically flushed on exit
+        # Store metadata for scalars and small data
+        print("\nStoring metadata...")
+        ds.meta["experiment_id"] = 12345
+        ds.meta["timestamp"] = "2024-04-21"
+        ds.meta["tags"] = ["test", "example", "basic"]
+        ds.meta["pi"] = 3.14159
+
+        # Dataset is automatically flushed on exit
 
     # Reopen and read
-    print("\nReading from store...")
-    with StarDataset("example_basic.star", mode="r") as store:
-        print(f"Store contains {len(store)} arrays")
-        print(f"Keys: {store.keys()}")
+    print("\nReading from dataset...")
+    with StarDataset.open("example_basic.star", mode="r") as ds:
+        print(f"Dataset contains {len(ds)} arrays")
 
-        # Retrieve arrays
-        integers = store.get("integers")
+        # Iterate over all arrays
+        print("\nArrays:")
+        for key in ds:
+            array = ds[key]
+            print(f"  {key}: shape={array.shape}, dtype={array.dtype}")
+
+        # Access specific arrays
+        integers = ds["integers"]
         print(f"\nIntegers: {integers}")
-        print(f"  dtype: {integers.dtype}")
-        print(f"  shape: {integers.shape}")
 
-        matrix = store.get("matrix")
+        matrix = ds["matrix"]
         print(f"\nMatrix shape: {matrix.shape}")
         print(f"  First row: {matrix[0, :]}")
 
-        array_3d = store.get("3d_array")
-        print(f"\n3D array shape: {array_3d.shape}")
+        # Access metadata
+        print("\nMetadata:")
+        for key in ds.meta:
+            print(f"  {key}: {ds.meta[key]}")
 
     print("\n✓ Basic usage example complete!")
 

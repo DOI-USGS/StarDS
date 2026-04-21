@@ -9,6 +9,8 @@
 #include <sstream>
 #include <ghc/fs_std.hpp>
 #include <random>
+#include <chrono>
+#include <thread>
 
 
 using namespace star;
@@ -40,12 +42,17 @@ protected:
     }
 
     std::string createTempFile(const std::string& prefix = "test_header") {
+        // Use thread-safe random generator with high-resolution timestamp
         static std::random_device rd;
-        static std::mt19937 gen(rd());
-        static std::uniform_int_distribution<uint64_t> dis;
+        static thread_local std::mt19937_64 gen(rd() + std::hash<std::thread::id>{}(std::this_thread::get_id()));
+        std::uniform_int_distribution<uint64_t> dis;
+
+        auto now = std::chrono::high_resolution_clock::now();
+        uint64_t timestamp = std::chrono::duration_cast<std::chrono::nanoseconds>(now.time_since_epoch()).count();
+        uint64_t random_val = dis(gen);
 
         std::stringstream ss;
-        ss << "/tmp/" << prefix << "_" << std::hex << dis(gen) << ".star";
+        ss << "/tmp/" << prefix << "_" << timestamp << "_" << std::hex << random_val << ".star";
         std::string filename = ss.str();
 
         temp_files.push_back(filename);

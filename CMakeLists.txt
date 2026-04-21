@@ -216,7 +216,7 @@ endif()
 ##################
 
 cmake_dependent_option(STAR_BUILD_PYTHON_BINDINGS
-    "Build Python bindings using SWIG" OFF
+    "Build Python bindings using SWIG" ON
     "STAR_BUILD_LIB" OFF)
 
 if(STAR_BUILD_PYTHON_BINDINGS)

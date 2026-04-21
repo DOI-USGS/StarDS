@@ -42,23 +42,27 @@ make install
 
 ```python
 import numpy as np
-from pystar import Store
+from pystar import StarDataset
 
-# Create a new store
-with StarDataset("data.star") as store:
-    # Store arrays
-    store.put("matrix", np.random.rand(100, 100))
-    store.put("vector", np.arange(1000))
-
-    # Data is automatically flushed on exit
+# Create a new dataset
+with StarDataset.create("data.star") as ds:
+    # Dictionary-style access (recommended)
+    ds["matrix"] = np.random.rand(100, 100)
+    ds["vector"] = np.arange(1000)
+    
+    # Metadata for scalars and small data
+    ds.meta["version"] = 1
+    ds.meta["author"] = "Alice"
+    
+    # Data auto-flushed on exit
 
 # Read back
-with StarDataset("data.star", mode="r") as store:
-    matrix = store.get("matrix")
-    vector = store.get("vector")
-
-    print(f"Stored {len(store)} arrays")
-    print(f"Keys: {store.keys()}")
+with StarDataset.open("data.star", mode="r") as ds:
+    matrix = ds["matrix"]
+    
+    # Iterate over keys
+    for key in ds:
+        print(f"{key}: shape {ds[key].shape}")
 ```
 
 ## Usage Examples
@@ -67,65 +71,95 @@ with StarDataset("data.star", mode="r") as store:
 
 ```python
 import numpy as np
-from pystar import Store
-
-# Create/open store
-store = StarDataset("example.star")
-
-# Store arrays (NumPy arrays converted automatically)
-store.put("integers", np.array([1, 2, 3, 4, 5], dtype=np.int32))
-store.put("floats", np.random.rand(100))
-store.put("matrix", np.ones((10, 10)))
-
-# Flush to disk
-store.flush()
-
-# Retrieve arrays
-data = store.get("integers")
-print(data)  # NumPy array
-
-# Check if key exists
-if "matrix" in store:
-    matrix = store.get("matrix")
-
-# Get all keys
-keys = store.keys()
-print(f"Store contains: {keys}")
-
-# Number of arrays
-print(f"Total arrays: {len(store)}")
-```
-
-### Dictionary-Style Access (New!)
-
-Python-style dictionary syntax for storing and retrieving arrays:
-
-```python
-import numpy as np
 from pystar import StarDataset
 
-store = StarDataset("example.star")
+# Create/open dataset
+ds = StarDataset.create("example.star")
 
-# Store arrays using dictionary syntax
-store["matrix"] = np.random.rand(10, 10)
-store["vector"] = np.arange(100)
+# Store arrays - dictionary style
+ds["integers"] = np.array([1, 2, 3, 4, 5])
+ds["floats"] = np.random.rand(100)
+ds["matrix"] = np.ones((10, 10))
 
-store.flush()
+# Store metadata
+ds.meta["created"] = "2024-04-21"
+ds.meta["version"] = 1
 
-# Retrieve arrays using dictionary syntax
-matrix = store["matrix"]
-vector = store["vector"]
+ds.flush()
 
-# Check existence
-if "matrix" in store:
-    print("Matrix exists!")
+# Retrieve arrays
+data = ds["integers"]  # Returns NumPy array
 
-# Both old and new syntax work
-store.put("old_style", np.array([1, 2, 3]))  # Still works
-store["new_style"] = np.array([4, 5, 6])     # Cleaner!
+# Check if key exists
+if "matrix" in ds:
+    matrix = ds["matrix"]
+
+# Iterate over keys
+for key in ds:
+    print(key)
+
+# Get metadata
+version = ds.meta["version"]
+
+# Iterate over metadata
+for key in ds.meta:
+    print(f"Meta: {key}")
+    
+ds.close()
 ```
 
-### Logger Control (New!)
+### Array vs Metadata Storage
+
+**Array Storage** (`ds["key"]`):
+- For large arrays and data that needs slicing
+- Stored separately with compression support
+- **Rule:** Must be arrays - raw Python scalars/strings not allowed
+
+```python
+ds["data"] = [1, 2, 3]              # ✓ List
+ds["data"] = np.array([1, 2, 3])    # ✓ NumPy array
+ds["data"] = np.array(5)            # ✓ 0-d array
+ds["data"] = 5                      # ✗ Error: raw scalar
+ds["data"] = "hello"                # ✗ Error: raw string
+```
+
+**Metadata Storage** (`ds.meta["key"]`):
+- For scalars, strings, and small data
+- Stored in metadata block (fast access)
+- **Accepts any type** including raw scalars
+
+```python
+ds.meta["count"] = 42               # ✓ Raw scalar
+ds.meta["name"] = "experiment"      # ✓ Raw string
+ds.meta["tags"] = ["a", "b", "c"]   # ✓ List
+ds.meta["values"] = np.array([1,2]) # ✓ Array
+```
+
+**When to use which:**
+- Use `ds[]` for: Large arrays, data you'll slice, numerical datasets
+- Use `ds.meta[]` for: Configuration, metadata, labels, small scalars/strings
+
+### Iteration
+
+Both StarDataset and metadata support iteration:
+
+```python
+# Iterate over all arrays
+for key in ds:
+    print(f"{key}: {ds[key].shape}")
+
+# Iterate over metadata only
+for key in ds.meta:
+    value = ds.meta[key]
+    print(f"Meta {key}: {value}")
+
+# Get all metadata at once (returns dict with numpy arrays)
+all_meta = ds.get_all_metadata()
+for key, value in all_meta.items():
+    print(f"{key}: {value}")
+```
+
+### Logger Control
 
 Control STARDS logging level at runtime:
 
