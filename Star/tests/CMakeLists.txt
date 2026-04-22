@@ -20,6 +20,7 @@ set (STAR_TEST_SOURCE    ${STAR_TEST_DIRECTORY}/UnitTestBlockCompression.cpp
                                     ${STAR_TEST_DIRECTORY}/UnitTestPerformance.cpp
                                     ${STAR_TEST_DIRECTORY}/UnitTestThreading.cpp
                                     ${STAR_TEST_DIRECTORY}/UnitTestCloseReopenAPI.cpp
+                                    ${STAR_TEST_DIRECTORY}/UnitTestConcurrentWrites.cpp
                                     ${STAR_TEST_DIRECTORY}/Fixtures.cpp
                             )
 

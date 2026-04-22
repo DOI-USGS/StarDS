@@ -442,30 +442,22 @@ class StarDataset:
 
     def close(self):
         """
-        Explicitly close the dataset and release all resources.
+        Flush all pending writes to disk.
 
-        After closing, the dataset cannot be used. Create a new StarDataset
-        object to access the file again.
-
-        This method is idempotent (safe to call multiple times).
-
-        Resource cleanup includes:
-        - Flushing all pending writes to disk
-        - Destroying thread pool
-        - Closing file handles
-        - Clearing memory caches
-
-        This is automatically called when using context managers or when the
-        object is destroyed.
+        This is automatically called on context manager exit or object destruction.
+        You can call this manually to ensure data is persisted without closing the dataset.
 
         Example:
-            ds = StarDataset.open("data.star")
-            data = ds["array"]
-            ds.close()
+            ds = StarDataset.create("data.star")
+            ds["array"] = np.array([1, 2, 3])
+            ds.close()  # Flushes to disk
+            ds["array2"] = np.array([4, 5])  # Can still use dataset
 
-            # To access again, create a new object
-            ds = StarDataset.open("data.star")
-            data = ds["array"]
+        Note:
+            Using the context manager is still preferred:
+            with StarDataset.create("data.star") as ds:
+                ds["array"] = np.array([1, 2, 3])
+            # Automatically flushes when exiting context
         """
         if self._store is not None:
             self._store.close()

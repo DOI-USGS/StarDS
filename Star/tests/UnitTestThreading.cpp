@@ -12,12 +12,16 @@ protected:
     std::string testFile;
 
     void SetUp() override {
-        testFile = "/tmp/test_threading.star";
+        // Use thread-safe random generator with high-resolution timestamp
+        static std::random_device rd;
+        static thread_local std::mt19937_64 gen(rd() + std::hash<std::thread::id>{}(std::this_thread::get_id()));
+        std::uniform_int_distribution<uint64_t> dis;
 
-        // Remove the file if it already exists
-        if (fs::exists(testFile)) {
-            fs::remove(testFile);
-        }
+        auto now = std::chrono::high_resolution_clock::now();
+        uint64_t timestamp = std::chrono::duration_cast<std::chrono::nanoseconds>(now.time_since_epoch()).count();
+        uint64_t random_val = dis(gen);
+
+        testFile = "/tmp/test_threading_" + std::to_string(timestamp) + "_" + std::to_string(random_val) + ".star";
     }
 
     void TearDown() override {

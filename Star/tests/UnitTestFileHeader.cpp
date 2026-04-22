@@ -308,9 +308,12 @@ TEST_F(FileHeaderTest, VersionConsistencyAcrossWrites) {
     }
 }
 
+// Issue appears to be a race condition or data corruption in flush/compression
+// TODO: Investigate and fix the underlying issue
 TEST_F(FileHeaderTest, MultipleEntriesHeaderCount) {
     std::string filename = createTempFile("entry_count");
-
+    std::cout << "====== " << filename << std::endl;
+    // setNumThreads(1); 
     // Create dataset with multiple arrays
     {
         auto store = StarDataset::create(filename);
@@ -319,9 +322,7 @@ TEST_F(FileHeaderTest, MultipleEntriesHeaderCount) {
         NDArray<int> arr1({5});
         for (int i = 0; i < 5; i++) arr1.data()[i] = i + 1;
 
-        NDArray<double> arr2({3, 2});
-        std::vector<double> data2 = {1.1, 2.2, 3.3, 4.4, 5.5, 6.6};
-        std::copy(data2.begin(), data2.end(), arr2.data().begin());
+        NDArray<double> arr2 = NDArray<double>::arange(0, 100, 1);
 
         NDArray<float> arr3({10});
         for (int i = 0; i < 10; i++) arr3.data()[i] = (i + 1) * 0.1f;
@@ -333,8 +334,6 @@ TEST_F(FileHeaderTest, MultipleEntriesHeaderCount) {
         // Add some metadata
         store->meta.put("meta1", NDArray<int64_t>({}, 42));
         store->meta.put("meta2", NDArray<double>({}, 3.14));
-
-        store->flush();
     }
 
     // Verify header entry count
@@ -346,13 +345,26 @@ TEST_F(FileHeaderTest, MultipleEntriesHeaderCount) {
         EXPECT_GT(header.entry_count, 0);
 
         // Verify all arrays are accessible
-        auto arr1 = store->get<int>("array1");
-        auto arr2 = store->get<double>("array2");
-        auto arr3 = store->get<float>("array3");
+        try {
+            auto arr1 = store->get<int>("array1");
+            EXPECT_EQ(arr1.size(), 5);
+        } catch (const std::exception& e) {
+            FAIL() << "Failed to get array1: " << e.what();
+        }
 
-        EXPECT_EQ(arr1.size(), 5);
-        EXPECT_EQ(arr2.size(), 6);
-        EXPECT_EQ(arr3.size(), 10);
+        try {
+            auto arr2 = store->get<double>("array2");
+            EXPECT_EQ(arr2.size(), 100);
+        } catch (const std::exception& e) {
+            FAIL() << "Failed to get array2: " << e.what();
+        }
+
+        try {
+            auto arr3 = store->get<float>("array3");
+            EXPECT_EQ(arr3.size(), 10);
+        } catch (const std::exception& e) {
+            FAIL() << "Failed to get array3: " << e.what();
+        }
     }
 }
 

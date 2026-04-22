@@ -116,8 +116,8 @@ namespace std {
 %unique_ptr(star::StarDataset)
 
 // Expose static factory methods with clear names
-// %rename(create_dataset) StarDataset::create;
-// %rename(open_dataset) StarDataset::open;
+%rename(create) StarDataset::create;
+%rename(open) StarDataset::open;
 
 // Parse main header first (defines classes)
 %include "star.h"

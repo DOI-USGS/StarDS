@@ -11,9 +11,24 @@
 #include <chrono>
 #include <vector>
 #include <cstdio>
+#include <random>
+#include <thread>
 
 
 using namespace star;
+
+// Helper to generate unique temp filenames
+static std::string generateTempFilename(const std::string& prefix) {
+    static std::random_device rd;
+    static thread_local std::mt19937_64 gen(rd() + std::hash<std::thread::id>{}(std::this_thread::get_id()));
+    std::uniform_int_distribution<uint64_t> dis;
+
+    auto now = std::chrono::high_resolution_clock::now();
+    uint64_t timestamp = std::chrono::duration_cast<std::chrono::nanoseconds>(now.time_since_epoch()).count();
+    uint64_t random_val = dis(gen);
+
+    return "/tmp/" + prefix + "_" + std::to_string(timestamp) + "_" + std::to_string(random_val) + ".star";
+}
 
 /**
  * @brief Test that put() time complexity is O(N), not O(N²)
@@ -23,7 +38,7 @@ using namespace star;
  * If time_per_array grows with N, we have O(N²) or worse complexity.
  */
 TEST(PerformanceTest, PutScalingIsLinear) {
-    std::string filename = "/tmp/perf_test_put_scaling.star";
+    std::string filename = generateTempFilename("perf_test_put_scaling");
 
     // Clean up if exists
     std::remove(filename.c_str());
@@ -77,7 +92,7 @@ TEST(PerformanceTest, PutScalingIsLinear) {
  * Tests the metadata block path (used for small arrays via meta.put())
  */
 TEST(PerformanceTest, MetadataPutScalingIsLinear) {
-    std::string filename = "/tmp/perf_test_metadata_put_scaling.star";
+    std::string filename = generateTempFilename("perf_test_metadata_put_scaling");
 
     // Clean up if exists
     std::remove(filename.c_str());
@@ -128,7 +143,7 @@ TEST(PerformanceTest, MetadataPutScalingIsLinear) {
  * Verifies that capacity grows as expected with the reserve() optimization
  */
 TEST(PerformanceTest, VectorCapacityPreallocation) {
-    std::string filename = "/tmp/perf_test_capacity.star";
+    std::string filename = generateTempFilename("perf_test_capacity");
 
     // Clean up if exists
     std::remove(filename.c_str());
