@@ -339,3 +339,50 @@ TEST_F(IntegrationTest, ForceSeparateStorage) {
     }
 }
 */
+
+TEST_F(IntegrationTest, NamespaceSeparation) {
+    std::string testFile = createTempFile("namespace");
+
+    // Write arrays and metadata with same keys
+    {
+        auto store = StarDataset::create(testFile);
+
+        // Store arrays using put()
+        // Create arrays the correct way: data vector first, then shape
+        store->put("x", NDArray<int64_t>(std::vector<int64_t>{10, 20}, {2}));
+        store->put("y", NDArray<int64_t>(std::vector<int64_t>{30, 40}, {2}));
+
+        // Store metadata with same keys using meta.put()
+        store->meta.put("x", NDArray<std::string>({}, {"x_metadata"}));
+        store->meta.put("y", NDArray<std::string>({}, {"y_metadata"}));
+
+        store->flush();
+    }
+
+    // Read back and verify both arrays and metadata are accessible
+    {
+        auto store = StarDataset::open(testFile);
+
+        // Verify arrays
+        auto x_arr = store->get<int64_t>("x");
+        EXPECT_EQ(x_arr.size(), 2);
+        EXPECT_EQ(x_arr.data()[0], 10);
+        EXPECT_EQ(x_arr.data()[1], 20);
+
+        auto y_arr = store->get<int64_t>("y");
+        EXPECT_EQ(y_arr.size(), 2);
+        EXPECT_EQ(y_arr.data()[0], 30);
+        EXPECT_EQ(y_arr.data()[1], 40);
+
+        // Verify metadata
+        auto x_meta = store->meta.get("x");
+        ASSERT_NE(x_meta, nullptr);
+        auto x_meta_val = x_meta->as<std::string>();
+        EXPECT_EQ(x_meta_val.data()[0], "x_metadata");
+
+        auto y_meta = store->meta.get("y");
+        ASSERT_NE(y_meta, nullptr);
+        auto y_meta_val = y_meta->as<std::string>();
+        EXPECT_EQ(y_meta_val.data()[0], "y_metadata");
+    }
+}

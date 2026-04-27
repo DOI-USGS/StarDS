@@ -1,0 +1,879 @@
+{
+  "tests": 159,
+  "name": "AllTests",
+  "testsuites": [
+    {
+      "name": "BlockCompressionTest",
+      "tests": 7,
+      "testsuite": [
+        {
+          "name": "Store1DDoubleArrayWithGZIP",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestBlockCompression.cpp",
+          "line": 29
+        },
+        {
+          "name": "Store2DInt32MatrixWithGZIP",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestBlockCompression.cpp",
+          "line": 66
+        },
+        {
+          "name": "Store3DFloat32TensorUncompressed",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestBlockCompression.cpp",
+          "line": 104
+        },
+        {
+          "name": "MixedCompressionMultipleKeys",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestBlockCompression.cpp",
+          "line": 143
+        },
+        {
+          "name": "VerifyMetadataBlockExists",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestBlockCompression.cpp",
+          "line": 206
+        },
+        {
+          "name": "MetadataBlockCompressionRatio",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestBlockCompression.cpp",
+          "line": 234
+        },
+        {
+          "name": "LZ4BasicFunctionalityTest",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestBlockCompression.cpp",
+          "line": 276
+        }
+      ]
+    },
+    {
+      "name": "NdarrayTest",
+      "tests": 27,
+      "testsuite": [
+        {
+          "name": "ConstructorBasic",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestNdarray.cpp",
+          "line": 21
+        },
+        {
+          "name": "ConstructorWithInitialValue",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestNdarray.cpp",
+          "line": 45
+        },
+        {
+          "name": "VariadicOperatorCall",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestNdarray.cpp",
+          "line": 63
+        },
+        {
+          "name": "FlatIndexing",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestNdarray.cpp",
+          "line": 91
+        },
+        {
+          "name": "ShapeAccessors",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestNdarray.cpp",
+          "line": 112
+        },
+        {
+          "name": "DataAccessors",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestNdarray.cpp",
+          "line": 135
+        },
+        {
+          "name": "IteratorForward",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestNdarray.cpp",
+          "line": 155
+        },
+        {
+          "name": "IteratorReverse",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestNdarray.cpp",
+          "line": 186
+        },
+        {
+          "name": "IteratorModification",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestNdarray.cpp",
+          "line": 207
+        },
+        {
+          "name": "StaticFactoryZeros",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestNdarray.cpp",
+          "line": 232
+        },
+        {
+          "name": "StaticFactoryOnes",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestNdarray.cpp",
+          "line": 251
+        },
+        {
+          "name": "StaticFactoryFull",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestNdarray.cpp",
+          "line": 272
+        },
+        {
+          "name": "StaticFactoryEmpty",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestNdarray.cpp",
+          "line": 290
+        },
+        {
+          "name": "StaticFactoryArange",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestNdarray.cpp",
+          "line": 299
+        },
+        {
+          "name": "Reshape",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestNdarray.cpp",
+          "line": 328
+        },
+        {
+          "name": "ReshapeInvalidSize",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestNdarray.cpp",
+          "line": 359
+        },
+        {
+          "name": "Resize",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestNdarray.cpp",
+          "line": 368
+        },
+        {
+          "name": "ResizeMultiDimensional",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestNdarray.cpp",
+          "line": 400
+        },
+        {
+          "name": "CopyConstructor",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestNdarray.cpp",
+          "line": 412
+        },
+        {
+          "name": "AssignmentOperator",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestNdarray.cpp",
+          "line": 435
+        },
+        {
+          "name": "SerializationRoundTrip",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestNdarray.cpp",
+          "line": 453
+        },
+        {
+          "name": "SerializationDifferentTypes",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestNdarray.cpp",
+          "line": 485
+        },
+        {
+          "name": "StringArraySupport",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestNdarray.cpp",
+          "line": 518
+        },
+        {
+          "name": "LargeArray",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestNdarray.cpp",
+          "line": 539
+        },
+        {
+          "name": "MultiDimensionalLargeArray",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestNdarray.cpp",
+          "line": 562
+        },
+        {
+          "name": "EdgeCaseSingleElement",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestNdarray.cpp",
+          "line": 579
+        },
+        {
+          "name": "HighDimensionalArray",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestNdarray.cpp",
+          "line": 598
+        }
+      ]
+    },
+    {
+      "name": "MetadataBlockTest",
+      "tests": 9,
+      "testsuite": [
+        {
+          "name": "SerializationRoundTrip",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestMetadataBlock.cpp",
+          "line": 71
+        },
+        {
+          "name": "MixedTypes",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestMetadataBlock.cpp",
+          "line": 109
+        },
+        {
+          "name": "StringHandling",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestMetadataBlock.cpp",
+          "line": 154
+        },
+        {
+          "name": "EmptyBlock",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestMetadataBlock.cpp",
+          "line": 190
+        },
+        {
+          "name": "SmallArrays",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestMetadataBlock.cpp",
+          "line": 208
+        },
+        {
+          "name": "LargeMetadataBlock",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestMetadataBlock.cpp",
+          "line": 255
+        },
+        {
+          "name": "MagicHeaderValidation",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestMetadataBlock.cpp",
+          "line": 287
+        },
+        {
+          "name": "VersionCheck",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestMetadataBlock.cpp",
+          "line": 317
+        },
+        {
+          "name": "QueryMethods",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestMetadataBlock.cpp",
+          "line": 370
+        }
+      ]
+    },
+    {
+      "name": "MetadataAPITest",
+      "tests": 7,
+      "testsuite": [
+        {
+          "name": "TypeDiscoveryWithoutKnowingType",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestMetadataAPI.cpp",
+          "line": 30
+        },
+        {
+          "name": "BatchOperations",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestMetadataAPI.cpp",
+          "line": 61
+        },
+        {
+          "name": "RemoveAndClear",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestMetadataAPI.cpp",
+          "line": 81
+        },
+        {
+          "name": "CheckScalarVsArray",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestMetadataAPI.cpp",
+          "line": 101
+        },
+        {
+          "name": "WorkingWithArrayMetadata",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestMetadataAPI.cpp",
+          "line": 151
+        },
+        {
+          "name": "IterateOverAllMetadataWithTypeChecking",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestMetadataAPI.cpp",
+          "line": 185
+        },
+        {
+          "name": "GetAllMetadata",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestMetadataAPI.cpp",
+          "line": 230
+        }
+      ]
+    },
+    {
+      "name": "IntegrationTest",
+      "tests": 4,
+      "testsuite": [
+        {
+          "name": "TransparentScalarReadWrite",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestIntegration.cpp",
+          "line": 59
+        },
+        {
+          "name": "MixedScalarsAndArrays",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestIntegration.cpp",
+          "line": 109
+        },
+        {
+          "name": "MetadataBlockCompression",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestIntegration.cpp",
+          "line": 178
+        },
+        {
+          "name": "NamespaceSeparation",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestIntegration.cpp",
+          "line": 343
+        }
+      ]
+    },
+    {
+      "name": "SlicingTest",
+      "tests": 20,
+      "testsuite": [
+        {
+          "name": "Slice_DefaultStep",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestSlicing.cpp",
+          "line": 73
+        },
+        {
+          "name": "Slice_ExplicitStep",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestSlicing.cpp",
+          "line": 82
+        },
+        {
+          "name": "Slice_HelperFunctions",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestSlicing.cpp",
+          "line": 91
+        },
+        {
+          "name": "Slice1D_MiddleRange",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestSlicing.cpp",
+          "line": 118
+        },
+        {
+          "name": "Slice1D_StartRange",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestSlicing.cpp",
+          "line": 158
+        },
+        {
+          "name": "Slice1D_EndRange",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestSlicing.cpp",
+          "line": 181
+        },
+        {
+          "name": "Slice2D_FullRows",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestSlicing.cpp",
+          "line": 208
+        },
+        {
+          "name": "Slice2D_Submatrix",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestSlicing.cpp",
+          "line": 243
+        },
+        {
+          "name": "Slice2D_HelperFunctions",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestSlicing.cpp",
+          "line": 275
+        },
+        {
+          "name": "Slice3D_Hyperslab",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestSlicing.cpp",
+          "line": 309
+        },
+        {
+          "name": "ErrorHandling_HighDimensionalArrays",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestSlicing.cpp",
+          "line": 343
+        },
+        {
+          "name": "DefaultStep_SimpleSyntax",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestSlicing.cpp",
+          "line": 371
+        },
+        {
+          "name": "DesignConstraint_MetadataBlockNotSliceable",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestSlicing.cpp",
+          "line": 411
+        },
+        {
+          "name": "HelperFunction_IsSliceable",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestSlicing.cpp",
+          "line": 444
+        },
+        {
+          "name": "ErrorHandling_KeyNotFound",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestSlicing.cpp",
+          "line": 471
+        },
+        {
+          "name": "ErrorHandling_OutOfBounds",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestSlicing.cpp",
+          "line": 482
+        },
+        {
+          "name": "ErrorHandling_InvalidSlice",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestSlicing.cpp",
+          "line": 500
+        },
+        {
+          "name": "Performance_PartialLoad",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestSlicing.cpp",
+          "line": 522
+        },
+        {
+          "name": "EdgeCase_SingleElement",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestSlicing.cpp",
+          "line": 551
+        },
+        {
+          "name": "EdgeCase_FullArray",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestSlicing.cpp",
+          "line": 570
+        }
+      ]
+    },
+    {
+      "name": "FileHeaderTest",
+      "tests": 15,
+      "testsuite": [
+        {
+          "name": "HeaderSizeIs27Bytes",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestFileHeader.cpp",
+          "line": 67
+        },
+        {
+          "name": "MagicStringValidation",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestFileHeader.cpp",
+          "line": 77
+        },
+        {
+          "name": "FormatVersionStringFormatting",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestFileHeader.cpp",
+          "line": 95
+        },
+        {
+          "name": "ReadWriteRoundTrip",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestFileHeader.cpp",
+          "line": 111
+        },
+        {
+          "name": "BinaryLayoutConsistency",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestFileHeader.cpp",
+          "line": 138
+        },
+        {
+          "name": "DatasetWritesCorrectHeader",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestFileHeader.cpp",
+          "line": 189
+        },
+        {
+          "name": "DatasetReadsHeaderCorrectly",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestFileHeader.cpp",
+          "line": 216
+        },
+        {
+          "name": "GetFileHeaderAccessor",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestFileHeader.cpp",
+          "line": 247
+        },
+        {
+          "name": "GetLibraryVersionAccessor",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestFileHeader.cpp",
+          "line": 275
+        },
+        {
+          "name": "VersionConsistencyAcrossWrites",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestFileHeader.cpp",
+          "line": 289
+        },
+        {
+          "name": "MultipleEntriesHeaderCount",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestFileHeader.cpp",
+          "line": 325
+        },
+        {
+          "name": "HeaderSizeReflectsContent",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestFileHeader.cpp",
+          "line": 383
+        },
+        {
+          "name": "EmptyFileRejectsInvalidMagic",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestFileHeader.cpp",
+          "line": 449
+        },
+        {
+          "name": "FormatVersionZeroIsValid",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestFileHeader.cpp",
+          "line": 469
+        },
+        {
+          "name": "MaxFormatVersionValue",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestFileHeader.cpp",
+          "line": 476
+        }
+      ]
+    },
+    {
+      "name": "PerformanceTest",
+      "tests": 3,
+      "testsuite": [
+        {
+          "name": "PutScalingIsLinear",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestPerformance.cpp",
+          "line": 40
+        },
+        {
+          "name": "MetadataPutScalingIsLinear",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestPerformance.cpp",
+          "line": 94
+        },
+        {
+          "name": "VectorCapacityPreallocation",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestPerformance.cpp",
+          "line": 145
+        }
+      ]
+    },
+    {
+      "name": "ThreadingTest",
+      "tests": 11,
+      "testsuite": [
+        {
+          "name": "GlobalConfigurationAPI",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestThreading.cpp",
+          "line": 48
+        },
+        {
+          "name": "ThreadPoolConstruction",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestThreading.cpp",
+          "line": 68
+        },
+        {
+          "name": "ThreadPoolParallelForCorrectness",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestThreading.cpp",
+          "line": 89
+        },
+        {
+          "name": "ThreadPoolTaskOrderingIndependence",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestThreading.cpp",
+          "line": 106
+        },
+        {
+          "name": "DatasetThreadingInitialization",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestThreading.cpp",
+          "line": 126
+        },
+        {
+          "name": "SmallDataSingleThreadedPath",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestThreading.cpp",
+          "line": 148
+        },
+        {
+          "name": "LargeDataMultiThreadedPath",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestThreading.cpp",
+          "line": 175
+        },
+        {
+          "name": "ConcurrentReads",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestThreading.cpp",
+          "line": 207
+        },
+        {
+          "name": "ZeroThreadsAutoDetect",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestThreading.cpp",
+          "line": 259
+        },
+        {
+          "name": "SingleBlockCompression",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestThreading.cpp",
+          "line": 282
+        },
+        {
+          "name": "CompressionRatiosUnchanged",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestThreading.cpp",
+          "line": 309
+        }
+      ]
+    },
+    {
+      "name": "CloseTest",
+      "tests": 8,
+      "testsuite": [
+        {
+          "name": "ExplicitClose",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestCloseReopenAPI.cpp",
+          "line": 50
+        },
+        {
+          "name": "IdempotentClose",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestCloseReopenAPI.cpp",
+          "line": 76
+        },
+        {
+          "name": "DestructorClosesAutomatically",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestCloseReopenAPI.cpp",
+          "line": 93
+        },
+        {
+          "name": "ThreadSafeClose",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestCloseReopenAPI.cpp",
+          "line": 113
+        },
+        {
+          "name": "CloseFlushesData",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestCloseReopenAPI.cpp",
+          "line": 138
+        },
+        {
+          "name": "ClearErrorMessages",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestCloseReopenAPI.cpp",
+          "line": 157
+        },
+        {
+          "name": "SmartPointerCleanup",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestCloseReopenAPI.cpp",
+          "line": 177
+        },
+        {
+          "name": "NewObjectAfterClose",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestCloseReopenAPI.cpp",
+          "line": 196
+        }
+      ]
+    },
+    {
+      "name": "ConcurrentWritesTest",
+      "tests": 5,
+      "testsuite": [
+        {
+          "name": "MultithreadedWritesDifferentKeys",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestConcurrentWrites.cpp",
+          "line": 45
+        },
+        {
+          "name": "ConcurrentWritesWithPeriodicFlush",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestConcurrentWrites.cpp",
+          "line": 113
+        },
+        {
+          "name": "ConcurrentWritesWithClose",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestConcurrentWrites.cpp",
+          "line": 201
+        },
+        {
+          "name": "HighContentionSmallArrays",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestConcurrentWrites.cpp",
+          "line": 293
+        },
+        {
+          "name": "MixedReadsAndWrites",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestConcurrentWrites.cpp",
+          "line": 350
+        }
+      ]
+    },
+    {
+      "name": "LayerTest",
+      "tests": 23,
+      "testsuite": [
+        {
+          "name": "CreateLayer",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestLayers.cpp",
+          "line": 66
+        },
+        {
+          "name": "GetExistingLayer",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestLayers.cpp",
+          "line": 80
+        },
+        {
+          "name": "GetNonExistentLayerThrows",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestLayers.cpp",
+          "line": 93
+        },
+        {
+          "name": "CreateDuplicateLayerThrows",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestLayers.cpp",
+          "line": 104
+        },
+        {
+          "name": "HasLayer",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestLayers.cpp",
+          "line": 116
+        },
+        {
+          "name": "ListLayers",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestLayers.cpp",
+          "line": 132
+        },
+        {
+          "name": "LayerInheritsBaseKeys",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestLayers.cpp",
+          "line": 158
+        },
+        {
+          "name": "LayerContainsBaseKeys",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestLayers.cpp",
+          "line": 186
+        },
+        {
+          "name": "BitMaskPresenceCheck",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestLayers.cpp",
+          "line": 202
+        },
+        {
+          "name": "LayersPersistAcrossCloseReopen",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestLayers.cpp",
+          "line": 232
+        },
+        {
+          "name": "LayerInfoInFileHeader",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestLayers.cpp",
+          "line": 263
+        },
+        {
+          "name": "CreateManyLayers",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestLayers.cpp",
+          "line": 291
+        },
+        {
+          "name": "ManyLayersWithInheritance",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestLayers.cpp",
+          "line": 314
+        },
+        {
+          "name": "EmptyLayerName",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestLayers.cpp",
+          "line": 363
+        },
+        {
+          "name": "LongLayerName",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestLayers.cpp",
+          "line": 373
+        },
+        {
+          "name": "SpecialCharactersInLayerName",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestLayers.cpp",
+          "line": 384
+        },
+        {
+          "name": "KeyInLayerWithInvalidKey",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestLayers.cpp",
+          "line": 401
+        },
+        {
+          "name": "KeyInLayerWithInvalidLayer",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestLayers.cpp",
+          "line": 412
+        },
+        {
+          "name": "FileHeaderLayerCountZero",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestLayers.cpp",
+          "line": 426
+        },
+        {
+          "name": "FileHeaderLayerCountMultiple",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestLayers.cpp",
+          "line": 444
+        },
+        {
+          "name": "HeaderSizeGrowsWithLayers",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestLayers.cpp",
+          "line": 464
+        },
+        {
+          "name": "ConcurrentLayerCreation",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestLayers.cpp",
+          "line": 503
+        },
+        {
+          "name": "LayerDataArrays",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestLayers.cpp",
+          "line": 538
+        }
+      ]
+    },
+    {
+      "name": "S3Test",
+      "tests": 20,
+      "testsuite": [
+        {
+          "name": "PathParsingS3",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestS3.cpp",
+          "line": 100
+        },
+        {
+          "name": "PathParsingHTTP",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestS3.cpp",
+          "line": 108
+        },
+        {
+          "name": "PathParsingLocal",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestS3.cpp",
+          "line": 114
+        },
+        {
+          "name": "PathParsingInvalidS3",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestS3.cpp",
+          "line": 120
+        },
+        {
+          "name": "FileModesAvailable",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestS3.cpp",
+          "line": 129
+        },
+        {
+          "name": "CredentialResolutionFromEnvironment",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestS3.cpp",
+          "line": 140
+        },
+        {
+          "name": "CredentialResolutionWithSessionToken",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestS3.cpp",
+          "line": 150
+        },
+        {
+          "name": "CredentialResolutionPriority",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestS3.cpp",
+          "line": 162
+        },
+        {
+          "name": "ConfigFileParsingBasic",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestS3.cpp",
+          "line": 176
+        },
+        {
+          "name": "ConfigFileParsingWithSpaces",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestS3.cpp",
+          "line": 202
+        },
+        {
+          "name": "ReadOnlyMode",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestS3.cpp",
+          "line": 225
+        },
+        {
+          "name": "ReadWriteModeDefault",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestS3.cpp",
+          "line": 254
+        },
+        {
+          "name": "SaveToLocal",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestS3.cpp",
+          "line": 269
+        },
+        {
+          "name": "ReadOnlySaveToAnotherFile",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestS3.cpp",
+          "line": 303
+        },
+        {
+          "name": "GetFilename",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestS3.cpp",
+          "line": 337
+        },
+        {
+          "name": "S3IntegrationWriteRead",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestS3.cpp",
+          "line": 354
+        },
+        {
+          "name": "S3ToLocalSaveTo",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestS3.cpp",
+          "line": 395
+        },
+        {
+          "name": "LocalToS3SaveTo",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestS3.cpp",
+          "line": 428
+        },
+        {
+          "name": "AWSV4SignerBasic",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestS3.cpp",
+          "line": 469
+        },
+        {
+          "name": "AWSV4SignerWithSessionToken",
+          "file": "\/Users\/krodriguez\/repos\/stards\/Star\/tests\/UnitTestS3.cpp",
+          "line": 499
+        }
+      ]
+    }
+  ]
+}

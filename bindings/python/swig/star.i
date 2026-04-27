@@ -111,8 +111,10 @@ namespace std {
 
 // Define shared_ptr handling for MetadataValue before parsing header
 // Define unique_ptr handling for StarDataset (returned by create/open)
-// Note: MetadataValue is in star namespace
+// Define shared_ptr handling for LayerView (returned by get_layer/create_layer)
+// Note: MetadataValue and LayerView are in star namespace
 %shared_ptr(star::MetadataValue)
+%shared_ptr(star::LayerView)
 %unique_ptr(star::StarDataset)
 
 // Expose static factory methods with clear names
@@ -127,6 +129,19 @@ using namespace star;
 
 // Template instantiations that depend on star namespace types
 %template(VectorSlice) std::vector<Slice>;
+
+// Template instantiations for LayerMetadataAccessor::put (expects NDArray<T>)
+%template(put_int8) LayerMetadataAccessor::put<NDArray<int8_t>>;
+%template(put_int16) LayerMetadataAccessor::put<NDArray<int16_t>>;
+%template(put_int32) LayerMetadataAccessor::put<NDArray<int32_t>>;
+%template(put_int64) LayerMetadataAccessor::put<NDArray<int64_t>>;
+%template(put_uint8) LayerMetadataAccessor::put<NDArray<uint8_t>>;
+%template(put_uint16) LayerMetadataAccessor::put<NDArray<uint16_t>>;
+%template(put_uint32) LayerMetadataAccessor::put<NDArray<uint32_t>>;
+%template(put_uint64) LayerMetadataAccessor::put<NDArray<uint64_t>>;
+%template(put_float32) LayerMetadataAccessor::put<NDArray<float>>;
+%template(put_float64) LayerMetadataAccessor::put<NDArray<double>>;
+%template(put_string) LayerMetadataAccessor::put<NDArray<std::string>>;
 
 // Extend FileHeader with Python properties for easier access
 %extend star::FileHeader {

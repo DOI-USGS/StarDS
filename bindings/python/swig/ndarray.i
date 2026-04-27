@@ -13,6 +13,19 @@ using namespace star;
 %template(NDArrayFloat64) NDArray<double>;
 %template(NDArrayString)  NDArray<std::string>;
 
+// Instantiate get for all types (retrieve data arrays, not metadata)
+%template(get_int8)    StarDataset::get<int8_t>;
+%template(get_int16)   StarDataset::get<int16_t>;
+%template(get_int32)   StarDataset::get<int32_t>;
+%template(get_int64)   StarDataset::get<int64_t>;
+%template(get_uint8)   StarDataset::get<uint8_t>;
+%template(get_uint16)  StarDataset::get<uint16_t>;
+%template(get_uint32)  StarDataset::get<uint32_t>;
+%template(get_uint64)  StarDataset::get<uint64_t>;
+%template(get_float32) StarDataset::get<float>;
+%template(get_float64) StarDataset::get<double>;
+%template(get_string)  StarDataset::get<std::string>;
+
 // Instantiate get_slice for numeric types
 %template(get_slice_int8)    StarDataset::get_slice<int8_t>;
 %template(get_slice_int16)   StarDataset::get_slice<int16_t>;
@@ -69,4 +82,30 @@ using namespace star;
 %template(put_batch_float32) MetadataAccessor::put_batch<NDArray<float>>;
 %template(put_batch_float64) MetadataAccessor::put_batch<NDArray<double>>;
 %template(put_batch_string)  MetadataAccessor::put_batch<NDArray<std::string>>;
+
+// Instantiate LayerView::get for all types
+%template(get_int8)    LayerView::get<int8_t>;
+%template(get_int16)   LayerView::get<int16_t>;
+%template(get_int32)   LayerView::get<int32_t>;
+%template(get_int64)   LayerView::get<int64_t>;
+%template(get_uint8)   LayerView::get<uint8_t>;
+%template(get_uint16)  LayerView::get<uint16_t>;
+%template(get_uint32)  LayerView::get<uint32_t>;
+%template(get_uint64)  LayerView::get<uint64_t>;
+%template(get_float32) LayerView::get<float>;
+%template(get_float64) LayerView::get<double>;
+%template(get_string)  LayerView::get<std::string>;
+
+// Instantiate LayerView::put for all types
+%template(put_int8)    LayerView::put<int8_t>;
+%template(put_int16)   LayerView::put<int16_t>;
+%template(put_int32)   LayerView::put<int32_t>;
+%template(put_int64)   LayerView::put<int64_t>;
+%template(put_uint8)   LayerView::put<uint8_t>;
+%template(put_uint16)  LayerView::put<uint16_t>;
+%template(put_uint32)  LayerView::put<uint32_t>;
+%template(put_uint64)  LayerView::put<uint64_t>;
+%template(put_float32) LayerView::put<float>;
+%template(put_float64) LayerView::put<double>;
+%template(put_string)  LayerView::put<std::string>;
 

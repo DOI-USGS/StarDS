@@ -1,8 +1,10 @@
 """Pythonic wrapper for StarDataset"""
 try:
     from . import pystar as _star
+    from . import _pystar
 except ImportError:
     import pystar as _star
+    import _pystar
 
 from .enums import DataType, FileMode
 import numpy as np
@@ -21,22 +23,91 @@ class MetadataAccessor:
     def __init__(self, cpp_meta, parent_dataset):
         """
         Args:
-            cpp_meta: C++ MetadataAccessor instance
+            cpp_meta: C++ MetadataAccessor or LayerMetadataAccessor instance
             parent_dataset: Parent StarDataset instance (for put_metadata/get logic)
         """
         self._cpp_meta = cpp_meta
         self._parent = parent_dataset
+        # Check if this is a LayerMetadataAccessor
+        self._is_layer = type(cpp_meta).__name__ == 'LayerMetadataAccessor'
 
     def __setitem__(self, key: str, value: Union[np.ndarray, NDArray, list, str, int, float]):
         """Store value in metadata block: ds.meta["key"] = value"""
-        self._parent.put_metadata(key, value)
+        if self._is_layer:
+            # For LayerMetadataAccessor, call put methods directly on the C++ accessor
+            self._put_via_cpp_accessor(key, value)
+        else:
+            # For base MetadataAccessor, use parent's put_metadata
+            self._parent.put_metadata(key, value)
 
-    def __getitem__(self, key: str) -> np.ndarray:
-        """Retrieve value from metadata block: value = ds.meta["key"]"""
+    def _put_via_cpp_accessor(self, key: str, value: Union[np.ndarray, NDArray, list, str, int, float]):
+        """Store value using C++ accessor's put methods (for LayerMetadataAccessor)"""
+        # Convert Python types to NDArray
+        if isinstance(value, (list, str, int, float)):
+            value = NDArray.from_numpy(value)
+        elif isinstance(value, np.ndarray):
+            value = NDArray.from_numpy(value)
+
+        # Call appropriate C++ put method
+        cpp_type = type(value._impl).__name__
+
+        if cpp_type == 'NDArrayInt8':
+            self._cpp_meta.put_int8(key, value._impl)
+        elif cpp_type == 'NDArrayInt16':
+            self._cpp_meta.put_int16(key, value._impl)
+        elif cpp_type == 'NDArrayInt32':
+            self._cpp_meta.put_int32(key, value._impl)
+        elif cpp_type == 'NDArrayInt64':
+            self._cpp_meta.put_int64(key, value._impl)
+        elif cpp_type == 'NDArrayUInt8':
+            self._cpp_meta.put_uint8(key, value._impl)
+        elif cpp_type == 'NDArrayUInt16':
+            self._cpp_meta.put_uint16(key, value._impl)
+        elif cpp_type == 'NDArrayUInt32':
+            self._cpp_meta.put_uint32(key, value._impl)
+        elif cpp_type == 'NDArrayUInt64':
+            self._cpp_meta.put_uint64(key, value._impl)
+        elif cpp_type == 'NDArrayFloat32':
+            self._cpp_meta.put_float32(key, value._impl)
+        elif cpp_type == 'NDArrayFloat64':
+            self._cpp_meta.put_float64(key, value._impl)
+        elif cpp_type == 'NDArrayString':
+            self._cpp_meta.put_string(key, value._impl)
+        else:
+            raise ValueError(f"Unsupported array type: {cpp_type}")
+
+    def __getitem__(self, key: str):
+        """
+        Retrieve value from metadata block: value = ds.meta["key"]
+
+        Returns native Python types for scalars:
+        - Scalar string -> str
+        - Scalar int -> int
+        - Scalar float -> float
+        - Arrays -> np.ndarray
+        """
         meta = self._cpp_meta.get(key)
         if meta is None:
             raise KeyError(f"Key not found: {key}")
-        return MetadataValue(meta).to_numpy()
+
+        arr = MetadataValue(meta).to_numpy()
+
+        # Convert scalar arrays to native Python types
+        if arr.ndim == 0:  # Scalar
+            value = arr.item()
+            # For string scalars, convert to str
+            if isinstance(value, (np.str_, np.bytes_)):
+                return str(value)
+            return value
+
+        # For 1-element arrays, check if it's a string and should be scalar
+        if arr.shape == (1,) and arr.dtype == np.object_:
+            # This might be a scalar string stored as 1-element array
+            # Return as string if it's a single string
+            if isinstance(arr[0], str):
+                return arr[0]
+
+        return arr
 
     def __contains__(self, key: str) -> bool:
         """Check if key exists: "key" in ds.meta"""
@@ -44,7 +115,12 @@ class MetadataAccessor:
 
     def keys(self) -> List[str]:
         """Get all metadata keys"""
-        return self._parent.get_metadata_keys()
+        if self._is_layer:
+            # For LayerMetadataAccessor, use C++ accessor's keys method
+            return list(self._cpp_meta.keys())
+        else:
+            # For base MetadataAccessor, use parent's filtered method
+            return self._parent.get_metadata_keys()
 
     def __len__(self) -> int:
         """Get count of metadata entries"""
@@ -70,6 +146,164 @@ class MetadataAccessor:
     def clear(self):
         """Clear all metadata"""
         self._cpp_meta.clear()
+
+
+class LayerView:
+    """
+    View into a specific dataset layer with inheritance from base.
+
+    Provides same API as StarDataset but operates on a single layer.
+    Keys not found in this layer automatically fall back to the base layer.
+
+    Example:
+        >>> ds = StarDataset.create("file.star")
+        >>> ds.meta["instrument"] = "AVIRIS"
+        >>>
+        >>> layer = ds.create_layer("band_0")
+        >>> layer.meta["wavelength"] = 450.5  # Layer-specific
+        >>> layer.meta["instrument"]  # "AVIRIS" (inherited from base)
+    """
+
+    def __init__(self, cpp_layer_view, parent_dataset):
+        """
+        Args:
+            cpp_layer_view: C++ LayerView instance
+            parent_dataset: Parent StarDataset instance
+        """
+        self._cpp_view = cpp_layer_view
+        self._parent = parent_dataset
+        # Wrap layer-specific metadata accessor
+        self.meta = MetadataAccessor(cpp_layer_view.meta, parent_dataset)
+
+    def __contains__(self, key: str) -> bool:
+        """Check if key exists in this layer or base"""
+        return self._cpp_view.contains(key)
+
+    def __getitem__(self, key: str) -> np.ndarray:
+        """
+        Get array from this layer (with inheritance from base).
+
+        If key exists in this layer, returns the layer-specific value.
+        Otherwise falls back to base layer.
+
+        Args:
+            key: Array key
+
+        Returns:
+            NumPy array
+
+        Example:
+            >>> layer = ds.create_layer("band_0")
+            >>> data = layer["array_key"]  # Gets from layer or base
+        """
+        return self.get(key)
+
+    def __setitem__(self, key: str, value: Union[np.ndarray, list, int, float, str]):
+        """
+        Store array in this layer.
+
+        Marks the layer as having this key in the layer presence bitmap.
+        Data is physically stored in the base dataset, but logically belongs to this layer.
+
+        Args:
+            key: Array key
+            value: Data to store (NumPy array, list, scalar)
+
+        Example:
+            >>> layer = ds.create_layer("band_0")
+            >>> layer.meta["wavelength"] = 450.5          # Layer-specific metadata
+            >>> layer["calibration"] = np.array([1, 2, 3])  # Layer-specific data array
+        """
+        self.put(key, value)
+
+    def get(self, key: str) -> np.ndarray:
+        """
+        Retrieve array from this layer (with inheritance from base).
+
+        Args:
+            key: Array key
+
+        Returns:
+            NumPy array
+        """
+        # Try each data type until one works, then fall back to metadata
+        get_methods = [
+            'get_float64', 'get_int64', 'get_float32', 'get_int32',
+            'get_int16', 'get_int8', 'get_uint64', 'get_uint32',
+            'get_uint16', 'get_uint8', 'get_string'
+        ]
+
+        for method_name in get_methods:
+            try:
+                result = getattr(self._cpp_view, method_name)(key)
+                return NDArray(result).to_numpy()
+            except (RuntimeError, AttributeError):
+                continue
+
+        # If no data array method worked, try metadata
+        try:
+            meta = self._cpp_view.meta.get(key)
+            if meta is None:
+                raise KeyError(f"Key not found: {key}")
+            return MetadataValue(meta).to_numpy()
+        except RuntimeError as e:
+            if "Key not found" in str(e):
+                raise KeyError(f"Key not found: {key}")
+            raise
+
+    def put(self, key: str, value: Union[np.ndarray, list, int, float, str]):
+        """
+        Store array in this layer.
+
+        Args:
+            key: Array key
+            value: Data to store
+        """
+        # Convert Python types to NDArray
+        if isinstance(value, (list, str, int, float)):
+            value = NDArray.from_numpy(value)
+        elif isinstance(value, np.ndarray):
+            value = NDArray.from_numpy(value)
+
+        # Determine the dtype and call appropriate LayerView put method
+        cpp_type = type(value._impl).__name__
+
+        if cpp_type == 'NDArrayInt8':
+            self._cpp_view.put_int8(key, value._impl)
+        elif cpp_type == 'NDArrayInt16':
+            self._cpp_view.put_int16(key, value._impl)
+        elif cpp_type == 'NDArrayInt32':
+            self._cpp_view.put_int32(key, value._impl)
+        elif cpp_type == 'NDArrayInt64':
+            self._cpp_view.put_int64(key, value._impl)
+        elif cpp_type == 'NDArrayUInt8':
+            self._cpp_view.put_uint8(key, value._impl)
+        elif cpp_type == 'NDArrayUInt16':
+            self._cpp_view.put_uint16(key, value._impl)
+        elif cpp_type == 'NDArrayUInt32':
+            self._cpp_view.put_uint32(key, value._impl)
+        elif cpp_type == 'NDArrayUInt64':
+            self._cpp_view.put_uint64(key, value._impl)
+        elif cpp_type == 'NDArrayFloat32':
+            self._cpp_view.put_float32(key, value._impl)
+        elif cpp_type == 'NDArrayFloat64':
+            self._cpp_view.put_float64(key, value._impl)
+        elif cpp_type == 'NDArrayString':
+            self._cpp_view.put_string(key, value._impl)
+        else:
+            raise ValueError(f"Unsupported array type: {cpp_type}")
+
+    def keys(self) -> List[str]:
+        """Get all keys (local + inherited)"""
+        return list(self._cpp_view.keys())
+
+    def name(self) -> str:
+        """Get layer name"""
+        return self._cpp_view.name()
+
+    def base(self):
+        """Get parent dataset"""
+        return self._parent
 
 
 class StarDataset:
@@ -226,8 +460,26 @@ class StarDataset:
 
     def get(self, key: str) -> np.ndarray:
         """Retrieve an array as NumPy array"""
+        # Try each data type until one works, then fall back to metadata
+        # This is inefficient but works without needing get_dtype
+        get_methods = [
+            'get_float64', 'get_int64', 'get_float32', 'get_int32',
+            'get_int16', 'get_int8', 'get_uint64', 'get_uint32',
+            'get_uint16', 'get_uint8', 'get_string'
+        ]
+
+        for method_name in get_methods:
+            try:
+                result = getattr(self._store, method_name)(key)
+                return NDArray(result).to_numpy()
+            except (RuntimeError, AttributeError):
+                continue
+
+        # If no data array method worked, try metadata
         try:
             meta = self._store.meta.get(key)
+            if meta is None:
+                raise KeyError(f"Key not found: {key}")
             return MetadataValue(meta).to_numpy()
         except RuntimeError as e:
             if "Key not found" in str(e):
@@ -287,10 +539,12 @@ class StarDataset:
         return NDArray(result).to_numpy()
 
     def keys(self) -> List[str]:
-        """Get all keys in store"""
+        """Get all keys in store (excludes internal layer-prefixed keys)"""
         # Convert tuple to list and remove duplicates
         keys_tuple = self._store.get_all_keys()
-        return list(dict.fromkeys(keys_tuple))
+        # Filter out layer-prefixed internal keys
+        filtered_keys = [k for k in keys_tuple if not k.startswith('__layer_')]
+        return list(dict.fromkeys(filtered_keys))
 
     def flush(self):
         """Write pending changes to disk"""
@@ -311,7 +565,7 @@ class StarDataset:
 
     def __contains__(self, key: str) -> bool:
         """Check if key exists"""
-        return self._store.meta.contains(key)
+        return self._store.contains(key)
 
     def __iter__(self):
         """Iterate over all keys: for key in ds"""
@@ -440,6 +694,64 @@ class StarDataset:
         """Clear all metadata entries"""
         self._store.meta.clear()
 
+    # Layer Management API
+    def get_layer(self, layer_name: str):
+        """
+        Get existing layer view.
+
+        Args:
+            layer_name: Name of layer (e.g., "band_0", "wavelength_1")
+
+        Returns:
+            LayerView instance with same API as StarDataset
+
+        Raises:
+            RuntimeError: If layer doesn't exist
+
+        Example:
+            >>> ds = StarDataset.open("file.star")
+            >>> layer = ds.get_layer("band_0")
+            >>> layer.meta["wavelength"]  # Access layer data
+        """
+        cpp_layer = _pystar.StarDataset_get_layer(self._store, layer_name)
+        return LayerView(cpp_layer, self)
+
+    def create_layer(self, layer_name: str):
+        """
+        Create new layer and return view.
+
+        Args:
+            layer_name: Name of new layer
+
+        Returns:
+            LayerView instance with same API as StarDataset
+
+        Raises:
+            RuntimeError: If layer already exists
+
+        Example:
+            >>> ds = StarDataset.create("file.star")
+            >>> ds.meta["instrument"] = "AVIRIS"
+            >>>
+            >>> layer = ds.create_layer("band_0")
+            >>> layer.meta["wavelength"] = 450.5  # Layer-specific
+            >>> layer.meta["instrument"]  # "AVIRIS" (inherited from base)
+        """
+        cpp_layer = _pystar.StarDataset_create_layer(self._store, layer_name)
+        return LayerView(cpp_layer, self)
+
+    def has_layer(self, layer_name: str) -> bool:
+        """Check if layer exists"""
+        return _pystar.StarDataset_has_layer(self._store, layer_name)
+
+    def list_layers(self) -> List[str]:
+        """Get names of all layers in dataset"""
+        return list(_pystar.StarDataset_list_layers(self._store))
+
+    def current_layer(self) -> str:
+        """Get current default layer name"""
+        return _pystar.StarDataset_current_layer(self._store)
+
     def close(self):
         """
         Flush all pending writes to disk.
@@ -463,4 +775,4 @@ class StarDataset:
             self._store.close()
 
 
-__all__ = ['StarDataset']
+__all__ = ['StarDataset', 'LayerView']

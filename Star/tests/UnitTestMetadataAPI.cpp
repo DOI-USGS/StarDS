@@ -261,10 +261,11 @@ TEST_F(MetadataAPITest, GetAllMetadata) {
     store.reset();
 
     auto store2 = StarDataset::open(testFile);
-    EXPECT_FALSE(store2->is_metadata_loaded());  // Not loaded yet
+    // In v1 format, base layer metadata is eagerly loaded during open
+    EXPECT_TRUE(store2->is_metadata_loaded());  // Already loaded
 
     auto all_meta2 = store2->meta.get_all();
-    EXPECT_TRUE(store2->is_metadata_loaded());  // Now loaded
+    EXPECT_TRUE(store2->is_metadata_loaded());  // Still loaded
     EXPECT_EQ(all_meta2.size(), 4);
 
     // Verify values after reload

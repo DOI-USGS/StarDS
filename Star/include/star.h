@@ -12,6 +12,7 @@
 #include <map>
 #include <set>
 #include <unordered_map>
+#include <unordered_set>
 #include <variant>
 #include <vector>
 #include <chrono>
@@ -115,9 +116,11 @@ inline size_t getNumThreads() {
  */
 struct FileHeader {
     char magic[MAGIC_STRING_LENGTH] = {'S','T','A','R','D','S'};
-    uint8_t format_version = 2;
+    uint8_t format_version = 1;  // Format v1 with per-layer metadata blocks
     uint64_t header_size = 0;
     uint64_t entry_count = 0;
+    uint32_t layer_count = 0;
+    uint32_t key_registry_count = 0;  // Number of keys in global registry
 
     /**
      * @brief Check if magic string is valid
@@ -137,7 +140,7 @@ struct FileHeader {
      * @brief Get fixed size of FileHeader struct
      */
     static constexpr size_t size() {
-        return MAGIC_STRING_LENGTH + sizeof(uint8_t) + sizeof(uint64_t) * 2;  // 23 bytes
+        return MAGIC_STRING_LENGTH + sizeof(uint8_t) + sizeof(uint64_t) * 2 + sizeof(uint32_t) * 2;  // 31 bytes (v1)
     }
 
     /**
@@ -148,6 +151,8 @@ struct FileHeader {
         os.write(reinterpret_cast<const char*>(&format_version), sizeof(format_version));
         os.write(reinterpret_cast<const char*>(&header_size), sizeof(header_size));
         os.write(reinterpret_cast<const char*>(&entry_count), sizeof(entry_count));
+        os.write(reinterpret_cast<const char*>(&layer_count), sizeof(layer_count));
+        os.write(reinterpret_cast<const char*>(&key_registry_count), sizeof(key_registry_count));
     }
 
     /**
@@ -158,6 +163,8 @@ struct FileHeader {
         is.read(reinterpret_cast<char*>(&format_version), sizeof(format_version));
         is.read(reinterpret_cast<char*>(&header_size), sizeof(header_size));
         is.read(reinterpret_cast<char*>(&entry_count), sizeof(entry_count));
+        is.read(reinterpret_cast<char*>(&layer_count), sizeof(layer_count));
+        is.read(reinterpret_cast<char*>(&key_registry_count), sizeof(key_registry_count));
     }
 };
 
@@ -286,6 +293,119 @@ enum class CompressionAlgorithm : uint8_t {
     GZIP = 1,
     ZSTD = 2,
     LZ4 = 3,
+};
+
+/**
+ * @brief Hash function for keys in global key registry
+ */
+inline uint64_t hash_key(const std::string& key) {
+    std::hash<std::string> hasher;
+    return hasher(key);
+}
+
+/**
+ * @brief Global key registry using data-oriented design (Structure of Arrays)
+ *
+ * Stores all unique keys once with precomputed hashes for O(1) lookups.
+ * Keys are referenced by uint16 indices throughout the system.
+ */
+struct KeyRegistry {
+    std::vector<std::string> names;                          // All key names
+    std::vector<uint64_t> hashes;                            // Precomputed hashes
+    std::unordered_map<uint64_t, uint16_t> hash_to_index;   // O(1) hash → index
+    std::unordered_map<std::string, uint16_t> name_to_index; // O(1) name → index
+
+    /**
+     * @brief Get or create a key index
+     * @return uint16 index into the registry
+     */
+    uint16_t get_or_create(const std::string& key) {
+        uint64_t hash = hash_key(key);
+        auto it = hash_to_index.find(hash);
+        if (it != hash_to_index.end() && names[it->second] == key) {
+            return it->second;  // Hash hit, name match
+        }
+        // Add new key
+        uint16_t idx = static_cast<uint16_t>(names.size());
+        names.push_back(key);
+        hashes.push_back(hash);
+        hash_to_index[hash] = idx;
+        name_to_index[key] = idx;
+        return idx;
+    }
+
+    /**
+     * @brief Get existing key index (throws if not found)
+     * @return uint16 index into the registry
+     */
+    uint16_t get_index(const std::string& key) const {
+        uint64_t hash = hash_key(key);
+        auto it = hash_to_index.find(hash);
+        if (it != hash_to_index.end() && names[it->second] == key) {
+            return it->second;
+        }
+        throw std::runtime_error("Key not found in registry: " + key);
+    }
+
+    /**
+     * @brief Check if key exists in registry
+     */
+    bool contains(const std::string& key) const {
+        uint64_t hash = hash_key(key);
+        auto it = hash_to_index.find(hash);
+        return it != hash_to_index.end() && names[it->second] == key;
+    }
+};
+
+/**
+ * @brief Per-layer metadata registry using data-oriented design (Structure of Arrays)
+ *
+ * Stores metadata about each layer's metadata block for lazy loading.
+ * Each layer has its own independent STARMeta block in the file.
+ */
+struct LayerMetadataRegistry {
+    std::vector<std::string> layer_names;                         // Layer names
+    std::vector<uint64_t> block_positions;                        // File positions of STARMeta blocks
+    std::vector<uint32_t> block_sizes;                            // Compressed sizes
+    std::vector<CompressionAlgorithm> compressions;               // Compression algorithms
+    std::vector<std::unordered_set<uint16_t>> key_indices;        // Keys in each layer (O(1) lookup)
+    std::unordered_map<std::string, size_t> name_to_layer_index;  // O(1) layer name → index
+
+    /**
+     * @brief Get layer index by name
+     * @return size_t index into the registry
+     */
+    size_t get_layer_index(const std::string& layer_name) const {
+        auto it = name_to_layer_index.find(layer_name);
+        if (it == name_to_layer_index.end()) {
+            throw std::runtime_error("Layer not found: " + layer_name);
+        }
+        return it->second;
+    }
+
+    /**
+     * @brief Check if layer exists
+     */
+    bool contains_layer(const std::string& layer_name) const {
+        return name_to_layer_index.find(layer_name) != name_to_layer_index.end();
+    }
+
+    /**
+     * @brief Add a new layer to the registry
+     */
+    size_t add_layer(const std::string& layer_name) {
+        if (contains_layer(layer_name)) {
+            return get_layer_index(layer_name);
+        }
+        size_t idx = layer_names.size();
+        layer_names.push_back(layer_name);
+        block_positions.push_back(0);
+        block_sizes.push_back(0);
+        compressions.push_back(CompressionAlgorithm::NONE);
+        key_indices.push_back(std::unordered_set<uint16_t>());
+        name_to_layer_index[layer_name] = idx;
+        return idx;
+    }
 };
 
 /**
@@ -534,11 +654,17 @@ struct IndexEntry {
         is.read(reinterpret_cast<char*>(&position), sizeof(position));
         is.read(reinterpret_cast<char*>(&total_bytes), sizeof(total_bytes));
         is.read(reinterpret_cast<char*>(&datatype), sizeof(datatype));
+        LOG_TRACE("IndexEntry::read - position=", position, ", total_bytes=", total_bytes, ", datatype=", (int)datatype);
 
         // Read shape (ndim = 0 means scalar)
         size_t ndim;
         is.read(reinterpret_cast<char*>(&ndim), sizeof(ndim));
+        LOG_TRACE("IndexEntry::read - ndim=", ndim);
         if (ndim > 0) {
+            if (ndim > 100) {
+                LOG_ERROR("SUSPICIOUS: ndim=", ndim, " is too large!");
+                throw std::runtime_error("Invalid ndim value: " + std::to_string(ndim));
+            }
             shape.resize(ndim);
             is.read(reinterpret_cast<char*>(shape.data()), sizeof(size_t) * ndim);
         } else {
@@ -547,10 +673,17 @@ struct IndexEntry {
 
         is.read(reinterpret_cast<char*>(&compression), sizeof(compression));
         is.read(reinterpret_cast<char*>(&block_size), sizeof(block_size));
+        LOG_TRACE("IndexEntry::read - compression=", (int)compression, ", block_size=", block_size);
 
         // Read number of blocks
         size_t num_blocks;
         is.read(reinterpret_cast<char*>(&num_blocks), sizeof(num_blocks));
+        LOG_TRACE("IndexEntry::read - num_blocks=", num_blocks);
+
+        if (num_blocks > 10000) {
+            LOG_ERROR("SUSPICIOUS: num_blocks=", num_blocks, " is too large!");
+            throw std::runtime_error("Invalid num_blocks value: " + std::to_string(num_blocks));
+        }
 
         // Read each block info
         blocks.resize(num_blocks);
@@ -562,6 +695,7 @@ struct IndexEntry {
         uint8_t stored_flag = 0;
         is.read(reinterpret_cast<char*>(&stored_flag), sizeof(stored_flag));
         stored_in_metadata = (stored_flag != 0);
+        LOG_TRACE("IndexEntry::read - complete, stored_in_metadata=", stored_in_metadata);
     }
 
     size_t serialized_size() const {
@@ -3287,13 +3421,13 @@ inline std::vector<char> decompressBlocks(
  */
 struct StarConfig {
     // Main data compression settings
-    CompressionAlgorithm compression = CompressionAlgorithm::LZ4;
+    CompressionAlgorithm compression = CompressionAlgorithm::GZIP;
     size_t block_size = 1024 * 1024;  // 1MB default
 
     // Metadata block settings
     bool metadata_block_enabled = true;
     size_t metadata_max_block_size = 64 * 1024;    // 64KB max total metadata block
-    CompressionAlgorithm metadata_compression = CompressionAlgorithm::LZ4;
+    CompressionAlgorithm metadata_compression = CompressionAlgorithm::GZIP;
     std::set<std::string> metadata_force_separate_keys;  // Keys to never store in metadata
 
     // Buffer management (memory optimization)
@@ -3419,8 +3553,9 @@ struct MetadataValue {
     }
 };
 
-// Forward declaration
+// Forward declarations
 class StarDataset;
+class LayerView;
 
 /**
  * @brief Accessor for metadata operations
@@ -3455,7 +3590,114 @@ public:
     // Management operations
     void remove(const std::string& key);
     void clear();
-    bool contains(const std::string& key);
+    bool contains(const std::string& key) const;
+};
+
+//==============================================================================
+// LayerMetadataAccessor Class
+//==============================================================================
+
+/**
+ * @brief Metadata accessor for a specific layer with inheritance
+ *
+ * Provides layer-specific metadata operations with automatic fallback to base layer.
+ * When getting metadata, checks layer first, then falls back to base if not found.
+ * When putting metadata, stores in layer-specific namespace.
+ */
+class LayerMetadataAccessor {
+private:
+    StarDataset* m_store;      // Reference to parent store
+    std::string m_layer_name;  // Layer name for namespacing
+
+    // Helper to create layer-prefixed key
+    std::string make_layer_key(const std::string& key) const {
+        return "__layer_" + m_layer_name + "__" + key;
+    }
+
+public:
+    LayerMetadataAccessor(StarDataset* store, const std::string& layer_name)
+        : m_store(store), m_layer_name(layer_name) {}
+
+    // Method declarations (implementations after StarDataset is complete)
+    template<typename V>
+    void put(const std::string& key, const V& value);
+
+    std::shared_ptr<MetadataValue> get(const std::string& key);
+    bool contains(const std::string& key) const;
+    void remove(const std::string& key);
+    std::vector<std::string> keys() const;
+};
+
+//==============================================================================
+// LayerView Class
+//==============================================================================
+
+/**
+ * @brief Lightweight view into a specific layer with inheritance from base
+ *
+ * LayerView provides the same API as StarDataset but operates on a specific layer.
+ * Keys not found in the layer automatically fall back to the base layer.
+ *
+ * Example:
+ *   auto ds = StarDataset::open("file.star");
+ *   auto layer1 = ds->create_layer("band_0");
+ *   layer1->meta.put("wavelength", NDArray<double>({}, 450.5));  // Layer-specific
+ *   auto inst = layer1->meta.get("instrument");  // Falls back to base
+ */
+class LayerView {
+private:
+    StarDataset* m_base;           // Shared underlying dataset
+    std::string m_layer_name;      // This layer's name
+
+public:
+    // Layer-specific metadata accessor with inheritance
+    LayerMetadataAccessor meta;
+
+    LayerView(StarDataset* base, const std::string& layer_name)
+        : m_base(base), m_layer_name(layer_name), meta(base, layer_name) {}
+
+    /**
+     * @brief Check if key exists in this layer or base (with inheritance)
+     * @param key Key to check
+     * @return true if key exists in layer or base
+     */
+    bool contains(const std::string& key) const;
+
+    /**
+     * @brief Get all keys in this layer (local + inherited)
+     * @return Vector of key names
+     */
+    std::vector<std::string> keys() const;
+
+    /**
+     * @brief Get layer name
+     * @return Layer name
+     */
+    std::string name() const { return m_layer_name; }
+
+    /**
+     * @brief Get parent dataset
+     * @return Pointer to base StarDataset
+     */
+    StarDataset* base() const { return m_base; }
+
+    /**
+     * @brief Get array from this layer with inheritance
+     * @tparam T Element type
+     * @param key Key to retrieve
+     * @return NDArray with data from layer or base
+     */
+    template<typename T>
+    NDArray<T> get(const std::string& key);
+
+    /**
+     * @brief Store array in this layer
+     * @tparam T Element type
+     * @param key Key to store
+     * @param value Data to store
+     */
+    template<typename T>
+    void put(const std::string& key, NDArray<T>&& value);
 };
 
 //==============================================================================
@@ -3471,6 +3713,9 @@ public:
  * for better performance over networks.
  */
 class StarDataset {
+    // Friend classes that need access to internal methods
+    friend class LayerMetadataAccessor;
+
 public:
     // Delete copy constructor and copy assignment (class contains std::atomic which is non-copyable)
 
@@ -3489,6 +3734,15 @@ public:
     std::vector<ValueVariant> m_data_storage;                   // Actual data when loaded
     std::unordered_map<std::string, size_t> m_key_to_index;  // Fast key -> index lookup
     bool m_metadata_loaded = false;                             // Metadata block loaded flag
+
+    // Layer support (v1)
+    KeyRegistry m_key_registry;                                   // Global key registry (SoA)
+    LayerMetadataRegistry m_layer_metadata_registry;              // Per-layer metadata info (SoA)
+    std::vector<bool> m_layer_metadata_loaded;                    // Track which layers are loaded
+    std::vector<std::unordered_map<uint16_t, size_t>> m_layer_metadata_indices;  // layer_idx → (key_idx → storage_idx)
+    std::map<std::string, std::vector<uint64_t>> m_layer_presence; // layer_name → bitmap (for data arrays)
+    std::unordered_map<size_t, DataType> m_metadata_dtypes;        // storage_idx → dtype for metadata entries
+    std::unordered_map<size_t, std::vector<size_t>> m_metadata_shapes;  // storage_idx → shape for metadata entries
 
     // Pre-allocated buffers (reduces allocations during flush)
     std::vector<char> m_serialize_buffer;                       // Reusable buffer for serialization
@@ -3607,15 +3861,46 @@ public:
     size_t calculateHeaderSize() {
         LOG_TRACE("Calculating header size");
 
-        size_t size = FileHeader::size();  // Fixed header size
+        size_t size = FileHeader::size();  // Fixed header size (31 bytes in v1)
 
-        // Count ALL entries (both metadata and arrays)
+        // Add key registry size
+        for (const auto& key_name : m_key_registry.names) {
+            size += sizeof(uint16_t);  // key length
+            size += key_name.size();   // key string
+            size += sizeof(uint64_t);  // hash
+        }
+
+        // Add layer metadata registry size
+        for (size_t i = 0; i < m_layer_metadata_registry.layer_names.size(); ++i) {
+            size += sizeof(uint16_t);  // layer name length
+            size += m_layer_metadata_registry.layer_names[i].size();  // layer name
+            size += sizeof(uint64_t);  // metadata_block_position
+            size += sizeof(uint32_t);  // metadata_block_size
+            size += sizeof(uint8_t);   // compression
+            size += sizeof(uint16_t);  // metadata_key_count
+            size += m_layer_metadata_registry.key_indices[i].size() * sizeof(uint16_t);  // key indices
+        }
+
+        // Count data array entries first (skip metadata entries)
+        size_t data_entry_count = 0;
         for (size_t i = 0; i < m_hot.keys.size(); i++) {
-            size += sizeof(size_t);               // key size
-            size += m_hot.keys[i].length();       // Key data
+            if (m_cold.stored_in_metadata_flags[i] == 0) {
+                data_entry_count++;
+            }
+        }
+
+        // Add layer presence bitmaps size (for data arrays only)
+        size_t bitmap_words = (data_entry_count + 63) / 64;
+        size += m_layer_metadata_registry.layer_names.size() * bitmap_words * sizeof(uint64_t);
+        for (size_t i = 0; i < m_hot.keys.size(); i++) {
+            if (m_cold.stored_in_metadata_flags[i] == 1) {
+                continue;  // Skip metadata items (stored in STARMeta blocks)
+            }
+
+            // v1 format: key index (uint16_t) instead of full string
+            size += sizeof(uint16_t);  // key index
 
             // Use IndexEntry::serialized_size() to get exact size
-            // Create temporary IndexEntry to calculate size
             IndexEntry temp_entry;
             temp_entry.position = m_cold.file_positions[i];
             temp_entry.total_bytes = m_cold.compressed_sizes[i];
@@ -3624,7 +3909,7 @@ public:
             temp_entry.compression = m_cold.compressions[i];
             temp_entry.block_size = m_config.block_size;
             temp_entry.blocks = m_cold.block_infos[i];
-            temp_entry.stored_in_metadata = (m_cold.stored_in_metadata_flags[i] != 0);
+            temp_entry.stored_in_metadata = false;  // Always false in v1
 
             size += temp_entry.serialized_size();
         }
@@ -3743,6 +4028,108 @@ public:
         LOG_TRACE("Found ", count, " entries in index");
         m_file_header.entry_count = count;
 
+        // Read layer_count
+        uint32_t layer_count = 0;
+        header_stream.read(reinterpret_cast<char*>(&layer_count), sizeof(layer_count));
+        LOG_TRACE("Found ", layer_count, " layers");
+        m_file_header.layer_count = layer_count;
+
+        // Read key_registry_count
+        uint32_t key_registry_count = 0;
+        header_stream.read(reinterpret_cast<char*>(&key_registry_count), sizeof(key_registry_count));
+        LOG_TRACE("Found ", key_registry_count, " keys in registry");
+        m_file_header.key_registry_count = key_registry_count;
+
+        // Read global key registry
+        m_key_registry.names.reserve(key_registry_count);
+        m_key_registry.hashes.reserve(key_registry_count);
+
+        for (uint32_t i = 0; i < key_registry_count; ++i) {
+            // Read key length
+            uint16_t key_len;
+            header_stream.read(reinterpret_cast<char*>(&key_len), sizeof(uint16_t));
+
+            // Read key string
+            std::string key(key_len, '\0');
+            header_stream.read(&key[0], key_len);
+
+            // Read hash
+            uint64_t hash;
+            header_stream.read(reinterpret_cast<char*>(&hash), sizeof(uint64_t));
+
+            // Store in registry
+            m_key_registry.names.push_back(key);
+            m_key_registry.hashes.push_back(hash);
+            m_key_registry.hash_to_index[hash] = i;
+            m_key_registry.name_to_index[key] = i;
+
+            LOG_TRACE("Loaded key[", i, "]: ", key);
+        }
+
+        // Read layer metadata registry (layer_count + 1 to include __base__)
+        uint32_t total_layers = layer_count + 1;  // +1 for __base__ layer
+        m_layer_metadata_registry.layer_names.reserve(total_layers);
+        m_layer_metadata_registry.block_positions.reserve(total_layers);
+        m_layer_metadata_registry.block_sizes.reserve(total_layers);
+        m_layer_metadata_registry.compressions.reserve(total_layers);
+        m_layer_metadata_registry.key_indices.reserve(total_layers);
+
+        for (uint32_t i = 0; i < total_layers; ++i) {
+            // Read layer name
+            uint16_t layer_name_len;
+            header_stream.read(reinterpret_cast<char*>(&layer_name_len), sizeof(uint16_t));
+            std::string layer_name(layer_name_len, '\0');
+            header_stream.read(&layer_name[0], layer_name_len);
+
+            // Read metadata block info
+            uint64_t block_position;
+            header_stream.read(reinterpret_cast<char*>(&block_position), sizeof(uint64_t));
+
+            uint32_t block_size;
+            header_stream.read(reinterpret_cast<char*>(&block_size), sizeof(uint32_t));
+
+            uint8_t compression_byte;
+            header_stream.read(reinterpret_cast<char*>(&compression_byte), sizeof(uint8_t));
+            CompressionAlgorithm compression = static_cast<CompressionAlgorithm>(compression_byte);
+
+            // Read metadata key count and indices
+            uint16_t metadata_key_count;
+            header_stream.read(reinterpret_cast<char*>(&metadata_key_count), sizeof(uint16_t));
+
+            std::unordered_set<uint16_t> key_indices_set;
+            for (uint16_t j = 0; j < metadata_key_count; ++j) {
+                uint16_t key_idx;
+                header_stream.read(reinterpret_cast<char*>(&key_idx), sizeof(uint16_t));
+                key_indices_set.insert(key_idx);
+            }
+
+            // Store in registry
+            m_layer_metadata_registry.layer_names.push_back(layer_name);
+            m_layer_metadata_registry.block_positions.push_back(block_position);
+            m_layer_metadata_registry.block_sizes.push_back(block_size);
+            m_layer_metadata_registry.compressions.push_back(compression);
+            m_layer_metadata_registry.key_indices.push_back(std::move(key_indices_set));
+            m_layer_metadata_registry.name_to_layer_index[layer_name] = i;
+
+            LOG_TRACE("Loaded layer[", i, "]: ", layer_name, " with ", metadata_key_count, " metadata keys");
+        }
+
+        // Initialize layer metadata loaded flags
+        m_layer_metadata_loaded.resize(total_layers, false);
+        m_layer_metadata_indices.resize(total_layers);
+
+        // Read layer presence bitmaps (for data arrays)
+        size_t bitmap_words = (count + 63) / 64;
+        for (uint32_t i = 0; i < total_layers; ++i) {
+            const std::string& layer_name = m_layer_metadata_registry.layer_names[i];
+            std::vector<uint64_t> bitmap(bitmap_words);
+            header_stream.read(reinterpret_cast<char*>(bitmap.data()), bitmap_words * sizeof(uint64_t));
+            uint64_t first_word = bitmap.empty() ? 0 : bitmap[0];
+            m_layer_presence[layer_name] = std::move(bitmap);
+            LOG_DEBUG("Loaded presence bitmap for layer '", layer_name, "': ", bitmap_words, " words, first word = ",
+                     first_word);
+        }
+
         // Reserve capacity to prevent reallocation (critical for string_view validity)
         m_hot.keys.reserve(count);
         m_hot.dtypes.reserve(count);
@@ -3759,13 +4146,31 @@ public:
         m_cold.stored_in_metadata_flags.reserve(count);
 
         for (size_t i = 0; i < count; i++) {
-            std::string key = deserializeKey(header_stream);
+            LOG_DEBUG("Reading index entry ", i, " of ", count, ", stream position: ", header_stream.tellg());
+
+            // v1 format: Read key index instead of full string
+            uint16_t key_idx;
+            header_stream.read(reinterpret_cast<char*>(&key_idx), sizeof(uint16_t));
+            LOG_DEBUG("Read key_idx=", key_idx);
+
+            // Look up key name from registry
+            if (key_idx >= m_key_registry.names.size()) {
+                throw std::runtime_error("Invalid key index in file");
+            }
+            std::string key = m_key_registry.names[key_idx];
+            LOG_TRACE("Key name: ", key);
 
             // Read IndexEntry
             IndexEntry entry;
             entry.read(header_stream);
 
-            // Populate SoA arrays from IndexEntry
+            // Skip metadata-only entries - they exist only in layer metadata system
+            if (entry.stored_in_metadata) {
+                LOG_TRACE("Skipping metadata-only entry: ", key);
+                continue;
+            }
+
+            // Populate SoA arrays from IndexEntry (only for data arrays, not metadata)
             size_t idx = m_hot.keys.size();
 
             m_hot.keys.push_back(key);
@@ -3797,6 +4202,13 @@ public:
         m_header_dirty = false;
         m_file_header.entry_count = count;
         LOG_TRACE("Index loaded successfully with ", count, " entries");
+
+        // v1 format: Load base layer metadata eagerly for compatibility
+        // Other layers are lazy-loaded via ensure_layer_metadata_loaded()
+        if (total_layers > 0) {
+            load_layer_metadata("__base__");
+            m_metadata_loaded = true;  // Mark as loaded to prevent redundant loads in saveTo()
+        }
     }
 
     /**
@@ -3835,12 +4247,87 @@ public:
 #endif
 
     /**
-     * @brief Serializes metadata block to stream
+     * @brief Serializes a single layer's metadata in STARMeta format (v1)
+     * @param os Output stream
+     * @param layer_name Layer name
+     */
+    void serialize_layer_metadata_block(std::ostream& os, const std::string& layer_name) const {
+        LOG_DEBUG("serialize_layer_metadata_block: layer_name=", layer_name);
+
+        // Magic header: "STARMETA" (8 bytes, not null-terminated)
+        const char magic[8] = {'S','T','A','R','M','E','T','A'};
+        os.write(magic, 8);
+
+        // Version
+        uint8_t version = 1;
+        os.write(reinterpret_cast<const char*>(&version), sizeof(uint8_t));
+
+        // Layer name
+        uint16_t layer_name_len = static_cast<uint16_t>(layer_name.size());
+        os.write(reinterpret_cast<const char*>(&layer_name_len), sizeof(uint16_t));
+        os.write(layer_name.c_str(), layer_name_len);
+
+        // Count entries for this layer
+        size_t layer_idx = m_layer_metadata_registry.get_layer_index(layer_name);
+        uint16_t entry_count = static_cast<uint16_t>(m_layer_metadata_registry.key_indices[layer_idx].size());
+        LOG_DEBUG("  entry_count=", entry_count);
+        os.write(reinterpret_cast<const char*>(&entry_count), sizeof(uint16_t));
+
+        // Serialize each entry
+        for (uint16_t key_idx : m_layer_metadata_registry.key_indices[layer_idx]) {
+            LOG_DEBUG("  Serializing key_idx=", key_idx);
+
+            // Write key index
+            os.write(reinterpret_cast<const char*>(&key_idx), sizeof(uint16_t));
+
+            // Find this key in layer metadata indices to get its storage index
+            if (key_idx >= m_key_registry.names.size()) {
+                throw std::runtime_error("Invalid key_idx during serialization: " + std::to_string(key_idx));
+            }
+            const std::string& key = m_key_registry.names[key_idx];
+            LOG_DEBUG("    key=", key);
+
+            auto it = m_layer_metadata_indices[layer_idx].find(key_idx);
+            if (it == m_layer_metadata_indices[layer_idx].end()) {
+                throw std::runtime_error("Key not found in layer metadata indices during serialization: " + key);
+            }
+            size_t storage_idx = it->second;
+            LOG_DEBUG("    storage_idx=", storage_idx);
+
+            // Get data from storage
+            if (storage_idx >= m_data_storage.size()) {
+                throw std::runtime_error("Invalid storage index for metadata: " + key);
+            }
+            const ValueVariant& variant = m_data_storage[storage_idx];
+
+            // Serialize dtype, shape, and data
+            std::visit([&](auto&& arr) {
+                using T = typename std::decay_t<decltype(arr)>::value_type;
+                DataType dtype = TypeToDataType<T>::value;
+                uint8_t dtype_byte = static_cast<uint8_t>(dtype);
+                os.write(reinterpret_cast<const char*>(&dtype_byte), sizeof(uint8_t));
+
+                // Shape
+                const auto& arr_shape = arr.shape();
+                uint8_t ndim = static_cast<uint8_t>(arr_shape.size());
+                os.write(reinterpret_cast<const char*>(&ndim), sizeof(uint8_t));
+                for (size_t dim : arr_shape) {
+                    os.write(reinterpret_cast<const char*>(&dim), sizeof(size_t));
+                }
+
+                // Data
+                serialize_metadata_value<T>(os, arr.data());
+            }, variant);
+        }
+    }
+
+    /**
+     * @brief Serializes metadata block to stream (OLD FORMAT - deprecated)
      * @param os Output stream
      */
     void serialize_metadata_block(std::ostream& os) const {
         // Magic header
-        const char magic[8] = {'S','C','S','M','E','T','A','B'};
+        const char magic[8] = {'S','T','A','R','M','E','T','A'};
         os.write(magic, 8);
 
         // Format version
@@ -3957,6 +4444,10 @@ public:
                 return arr;
             }
             case DataType::STRING: {
+                // Skip total length field (written by serialize_metadata_value)
+                uint32_t total_len;
+                is.read(reinterpret_cast<char*>(&total_len), 4);
+
                 NDArray<std::string> arr(shape);
                 auto& arr_data = arr.data();
                 for (auto& str : arr_data) {
@@ -3987,31 +4478,317 @@ public:
     /**
      * @brief Loads metadata block from file if not already loaded (supports HTTP/remote URLs)
      */
+    /**
+     * @brief Ensure a specific layer's metadata is loaded (v3 format)
+     * @param layer_idx Index of the layer to load
+     */
+    void ensure_layer_metadata_loaded(size_t layer_idx) {
+        if (m_layer_metadata_loaded[layer_idx]) {
+            return;  // Already loaded
+        }
+        load_layer_metadata(m_layer_metadata_registry.layer_names[layer_idx]);
+    }
+
+    /**
+     * @brief Load a specific layer's metadata block (v3 format)
+     * @param layer_name Name of the layer to load
+     */
+    void load_layer_metadata(const std::string& layer_name) {
+        size_t layer_idx = m_layer_metadata_registry.get_layer_index(layer_name);
+
+        if (m_layer_metadata_loaded[layer_idx]) {
+            return;  // Already loaded
+        }
+
+        LOG_DEBUG("Loading metadata for layer: ", layer_name);
+
+        // Get layer metadata info
+        uint64_t position = m_layer_metadata_registry.block_positions[layer_idx];
+        uint32_t size = m_layer_metadata_registry.block_sizes[layer_idx];
+        CompressionAlgorithm compression = m_layer_metadata_registry.compressions[layer_idx];
+
+        if (size == 0) {
+            LOG_DEBUG("Layer has no metadata block: ", layer_name);
+            m_layer_metadata_loaded[layer_idx] = true;
+            return;
+        }
+
+        // Read compressed block from file
+        std::ifstream file(m_filename, std::ios::binary);
+        if (!file.good()) {
+            throw std::runtime_error("Failed to open file for reading layer metadata");
+        }
+
+        file.seekg(position);
+        std::vector<char> compressed(size);
+        file.read(compressed.data(), size);
+        file.close();
+
+        // Decompress
+        std::vector<char> decompressed = decompress_single_block(compressed, compression);
+
+        // Parse STARMeta block
+        parse_layer_metadata_block(layer_idx, decompressed);
+
+        m_layer_metadata_loaded[layer_idx] = true;
+        LOG_DEBUG("Loaded metadata for layer: ", layer_name);
+    }
+
+    /**
+     * @brief Load all layer metadata blocks at once (v3 format)
+     */
+    void load_all_metadata() {
+        for (size_t i = 0; i < m_layer_metadata_registry.layer_names.size(); ++i) {
+            if (!m_layer_metadata_loaded[i]) {
+                load_layer_metadata(m_layer_metadata_registry.layer_names[i]);
+            }
+        }
+    }
+
+    /**
+     * @brief Parse a layer's metadata block (STARMeta format)
+     * @param layer_idx Layer index
+     * @param decompressed Decompressed block data
+     */
+    void parse_layer_metadata_block(size_t layer_idx, const std::vector<char>& decompressed) {
+        std::stringstream stream(std::string(decompressed.begin(), decompressed.end()));
+
+        // Read magic
+        char magic[8];
+        stream.read(magic, 8);
+        if (std::memcmp(magic, "STARMETA", 8) != 0) {
+            throw std::runtime_error("Invalid STARMETA magic");
+        }
+
+        // Read version
+        uint8_t version;
+        stream.read(reinterpret_cast<char*>(&version), sizeof(uint8_t));
+
+        // Read layer name
+        uint16_t layer_name_len;
+        stream.read(reinterpret_cast<char*>(&layer_name_len), sizeof(uint16_t));
+        std::string layer_name(layer_name_len, '\0');
+        stream.read(&layer_name[0], layer_name_len);
+
+        // Read entry count
+        uint16_t entry_count;
+        stream.read(reinterpret_cast<char*>(&entry_count), sizeof(uint16_t));
+
+        LOG_TRACE("Parsing STARMeta block for layer ", layer_name, " with ", entry_count, " entries");
+
+        // Parse each entry
+        for (uint16_t i = 0; i < entry_count; ++i) {
+            // Read key index
+            uint16_t key_index;
+            stream.read(reinterpret_cast<char*>(&key_index), sizeof(uint16_t));
+            LOG_TRACE("  Entry ", i, ": key_index=", key_index);
+
+            // Read data type
+            uint8_t dtype_byte;
+            stream.read(reinterpret_cast<char*>(&dtype_byte), sizeof(uint8_t));
+            LOG_TRACE("  Entry ", i, ": dtype_byte=", static_cast<int>(dtype_byte));
+            DataType dtype = static_cast<DataType>(dtype_byte);
+
+            // Read shape
+            uint8_t ndim;
+            stream.read(reinterpret_cast<char*>(&ndim), sizeof(uint8_t));
+            std::vector<size_t> shape(ndim);
+            stream.read(reinterpret_cast<char*>(shape.data()), ndim * sizeof(size_t));
+
+            // Calculate data size based on dtype and shape
+            size_t num_elements = 1;
+            for (size_t dim : shape) {
+                num_elements *= dim;
+            }
+
+            size_t data_len = 0;
+            if (dtype == DataType::STRING) {
+                // For strings, we'll read each string's length prefix in deserialize_typed_value
+                // Pass a dummy value - the function will read lengths dynamically
+                data_len = num_elements;
+            } else {
+                // For numeric types, calculate exact byte count
+                size_t element_size = 0;
+                switch (dtype) {
+                    case DataType::INT8: case DataType::UINT8: element_size = 1; break;
+                    case DataType::INT16: case DataType::UINT16: element_size = 2; break;
+                    case DataType::INT32: case DataType::UINT32: case DataType::FLOAT32: element_size = 4; break;
+                    case DataType::INT64: case DataType::UINT64: case DataType::FLOAT64: element_size = 8; break;
+                    default: throw std::runtime_error("Unknown data type in metadata deserialization");
+                }
+                data_len = num_elements * element_size;
+            }
+
+            // Deserialize value
+            auto value = deserialize_typed_value(stream, dtype, shape, data_len);
+
+            // Store in m_data_storage
+            size_t storage_idx = m_data_storage.size();
+            m_data_storage.push_back(std::move(value));
+
+            // Store dtype and shape for metadata (use map since storage_idx might have gaps)
+            m_metadata_dtypes[storage_idx] = dtype;
+            m_metadata_shapes[storage_idx] = shape;
+
+            // Track in layer metadata indices (separate namespace from arrays)
+            m_layer_metadata_indices[layer_idx][key_index] = storage_idx;
+        }
+    }
+
+    /**
+     * @brief Compress a single block (helper for layer metadata)
+     * @param uncompressed Uncompressed data
+     * @param compression Compression algorithm
+     * @return Compressed data
+     */
+    std::vector<char> compress_single_block(const std::vector<char>& uncompressed, CompressionAlgorithm compression) {
+        if (compression == CompressionAlgorithm::NONE) {
+            return uncompressed;
+        }
+
+#ifdef ENABLE_ZLIB
+        if (compression == CompressionAlgorithm::GZIP) {
+            uLongf dest_len = compressBound(uncompressed.size());
+            std::vector<char> compressed(dest_len);
+
+            int result = compress2(reinterpret_cast<Bytef*>(compressed.data()), &dest_len,
+                                  reinterpret_cast<const Bytef*>(uncompressed.data()), uncompressed.size(),
+                                  Z_DEFAULT_COMPRESSION);
+            if (result != Z_OK) {
+                throw std::runtime_error("GZIP compression failed");
+            }
+
+            compressed.resize(dest_len);
+            return compressed;
+        }
+#endif
+
+#ifdef ENABLE_LZ4
+        if (compression == CompressionAlgorithm::LZ4) {
+            int max_compressed = LZ4_compressBound(uncompressed.size());
+            std::vector<char> compressed(sizeof(uint64_t) + max_compressed);
+
+            // Store original size in first 8 bytes
+            uint64_t original_size = uncompressed.size();
+            std::memcpy(compressed.data(), &original_size, sizeof(uint64_t));
+
+            int compressed_size = LZ4_compress_default(uncompressed.data(),
+                                                      compressed.data() + sizeof(uint64_t),
+                                                      uncompressed.size(),
+                                                      max_compressed);
+            if (compressed_size <= 0) {
+                throw std::runtime_error("LZ4 compression failed");
+            }
+
+            compressed.resize(sizeof(uint64_t) + compressed_size);
+            return compressed;
+        }
+#endif
+
+        throw std::runtime_error("Unsupported compression algorithm");
+    }
+
+    /**
+     * @brief Decompress a single block (helper for layer metadata)
+     * @param compressed Compressed data
+     * @param compression Compression algorithm
+     * @return Decompressed data
+     */
+    std::vector<char> decompress_single_block(const std::vector<char>& compressed, CompressionAlgorithm compression) {
+        LOG_DEBUG("decompress_single_block called, compressed size: ", compressed.size(), " compression: ", static_cast<int>(compression));
+
+        if (compression == CompressionAlgorithm::NONE) {
+            return compressed;
+        }
+
+#ifdef ENABLE_ZLIB
+        if (compression == CompressionAlgorithm::GZIP) {
+            std::vector<char> decompressed;
+
+            // Try progressively larger buffers if needed
+            for (size_t multiplier = 10; multiplier <= 1000; multiplier *= 2) {
+                uLongf dest_len = compressed.size() * multiplier;
+                decompressed.resize(dest_len);
+
+                int result = uncompress(reinterpret_cast<Bytef*>(decompressed.data()), &dest_len,
+                                       reinterpret_cast<const Bytef*>(compressed.data()), compressed.size());
+
+                if (result == Z_OK) {
+                    decompressed.resize(dest_len);
+                    return decompressed;
+                } else if (result != Z_BUF_ERROR) {
+                    // Other error (not buffer size)
+                    std::cerr << "[ERROR] GZIP decompression failed: code=" << result
+                              << " compressed_size=" << compressed.size()
+                              << " dest_len=" << dest_len << std::endl;
+                    // Print first few bytes of compressed data for debugging
+                    std::cerr << "[ERROR] First 16 bytes: ";
+                    for (size_t i = 0; i < std::min(size_t(16), compressed.size()); ++i) {
+                        std::cerr << std::hex << (int)(unsigned char)compressed[i] << " ";
+                    }
+                    std::cerr << std::dec << std::endl;
+                    throw std::runtime_error("GZIP decompression failed with error code: " + std::to_string(result));
+                }
+                // Z_BUF_ERROR: try larger buffer
+            }
+
+            throw std::runtime_error("GZIP decompression failed: buffer too small even after trying large buffers");
+        }
+#endif
+
+#ifdef ENABLE_LZ4
+        if (compression == CompressionAlgorithm::LZ4) {
+            // Read original size from first 8 bytes
+            uint64_t original_size;
+            std::memcpy(&original_size, compressed.data(), sizeof(uint64_t));
+
+            std::vector<char> decompressed(original_size);
+            int result = LZ4_decompress_safe(compressed.data() + sizeof(uint64_t),
+                                            decompressed.data(),
+                                            compressed.size() - sizeof(uint64_t),
+                                            original_size);
+            if (result < 0) {
+                throw std::runtime_error("LZ4 decompression failed");
+            }
+
+            return decompressed;
+        }
+#endif
+
+        throw std::runtime_error("Unsupported compression algorithm");
+    }
+
+    // v1 load_metadata_block - loads base layer metadata
     void load_metadata_block() {
         if (m_metadata_loaded) {
             return;
         }
 
-        // Find a metadata entry to get the metadata block position and block info
-        size_t metadata_block_position = 0;
-        size_t metadata_block_size = 0;
-        std::vector<BlockInfo> metadata_blocks;
-        CompressionAlgorithm metadata_compression = CompressionAlgorithm::LZ4;
-        bool found_metadata = false;
+        // In v1 format, just load the base layer
+        try {
+            load_layer_metadata("__base__");
+            m_metadata_loaded = true;
+        } catch (const std::exception& e) {
+            // If base layer doesn't exist or has no metadata, that's okay
+            LOG_TRACE("Could not load base layer metadata: ", e.what());
+            m_metadata_loaded = true;
+        }
+    }
 
-        for (size_t i = 0; i < m_cold.stored_in_metadata_flags.size(); i++) {
-            if (m_cold.stored_in_metadata_flags[i] == 1) {
-                metadata_block_position = m_cold.file_positions[i];
-                metadata_block_size = m_cold.compressed_sizes[i];
-                metadata_blocks = m_cold.block_infos[i];
-                metadata_compression = m_cold.compressions[i];
-                found_metadata = true;
-                break;
-            }
+    // OLD v2 load_metadata_block implementation (DEPRECATED)
+    void load_metadata_block_v2_DEPRECATED() {
+        if (m_metadata_loaded) {
+            return;
         }
 
-        if (!found_metadata) {
-            LOG_TRACE("No metadata entries found");
+        // In v1 format, metadata block position is stored in base layer registry
+        size_t base_layer_idx = m_layer_metadata_registry.get_layer_index("__base__");
+        size_t metadata_block_position = m_layer_metadata_registry.block_positions[base_layer_idx];
+        size_t metadata_block_size = m_layer_metadata_registry.block_sizes[base_layer_idx];
+        CompressionAlgorithm metadata_compression = m_layer_metadata_registry.compressions[base_layer_idx];
+
+        if (metadata_block_position == 0 || metadata_block_size == 0) {
+            LOG_TRACE("No metadata block found in base layer");
             m_metadata_loaded = true;
             return;
         }
@@ -4066,15 +4843,34 @@ public:
         file->read(compressed_data.data(), metadata_block_size);
         file.reset();  // Close file
 
-        // Decompress metadata block using block info and actual compression from index
-        // (with parallel decompression if thread pool available)
-        std::vector<char> decompressed_data = decompressBlocks(
-            compressed_data,
-            metadata_blocks,
-            metadata_compression,
-            {},  // decompress all blocks
-            m_thread_pool.get()
-        );
+        // Decompress metadata block directly (simple decompression without block info)
+        std::vector<char> decompressed_data;
+
+        if (metadata_compression == CompressionAlgorithm::GZIP) {
+            #ifdef ENABLE_ZLIB
+            // Estimate uncompressed size (try progressively larger buffers)
+            for (size_t buffer_size = metadata_block_size * 10; buffer_size < metadata_block_size * 1000; buffer_size *= 2) {
+                decompressed_data.resize(buffer_size);
+                uLongf dest_len = buffer_size;
+                int result = uncompress(
+                    reinterpret_cast<Bytef*>(decompressed_data.data()),
+                    &dest_len,
+                    reinterpret_cast<const Bytef*>(compressed_data.data()),
+                    compressed_data.size()
+                );
+                if (result == Z_OK) {
+                    decompressed_data.resize(dest_len);
+                    break;
+                } else if (result != Z_BUF_ERROR) {
+                    throw std::runtime_error("Metadata block decompression failed");
+                }
+            }
+            #else
+            throw std::runtime_error("GZIP support not enabled");
+            #endif
+        } else {
+            throw std::runtime_error("Unsupported metadata compression algorithm");
+        }
 
         // Parse metadata block
         std::stringstream metadata_stream;
@@ -4084,7 +4880,7 @@ public:
         // Read magic header
         char magic[8];
         metadata_stream.read(magic, 8);
-        if (std::memcmp(magic, "SCSMETAB", 8) != 0) {
+        if (std::memcmp(magic, "STARMETA", 8) != 0) {
             throw std::runtime_error("Invalid metadata block magic header");
         }
 
@@ -4140,16 +4936,34 @@ public:
             // Deserialize value
             ValueVariant value = deserialize_typed_value(metadata_stream, dtype, shape, data_len);
 
-            // Find this key in the index and store the data
-            auto it = m_key_to_index.find(key);
-            if (it != m_key_to_index.end()) {
-                size_t idx = it->second;
+            // v1 format: Add metadata to layer metadata system (NOT to m_hot.keys)
+            // Get or create key index in key registry
+            uint16_t key_idx = m_key_registry.get_or_create(key);
+            size_t base_layer_idx = m_layer_metadata_registry.get_layer_index("__base__");
+
+            // Add to layer metadata storage
+            auto& layer_metadata_map = m_layer_metadata_indices[base_layer_idx];
+            auto it = layer_metadata_map.find(key_idx);
+
+            if (it == layer_metadata_map.end()) {
+                // Create new metadata entry (only in layer metadata storage, NOT in m_hot.keys)
+                size_t storage_idx = m_data_storage.size();
                 m_data_storage.push_back(std::move(value));
-                m_hot.data_indices[idx] = m_data_storage.size() - 1;
-                m_hot.loaded_flags[idx] = true;
-                LOG_TRACE("Loaded metadata entry: ", key, " at index ", idx);
+                m_metadata_dtypes[storage_idx] = dtype;
+                m_metadata_shapes[storage_idx] = shape;
+
+                // Track in layer metadata system (separate from arrays)
+                layer_metadata_map[key_idx] = storage_idx;
+
+                LOG_TRACE("Loaded metadata entry: ", key, " at storage index ", storage_idx);
             } else {
-                LOG_WARN("Metadata entry ", key, " not found in index");
+                // Update existing metadata entry
+                size_t storage_idx = it->second;
+                m_data_storage[storage_idx] = std::move(value);
+                m_metadata_dtypes[storage_idx] = dtype;
+                m_metadata_shapes[storage_idx] = shape;
+
+                LOG_TRACE("Updated metadata entry: ", key, " at storage index ", storage_idx);
             }
         }
 
@@ -4203,12 +5017,14 @@ private:
      */
     void flush_internal() {
         // Caller must hold m_mutex
+        LOG_DEBUG("flush_internal() called");
 
         // Early return if already flushed
         if (m_flushed) {
             LOG_TRACE("flush() - already flushed, skipping");
             return;
         }
+        LOG_DEBUG("Proceeding with flush");
         
         #ifdef ENABLE_S3
         // Check read-only mode
@@ -4457,6 +5273,7 @@ private:
 
         // Track actual block_infos (estimates may differ from actual)
         std::vector<std::vector<BlockInfo>> actual_blocks(m_hot.keys.size());
+        std::vector<std::vector<char>> compressed_data(m_hot.keys.size());  // Store compressed data
         std::mutex file_mutex;  // For thread-safe file writes
 
         // Compress and write metadata block first (to get actual block_infos)
@@ -4483,6 +5300,12 @@ private:
                 m_cold.block_infos[idx] = metadata_blocks;
                 m_cold.compressions[idx] = m_config.metadata_compression;
             }
+
+            // Store metadata block info in base layer registry (for v1 format loading)
+            size_t base_layer_idx = m_layer_metadata_registry.get_layer_index("__base__");
+            m_layer_metadata_registry.block_positions[base_layer_idx] = metadata_position;
+            m_layer_metadata_registry.block_sizes[base_layer_idx] = static_cast<uint32_t>(metadata_compressed.size());
+            m_layer_metadata_registry.compressions[base_layer_idx] = m_config.metadata_compression;
         }
 
 #ifdef ENABLE_S3
@@ -4615,31 +5438,98 @@ private:
                     for (const auto& block : actual_blocks[i]) {
                         m_cold.compressed_sizes[i] += block.compressed_size;
                     }
-                    m_cold.file_positions[i] = file_positions[i];
                 }
             }
 
-            // NOW write header with ACTUAL block infos
+            // Recalculate file positions using actual sizes (not estimates)
+            size_t data_offset_actual = header_size;
+            for (size_t i = 0; i < m_hot.keys.size(); i++) {
+                if (!m_cold.stored_in_metadata_flags[i]) {
+                    m_cold.file_positions[i] = data_offset_actual;
+                    data_offset_actual += m_cold.compressed_sizes[i];
+                }
+            }
+
+            // NOW write header with ACTUAL block infos (v1 format)
             std::ostringstream header_stream;
             m_file_header.header_size = header_size;
-            m_file_header.entry_count = m_hot.keys.size();
-            m_file_header.write(header_stream);
 
-            // Write index with actual block infos
+            // Count only data array entries (not metadata)
+            size_t data_entry_count = 0;
             for (size_t i = 0; i < m_hot.keys.size(); i++) {
-                size_t key_len = m_hot.keys[i].length();
-                header_stream.write(reinterpret_cast<const char*>(&key_len), sizeof(key_len));
-                header_stream.write(m_hot.keys[i].data(), key_len);
+                if (m_cold.stored_in_metadata_flags[i] == 0) {
+                    data_entry_count++;
+                }
+            }
+            m_file_header.entry_count = data_entry_count;
+
+            // layer_count is user-visible layers (excluding __base__)
+            m_file_header.layer_count = static_cast<uint32_t>(m_layer_metadata_registry.layer_names.size() - 1);
+            m_file_header.key_registry_count = static_cast<uint32_t>(m_key_registry.names.size());
+            m_file_header.write(header_stream);
+            LOG_DEBUG("After FileHeader, stream position: ", header_stream.tellp());
+
+            // Write global key registry
+            for (size_t i = 0; i < m_key_registry.names.size(); ++i) {
+                uint16_t key_len = static_cast<uint16_t>(m_key_registry.names[i].size());
+                header_stream.write(reinterpret_cast<const char*>(&key_len), sizeof(uint16_t));
+                header_stream.write(m_key_registry.names[i].c_str(), key_len);
+                header_stream.write(reinterpret_cast<const char*>(&m_key_registry.hashes[i]), sizeof(uint64_t));
+            }
+            LOG_DEBUG("After key registry (", m_key_registry.names.size(), " keys), stream position: ", header_stream.tellp());
+
+            // Write layer metadata registry
+            for (size_t i = 0; i < m_layer_metadata_registry.layer_names.size(); ++i) {
+                uint16_t layer_name_len = static_cast<uint16_t>(m_layer_metadata_registry.layer_names[i].size());
+                header_stream.write(reinterpret_cast<const char*>(&layer_name_len), sizeof(uint16_t));
+                header_stream.write(m_layer_metadata_registry.layer_names[i].c_str(), layer_name_len);
+
+                header_stream.write(reinterpret_cast<const char*>(&m_layer_metadata_registry.block_positions[i]), sizeof(uint64_t));
+                header_stream.write(reinterpret_cast<const char*>(&m_layer_metadata_registry.block_sizes[i]), sizeof(uint32_t));
+
+                uint8_t compression_byte = static_cast<uint8_t>(m_layer_metadata_registry.compressions[i]);
+                header_stream.write(reinterpret_cast<const char*>(&compression_byte), sizeof(uint8_t));
+
+                uint16_t metadata_key_count = static_cast<uint16_t>(m_layer_metadata_registry.key_indices[i].size());
+                LOG_DEBUG("Writing layer ", m_layer_metadata_registry.layer_names[i], " with ", metadata_key_count, " metadata keys");
+                header_stream.write(reinterpret_cast<const char*>(&metadata_key_count), sizeof(uint16_t));
+
+                // Write key indices (need to collect from unordered_set and sort)
+                std::vector<uint16_t> sorted_indices(m_layer_metadata_registry.key_indices[i].begin(),
+                                                     m_layer_metadata_registry.key_indices[i].end());
+                std::sort(sorted_indices.begin(), sorted_indices.end());
+                header_stream.write(reinterpret_cast<const char*>(sorted_indices.data()),
+                                   sorted_indices.size() * sizeof(uint16_t));
+            }
+            LOG_DEBUG("After layer metadata registry, stream position: ", header_stream.tellp());
+
+            // Write layer presence bitmaps (for data arrays) in same order as layer registry
+            for (size_t i = 0; i < m_layer_metadata_registry.layer_names.size(); ++i) {
+                const std::string& layer_name = m_layer_metadata_registry.layer_names[i];
+                const auto& bitmap = m_layer_presence[layer_name];
+                header_stream.write(reinterpret_cast<const char*>(bitmap.data()), bitmap.size() * sizeof(uint64_t));
+            }
+            LOG_DEBUG("After bitmaps, stream position: ", header_stream.tellp());
+
+            // Write index with actual block infos (data arrays only)
+            for (size_t i = 0; i < m_hot.keys.size(); i++) {
+                if (m_cold.stored_in_metadata_flags[i] == 1) {
+                    continue;  // Skip metadata items (stored in STARMeta blocks)
+                }
+
+                // v1 format: Write key index instead of full string
+                uint16_t key_idx = m_key_registry.get_index(m_hot.keys[i]);
+                header_stream.write(reinterpret_cast<const char*>(&key_idx), sizeof(uint16_t));
 
                 IndexEntry entry;
-                entry.position = m_cold.file_positions[i];  // Use m_cold, not file_positions!
+                entry.position = m_cold.file_positions[i];
                 entry.total_bytes = m_cold.compressed_sizes[i];
                 entry.datatype = m_hot.dtypes[i];
                 entry.shape = m_cold.shapes[i];
                 entry.compression = m_cold.compressions[i];
                 entry.block_size = m_config.block_size;
-                entry.blocks = m_cold.block_infos[i];  // ACTUAL blocks
-                entry.stored_in_metadata = (m_cold.stored_in_metadata_flags[i] != 0);
+                entry.blocks = m_cold.block_infos[i];
+                entry.stored_in_metadata = false;  // Always false in v1
 
                 entry.write(header_stream);
             }
@@ -4729,11 +5619,10 @@ private:
                     }
                 });
             } else {
-                // Serial fallback
+                // Serial fallback: First compress all arrays to get actual sizes
                 for (size_t i = 0; i < m_hot.keys.size(); i++) {
                     if (m_cold.stored_in_metadata_flags[i]) continue;
 
-                    std::vector<char> array_data;
                     std::vector<BlockInfo> blocks;
 
                     if (m_hot.dirty_flags[i]) {
@@ -4760,19 +5649,19 @@ private:
                             serialize_buffer.size(),
                             m_config.compression,
                             m_config.block_size,
-                            array_data,
+                            compressed_data[i],
                             temp_buffer,
                             m_thread_pool.get()  // Use thread pool for block-level parallelism
                         );
 
                     } else {
                         blocks = m_cold.block_infos[i];
-                        array_data.resize(m_cold.compressed_sizes[i]);
+                        compressed_data[i].resize(m_cold.compressed_sizes[i]);
 
                         std::ifstream in(m_filename, std::ios::binary);
                         if (in) {
                             in.seekg(m_cold.file_positions[i]);  // Read from OLD position
-                            in.read(array_data.data(), array_data.size());
+                            in.read(compressed_data[i].data(), compressed_data[i].size());
                         }
 
                         // Adjust block offsets for new contiguous layout
@@ -4785,18 +5674,11 @@ private:
                     }
 
                     actual_blocks[i] = blocks;
-                    out.seekp(file_positions[i]);
-                    out.write(array_data.data(), array_data.size());
                 }
             }
 
-            // Write metadata block
-            if (!metadata_compressed.empty()) {
-                out.seekp(metadata_position);
-                out.write(metadata_compressed.data(), metadata_compressed.size());
-            }
-
             // Update SoA with actual block infos and sizes
+            // First pass: update sizes from actual blocks
             for (size_t i = 0; i < m_hot.keys.size(); i++) {
                 if (!m_cold.stored_in_metadata_flags[i] && !actual_blocks[i].empty()) {
                     m_cold.block_infos[i] = actual_blocks[i];
@@ -4804,34 +5686,198 @@ private:
                     for (const auto& block : actual_blocks[i]) {
                         m_cold.compressed_sizes[i] += block.compressed_size;
                     }
-                    m_cold.file_positions[i] = file_positions[i];
                 }
             }
 
-            // NOW write header with actual block infos
+            // Second pass: recalculate file positions using actual sizes
+            size_t data_offset_actual = header_size;
+            for (size_t i = 0; i < m_hot.keys.size(); i++) {
+                if (!m_cold.stored_in_metadata_flags[i]) {
+                    m_cold.file_positions[i] = data_offset_actual;
+                    data_offset_actual += m_cold.compressed_sizes[i];
+                }
+            }
+
+            // Third pass: write compressed data at correct positions
+            for (size_t i = 0; i < m_hot.keys.size(); i++) {
+                if (m_cold.stored_in_metadata_flags[i] || compressed_data[i].empty()) continue;
+
+                out.seekp(m_cold.file_positions[i]);
+                out.write(compressed_data[i].data(), compressed_data[i].size());
+            }
+
+            // NOW write header FIRST (v1 format)
             out.seekp(0);
             m_file_header.header_size = header_size;
-            m_file_header.entry_count = m_hot.keys.size();
-            m_file_header.write(out);
 
-            // Write index with actual block infos
+            // Count only data array entries (not metadata)
+            size_t data_entry_count = 0;
             for (size_t i = 0; i < m_hot.keys.size(); i++) {
-                size_t key_len = m_hot.keys[i].length();
-                out.write(reinterpret_cast<const char*>(&key_len), sizeof(key_len));
-                out.write(m_hot.keys[i].data(), key_len);
+                if (m_cold.stored_in_metadata_flags[i] == 0) {
+                    data_entry_count++;
+                }
+            }
+            m_file_header.entry_count = data_entry_count;
+
+            // layer_count is user-visible layers (excluding __base__)
+            m_file_header.layer_count = static_cast<uint32_t>(m_layer_metadata_registry.layer_names.size() - 1);
+            m_file_header.key_registry_count = static_cast<uint32_t>(m_key_registry.names.size());
+            m_file_header.write(out);
+            LOG_DEBUG("After FileHeader, stream position: ", out.tellp());
+
+            // Write global key registry
+            for (size_t i = 0; i < m_key_registry.names.size(); ++i) {
+                uint16_t key_len = static_cast<uint16_t>(m_key_registry.names[i].size());
+                out.write(reinterpret_cast<const char*>(&key_len), sizeof(uint16_t));
+                out.write(m_key_registry.names[i].c_str(), key_len);
+                out.write(reinterpret_cast<const char*>(&m_key_registry.hashes[i]), sizeof(uint64_t));
+            }
+            LOG_DEBUG("After key registry (", m_key_registry.names.size(), " keys), stream position: ", out.tellp());
+
+            // Write layer metadata registry (with placeholder positions - will be updated later)
+            for (size_t i = 0; i < m_layer_metadata_registry.layer_names.size(); ++i) {
+                uint16_t layer_name_len = static_cast<uint16_t>(m_layer_metadata_registry.layer_names[i].size());
+                out.write(reinterpret_cast<const char*>(&layer_name_len), sizeof(uint16_t));
+                out.write(m_layer_metadata_registry.layer_names[i].c_str(), layer_name_len);
+
+                out.write(reinterpret_cast<const char*>(&m_layer_metadata_registry.block_positions[i]), sizeof(uint64_t));
+                out.write(reinterpret_cast<const char*>(&m_layer_metadata_registry.block_sizes[i]), sizeof(uint32_t));
+
+                uint8_t compression_byte = static_cast<uint8_t>(m_layer_metadata_registry.compressions[i]);
+                out.write(reinterpret_cast<const char*>(&compression_byte), sizeof(uint8_t));
+
+                uint16_t metadata_key_count = static_cast<uint16_t>(m_layer_metadata_registry.key_indices[i].size());
+                out.write(reinterpret_cast<const char*>(&metadata_key_count), sizeof(uint16_t));
+
+                // Write key indices (need to collect from unordered_set and sort)
+                std::vector<uint16_t> sorted_indices(m_layer_metadata_registry.key_indices[i].begin(),
+                                                     m_layer_metadata_registry.key_indices[i].end());
+                std::sort(sorted_indices.begin(), sorted_indices.end());
+                out.write(reinterpret_cast<const char*>(sorted_indices.data()),
+                         sorted_indices.size() * sizeof(uint16_t));
+            }
+            LOG_DEBUG("After layer metadata registry, stream position: ", out.tellp());
+
+            // Write layer presence bitmaps (for data arrays) in same order as layer registry
+            for (size_t i = 0; i < m_layer_metadata_registry.layer_names.size(); ++i) {
+                const std::string& layer_name = m_layer_metadata_registry.layer_names[i];
+                const auto& bitmap = m_layer_presence[layer_name];
+                LOG_DEBUG("Writing bitmap for layer '", layer_name, "': ", bitmap.size(), " words, first word = ",
+                         (bitmap.empty() ? 0 : bitmap[0]));
+                out.write(reinterpret_cast<const char*>(bitmap.data()), bitmap.size() * sizeof(uint64_t));
+            }
+            LOG_DEBUG("After bitmaps, stream position: ", out.tellp());
+
+            // Write index with actual block infos (data arrays only)
+            for (size_t i = 0; i < m_hot.keys.size(); i++) {
+                if (m_cold.stored_in_metadata_flags[i] == 1) {
+                    continue;  // Skip metadata items (stored in STARMeta blocks)
+                }
+
+                // v1 format: Write key index instead of full string
+                uint16_t key_idx = m_key_registry.get_index(m_hot.keys[i]);
+                out.write(reinterpret_cast<const char*>(&key_idx), sizeof(uint16_t));
 
                 IndexEntry entry;
-                entry.position = m_cold.file_positions[i];  // Use m_cold, not file_positions!
+                entry.position = m_cold.file_positions[i];
                 entry.total_bytes = m_cold.compressed_sizes[i];
                 entry.datatype = m_hot.dtypes[i];
                 entry.shape = m_cold.shapes[i];
                 entry.compression = m_cold.compressions[i];
                 entry.block_size = m_config.block_size;
-                entry.blocks = m_cold.block_infos[i];  // ACTUAL blocks
-                entry.stored_in_metadata = (m_cold.stored_in_metadata_flags[i] != 0);
+                entry.blocks = m_cold.block_infos[i];
+                entry.stored_in_metadata = false;  // Always false in v1
 
                 entry.write(out);
             }
+
+            // Seek to end of data section before writing metadata blocks
+            // (After writing header, stream is at end of header, not end of data)
+            size_t metadata_start_position = header_size;
+            for (size_t i = 0; i < m_hot.keys.size(); i++) {
+                if (!m_cold.stored_in_metadata_flags[i]) {
+                    metadata_start_position += m_cold.compressed_sizes[i];
+                }
+            }
+            out.seekp(metadata_start_position);
+
+            // NOW write per-layer metadata blocks AFTER header (v1 format)
+            // This ensures the header doesn't overwrite the metadata blocks
+            LOG_DEBUG("Writing per-layer metadata blocks, layer count: ", m_layer_metadata_registry.layer_names.size());
+            for (size_t i = 0; i < m_layer_metadata_registry.layer_names.size(); ++i) {
+                const std::string& layer_name = m_layer_metadata_registry.layer_names[i];
+                LOG_DEBUG("  Processing layer ", i, ": ", layer_name);
+
+                // Skip if no metadata keys in this layer
+                if (m_layer_metadata_registry.key_indices[i].empty()) {
+                    LOG_DEBUG("    No keys, skipping");
+                    m_layer_metadata_registry.block_positions[i] = 0;
+                    m_layer_metadata_registry.block_sizes[i] = 0;
+                    m_layer_metadata_registry.compressions[i] = CompressionAlgorithm::NONE;
+                    continue;
+                }
+
+                // Serialize layer metadata in STARMeta format
+                std::ostringstream metadata_stream;
+                serialize_layer_metadata_block(metadata_stream, layer_name);
+                std::string metadata_str = metadata_stream.str();
+
+                // Compress
+                std::vector<char> metadata_compressed = compress_single_block(
+                    std::vector<char>(metadata_str.begin(), metadata_str.end()),
+                    m_config.metadata_compression
+                );
+
+                // Record position and write
+                uint64_t position = out.tellp();
+                out.write(metadata_compressed.data(), metadata_compressed.size());
+
+                // Update registry
+                m_layer_metadata_registry.block_positions[i] = position;
+                m_layer_metadata_registry.block_sizes[i] = static_cast<uint32_t>(metadata_compressed.size());
+                m_layer_metadata_registry.compressions[i] = m_config.metadata_compression;
+
+                LOG_DEBUG("Wrote metadata block for layer '", layer_name, "' at position ", position,
+                         " with size ", metadata_compressed.size());
+            }
+
+            // Update the layer metadata registry in the header section
+            // We need to rewrite just the layer metadata registry part with updated positions
+            auto metadata_blocks_end_position = out.tellp();
+
+            // Seek to the start of layer metadata registry in the header
+            // FileHeader (31) + Key Registry
+            size_t key_registry_size = 0;
+            for (const auto& key_name : m_key_registry.names) {
+                key_registry_size += sizeof(uint16_t) + key_name.size() + sizeof(uint64_t);
+            }
+            uint64_t layer_registry_offset = FileHeader::size() + key_registry_size;
+            out.seekp(layer_registry_offset);
+
+            // Rewrite layer metadata registry with updated positions
+            for (size_t i = 0; i < m_layer_metadata_registry.layer_names.size(); ++i) {
+                uint16_t layer_name_len = static_cast<uint16_t>(m_layer_metadata_registry.layer_names[i].size());
+                out.write(reinterpret_cast<const char*>(&layer_name_len), sizeof(uint16_t));
+                out.write(m_layer_metadata_registry.layer_names[i].c_str(), layer_name_len);
+
+                out.write(reinterpret_cast<const char*>(&m_layer_metadata_registry.block_positions[i]), sizeof(uint64_t));
+                out.write(reinterpret_cast<const char*>(&m_layer_metadata_registry.block_sizes[i]), sizeof(uint32_t));
+
+                uint8_t compression_byte = static_cast<uint8_t>(m_layer_metadata_registry.compressions[i]);
+                out.write(reinterpret_cast<const char*>(&compression_byte), sizeof(uint8_t));
+
+                uint16_t key_count = static_cast<uint16_t>(m_layer_metadata_registry.key_indices[i].size());
+                out.write(reinterpret_cast<const char*>(&key_count), sizeof(uint16_t));
+
+                std::vector<uint16_t> sorted_indices(m_layer_metadata_registry.key_indices[i].begin(),
+                                                     m_layer_metadata_registry.key_indices[i].end());
+                std::sort(sorted_indices.begin(), sorted_indices.end());
+                out.write(reinterpret_cast<const char*>(sorted_indices.data()),
+                         sorted_indices.size() * sizeof(uint16_t));
+            }
+
+            // Seek back to end of file to ensure file isn't truncated
+            out.seekp(metadata_blocks_end_position);
 
             // Flush and close stream
             out.flush();
@@ -5169,6 +6215,16 @@ private:
         // If threads == 1, m_thread_pool remains nullptr (single-threaded mode)
 
         loadIndex();
+
+        // Ensure base layer exists in registry (for new files)
+        if (m_layer_metadata_registry.layer_names.empty()) {
+            m_layer_metadata_registry.add_layer("__base__");
+            m_layer_metadata_loaded.resize(1, false);
+            m_layer_metadata_indices.resize(1);
+
+            // Initialize empty bitmap for base layer (will grow as arrays are added)
+            m_layer_presence["__base__"] = std::vector<uint64_t>();
+        }
     }
 
 public:
@@ -5176,11 +6232,15 @@ public:
      * @brief Destructor - writes all pending changes to disk (RAII)
      */
     ~StarDataset() {
+        LOG_DEBUG("~StarDataset() destructor called");
         try {
             flush();
+        } catch (const std::exception& e) {
+            std::cerr << "Exception in ~StarDataset(): " << e.what() << std::endl;
         } catch (...) {
-            // Never throw from destructor
+            std::cerr << "Unknown exception in ~StarDataset()" << std::endl;
         }
+        LOG_DEBUG("~StarDataset() destructor finished");
     }
 
     /**
@@ -5193,6 +6253,194 @@ public:
         flush();
     }
 
+    //==========================================================================
+    // Layer Management API
+    //==========================================================================
+
+    /**
+     * @brief Get existing layer view
+     * @param layer_name Name of the layer
+     * @return Shared pointer to LayerView
+     * @throws std::runtime_error if layer doesn't exist
+     */
+    std::shared_ptr<LayerView> get_layer(const std::string& layer_name);
+
+    /**
+     * @brief Create new layer and return view
+     * @param layer_name Name of new layer
+     * @return Shared pointer to LayerView
+     * @throws std::runtime_error if layer already exists
+     */
+    std::shared_ptr<LayerView> create_layer(const std::string& layer_name);
+
+    /**
+     * @brief Check if layer exists
+     * @param layer_name Layer name to check
+     * @return true if layer exists, false otherwise
+     */
+    bool has_layer(const std::string& layer_name) const {
+        std::shared_lock<std::shared_mutex> lock(m_mutex);
+        return has_layer_unlocked(layer_name);
+    }
+
+    /**
+     * @brief Set layer presence for a data array key
+     * @param layer_name Layer name
+     * @param key Data array key
+     * @param present Whether the key is present in this layer
+     */
+    void set_layer_presence(const std::string& layer_name, const std::string& key, bool present) {
+        std::unique_lock<std::shared_mutex> lock(m_mutex);
+
+        LOG_DEBUG("set_layer_presence: layer=", layer_name, " key=", key, " present=", present);
+
+        // Get key index from KEY REGISTRY (not m_key_to_index which is m_hot.keys index)
+        // This is critical for v1 format where bitmaps are indexed by registry key indices
+        uint16_t key_idx = m_key_registry.get_or_create(key);
+
+        // Get or create layer presence bitmap
+        auto& bitmap = m_layer_presence[layer_name];
+        size_t word_idx = key_idx / 64;
+        size_t bit_idx = key_idx % 64;
+
+        // Resize bitmap if needed
+        if (word_idx >= bitmap.size()) {
+            bitmap.resize(word_idx + 1, 0);
+        }
+
+        // Set or clear bit
+        if (present) {
+            bitmap[word_idx] |= (uint64_t(1) << bit_idx);
+            LOG_DEBUG("  Set bit ", bit_idx, " (key_idx=", key_idx, ") in word ", word_idx, " for layer ", layer_name);
+        } else {
+            bitmap[word_idx] &= ~(uint64_t(1) << bit_idx);
+        }
+
+        m_header_dirty = true;
+    }
+
+private:
+    // Internal helper without locking (call when already holding lock)
+    bool has_layer_unlocked(const std::string& layer_name) const {
+        return m_layer_metadata_registry.contains_layer(layer_name) || layer_name == "__base__";
+    }
+
+    /**
+     * @brief Resolve metadata inheritance from header (O(1) - no loading)
+     * @param key Key to look up
+     * @param layer_name Layer to start search from
+     * @return Layer index where key exists (checks layer first, then base)
+     * @throws std::runtime_error if key not found in layer or base
+     */
+    size_t resolve_metadata_inheritance(const std::string& key, const std::string& layer_name) const {
+        // O(1) lookup: key → key_index
+        if (!m_key_registry.contains(key)) {
+            throw std::runtime_error("Key not found in registry: " + key);
+        }
+        uint16_t key_index = m_key_registry.get_index(key);
+
+        // O(1) lookup: layer_name → layer_index
+        size_t layer_idx = m_layer_metadata_registry.get_layer_index(layer_name);
+
+        // O(1) check: does layer have this key?
+        const auto& layer_indices = m_layer_metadata_registry.key_indices[layer_idx];
+        if (layer_indices.count(key_index) > 0) {
+            return layer_idx;
+        }
+
+        // Fall back to base
+        size_t base_idx = m_layer_metadata_registry.get_layer_index("__base__");
+        const auto& base_indices = m_layer_metadata_registry.key_indices[base_idx];
+        if (base_indices.count(key_index) > 0) {
+            return base_idx;
+        }
+
+        throw std::runtime_error("Key not found in layer or base: " + key);
+    }
+
+    /**
+     * @brief Check if metadata key exists in specific layer (header-only, O(1))
+     * @param key Key to check
+     * @param layer_name Layer name
+     * @return true if key exists in layer
+     */
+    bool has_metadata_key_in_layer(const std::string& key, const std::string& layer_name) const {
+        if (!m_key_registry.contains(key)) {
+            return false;
+        }
+        uint16_t key_index = m_key_registry.get_index(key);
+
+        if (!m_layer_metadata_registry.contains_layer(layer_name)) {
+            return false;
+        }
+        size_t layer_idx = m_layer_metadata_registry.get_layer_index(layer_name);
+
+        const auto& indices = m_layer_metadata_registry.key_indices[layer_idx];
+        return indices.count(key_index) > 0;
+    }
+
+public:
+
+    /**
+     * @brief Get list of all layer names
+     * @return Vector of layer names
+     */
+    std::vector<std::string> list_layers() const {
+        std::shared_lock<std::shared_mutex> lock(m_mutex);
+
+        // Filter out __base__ layer (internal use only)
+        std::vector<std::string> result;
+        for (const auto& name : m_layer_metadata_registry.layer_names) {
+            if (name != "__base__") {
+                result.push_back(name);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * @brief Check if key exists in specific layer using bit-mask (O(1))
+     * @param key Key to check
+     * @param layer_name Layer name
+     * @return true if key exists in layer, false otherwise
+     */
+    bool key_in_layer(const std::string& key, const std::string& layer_name) const {
+        std::shared_lock<std::shared_mutex> lock(m_mutex);
+
+        auto it = m_key_to_index.find(key);
+        if (it != m_key_to_index.end()) {
+            // Key found in array storage
+            size_t idx = it->second;
+
+            // Check if this is a metadata key (stored in metadata block, not as separate array)
+            if (m_cold.stored_in_metadata_flags[idx] == 1) {
+                // Metadata key - check layer metadata registry
+                return has_metadata_key_in_layer(key, layer_name);
+            }
+
+            // Data array - check layer-specific bitmap using KEY REGISTRY index
+            // Get key index from registry (v1 format uses registry indices for bitmaps)
+            uint16_t key_idx = m_key_registry.get_index(key);
+
+            auto layer_it = m_layer_presence.find(layer_name);
+            if (layer_it == m_layer_presence.end()) {
+                return false;
+            }
+
+            const auto& bitmap = layer_it->second;
+            size_t word_idx = key_idx / 64;
+            size_t bit_idx = key_idx % 64;
+
+            if (word_idx >= bitmap.size()) {
+                return false;
+            }
+
+            return (bitmap[word_idx] & (1ULL << bit_idx)) != 0;
+        }
+
+        // Key not in array storage, check if it's a metadata-only key
+        return has_metadata_key_in_layer(key, layer_name);
+    }
 
     /**
      * @brief Store array as separate compressed array (not in metadata block)
@@ -5289,9 +6537,27 @@ public:
 
             m_data_storage.emplace_back(std::forward<NDArray<T>>(value));
             m_key_to_index[key] = idx;
+
+            // Add to key registry for v1 format and get its index
+            uint16_t key_idx = m_key_registry.get_or_create(key);
+
+            // Grow layer presence bitmaps for all layers based on KEY REGISTRY index
+            size_t new_bitmap_words = (key_idx + 64) / 64;  // Round up to nearest 64-bit word
+            for (auto& [layer_name, bitmap] : m_layer_presence) {
+                if (bitmap.size() < new_bitmap_words) {
+                    bitmap.resize(new_bitmap_words, 0);
+                }
+            }
+
+            // Set bit for this array in base layer bitmap by default using KEY REGISTRY index
+            // (LayerView::put will clear this and set the layer-specific bit instead)
+            size_t word_idx = key_idx / 64;
+            size_t bit_idx = key_idx % 64;
+            m_layer_presence["__base__"][word_idx] |= (uint64_t(1) << bit_idx);
         }
 
         m_header_dirty = true;
+        m_flushed = false;  // Need to flush new data
     }
 
     /**
@@ -5350,29 +6616,42 @@ public:
 
     /**
      * @brief Gets list of keys in metadata block
-     * @return Vector of key names
+     * @return Vector of key names (excludes layer-prefixed internal keys)
      */
     std::vector<std::string> get_metadata_keys() const {
-        std::vector<std::string> keys;
-        // Iterate SoA and collect keys stored in metadata block
-        for (size_t i = 0; i < m_hot.keys.size(); i++) {
-            if (m_cold.stored_in_metadata_flags[i] == 1) {
-                keys.push_back(m_hot.keys[i]);
+        // v1 format: Collect metadata keys from all layer registries (base + layers)
+        std::set<std::string> key_set;  // Use set to avoid duplicates
+        for (size_t i = 0; i < m_layer_metadata_registry.layer_names.size(); ++i) {
+            for (uint16_t key_idx : m_layer_metadata_registry.key_indices[i]) {
+                key_set.insert(m_key_registry.names[key_idx]);
             }
         }
-        return keys;
+        return std::vector<std::string>(key_set.begin(), key_set.end());
     }
+
+private:
+    /**
+     * @brief Gets ALL keys from hot storage (internal use only)
+     * @return Vector of all key names
+     *
+     * Note: Returns ALL keys in m_hot.keys, including layer-prefixed internal keys.
+     * LayerMetadataAccessor will filter these to find its layer-specific keys.
+     */
+    std::vector<std::string> get_all_metadata_keys_internal() const {
+        return m_hot.keys;
+    }
+
+public:
 
     /**
      * @brief Gets count of entries in metadata block
-     * @return Number of metadata entries
+     * @return Number of metadata entries (excludes layer-prefixed internal keys)
      */
     size_t get_metadata_count() const {
+        // v1 format: Count metadata keys from all layer registries (base + layers)
         size_t count = 0;
-        for (size_t i = 0; i < m_hot.keys.size(); i++) {
-            if (m_cold.stored_in_metadata_flags[i] == 1) {
-                count++;
-            }
+        for (size_t i = 0; i < m_layer_metadata_registry.layer_names.size(); ++i) {
+            count += m_layer_metadata_registry.key_indices[i].size();
         }
         return count;
     }
@@ -5420,6 +6699,13 @@ public:
         // Validation using SoA
         auto it = m_key_to_index.find(key);
         if (it == m_key_to_index.end()) {
+            // Check if it's a metadata-only key
+            if (meta.contains(key)) {
+                throw std::runtime_error(
+                    "Array '" + key + "' is stored in the metadata block and cannot be sliced. "
+                    "Metadata block items are designed for complete access only. "
+                    "Use meta.get(\"" + key + "\") to retrieve the full array.");
+            }
             throw std::runtime_error("Key not found: " + key);
         }
 
@@ -5589,6 +6875,10 @@ public:
     bool is_sliceable(const std::string& key) const {
         auto it = m_key_to_index.find(key);
         if (it == m_key_to_index.end()) {
+            // Not in array storage - check if it's metadata
+            if (meta.contains(key)) {
+                return false;  // Metadata is not sliceable
+            }
             return false;  // Key doesn't exist
         }
         size_t idx = it->second;
@@ -6261,6 +7551,26 @@ public:
 };  // end of StarDataset class
 
 //==============================================================================
+// LayerView Method Implementations
+//==============================================================================
+
+template<typename T>
+NDArray<T> LayerView::get(const std::string& key) {
+    // Delegate to base dataset's get - it handles layer presence lookup
+    return m_base->get<T>(key);
+}
+
+template<typename T>
+void LayerView::put(const std::string& key, NDArray<T>&& value) {
+    // Store in base dataset (this will mark it in __base__ bitmap)
+    m_base->put(key, std::move(value));
+
+    // Clear base bitmap and set layer bitmap instead
+    m_base->set_layer_presence("__base__", key, false);
+    m_base->set_layer_presence(m_layer_name, key, true);
+}
+
+//==============================================================================
 // MetadataAccessor Method Implementations
 //==============================================================================
 
@@ -6290,240 +7600,65 @@ template<typename V>
 void MetadataAccessor::put(const std::string& key, const V& value) {
     std::unique_lock<std::shared_mutex> lock(m_store->m_mutex);
 
-    // Structure of Arrays: single lookup, cache-friendly updates
-    auto it = m_store->m_key_to_index.find(key);
-
     using ElementType = typename V::value_type;
     DataType dtype = TypeToDataType<ElementType>::value;
     auto shape_vec = std::vector<size_t>(value.shape().begin(), value.shape().end());
-    uint32_t uncompressed_size = value.size() * sizeof(ElementType);
 
-    if (it != m_store->m_key_to_index.end()) {
-        // Update existing entry - SoA pattern: update each array independently
-        size_t idx = it->second;
+    // Get or create key index in key registry
+    uint16_t key_idx = m_store->m_key_registry.get_or_create(key);
+    size_t base_layer_idx = m_store->m_layer_metadata_registry.get_layer_index("__base__");
 
-        // Update hot data (frequently accessed)
-        m_store->m_hot.dtypes[idx] = dtype;
-        m_store->m_hot.locations[idx] = StorageLocation::PENDING;
-        m_store->m_hot.dirty_flags[idx] = true;
+    // Metadata uses completely separate namespace from arrays - only in layer metadata system
+    auto& layer_metadata_map = m_store->m_layer_metadata_indices[base_layer_idx];
+    auto it = layer_metadata_map.find(key_idx);
 
-        // Update cold data (infrequently accessed)
-        m_store->m_cold.shapes[idx] = shape_vec;
-        m_store->m_cold.file_positions[idx] = 0;  // Metadata block items
-        m_store->m_cold.uncompressed_sizes[idx] = uncompressed_size;
-
-        // Update or add data storage
-        if (m_store->m_hot.data_indices[idx] == SIZE_MAX) {
-            // Not yet allocated - add to storage
-            m_store->m_hot.data_indices[idx] = m_store->m_data_storage.size();
-            m_store->m_data_storage.push_back(value);
-        } else {
-            // Update existing data
-            m_store->m_data_storage[m_store->m_hot.data_indices[idx]] = value;
-        }
+    if (it != layer_metadata_map.end()) {
+        // Update existing metadata entry (only in layer metadata storage, not in m_hot.keys)
+        size_t storage_idx = it->second;
+        m_store->m_data_storage[storage_idx] = value;
+        m_store->m_metadata_dtypes[storage_idx] = dtype;
+        m_store->m_metadata_shapes[storage_idx] = shape_vec;
     } else {
-        // Create new entry - SoA pattern: append to each array
-
-        // Performance optimization: Pre-emptively expand all vectors together
-        // to avoid 14 independent reallocations (each copying all existing data)
-        if (m_store->m_hot.keys.size() >= m_store->m_hot.keys.capacity()) {
-            size_t new_capacity = m_store->m_hot.keys.capacity() * 2;
-
-            // Expand HotStorage vectors (6 vectors)
-            m_store->m_hot.keys.reserve(new_capacity);
-            m_store->m_hot.dtypes.reserve(new_capacity);
-            m_store->m_hot.locations.reserve(new_capacity);
-            m_store->m_hot.dirty_flags.reserve(new_capacity);
-            m_store->m_hot.loaded_flags.reserve(new_capacity);
-            m_store->m_hot.data_indices.reserve(new_capacity);
-
-            // Expand ColdStorage vectors (7 vectors)
-            m_store->m_cold.shapes.reserve(new_capacity);
-            m_store->m_cold.file_positions.reserve(new_capacity);
-            m_store->m_cold.compressed_sizes.reserve(new_capacity);
-            m_store->m_cold.uncompressed_sizes.reserve(new_capacity);
-            m_store->m_cold.compressions.reserve(new_capacity);
-            m_store->m_cold.block_infos.reserve(new_capacity);
-            m_store->m_cold.stored_in_metadata_flags.reserve(new_capacity);
-
-            // CRITICAL: Expand data storage vector (holds actual array data)
-            m_store->m_data_storage.reserve(new_capacity);
-        }
-
-        size_t idx = m_store->m_hot.keys.size();
-
-        // Hot data
-        m_store->m_hot.keys.push_back(key);
-        m_store->m_hot.dtypes.push_back(dtype);
-        m_store->m_hot.locations.push_back(StorageLocation::PENDING);
-        m_store->m_hot.dirty_flags.push_back(true);
-        m_store->m_hot.loaded_flags.push_back(true);  
-        m_store->m_hot.data_indices.push_back(m_store->m_data_storage.size());
-
-        // Cold data
-        m_store->m_cold.shapes.push_back(shape_vec);
-        m_store->m_cold.file_positions.push_back(0);  // Metadata block items
-        m_store->m_cold.compressed_sizes.push_back(0);  // Will be set during flush
-        m_store->m_cold.uncompressed_sizes.push_back(uncompressed_size);
-        m_store->m_cold.compressions.push_back(m_store->m_config.metadata_compression);
-        m_store->m_cold.block_infos.push_back(std::vector<BlockInfo>());
-
-        // Data storage
+        // Create new metadata entry (only in layer metadata storage, NOT in m_hot.keys)
+        size_t storage_idx = m_store->m_data_storage.size();
         m_store->m_data_storage.push_back(value);
+        m_store->m_metadata_dtypes[storage_idx] = dtype;
+        m_store->m_metadata_shapes[storage_idx] = shape_vec;
 
-        // Index mapping
-        m_store->m_key_to_index[m_store->m_hot.keys[idx]] = idx;
-
-        // Mark as metadata block entry
-        m_store->m_cold.stored_in_metadata_flags.push_back(1);
+        // Track in layer metadata system (separate from arrays)
+        layer_metadata_map[key_idx] = storage_idx;
+        m_store->m_layer_metadata_registry.key_indices[base_layer_idx].insert(key_idx);
     }
 
-    // Always mark as metadata block entry for existing entries
-    if (it != m_store->m_key_to_index.end()) {
-        m_store->m_cold.stored_in_metadata_flags[it->second] = 1;
-    }
-
-    m_store->m_flushed = false;  // Data changed, needs flush
+    m_store->m_flushed = false;
     m_store->m_header_dirty = true;
 }
 
 inline std::shared_ptr<MetadataValue> MetadataAccessor::get(const std::string& key) {
-    std::shared_lock<std::shared_mutex> lock(m_store->m_mutex);
-
-    auto it = m_store->m_key_to_index.find(key);
-    if (it == m_store->m_key_to_index.end()) {
-        throw std::runtime_error("Key not found: " + key);
-    }
-
-    size_t idx = it->second;
-
-    // Load if not already loaded
-    if (m_store->m_hot.data_indices[idx] == SIZE_MAX) {
-        lock.unlock();
-        std::unique_lock<std::shared_mutex> write_lock(m_store->m_mutex);
-        m_store->load_entry(idx);
-    }
-
-    // Return from m_data_storage
-    size_t data_idx = m_store->m_hot.data_indices[idx];
-    const ValueVariant& var = m_store->m_data_storage[data_idx];
-
-    auto meta = std::make_shared<MetadataValue>();
-    meta->data = var;
-    meta->dtype = m_store->m_hot.dtypes[idx];
-    meta->shape = m_store->m_cold.shapes[idx];
-    return meta;
+    // v1 format: Metadata is stored in per-layer blocks, not in m_hot/m_cold
+    // Delegate to base layer's accessor
+    LayerMetadataAccessor base_accessor(m_store, "__base__");
+    return base_accessor.get(key);
 }
 
 template<typename V>
 void MetadataAccessor::put_batch(const std::map<std::string, V>& values) {
-    std::unique_lock<std::shared_mutex> lock(m_store->m_mutex);
-
+    // v1 format: Use layer metadata system (separate namespace from arrays)
     for (const auto& [key, value] : values) {
-        using ElementType = typename V::value_type;
-        DataType dtype = TypeToDataType<ElementType>::value;
-        std::vector<size_t> shape_vec(value.shape().begin(), value.shape().end());
-
-        auto it = m_store->m_key_to_index.find(key);
-
-        if (it != m_store->m_key_to_index.end()) {
-            // Update existing - SoA pattern: update each array independently
-            size_t idx = it->second;
-            m_store->m_hot.dtypes[idx] = dtype;
-            m_store->m_hot.locations[idx] = StorageLocation::PENDING;
-            m_store->m_hot.dirty_flags[idx] = true;
-            m_store->m_cold.shapes[idx] = shape_vec;
-
-            // Update data storage
-            size_t data_idx = m_store->m_hot.data_indices[idx];
-            m_store->m_data_storage[data_idx] = value;
-        } else {
-            // Create new - SoA pattern: append to each array
-
-            // Performance optimization: Pre-emptively expand all vectors together
-            if (m_store->m_hot.keys.size() >= m_store->m_hot.keys.capacity()) {
-                size_t new_capacity = m_store->m_hot.keys.capacity() * 2;
-
-                // Expand all 14 vectors together
-                m_store->m_hot.keys.reserve(new_capacity);
-                m_store->m_hot.dtypes.reserve(new_capacity);
-                m_store->m_hot.locations.reserve(new_capacity);
-                m_store->m_hot.dirty_flags.reserve(new_capacity);
-                m_store->m_hot.loaded_flags.reserve(new_capacity);
-                m_store->m_hot.data_indices.reserve(new_capacity);
-
-                m_store->m_cold.shapes.reserve(new_capacity);
-                m_store->m_cold.file_positions.reserve(new_capacity);
-                m_store->m_cold.compressed_sizes.reserve(new_capacity);
-                m_store->m_cold.uncompressed_sizes.reserve(new_capacity);
-                m_store->m_cold.compressions.reserve(new_capacity);
-                m_store->m_cold.block_infos.reserve(new_capacity);
-                m_store->m_cold.stored_in_metadata_flags.reserve(new_capacity);
-
-                m_store->m_data_storage.reserve(new_capacity);
-            }
-
-            size_t idx = m_store->m_hot.keys.size();
-            size_t data_idx = m_store->m_data_storage.size();
-
-            m_store->m_hot.keys.push_back(key);
-            m_store->m_hot.dtypes.push_back(dtype);
-            m_store->m_hot.locations.push_back(StorageLocation::PENDING);
-            m_store->m_hot.dirty_flags.push_back(true);
-            m_store->m_hot.loaded_flags.push_back(true);  
-            m_store->m_hot.data_indices.push_back(data_idx);
-
-            m_store->m_cold.shapes.push_back(shape_vec);
-            m_store->m_cold.file_positions.push_back(0);
-            m_store->m_cold.compressed_sizes.push_back(0);
-            m_store->m_cold.uncompressed_sizes.push_back(0);
-            m_store->m_cold.compressions.push_back(CompressionAlgorithm::NONE);
-            m_store->m_cold.block_infos.push_back({});
-            m_store->m_cold.stored_in_metadata_flags.push_back(1);  // Always metadata
-
-            m_store->m_data_storage.push_back(value);
-            m_store->m_key_to_index[m_store->m_hot.keys[idx]] = idx;
-        }
-
-        // Mark as metadata for existing entries too
-        if (it != m_store->m_key_to_index.end()) {
-            m_store->m_cold.stored_in_metadata_flags[it->second] = 1;
-        }
+        // Delegate to single put() which handles its own locking
+        put(key, value);
     }
-
-    m_store->m_flushed = false;  // Data changed, needs flush
-    m_store->m_header_dirty = true;
 }
 
 inline std::map<std::string, MetadataValue> MetadataAccessor::get_batch(
     const std::vector<std::string>& keys) {
-    std::shared_lock<std::shared_mutex> lock(m_store->m_mutex);
-
+    // v1 format: Use layer metadata system (separate namespace from arrays)
     std::map<std::string, MetadataValue> results;
 
-    // SoA pattern: batch access with single lock (cache-efficient)
     for (const auto& key : keys) {
-        auto it = m_store->m_key_to_index.find(key);
-        if (it != m_store->m_key_to_index.end()) {
-            size_t idx = it->second;
-
-            // Access hot data (sequential, cache-friendly)
-            DataType dtype = m_store->m_hot.dtypes[idx];
-            size_t data_idx = m_store->m_hot.data_indices[idx];
-
-            // Build result (cold data accessed only when building)
-            MetadataValue meta;
-            meta.data = m_store->m_data_storage[data_idx];
-            meta.dtype = dtype;
-            meta.shape = m_store->m_cold.shapes[idx];
-
-            results[key] = meta;
-        } else {
-            // Legacy fallback for migration
-            auto legacy_meta = get(key);
-            if (legacy_meta) {
-                results[key] = *legacy_meta;
-            }
+        auto value = get(key);
+        if (value) {
+            results[key] = *value;
         }
     }
 
@@ -6531,30 +7666,21 @@ inline std::map<std::string, MetadataValue> MetadataAccessor::get_batch(
 }
 
 inline std::map<std::string, MetadataValue> MetadataAccessor::get_all() {
-    std::shared_lock<std::shared_mutex> lock(m_store->m_mutex);
+    // v1 format: Get all metadata from base layer
+    LayerMetadataAccessor base_accessor(m_store, "__base__");
 
-    // Ensure metadata block is loaded (idempotent, cached)
-    m_store->load_metadata_block();
+    // Load base layer metadata
+    m_store->load_layer_metadata("__base__");
 
     std::map<std::string, MetadataValue> results;
+    size_t base_layer_idx = m_store->m_layer_metadata_registry.get_layer_index("__base__");
 
-    // SoA pattern: iterate through all entries
-    for (size_t i = 0; i < m_store->m_hot.keys.size(); ++i) {
-        // Filter for metadata block entries only
-        if (m_store->m_cold.stored_in_metadata_flags[i] == 1) {
-            const std::string& key = m_store->m_hot.keys[i];
-
-            // Access hot data (cache-efficient)
-            DataType dtype = m_store->m_hot.dtypes[i];
-            size_t data_idx = m_store->m_hot.data_indices[i];
-
-            // Build MetadataValue
-            MetadataValue meta;
-            meta.data = m_store->m_data_storage[data_idx];
-            meta.dtype = dtype;
-            meta.shape = m_store->m_cold.shapes[i];
-
-            results[key] = meta;
+    // Iterate through all keys in base layer
+    for (uint16_t key_idx : m_store->m_layer_metadata_registry.key_indices[base_layer_idx]) {
+        const std::string& key = m_store->m_key_registry.names[key_idx];
+        auto value = base_accessor.get(key);
+        if (value) {
+            results[key] = *value;
         }
     }
 
@@ -6562,89 +7688,277 @@ inline std::map<std::string, MetadataValue> MetadataAccessor::get_all() {
 }
 
 inline void MetadataAccessor::remove(const std::string& key) {
+    // v1 format: Remove from layer metadata system (separate namespace from arrays)
     std::unique_lock<std::shared_mutex> lock(m_store->m_mutex);
 
-    // SoA pattern: remove from hot/cold arrays
-    auto it = m_store->m_key_to_index.find(key);
-    if (it != m_store->m_key_to_index.end()) {
-        size_t idx = it->second;
+    LOG_DEBUG("MetadataAccessor::remove called for key: ", key);
 
-        // Swap with last element and pop (O(1) removal)
-        size_t last_idx = m_store->m_hot.keys.size() - 1;
-        if (idx != last_idx) {
-            // Swap hot data
-            m_store->m_hot.keys[idx] = std::move(m_store->m_hot.keys[last_idx]);
-            m_store->m_hot.dtypes[idx] = m_store->m_hot.dtypes[last_idx];
-            m_store->m_hot.locations[idx] = m_store->m_hot.locations[last_idx];
-            m_store->m_hot.dirty_flags[idx] = m_store->m_hot.dirty_flags[last_idx];
-            m_store->m_hot.data_indices[idx] = m_store->m_hot.data_indices[last_idx];
-
-            // Swap cold data
-            m_store->m_cold.shapes[idx] = std::move(m_store->m_cold.shapes[last_idx]);
-            m_store->m_cold.file_positions[idx] = m_store->m_cold.file_positions[last_idx];
-            m_store->m_cold.compressed_sizes[idx] = m_store->m_cold.compressed_sizes[last_idx];
-            m_store->m_cold.uncompressed_sizes[idx] = m_store->m_cold.uncompressed_sizes[last_idx];
-            m_store->m_cold.compressions[idx] = m_store->m_cold.compressions[last_idx];
-            m_store->m_cold.block_infos[idx] = std::move(m_store->m_cold.block_infos[last_idx]);
-            m_store->m_cold.stored_in_metadata_flags[idx] = m_store->m_cold.stored_in_metadata_flags[last_idx];
-
-            // Update key_to_index for swapped element
-            m_store->m_key_to_index[m_store->m_hot.keys[idx]] = idx;
-        }
-
-        // Pop last elements
-        m_store->m_hot.keys.pop_back();
-        m_store->m_hot.dtypes.pop_back();
-        m_store->m_hot.locations.pop_back();
-        m_store->m_hot.dirty_flags.pop_back();
-        m_store->m_hot.data_indices.pop_back();
-
-        m_store->m_cold.shapes.pop_back();
-        m_store->m_cold.file_positions.pop_back();
-        m_store->m_cold.compressed_sizes.pop_back();
-        m_store->m_cold.uncompressed_sizes.pop_back();
-        m_store->m_cold.compressions.pop_back();
-        m_store->m_cold.block_infos.pop_back();
-        m_store->m_cold.stored_in_metadata_flags.pop_back();
-
-        m_store->m_key_to_index.erase(key);
+    // Check if key exists first
+    if (!m_store->m_key_registry.contains(key)) {
+        LOG_DEBUG("Key not in registry, returning");
+        return;  // Key doesn't exist, nothing to remove
     }
 
-    m_store->m_flushed = false;  // Data changed, needs flush
+    LOG_DEBUG("Key found in registry");
+    uint16_t key_idx = m_store->m_key_registry.get_index(key);
+    LOG_DEBUG("key_idx: ", key_idx);
+
+    size_t base_layer_idx = m_store->m_layer_metadata_registry.get_layer_index("__base__");
+    LOG_DEBUG("base_layer_idx: ", base_layer_idx);
+
+    // Remove from layer metadata indices
+    auto& layer_metadata_map = m_store->m_layer_metadata_indices[base_layer_idx];
+    auto it = layer_metadata_map.find(key_idx);
+    if (it != layer_metadata_map.end()) {
+        LOG_DEBUG("Found in layer metadata map, removing");
+        // Note: We don't remove from m_data_storage to avoid shifting indices
+        // Just remove the mapping
+        layer_metadata_map.erase(it);
+        m_store->m_layer_metadata_registry.key_indices[base_layer_idx].erase(key_idx);
+    } else {
+        LOG_DEBUG("Not found in layer metadata map");
+    }
+
+    m_store->m_flushed = false;
     m_store->m_header_dirty = true;
+    LOG_DEBUG("MetadataAccessor::remove completed");
 }
 
 inline void MetadataAccessor::clear() {
+    // v1 format: Clear only metadata from base layer (separate namespace from arrays)
     std::unique_lock<std::shared_mutex> lock(m_store->m_mutex);
 
-    // SoA pattern: clear all hot/cold arrays
-    m_store->m_hot.keys.clear();
-    m_store->m_hot.dtypes.clear();
-    m_store->m_hot.locations.clear();
-    m_store->m_hot.dirty_flags.clear();
-    m_store->m_hot.data_indices.clear();
+    size_t base_layer_idx = m_store->m_layer_metadata_registry.get_layer_index("__base__");
 
-    m_store->m_cold.shapes.clear();
-    m_store->m_cold.file_positions.clear();
-    m_store->m_cold.compressed_sizes.clear();
-    m_store->m_cold.uncompressed_sizes.clear();
-    m_store->m_cold.compressions.clear();
-    m_store->m_cold.block_infos.clear();
-    m_store->m_cold.stored_in_metadata_flags.clear();
+    // Clear layer metadata indices
+    m_store->m_layer_metadata_indices[base_layer_idx].clear();
+    m_store->m_layer_metadata_registry.key_indices[base_layer_idx].clear();
 
-    m_store->m_data_storage.clear();
-    m_store->m_key_to_index.clear();
-
-    m_store->m_flushed = false;  // Data changed, needs flush
+    m_store->m_flushed = false;
     m_store->m_header_dirty = true;
 }
 
-inline bool MetadataAccessor::contains(const std::string& key) {
-    std::shared_lock<std::shared_mutex> lock(m_store->m_mutex);
+inline bool MetadataAccessor::contains(const std::string& key) const {
+    // v1 format: Check layer metadata registry (separate namespace from arrays)
+    LayerMetadataAccessor base_accessor(m_store, "__base__");
+    return base_accessor.contains(key);
+}
 
-    // SoA pattern: single lookup in m_key_to_index
-    // All keys (metadata and separate storage) are indexed
-    return m_store->m_key_to_index.find(key) != m_store->m_key_to_index.end();
+//==============================================================================
+// Layer Management Method Implementations
+//==============================================================================
+
+inline std::shared_ptr<LayerView> StarDataset::get_layer(const std::string& layer_name) {
+    std::shared_lock<std::shared_mutex> lock(m_mutex);
+
+    if (!has_layer(layer_name)) {
+        throw std::runtime_error("Layer not found: " + layer_name);
+    }
+
+    return std::make_shared<LayerView>(this, layer_name);
+}
+
+inline std::shared_ptr<LayerView> StarDataset::create_layer(const std::string& layer_name) {
+    std::unique_lock<std::shared_mutex> lock(m_mutex);
+
+    if (has_layer_unlocked(layer_name)) {
+        throw std::runtime_error("Layer already exists: " + layer_name);
+    }
+
+    // Add layer to registry
+    size_t layer_idx = m_layer_metadata_registry.add_layer(layer_name);
+
+    // Resize tracking structures
+    if (m_layer_metadata_loaded.size() <= layer_idx) {
+        m_layer_metadata_loaded.resize(layer_idx + 1, false);
+    }
+    if (m_layer_metadata_indices.size() <= layer_idx) {
+        m_layer_metadata_indices.resize(layer_idx + 1);
+    }
+
+    // Initialize empty bitmap for data arrays
+    size_t bitmap_words = (m_hot.keys.size() + 63) / 64;
+    m_layer_presence[layer_name] = std::vector<uint64_t>(bitmap_words, 0);
+
+    m_header_dirty = true;  // Header changed
+    m_flushed = false;      // Need to flush header changes
+
+    return std::make_shared<LayerView>(this, layer_name);
+}
+
+//==============================================================================
+// LayerMetadataAccessor Method Implementations
+//==============================================================================
+
+template<typename V>
+inline void LayerMetadataAccessor::put(const std::string& key, const V& value) {
+    // v1 format: Store in layer-specific metadata block
+    std::unique_lock<std::shared_mutex> lock(m_store->m_mutex);
+
+    // Get or create key index in global registry
+    uint16_t key_idx = m_store->m_key_registry.get_or_create(key);
+
+    // Get layer index
+    size_t layer_idx = m_store->m_layer_metadata_registry.get_layer_index(m_layer_name);
+
+    // Ensure this layer's metadata is loaded
+    if (!m_store->m_layer_metadata_loaded[layer_idx]) {
+        m_store->load_layer_metadata(m_layer_name);
+    }
+
+    // Get or create storage index
+    auto& layer_metadata_map = m_store->m_layer_metadata_indices[layer_idx];
+    size_t storage_idx;
+
+    auto it = layer_metadata_map.find(key_idx);
+    if (it != layer_metadata_map.end()) {
+        // Update existing entry
+        storage_idx = it->second;
+        m_store->m_data_storage[storage_idx] = value;
+    } else {
+        // Create new entry
+        storage_idx = m_store->m_data_storage.size();
+        m_store->m_data_storage.push_back(value);
+        layer_metadata_map[key_idx] = storage_idx;
+    }
+
+    // Store dtype and shape
+    using ElementType = typename V::value_type;
+    m_store->m_metadata_dtypes[storage_idx] = TypeToDataType<ElementType>::value;
+    m_store->m_metadata_shapes[storage_idx] = std::vector<size_t>(value.shape().begin(), value.shape().end());
+
+    // Add key to layer's key_indices set
+    m_store->m_layer_metadata_registry.key_indices[layer_idx].insert(key_idx);
+
+    m_store->m_header_dirty = true;
+}
+
+inline std::shared_ptr<MetadataValue> LayerMetadataAccessor::get(const std::string& key) {
+    // v1 format: Resolve which layer has this key and load it
+    size_t base_layer_idx = m_store->m_layer_metadata_registry.get_layer_index("__base__");
+
+    // Ensure base layer metadata is loaded
+    if (!m_store->m_layer_metadata_loaded[base_layer_idx]) {
+        m_store->load_layer_metadata("__base__");
+    }
+
+    // Get key index from registry
+    uint16_t key_idx;
+    try {
+        key_idx = m_store->m_key_registry.get_index(key);
+    } catch (...) {
+        return nullptr;  // Key doesn't exist
+    }
+
+    // Check if key exists in base layer
+    const auto& base_key_indices = m_store->m_layer_metadata_registry.key_indices[base_layer_idx];
+    if (base_key_indices.find(key_idx) == base_key_indices.end()) {
+        return nullptr;  // Key not in base layer
+    }
+
+    // Find the storage index for this key in base layer
+    const auto& base_metadata_map = m_store->m_layer_metadata_indices[base_layer_idx];
+    auto it = base_metadata_map.find(key_idx);
+    if (it == base_metadata_map.end()) {
+        return nullptr;  // Not loaded yet (shouldn't happen after load_layer_metadata)
+    }
+
+    size_t storage_idx = it->second;
+    const ValueVariant& var = m_store->m_data_storage[storage_idx];
+
+    // Create MetadataValue from storage with dtype and shape
+    auto meta = std::make_shared<MetadataValue>();
+    meta->data = var;
+    meta->dtype = m_store->m_metadata_dtypes[storage_idx];
+    meta->shape = m_store->m_metadata_shapes[storage_idx];
+    return meta;
+}
+
+inline bool LayerMetadataAccessor::contains(const std::string& key) const {
+    // v1 format: Check layer metadata registry (O(1) header-only)
+    try {
+        m_store->resolve_metadata_inheritance(key, m_layer_name);
+        return true;
+    } catch (...) {
+        return false;
+    }
+}
+
+inline void LayerMetadataAccessor::remove(const std::string& key) {
+    m_store->meta.remove(make_layer_key(key));
+}
+
+inline std::vector<std::string> LayerMetadataAccessor::keys() const {
+    std::vector<std::string> result;
+    std::string prefix = "__layer_" + m_layer_name + "__";
+
+    // Get ALL metadata keys (including layer-prefixed internal keys)
+    auto all_keys = m_store->get_all_metadata_keys_internal();
+
+    // Filter layer-specific keys and strip prefix
+    for (const auto& k : all_keys) {
+        if (k.substr(0, prefix.size()) == prefix) {
+            result.push_back(k.substr(prefix.size()));
+        }
+    }
+
+    // Add base keys that aren't overridden
+    for (const auto& k : all_keys) {
+        if (k.substr(0, 8) != "__layer_") {
+            std::string layer_key = make_layer_key(k);
+            if (!m_store->meta.contains(layer_key)) {
+                result.push_back(k);
+            }
+        }
+    }
+
+    return result;
+}
+
+//==============================================================================
+// LayerView Method Implementations
+//==============================================================================
+
+inline bool LayerView::contains(const std::string& key) const {
+    return m_base->key_in_layer(key, m_layer_name) ||
+           m_base->key_in_layer(key, "__base__");
+}
+
+inline std::vector<std::string> LayerView::keys() const {
+    std::vector<std::string> result;
+    std::set<std::string> seen;
+
+    // Get array keys
+    auto base_keys = m_base->m_hot.keys;
+    for (const auto& k : base_keys) {
+        if (contains(k)) {
+            result.push_back(k);
+            seen.insert(k);
+        }
+    }
+
+    // Get metadata keys from layer and base
+    size_t layer_idx = m_base->m_layer_metadata_registry.get_layer_index(m_layer_name);
+    size_t base_idx = m_base->m_layer_metadata_registry.get_layer_index("__base__");
+
+    // Add layer metadata keys
+    for (uint16_t key_idx : m_base->m_layer_metadata_registry.key_indices[layer_idx]) {
+        const std::string& key = m_base->m_key_registry.names[key_idx];
+        if (seen.find(key) == seen.end()) {
+            result.push_back(key);
+            seen.insert(key);
+        }
+    }
+
+    // Add base metadata keys
+    for (uint16_t key_idx : m_base->m_layer_metadata_registry.key_indices[base_idx]) {
+        const std::string& key = m_base->m_key_registry.names[key_idx];
+        if (seen.find(key) == seen.end()) {
+            result.push_back(key);
+        }
+    }
+
+    return result;
 }
 
 } // namespace star

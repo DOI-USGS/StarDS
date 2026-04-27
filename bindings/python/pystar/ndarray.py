@@ -55,8 +55,8 @@ class NDArray:
         # Handle Python lists/scalars by converting to NumPy first
         if not isinstance(arr, np.ndarray):
             if isinstance(arr, str):
-                # Single string -> 1-element array
-                arr = np.array([arr], dtype=object)
+                # Single string -> scalar (shape [])
+                arr = np.array(arr, dtype=object)
             elif isinstance(arr, (list, tuple)):
                 # Try to infer dtype from first element
                 if len(arr) > 0 and isinstance(arr[0], str):
@@ -64,7 +64,7 @@ class NDArray:
                 else:
                     arr = np.array(arr)
             else:
-                # Scalar
+                # Scalar number
                 arr = np.array(arr)
 
         # Convert string dtypes to object

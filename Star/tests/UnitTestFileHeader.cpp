@@ -64,13 +64,13 @@ protected:
 // FileHeader Struct Tests
 //==============================================================================
 
-TEST_F(FileHeaderTest, HeaderSizeIs23Bytes) {
-    // Test that FileHeader::size() returns exactly 23 bytes
-    EXPECT_EQ(FileHeader::size(), 23);
+TEST_F(FileHeaderTest, HeaderSizeIs27Bytes) {
+    // Test that FileHeader::size() returns exactly 31 bytes (format v1 with layer_count + key_registry_count)
+    EXPECT_EQ(FileHeader::size(), 31);
 
     // Verify the calculation matches the struct layout:
-    // 6 (magic) + 1 (format_version) + 8 (header_size) + 8 (entry_count) = 23
-    size_t expected = 6 + sizeof(uint8_t) + 2 * sizeof(uint64_t);
+    // 6 (magic) + 1 (format_version) + 8 (header_size) + 8 (entry_count) + 4 (layer_count) + 4 (key_registry_count) = 31
+    size_t expected = 6 + sizeof(uint8_t) + 2 * sizeof(uint64_t) + 2 * sizeof(uint32_t);
     EXPECT_EQ(FileHeader::size(), expected);
 }
 
@@ -140,28 +140,30 @@ TEST_F(FileHeaderTest, BinaryLayoutConsistency) {
 
     // Populate with known values
     std::memcpy(header.magic, "STARDS", 6);
-    header.format_version = 2;
+    header.format_version = 1;
     header.header_size = 999;
     header.entry_count = 42;
+    header.layer_count = 3;
+    header.key_registry_count = 100;
 
     // Write to stringstream
     std::stringstream ss(std::ios::binary | std::ios::in | std::ios::out);
     header.write(ss);
 
-    // Verify exactly 23 bytes were written
+    // Verify exactly 31 bytes were written (format v1 with layer_count + key_registry_count)
     ss.seekg(0, std::ios::end);
-    EXPECT_EQ(ss.tellg(), 23);
+    EXPECT_EQ(ss.tellg(), 31);
 
     // Read raw bytes and verify layout
     ss.seekg(0);
-    char buffer[23];
-    ss.read(buffer, 23);
+    char buffer[31];
+    ss.read(buffer, 31);
 
     // Check magic at offset 0
     EXPECT_EQ(std::string(&buffer[0], 6), "STARDS");
 
     // Check format version at offset 6
-    EXPECT_EQ(static_cast<uint8_t>(buffer[6]), 2);
+    EXPECT_EQ(static_cast<uint8_t>(buffer[6]), 1);
 
     // Check header_size at offset 7 (little-endian)
     uint64_t* header_size_ptr = reinterpret_cast<uint64_t*>(&buffer[7]);
@@ -170,6 +172,14 @@ TEST_F(FileHeaderTest, BinaryLayoutConsistency) {
     // Check entry_count at offset 15 (little-endian)
     uint64_t* entry_count_ptr = reinterpret_cast<uint64_t*>(&buffer[15]);
     EXPECT_EQ(entry_count_ptr[0], 42);
+
+    // Check layer_count at offset 23 (little-endian)
+    uint32_t* layer_count_ptr = reinterpret_cast<uint32_t*>(&buffer[23]);
+    EXPECT_EQ(layer_count_ptr[0], 3);
+
+    // Check key_registry_count at offset 27 (little-endian)
+    uint32_t* key_registry_count_ptr = reinterpret_cast<uint32_t*>(&buffer[27]);
+    EXPECT_EQ(key_registry_count_ptr[0], 100);
 }
 
 //==============================================================================
@@ -179,10 +189,12 @@ TEST_F(FileHeaderTest, BinaryLayoutConsistency) {
 TEST_F(FileHeaderTest, DatasetWritesCorrectHeader) {
     std::string filename = createTempFile("header_write");
 
-    // Create and write a dataset
+    // Create and write a dataset with data array (not just metadata)
     {
         auto store = StarDataset::create(filename);
-        store->meta.put("test_scalar", NDArray<int64_t>({}, 42));
+        NDArray<int> arr({5});
+        for (int i = 0; i < 5; i++) arr.data()[i] = i;
+        store->put("data_array", arr);
         store->flush();
     }
 
@@ -196,9 +208,9 @@ TEST_F(FileHeaderTest, DatasetWritesCorrectHeader) {
     // Verify header fields
     EXPECT_TRUE(header.isValid());
     EXPECT_EQ(std::string(header.magic, 6), "STARDS");
-    EXPECT_EQ(header.format_version, 2);
-    EXPECT_GT(header.header_size, 23);  // Should be larger than just fixed header
-    EXPECT_GT(header.entry_count, 0);   // Should have at least metadata block
+    EXPECT_EQ(header.format_version, 1);
+    EXPECT_GT(header.header_size, 31);  // Should be larger than just fixed header
+    EXPECT_GT(header.entry_count, 0);   // Should have at least one data array
 }
 
 TEST_F(FileHeaderTest, DatasetReadsHeaderCorrectly) {
@@ -219,11 +231,11 @@ TEST_F(FileHeaderTest, DatasetReadsHeaderCorrectly) {
 
         // Check header fields
         EXPECT_EQ(std::string(header.magic, 6), "STARDS");
-        EXPECT_EQ(header.format_version, 2);
+        EXPECT_EQ(header.format_version, 1);
 
         // Verify format version accessor returns format version string
         std::string format_str = header.getVersionString();
-        EXPECT_EQ(format_str, "Format v2");
+        EXPECT_EQ(format_str, "Format v1");
 
         // Verify data is accessible
         auto val = store->meta.get("version_test");
@@ -251,7 +263,7 @@ TEST_F(FileHeaderTest, GetFileHeaderAccessor) {
 
         // Verify we can access all header fields
         EXPECT_TRUE(header.isValid());
-        EXPECT_EQ(header.format_version, 2);
+        EXPECT_EQ(header.format_version, 1);
         EXPECT_GT(header.header_size, 0);
         EXPECT_GT(header.entry_count, 0);
 
@@ -289,7 +301,7 @@ TEST_F(FileHeaderTest, VersionConsistencyAcrossWrites) {
     {
         auto store = StarDataset::open(filename, "r");
         format_version1 = store->getFileHeader().format_version;
-        EXPECT_EQ(format_version1, 2);
+        EXPECT_EQ(format_version1, 1);
     }
 
     // Update data
@@ -304,7 +316,7 @@ TEST_F(FileHeaderTest, VersionConsistencyAcrossWrites) {
         auto store = StarDataset::open(filename, "r");
         uint8_t format_version2 = store->getFileHeader().format_version;
         EXPECT_EQ(format_version1, format_version2);
-        EXPECT_EQ(format_version2, 2);
+        EXPECT_EQ(format_version2, 1);
     }
 }
 

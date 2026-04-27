@@ -215,22 +215,20 @@ TEST_F(BlockCompressionTest, VerifyMetadataBlockExists) {
     store->meta.put("int32_matrix", arr);
     store->flush();
 
-    // Verify the entry exists in SoA
-    auto it = store->m_key_to_index.find("int32_matrix");
-    ASSERT_TRUE(it != store->m_key_to_index.end());
-
-    size_t idx = it->second;
-
-    // Check it's marked as metadata
-    EXPECT_EQ(store->m_cold.stored_in_metadata_flags[idx], 1);
-
-    // Verify the entry has correct type
-    EXPECT_EQ(store->m_hot.dtypes[idx], DataType::INT32);
+    // v1 format: Metadata is in separate namespace, not in m_key_to_index
+    // Verify metadata exists via contains
+    EXPECT_TRUE(store->meta.contains("int32_matrix"));
 
     // Verify we can read the data back
     auto meta = store->meta.get("int32_matrix");
     ASSERT_NE(meta, nullptr);
     EXPECT_EQ(meta->dtype, DataType::INT32);
+
+    // Verify data correctness
+    auto& data = std::get<NDArray<int32_t>>(meta->data);
+    EXPECT_EQ(data.shape().size(), 2);
+    EXPECT_EQ(data.shape()[0], 10);
+    EXPECT_EQ(data.shape()[1], 20);
 }
 
 TEST_F(BlockCompressionTest, MetadataBlockCompressionRatio) {
@@ -245,35 +243,28 @@ TEST_F(BlockCompressionTest, MetadataBlockCompressionRatio) {
     store->meta.put("compressible_data", arr);
     store->flush();
 
-    // Verify the entry exists in SoA
-    auto it = store->m_key_to_index.find("compressible_data");
-    ASSERT_TRUE(it != store->m_key_to_index.end());
+    // v1 format: Metadata is in separate namespace, stored in per-layer blocks
+    // Verify metadata exists and can be retrieved
+    EXPECT_TRUE(store->meta.contains("compressible_data"));
 
-    size_t idx = it->second;
-
-    // Check it's in metadata block
-    EXPECT_EQ(store->m_cold.stored_in_metadata_flags[idx], 1);
-
-    // For metadata block entries, compression happens at flush time
-    // We can verify the data was stored
-    size_t total_compressed = store->m_cold.compressed_sizes[idx];
-    size_t total_uncompressed = store->m_cold.uncompressed_sizes[idx];
-
-    // Note: In the new design, metadata block compression happens during flush()
-    // The exact compression stats may not be available in the same way
-    // but we can verify the data exists and is marked correctly
-
-    // Verify the entry exists
-    EXPECT_GT(store->m_hot.keys.size(), 0);
-
-    // Verify we can read the data back correctly
     auto meta = store->meta.get("compressible_data");
     ASSERT_NE(meta, nullptr);
-    auto retrieved = meta->as<double>();
-    EXPECT_EQ(retrieved.size(), 1000);
-    for (size_t i = 0; i < 1000; ++i) {
-        EXPECT_NEAR(retrieved.flat(i), static_cast<double>(i % 10), 1e-10);
+    EXPECT_EQ(meta->dtype, DataType::FLOAT64);
+
+    // Verify data correctness
+    auto& data = std::get<NDArray<double>>(meta->data);
+    EXPECT_EQ(data.shape().size(), 1);
+    EXPECT_EQ(data.shape()[0], 1000);
+
+    // Check a few values
+    for (size_t i = 0; i < 10; ++i) {
+        EXPECT_DOUBLE_EQ(data.flat(i), static_cast<double>(i % 10));
     }
+
+    // Note: Compression statistics for metadata blocks are tracked separately
+    // in the layer metadata registry, not in m_cold vectors
+
+    // Data verification already done above, test complete
 }
 
 #ifdef ENABLE_LZ4

@@ -69,29 +69,34 @@ protected:
 //==============================================================================
 
 TEST_F(MetadataBlockTest, SerializationRoundTrip) {
+    std::cerr << "[TEST] Starting SerializationRoundTrip" << std::endl;
     std::string testFile = createTempFile("roundtrip");
+    std::cerr << "[TEST] Created temp file: " << testFile << std::endl;
 
     // Write metadata using new API
     {
+        std::cerr << "[TEST] Creating dataset..." << std::endl;
         auto store_write = StarDataset::create(testFile);
+        std::cerr << "[TEST] Putting scalar_int..." << std::endl;
         store_write->meta.put("scalar_int", NDArray<int64_t>({}, 42));
+        std::cerr << "[TEST] Putting scalar_float..." << std::endl;
         store_write->meta.put("scalar_float", NDArray<double>({}, 3.14159));
+        std::cerr << "[TEST] Flushing..." << std::endl;
         store_write->flush();
+        std::cerr << "[TEST] Done with write block" << std::endl;
     }
+    std::cerr << "[TEST] Opening dataset..." << std::endl;
 
     // Read back using new API
     auto store_read = StarDataset::open(testFile);
 
-    // Verify loaded metadata - count entries with stored_in_metadata_flags = 1
-    size_t metadata_count = 0;
-    for (size_t i = 0; i < store_read->m_cold.stored_in_metadata_flags.size(); i++) {
-        if (store_read->m_cold.stored_in_metadata_flags[i] == 1) {
-            metadata_count++;
-        }
-    }
-    ASSERT_EQ(metadata_count, 2);
-    ASSERT_TRUE(store_read->m_key_to_index.find("scalar_int") != store_read->m_key_to_index.end());
-    ASSERT_TRUE(store_read->m_key_to_index.find("scalar_float") != store_read->m_key_to_index.end());
+    // Verify loaded metadata - use public API
+    ASSERT_EQ(store_read->get_metadata_count(), 2);
+
+    // Verify keys exist in metadata
+    auto keys = store_read->get_metadata_keys();
+    ASSERT_TRUE(std::find(keys.begin(), keys.end(), "scalar_int") != keys.end());
+    ASSERT_TRUE(std::find(keys.begin(), keys.end(), "scalar_float") != keys.end());
 
     // Verify values
     auto int_arr = store_read->meta.get("scalar_int")->as<int64_t>();
@@ -120,13 +125,8 @@ TEST_F(MetadataBlockTest, MixedTypes) {
     // Read back using new API
     auto store_read = StarDataset::open(testFile);
 
-    // Verify all types - count entries with stored_in_metadata_flags = 1
-    size_t metadata_count = 0;
-    for (size_t i = 0; i < store_read->m_cold.stored_in_metadata_flags.size(); i++) {
-        if (store_read->m_cold.stored_in_metadata_flags[i] == 1) {
-            metadata_count++;
-        }
-    }
+    // Verify all types - use public API
+    size_t metadata_count = store_read->get_metadata_count();
     ASSERT_EQ(metadata_count, 7);
 
     auto int8_arr = store_read->meta.get("int8_val")->as<int8_t>();
@@ -169,13 +169,8 @@ TEST_F(MetadataBlockTest, StringHandling) {
     // Read back using new API
     auto store_read = StarDataset::open(testFile);
 
-    // Verify strings - count entries with stored_in_metadata_flags = 1
-    size_t metadata_count = 0;
-    for (size_t i = 0; i < store_read->m_cold.stored_in_metadata_flags.size(); i++) {
-        if (store_read->m_cold.stored_in_metadata_flags[i] == 1) {
-            metadata_count++;
-        }
-    }
+    // Verify strings - use public API
+    size_t metadata_count = store_read->get_metadata_count();
     ASSERT_EQ(metadata_count, 4);
 
     auto empty = store_read->meta.get("empty_string")->as<std::string>();
@@ -205,13 +200,8 @@ TEST_F(MetadataBlockTest, EmptyBlock) {
     // Read back using new API
     auto store_read = StarDataset::open(testFile);
 
-    // Verify empty - count entries with stored_in_metadata_flags = 1
-    size_t metadata_count = 0;
-    for (size_t i = 0; i < store_read->m_cold.stored_in_metadata_flags.size(); i++) {
-        if (store_read->m_cold.stored_in_metadata_flags[i] == 1) {
-            metadata_count++;
-        }
-    }
+    // Verify empty - use public API
+    size_t metadata_count = store_read->get_metadata_count();
     EXPECT_EQ(metadata_count, 0);
 }
 
@@ -242,11 +232,8 @@ TEST_F(MetadataBlockTest, SmallArrays) {
 
     // Verify arrays - count entries with stored_in_metadata_flags = 1
     size_t metadata_count = 0;
-    for (size_t i = 0; i < store_read->m_cold.stored_in_metadata_flags.size(); i++) {
-        if (store_read->m_cold.stored_in_metadata_flags[i] == 1) {
-            metadata_count++;
-        }
-    }
+    // Use public API
+    metadata_count = store_read->get_metadata_count();
     ASSERT_EQ(metadata_count, 2);
 
     auto arr_1d = store_read->meta.get("small_array_1d")->as<int64_t>();
@@ -283,18 +270,14 @@ TEST_F(MetadataBlockTest, LargeMetadataBlock) {
     // Read back using new API
     auto store_read = StarDataset::open(testFile);
 
-    // Verify all 100 entries - count entries with stored_in_metadata_flags = 1
-    size_t metadata_count = 0;
-    for (size_t i = 0; i < store_read->m_cold.stored_in_metadata_flags.size(); i++) {
-        if (store_read->m_cold.stored_in_metadata_flags[i] == 1) {
-            metadata_count++;
-        }
-    }
+    // Verify all 100 entries - use public API
+    size_t metadata_count = store_read->get_metadata_count();
     ASSERT_EQ(metadata_count, 100);
 
     for (int i = 0; i < 100; ++i) {
         std::string key = "scalar_" + std::to_string(i);
-        ASSERT_TRUE(store_read->m_key_to_index.find(key) != store_read->m_key_to_index.end());
+        // v1 format: Metadata is in separate namespace, use contains() API
+        ASSERT_TRUE(store_read->meta.contains(key));
 
         auto arr = store_read->meta.get(key)->as<int64_t>();
         EXPECT_EQ(arr.data()[0], i * 100);
@@ -341,11 +324,11 @@ TEST_F(MetadataBlockTest, VersionCheck) {
         store_write->flush();
     }
 
-    // Verify the file has format version 2
+    // Verify the file has format version 1
     {
         auto store_read = StarDataset::open(testFile);
         const auto& header = store_read->getFileHeader();
-        EXPECT_EQ(header.format_version, 2);
+        EXPECT_EQ(header.format_version, 1);
     }
 
     // Read and corrupt the format version to an unsupported version
