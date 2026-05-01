@@ -7556,18 +7556,61 @@ public:
 
 template<typename T>
 NDArray<T> LayerView::get(const std::string& key) {
-    // Delegate to base dataset's get - it handles layer presence lookup
-    return m_base->get<T>(key);
+    // Try to get from this layer first (using layer-prefixed key)
+    // If not found, fall back to base layer
+    std::string storage_key;
+    if (m_layer_name == "__base__") {
+        // Base layer uses unprefixed key
+        storage_key = key;
+    } else {
+        // Non-base layer uses prefixed key: "__layer_<name>__:<key>"
+        storage_key = "__layer_" + m_layer_name + "__:" + key;
+    }
+
+    // Try to get from this layer's storage
+    try {
+        return m_base->get<T>(storage_key);
+    } catch (const std::runtime_error&) {
+        // Not found in this layer, try base layer (inheritance)
+        if (m_layer_name != "__base__") {
+            try {
+                return m_base->get<T>(key);  // Base uses unprefixed key
+            } catch (const std::runtime_error&) {
+                // Not in base either
+                throw std::runtime_error("Key not found in layer or base: " + key);
+            }
+        } else {
+            // Already in base layer, rethrow
+            throw;
+        }
+    }
 }
 
 template<typename T>
 void LayerView::put(const std::string& key, NDArray<T>&& value) {
-    // Store in base dataset (this will mark it in __base__ bitmap)
-    m_base->put(key, std::move(value));
+    // For non-base layers, use a layer-prefixed internal key to store separate data
+    // Format: "__layer_<name>__:<key>"
+    // This allows each layer to have its own version of the same logical key
+    std::string storage_key;
+    if (m_layer_name == "__base__") {
+        storage_key = key;
+    } else {
+        storage_key = "__layer_" + m_layer_name + "__:" + key;
+    }
 
-    // Clear base bitmap and set layer bitmap instead
-    m_base->set_layer_presence("__base__", key, false);
-    m_base->set_layer_presence(m_layer_name, key, true);
+    // Store with the internal key
+    m_base->put(storage_key, std::move(value));
+
+    // Update layer presence bitmaps using the LOGICAL key (not the storage key)
+    // This allows queries to know which layers have this logical key
+    if (m_layer_name != "__base__") {
+        // For non-base layers, clear base presence and set layer presence
+        m_base->set_layer_presence("__base__", key, false);
+        m_base->set_layer_presence(m_layer_name, key, true);
+    } else {
+        // For base layer, set base presence
+        m_base->set_layer_presence("__base__", key, true);
+    }
 }
 
 //==============================================================================
