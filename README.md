@@ -2,8 +2,6 @@
 
 Header-only C++ library for persistent N-dimensional arrays with compression and cloud storage support.
 
-**Supported Types:** int8-64, uint8-64, float32/64, string
-
 ---
 
 ### Generative AI Disclosure
