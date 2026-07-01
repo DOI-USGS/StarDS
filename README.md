@@ -8,7 +8,7 @@ Header-only C++ library for persistent N-dimensional arrays with compression and
 
 ### Generative AI Disclosure
 
-This repository contains software code that was generated or modified with the assistance of artificial intelligence (AI) tools, in accordance with U.S. Geological Survey (USGS) disclosure requirements. All AI-generated or AI-assisted code has been reviewed and validated by USGS developers. Users are responsible for reviewing and testing this code for their specific applications. See RFC 14 for more information.
+This repository contains software code that was generated or modified with the assistance of artificial intelligence (AI) tools, in accordance with U.S. Geological Survey (USGS) disclosure requirements. All AI-generated or AI-assisted code has been reviewed and validated by USGS developers. 
 
 ## Building
 
