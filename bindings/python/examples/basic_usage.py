@@ -6,6 +6,7 @@ This example demonstrates:
 - Creating a dataset
 - Storing and retrieving arrays
 - Using metadata for scalars and strings
+- Namespace separation (arrays vs metadata)
 - Context manager usage
 - Iteration over keys
 """
@@ -25,11 +26,15 @@ def main():
         ds["3d_array"] = np.zeros((3, 4, 5))
 
         # Store metadata for scalars and small data
+        # Metadata has separate namespace - same keys are allowed!
         print("\nStoring metadata...")
         ds.meta["experiment_id"] = 12345
         ds.meta["timestamp"] = "2024-04-21"
         ds.meta["tags"] = ["test", "example", "basic"]
         ds.meta["pi"] = 3.14159
+
+        # You can use the same key in both namespaces
+        ds.meta["matrix"] = "5x5 matrix of ones"  # Metadata about the array
 
         # Dataset is automatically flushed on exit
 
@@ -56,6 +61,12 @@ def main():
         print("\nMetadata:")
         for key in ds.meta:
             print(f"  {key}: {ds.meta[key]}")
+
+        # Demonstrate namespace separation
+        print("\nNamespace separation:")
+        print(f"  ds['matrix'] is array: shape={ds['matrix'].shape}")
+        print(f"  ds.meta['matrix'] is metadata: {ds.meta['matrix']}")
+        print("  (same key, different namespaces!)")
 
     print("\n✓ Basic usage example complete!")
 

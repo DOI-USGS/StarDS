@@ -31,22 +31,32 @@ void csv_to_star(const std::string& input_file, const std::string& output_file,
                 CompressionAlgorithm compression, size_t block_size);
 void star_to_csv(const std::string& input_file, const std::string& output_file);
 
+// ISDS support (ISIS camera state files)
+void isds_to_star(const std::string& input_file, const std::string& output_file,
+                 CompressionAlgorithm compression, size_t block_size);
+void star_to_isds(const std::string& input_file, const std::string& output_file);
+
 void print_usage(const char* program_name) {
     std::cout << "Usage: " << program_name << " [OPTIONS] <input_file> <output_file>\n\n";
-    std::cout << "Convert between STAR and other formats (JSON, MessagePack)\n\n";
+    std::cout << "Convert between STAR and other formats (JSON, MessagePack, ISDS)\n\n";
     std::cout << "Options:\n";
     std::cout << "  -h, --help              Show this help message\n";
-    std::cout << "  -f, --format <fmt>      Output format (json, msgpack)\n";
+    std::cout << "  -f, --format <fmt>      Output format (json, msgpack, isds)\n";
     std::cout << "                          Auto-detected from output extension if not specified\n";
     std::cout << "  -c, --compression <alg> Compression algorithm for STAR output\n";
     std::cout << "                          Options: none, gzip, lz4, zstd\n";
     std::cout << "                          Default: lz4\n";
     std::cout << "  -b, --block-size <size> Block size for STAR compression (bytes)\n";
     std::cout << "                          Default: 1048576 (1MB)\n";
+    std::cout << "  -t, --threshold <size>  Array size threshold for ISDS conversion (elements)\n";
+    std::cout << "                          Arrays larger than this go to array storage,\n";
+    std::cout << "                          smaller arrays go to metadata\n";
+    std::cout << "                          Default: 100\n";
     std::cout << "\nSupported Formats:\n";
     std::cout << "  - STAR (Simple Tensors Arrays and Rasters) - .star extension\n";
     std::cout << "  - JSON - .json extension\n";
     std::cout << "  - CSV - .csv extension (2D arrays only)\n";
+    std::cout << "  - ISDS (ISIS Dataset) - .star extension with ISDS flag\n";
 #ifdef ENABLE_MSGPACK
     std::cout << "  - MessagePack - .msgpack or .mp extension\n";
 #endif
@@ -56,6 +66,8 @@ void print_usage(const char* program_name) {
     std::cout << "  " << program_name << " -c gzip data.json data.star   # JSON to STAR with GZIP\n";
     std::cout << "  " << program_name << " data.csv data.star            # CSV to STAR\n";
     std::cout << "  " << program_name << " data.star data.csv            # STAR to CSV\n";
+    std::cout << "  " << program_name << " -f isds input.star out.star   # ISDS to STAR conversion\n";
+    std::cout << "  " << program_name << " -f isds -t 50 in.star out.star # ISDS with custom threshold\n";
 #ifdef ENABLE_MSGPACK
     std::cout << "  " << program_name << " data.star data.msgpack        # STAR to MessagePack\n";
     std::cout << "  " << program_name << " data.msgpack data.star        # MessagePack to STAR\n";
@@ -70,11 +82,14 @@ std::string get_file_extension(const std::string& filename) {
     return filename.substr(dot_pos + 1);
 }
 
-std::string detect_format(const std::string& filename) {
+std::string detect_format(const std::string& filename, bool explicit_isds = false) {
     std::string ext = get_file_extension(filename);
     std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
 
-    if (ext == "star" || ext == "scs") return "star";
+    if (ext == "star") {
+        if (explicit_isds) return "isds";
+        return "star";
+    }
     if (ext == "json") return "json";
     if (ext == "csv") return "csv";
     if (ext == "msgpack" || ext == "mp") return "msgpack";
@@ -1147,6 +1162,224 @@ void star_to_csv(const std::string& input_file, const std::string& output_file) 
     std::cout << "Conversion complete!\n";
 }
 
+// ISDS conversion: reorganize STAR file by putting large arrays in array storage
+// and small data in metadata storage
+void isds_to_star(const std::string& input_file, const std::string& output_file,
+                 CompressionAlgorithm compression, size_t block_size, size_t threshold = 100) {
+    std::cout << "Converting ISDS to optimized STAR format...\n";
+    std::cout << "  Input:  " << input_file << "\n";
+    std::cout << "  Output: " << output_file << "\n";
+    std::cout << "  Array size threshold: " << threshold << " elements\n";
+    std::cout << "  Compression: ";
+    switch(compression) {
+        case CompressionAlgorithm::NONE: std::cout << "None\n"; break;
+        case CompressionAlgorithm::GZIP: std::cout << "GZIP\n"; break;
+        case CompressionAlgorithm::LZ4: std::cout << "LZ4\n"; break;
+        case CompressionAlgorithm::ZSTD: std::cout << "ZSTD\n"; break;
+        default: std::cout << "Unknown\n";
+    }
+    std::cout << "  Block size: " << block_size << " bytes\n\n";
+
+    // Open input STAR file (read-only)
+    auto input_store = StarDataset::open(input_file, FileMode::READ_ONLY);
+
+    // Create output STAR file
+    auto output_store = StarDataset::create(output_file);
+
+    // Get all keys from input (both arrays and metadata)
+    std::vector<std::string> all_keys;
+
+    // Get array keys
+    for (const auto& key : *input_store) {
+        all_keys.push_back(key);
+    }
+
+    // Get metadata keys
+    std::vector<std::string> metadata_keys = input_store->get_metadata_keys();
+    for (const auto& key : metadata_keys) {
+        all_keys.push_back(key);
+    }
+
+    size_t large_array_count = 0;
+    size_t small_data_count = 0;
+
+    std::cout << "Processing " << all_keys.size() << " keys...\n\n";
+
+    // Process each key
+    for (const auto& key : all_keys) {
+        // Try to get metadata for this key to determine size
+        // First try metadata storage, then try array storage
+        auto meta = input_store->meta.get(key);
+        if (!meta) {
+            // Try reading as array from block storage
+            try {
+                // Try getting from array storage - we need to determine type first
+                // Use index lookup to find dtype
+                auto it = input_store->m_key_to_index.find(key);
+                if (it == input_store->m_key_to_index.end()) {
+                    std::cerr << "  Warning: Could not find key: " << key << "\n";
+                    continue;
+                }
+                size_t idx = it->second;
+                DataType dtype = input_store->m_hot.dtypes[idx];
+
+                // Create metadata wrapper based on dtype
+                switch(dtype) {
+                    case DataType::INT8:
+                        meta = std::make_shared<MetadataValue>(input_store->get<int8_t>(key));
+                        break;
+                    case DataType::INT16:
+                        meta = std::make_shared<MetadataValue>(input_store->get<int16_t>(key));
+                        break;
+                    case DataType::INT32:
+                        meta = std::make_shared<MetadataValue>(input_store->get<int32_t>(key));
+                        break;
+                    case DataType::INT64:
+                        meta = std::make_shared<MetadataValue>(input_store->get<int64_t>(key));
+                        break;
+                    case DataType::UINT8:
+                        meta = std::make_shared<MetadataValue>(input_store->get<uint8_t>(key));
+                        break;
+                    case DataType::UINT16:
+                        meta = std::make_shared<MetadataValue>(input_store->get<uint16_t>(key));
+                        break;
+                    case DataType::UINT32:
+                        meta = std::make_shared<MetadataValue>(input_store->get<uint32_t>(key));
+                        break;
+                    case DataType::UINT64:
+                        meta = std::make_shared<MetadataValue>(input_store->get<uint64_t>(key));
+                        break;
+                    case DataType::FLOAT32:
+                        meta = std::make_shared<MetadataValue>(input_store->get<float>(key));
+                        break;
+                    case DataType::FLOAT64:
+                        meta = std::make_shared<MetadataValue>(input_store->get<double>(key));
+                        break;
+                    case DataType::STRING:
+                        meta = std::make_shared<MetadataValue>(input_store->get<std::string>(key));
+                        break;
+                    default:
+                        std::cerr << "  Warning: Unsupported dtype for key: " << key << "\n";
+                        continue;
+                }
+            } catch (const std::exception& e) {
+                std::cerr << "  Warning: Could not read key: " << key << " - " << e.what() << "\n";
+                continue;
+            }
+        }
+
+        // Calculate total number of elements
+        size_t num_elements = 1;
+        for (size_t dim : meta->shape) {
+            num_elements *= dim;
+        }
+
+        // Decide where to store based on size
+        if (num_elements > threshold) {
+            // Large array: store in array storage
+            std::cout << "  " << key << " (" << num_elements << " elements) -> array storage\n";
+
+            // Copy to output array storage based on dtype
+            switch(meta->dtype) {
+                case DataType::INT8:
+                    output_store->put(key, meta->as<int8_t>());
+                    break;
+                case DataType::INT16:
+                    output_store->put(key, meta->as<int16_t>());
+                    break;
+                case DataType::INT32:
+                    output_store->put(key, meta->as<int32_t>());
+                    break;
+                case DataType::INT64:
+                    output_store->put(key, meta->as<int64_t>());
+                    break;
+                case DataType::UINT8:
+                    output_store->put(key, meta->as<uint8_t>());
+                    break;
+                case DataType::UINT16:
+                    output_store->put(key, meta->as<uint16_t>());
+                    break;
+                case DataType::UINT32:
+                    output_store->put(key, meta->as<uint32_t>());
+                    break;
+                case DataType::UINT64:
+                    output_store->put(key, meta->as<uint64_t>());
+                    break;
+                case DataType::FLOAT32:
+                    output_store->put(key, meta->as<float>());
+                    break;
+                case DataType::FLOAT64:
+                    output_store->put(key, meta->as<double>());
+                    break;
+                case DataType::STRING:
+                    output_store->put(key, meta->as<std::string>());
+                    break;
+                default:
+                    std::cerr << "  Warning: Unsupported dtype for key: " << key << "\n";
+                    continue;
+            }
+            large_array_count++;
+        } else {
+            // Small data: store in metadata storage
+            std::cout << "  " << key << " (" << num_elements << " elements) -> metadata storage\n";
+
+            // Copy to output metadata storage based on dtype
+            switch(meta->dtype) {
+                case DataType::INT8:
+                    output_store->meta.put(key, meta->as<int8_t>());
+                    break;
+                case DataType::INT16:
+                    output_store->meta.put(key, meta->as<int16_t>());
+                    break;
+                case DataType::INT32:
+                    output_store->meta.put(key, meta->as<int32_t>());
+                    break;
+                case DataType::INT64:
+                    output_store->meta.put(key, meta->as<int64_t>());
+                    break;
+                case DataType::UINT8:
+                    output_store->meta.put(key, meta->as<uint8_t>());
+                    break;
+                case DataType::UINT16:
+                    output_store->meta.put(key, meta->as<uint16_t>());
+                    break;
+                case DataType::UINT32:
+                    output_store->meta.put(key, meta->as<uint32_t>());
+                    break;
+                case DataType::UINT64:
+                    output_store->meta.put(key, meta->as<uint64_t>());
+                    break;
+                case DataType::FLOAT32:
+                    output_store->meta.put(key, meta->as<float>());
+                    break;
+                case DataType::FLOAT64:
+                    output_store->meta.put(key, meta->as<double>());
+                    break;
+                case DataType::STRING:
+                    output_store->meta.put(key, meta->as<std::string>());
+                    break;
+                default:
+                    std::cerr << "  Warning: Unsupported dtype for key: " << key << "\n";
+                    continue;
+            }
+            small_data_count++;
+        }
+    }
+
+    std::cout << "\nConversion complete!\n";
+    std::cout << "  Large arrays (array storage): " << large_array_count << "\n";
+    std::cout << "  Small data (metadata): " << small_data_count << "\n";
+    std::cout << "  Total keys: " << (large_array_count + small_data_count) << "\n";
+}
+
+void star_to_isds(const std::string& input_file, const std::string& output_file) {
+    // This is just an alias - ISDS files are STAR files
+    // The difference is organizational, not format
+    std::cout << "Note: ISDS format is STAR format.\n";
+    std::cout << "Use regular STAR tools to work with the file.\n";
+    std::cout << "Input file: " << input_file << " is already in STAR format.\n";
+}
+
 int main(int argc, char* argv[]) {
     // Disable trace logging by default
     logger::set_log_level(logger::ERROR);
@@ -1156,6 +1389,7 @@ int main(int argc, char* argv[]) {
     std::string format;
     std::string compression_str = "lz4";
     size_t block_size = 1048576; // 1MB default
+    size_t threshold = 100; // Default threshold for ISDS conversion
 
     // Parse arguments
     for (int i = 1; i < argc; ++i) {
@@ -1185,6 +1419,14 @@ int main(int argc, char* argv[]) {
                 block_size = std::stoul(argv[++i]);
             } else {
                 std::cerr << "Error: -b/--block-size requires a size\n";
+                print_usage(argv[0]);
+                return 1;
+            }
+        } else if (arg == "-t" || arg == "--threshold") {
+            if (i + 1 < argc) {
+                threshold = std::stoul(argv[++i]);
+            } else {
+                std::cerr << "Error: -t/--threshold requires a size\n";
                 print_usage(argv[0]);
                 return 1;
             }
@@ -1231,8 +1473,16 @@ int main(int argc, char* argv[]) {
     }
 
     // Detect formats
-    std::string input_format = detect_format(input_file);
-    std::string output_format = format.empty() ? detect_format(output_file) : format;
+    bool explicit_isds = (format == "isds");
+    std::string input_format = detect_format(input_file, explicit_isds);
+    std::string output_format;
+
+    if (explicit_isds) {
+        // When ISDS is specified, input is ISDS, output is optimized STAR
+        output_format = "star";
+    } else {
+        output_format = format.empty() ? detect_format(output_file, false) : format;
+    }
 
     if (input_format.empty()) {
         std::cerr << "Error: Cannot detect input file format\n";
@@ -1251,7 +1501,13 @@ int main(int argc, char* argv[]) {
 
     try {
         // Handle conversions
-        if (input_format == "star" && output_format == "json") {
+        if (input_format == "isds" && output_format == "star") {
+            // ISDS to optimized STAR: reorganize by array size
+            isds_to_star(input_file, output_file, compression, block_size, threshold);
+        } else if (input_format == "star" && output_format == "isds") {
+            // STAR to ISDS (just explain it's the same)
+            star_to_isds(input_file, output_file);
+        } else if (input_format == "star" && output_format == "json") {
             star_to_json(input_file, output_file);
         } else if (input_format == "json" && output_format == "star") {
             json_to_star(input_file, output_file, compression, block_size);

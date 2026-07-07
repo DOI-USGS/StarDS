@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-S3 cloud storage example for CameraStateFile Python bindings.
+S3 cloud storage example for StarDS Python bindings.
 
 This example demonstrates:
 - Writing to S3 with /vsis3/ paths

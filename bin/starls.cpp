@@ -546,12 +546,12 @@ int main(int argc, char* argv[]) {
 
     try {
         // Open the store
-        std::cout << "Opening SCS file: " << filename << "\n";
+        std::cout << "Opening STAR file: " << filename << "\n";
         auto store = StarDataset::open(filename, FileMode::READ_ONLY);
 
         std::cout << "\n";
         std::cout << "╔═══════════════════════════════════════════════════════════════╗\n";
-        std::cout << "║                      SCS File Contents                        ║\n";
+        std::cout << "║                      STAR File Contents                       ║\n";
         std::cout << "╚═══════════════════════════════════════════════════════════════╝\n\n";
 
         std::cout << "File: " << filename << "\n";

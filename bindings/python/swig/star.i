@@ -49,13 +49,28 @@ namespace std {
 %template(VectorUInt8) std::vector<uint8_t>;
 %template(VectorUInt16) std::vector<uint16_t>;
 %template(VectorUInt32) std::vector<uint32_t>;
+#ifdef STAR_SIZE_T_IS_UINT64
+// size_t and uint64_t are the same C++ type on this platform (LP64): reuse the
+// VectorSize instantiation instead of emitting a duplicate std::vector<uint64_t>
+// (which would produce a redefined swig::traits<>). Expose the VectorUInt64 name
+// as a Python alias so callers (e.g. pystar.ndarray) still find it.
+%pythoncode %{
+VectorUInt64 = VectorSize
+%}
+#else
 %template(VectorUInt64) std::vector<uint64_t>;
+#endif
 %template(VectorFloat32) std::vector<float>;
 %template(VectorFloat64) std::vector<double>;
 
 // Ignore problematic methods BEFORE parsing header
 // Rename 'print' which is a Python keyword
 %rename(print_info) print;
+
+// Ignore internal serialization methods (not needed in Python)
+%ignore star::StarDataset::serialize_layer_metadata_block;
+%ignore star::StarDataset::load_layer_metadata;
+%ignore star::StarDataset::parse_layer_metadata_block;
 
 // Ignore nested structs (SWIG limitation)
 %ignore ExtractionPlan::ElementRange;
@@ -86,8 +101,8 @@ namespace std {
 %ignore NDArray::empty;
 %ignore NDArray::arange;
 
-// Ignore private constructor (use static factory methods instead)
-%ignore StarDataset::StarDataset(const std::string&, FileMode, const StarConfig*);
+// Ignore constructor (use static factory methods instead)
+%ignore star::StarDataset::StarDataset(const std::string&, FileMode, const StarConfig*);
 
 // Ignore methods with C++11 brace initialization in default args (SWIG can't parse)
 %ignore NDArray::resize;
@@ -110,12 +125,12 @@ namespace std {
 %feature("immutable") StarDataset::m_thread_pool;
 
 // Define shared_ptr handling for MetadataValue before parsing header
-// Define unique_ptr handling for StarDataset (returned by create/open)
+// Define shared_ptr handling for StarDataset (returned by create/open)
 // Define shared_ptr handling for LayerView (returned by get_layer/create_layer)
-// Note: MetadataValue and LayerView are in star namespace
+// Note: MetadataValue, LayerView, and StarDataset are in star namespace
 %shared_ptr(star::MetadataValue)
 %shared_ptr(star::LayerView)
-%unique_ptr(star::StarDataset)
+%shared_ptr(star::StarDataset)
 
 // Expose static factory methods with clear names
 %rename(create) StarDataset::create;
@@ -211,4 +226,4 @@ class logger:
 // Now modify and instantiate templates (requires classes to be defined)
 %include "rename_operators.i"
 %include "iterators.i"
-%include "NDArray.i"
+%include "ndarray.i"

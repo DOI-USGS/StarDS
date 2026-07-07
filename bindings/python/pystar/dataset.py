@@ -172,8 +172,43 @@ class LayerView:
         """
         self._cpp_view = cpp_layer_view
         self._parent = parent_dataset
-        # Wrap layer-specific metadata accessor
-        self.meta = MetadataAccessor(cpp_layer_view.meta, parent_dataset)
+        # Store metadata accessor but don't expose directly
+        # Use property to keep LayerView alive
+        self._meta_accessor = MetadataAccessor(cpp_layer_view.meta, parent_dataset)
+
+    @property
+    def meta(self):
+        """
+        Access layer metadata with inheritance.
+
+        This property ensures the LayerView stays alive even in temporary access patterns
+        like: ds.get_layer("layer1").meta["key"]
+        """
+        # Return wrapper that keeps self alive
+        class MetadataAccessorWithLayerRef:
+            def __init__(self, accessor, layer_view):
+                self._accessor = accessor
+                self._layer_view = layer_view  # Keep LayerView alive
+
+            def __getitem__(self, key):
+                return self._accessor.__getitem__(key)
+
+            def __setitem__(self, key, value):
+                return self._accessor.__setitem__(key, value)
+
+            def __contains__(self, key):
+                return self._accessor.__contains__(key)
+
+            def get(self, key, default=None):
+                return self._accessor.get(key, default)
+
+            def keys(self):
+                return self._accessor.keys()
+
+            def __repr__(self):
+                return self._accessor.__repr__()
+
+        return MetadataAccessorWithLayerRef(self._meta_accessor, self)
 
     def __contains__(self, key: str) -> bool:
         """Check if key exists in this layer or base"""
@@ -240,16 +275,9 @@ class LayerView:
             except (RuntimeError, AttributeError):
                 continue
 
-        # If no data array method worked, try metadata
-        try:
-            meta = self._cpp_view.meta.get(key)
-            if meta is None:
-                raise KeyError(f"Key not found: {key}")
-            return MetadataValue(meta).to_numpy()
-        except RuntimeError as e:
-            if "Key not found" in str(e):
-                raise KeyError(f"Key not found: {key}")
-            raise
+        # If no data array found, raise error
+        # Note: Use layer.meta["key"] to access metadata
+        raise KeyError(f"Key not found: {key}")
 
     def put(self, key: str, value: Union[np.ndarray, list, int, float, str]):
         """
@@ -475,16 +503,9 @@ class StarDataset:
             except (RuntimeError, AttributeError):
                 continue
 
-        # If no data array method worked, try metadata
-        try:
-            meta = self._store.meta.get(key)
-            if meta is None:
-                raise KeyError(f"Key not found: {key}")
-            return MetadataValue(meta).to_numpy()
-        except RuntimeError as e:
-            if "Key not found" in str(e):
-                raise KeyError(f"Key not found: {key}")
-            raise
+        # If no data array found, raise error
+        # Note: Use ds.meta["key"] to access metadata
+        raise KeyError(f"Key not found: {key}")
 
     def get_slice(self, key: str, slices: List[tuple]) -> np.ndarray:
         """

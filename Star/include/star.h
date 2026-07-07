@@ -1,5 +1,8 @@
 #pragma once 
 
+#include <algorithm>
+#include <cstdint>
+#include <cstring>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -27,10 +30,6 @@
 #include <unistd.h>
 
 
-// force it for now
-#define ENABLE_CURL 1
-#define ENABLE_ZLIB 1
-
 #ifdef ENABLE_ZLIB
 #include <zlib.h>
 #endif
@@ -39,7 +38,12 @@
 #include <lz4.h>
 #endif
 
-// Library version constants
+// Library version constants.
+//
+// star.h is header-only and must compile standalone even when copy-pasted
+// elsewhere, so the canonical version is hardcoded HERE. The repo-root VERSION
+// file mirrors these numbers (CMake reads VERSION to stamp the build and the
+// Python package); keep the three values below in sync with /VERSION.
 #ifndef STAR_VERSION_MAJOR
 #define STAR_VERSION_MAJOR 1
 #endif
@@ -50,13 +54,22 @@
 #define STAR_VERSION_PATCH 0
 #endif
 
+// Stringify helpers so the version string is derived from the macros above
+// (single source of truth within this header — no separate literal to drift).
+#define STAR_STRINGIFY_IMPL(x) #x
+#define STAR_STRINGIFY(x) STAR_STRINGIFY_IMPL(x)
+#define STAR_VERSION_STRING \
+    STAR_STRINGIFY(STAR_VERSION_MAJOR) "." \
+    STAR_STRINGIFY(STAR_VERSION_MINOR) "." \
+    STAR_STRINGIFY(STAR_VERSION_PATCH)
+
 //==============================================================================
 // STAR Namespace
 //==============================================================================
 
 namespace star {
 
-inline const std::string PROJECT_NAME = "STARDS 0.2.0";
+inline const std::string PROJECT_NAME = "STARDS " STAR_VERSION_STRING;
 inline const char* MAGIC_STRING = "STARDS";
 inline const size_t MAGIC_STRING_LENGTH = 6;
 
@@ -104,13 +117,15 @@ inline size_t getNumThreads() {
 //==============================================================================
 
 /**
- * @brief File header structure (23 bytes fixed size)
+ * @brief File header structure (31 bytes fixed size)
  *
  * Layout:
  * - magic[6]: "STARDS" magic string (6 bytes)
- * - format_version: File format version (1 byte, currently 2)
+ * - format_version: File format version (1 byte, currently 1)
  * - header_size: Total size of header + index section (8 bytes)
  * - entry_count: Number of entries in the index (8 bytes)
+ * - layer_count: Number of named layers, excluding __base__ (4 bytes)
+ * - key_registry_count: Number of keys in the global key registry (4 bytes)
  *
  * Note: Software/library version is NOT stored in the file, only the format version.
  */
@@ -3646,15 +3661,15 @@ public:
  */
 class LayerView {
 private:
-    StarDataset* m_base;           // Shared underlying dataset
-    std::string m_layer_name;      // This layer's name
+    std::shared_ptr<StarDataset> m_base;  // Keep dataset alive via shared_ptr
+    std::string m_layer_name;              // This layer's name
 
 public:
     // Layer-specific metadata accessor with inheritance
     LayerMetadataAccessor meta;
 
-    LayerView(StarDataset* base, const std::string& layer_name)
-        : m_base(base), m_layer_name(layer_name), meta(base, layer_name) {}
+    LayerView(std::shared_ptr<StarDataset> base, const std::string& layer_name)
+        : m_base(base), m_layer_name(layer_name), meta(base.get(), layer_name) {}
 
     /**
      * @brief Check if key exists in this layer or base (with inheritance)
@@ -3677,9 +3692,9 @@ public:
 
     /**
      * @brief Get parent dataset
-     * @return Pointer to base StarDataset
+     * @return Shared pointer to base StarDataset
      */
-    StarDataset* base() const { return m_base; }
+    std::shared_ptr<StarDataset> base() const { return m_base; }
 
     /**
      * @brief Get array from this layer with inheritance
@@ -3712,7 +3727,7 @@ public:
  * for efficient cloud storage and retrieval. Large arrays are chunked 
  * for better performance over networks.
  */
-class StarDataset {
+class StarDataset : public std::enable_shared_from_this<StarDataset> {
     // Friend classes that need access to internal methods
     friend class LayerMetadataAccessor;
 
@@ -3731,18 +3746,18 @@ public:
 
     HotStorage m_hot;                                           // Frequently accessed data
     ColdStorage m_cold;                                         // Infrequently accessed data
-    std::vector<ValueVariant> m_data_storage;                   // Actual data when loaded
+    mutable std::vector<ValueVariant> m_data_storage;           // Actual data when loaded (mutable for lazy loading)
     std::unordered_map<std::string, size_t> m_key_to_index;  // Fast key -> index lookup
-    bool m_metadata_loaded = false;                             // Metadata block loaded flag
+    mutable bool m_metadata_loaded = false;                     // Metadata block loaded flag (mutable for lazy loading)
 
     // Layer support (v1)
     KeyRegistry m_key_registry;                                   // Global key registry (SoA)
     LayerMetadataRegistry m_layer_metadata_registry;              // Per-layer metadata info (SoA)
-    std::vector<bool> m_layer_metadata_loaded;                    // Track which layers are loaded
-    std::vector<std::unordered_map<uint16_t, size_t>> m_layer_metadata_indices;  // layer_idx → (key_idx → storage_idx)
+    mutable std::vector<bool> m_layer_metadata_loaded;            // Track which layers are loaded (mutable for lazy loading)
+    mutable std::vector<std::unordered_map<uint16_t, size_t>> m_layer_metadata_indices;  // layer_idx → (key_idx → storage_idx) (mutable for lazy loading)
     std::map<std::string, std::vector<uint64_t>> m_layer_presence; // layer_name → bitmap (for data arrays)
-    std::unordered_map<size_t, DataType> m_metadata_dtypes;        // storage_idx → dtype for metadata entries
-    std::unordered_map<size_t, std::vector<size_t>> m_metadata_shapes;  // storage_idx → shape for metadata entries
+    mutable std::unordered_map<size_t, DataType> m_metadata_dtypes;        // storage_idx → dtype for metadata entries (mutable for lazy loading)
+    mutable std::unordered_map<size_t, std::vector<size_t>> m_metadata_shapes;  // storage_idx → shape for metadata entries (mutable for lazy loading)
 
     // Pre-allocated buffers (reduces allocations during flush)
     std::vector<char> m_serialize_buffer;                       // Reusable buffer for serialization
@@ -3750,11 +3765,11 @@ public:
 
     // Metadata API accessor
     MetadataAccessor meta;                                      // Explicit metadata operations
+    FileMode m_file_mode;                                       // Read-only or read-write mode
+    FilePathInfo m_path_info;                                   // Cached parsed path info
 
 #ifdef ENABLE_S3
     // S3 support - cached for performance (avoid repeated parsing/resolution)
-    FileMode m_file_mode;                                       // Read-only or read-write mode
-    FilePathInfo m_path_info;                                   // Cached parsed path info
     std::unique_ptr<S3Credentials> m_s3_credentials;           // Cached S3 credentials
 #endif
 
@@ -3991,8 +4006,8 @@ public:
             throw std::runtime_error("Magic string mismatch");
         }
 
-        // Read format version (added in v2)
-        uint8_t format_version = 1; // Default to v1 for old files
+        // Read format 
+        uint8_t format_version = 1; 
         initial_stream.read(reinterpret_cast<char*>(&format_version), sizeof(format_version));
         LOG_TRACE("Found format version: ", (int)format_version);
         m_file_header.format_version = format_version;
@@ -4251,8 +4266,22 @@ public:
      * @param os Output stream
      * @param layer_name Layer name
      */
-    void serialize_layer_metadata_block(std::ostream& os, const std::string& layer_name) const {
+    void serialize_layer_metadata_block(std::ostream& os, const std::string& layer_name) {
         LOG_DEBUG("serialize_layer_metadata_block: layer_name=", layer_name);
+
+        // Ensure this layer's metadata is loaded before serializing
+        size_t layer_idx = m_layer_metadata_registry.get_layer_index(layer_name);
+        if (!m_layer_metadata_loaded[layer_idx]) {
+            // Only try to load if there's actually a block to load
+            uint32_t block_size = m_layer_metadata_registry.block_sizes[layer_idx];
+            if (block_size > 0) {
+                // Load it now (this happens for layers that weren't accessed during this session)
+                load_layer_metadata(layer_name);
+            } else {
+                // New layer with no persisted data - just mark as loaded
+                m_layer_metadata_loaded[layer_idx] = true;
+            }
+        }
 
         // Magic header: "STARMETA" (8 bytes, not null-terminated)
         const char magic[8] = {'S','T','A','R','M','E','T','A'};
@@ -4268,7 +4297,6 @@ public:
         os.write(layer_name.c_str(), layer_name_len);
 
         // Count entries for this layer
-        size_t layer_idx = m_layer_metadata_registry.get_layer_index(layer_name);
         uint16_t entry_count = static_cast<uint16_t>(m_layer_metadata_registry.key_indices[layer_idx].size());
         LOG_DEBUG("  entry_count=", entry_count);
         os.write(reinterpret_cast<const char*>(&entry_count), sizeof(uint16_t));
@@ -5025,14 +5053,12 @@ private:
             return;
         }
         LOG_DEBUG("Proceeding with flush");
-        
-        #ifdef ENABLE_S3
+
         // Check read-only mode
         if (m_file_mode == FileMode::READ_ONLY) {
-            throw std::runtime_error(
-                "Cannot flush in read-only mode. Use saveTo() to write to a different file.");
+            LOG_DEBUG("File opened in read-only mode, skipping flush");
+            return;  // Don't throw, just skip flush
         }
-        #endif
 
         LOG_DEBUG("flush() starting for ", m_filename);
 
@@ -6063,7 +6089,7 @@ public:
      * @param config Configuration for compression, block sizes, metadata
      * @return New StarDataset instance
      */
-    static std::unique_ptr<StarDataset> create(const std::string& filename, const StarConfig& config = StarConfig()) {
+    static std::shared_ptr<StarDataset> create(const std::string& filename, const StarConfig& config = StarConfig()) {
         // If file exists, delete it to allow overwrite
         std::ifstream check_file(filename, std::ios::binary);
         if (check_file.good()) {
@@ -6072,7 +6098,8 @@ public:
             std::remove(filename.c_str());
         }
 
-        return std::unique_ptr<StarDataset>(new StarDataset(filename, FileMode::READ_WRITE, &config));
+        // Use make_shared to enable shared_from_this()
+        return std::make_shared<StarDataset>(filename, FileMode::READ_WRITE, &config);
     }
 
     /**
@@ -6089,7 +6116,7 @@ public:
      * @return Opened StarDataset instance
      * @throws std::runtime_error if file doesn't exist in READ_ONLY mode or is corrupt
      */
-    static std::unique_ptr<StarDataset> open(const std::string& filename, FileMode mode = FileMode::READ_WRITE) {
+    static std::shared_ptr<StarDataset> open(const std::string& filename, FileMode mode = FileMode::READ_WRITE) {
         // Check if file exists
         bool file_exists = false;
 
@@ -6124,11 +6151,11 @@ public:
         // If file doesn't exist but mode is READ_WRITE, create it
         if (!file_exists && mode == FileMode::READ_WRITE) {
             // File will be created on first flush
-            return std::unique_ptr<StarDataset>(new StarDataset(filename, mode, nullptr));
+            return std::make_shared<StarDataset>(filename, mode, nullptr);
         }
 
         // File exists, open it
-        auto store = std::unique_ptr<StarDataset>(new StarDataset(filename, mode, nullptr));
+        auto store = std::make_shared<StarDataset>(filename, mode, nullptr);
 
         // Verify that the file was loaded successfully by checking if we have any index info
         // A valid STAR file should have header_size set after loadIndex()
@@ -6147,22 +6174,18 @@ public:
      * @return Opened StarDataset instance
      * @throws std::runtime_error if file doesn't exist or is invalid
      */
-    static std::unique_ptr<StarDataset> open(const std::string& filename, const std::string& mode_str) {
+    static std::shared_ptr<StarDataset> open(const std::string& filename, const std::string& mode_str) {
         return open(filename, parseModeString(mode_str));
     }
 
-    // Delete copy and move constructors (non-copyable due to std::shared_mutex)
-    StarDataset(const StarDataset&) = delete;
-    StarDataset& operator=(const StarDataset&) = delete;
-    StarDataset(StarDataset&&) = delete;
-    StarDataset& operator=(StarDataset&&) = delete;
-
-private:
     /**
-     * @brief Constructor with compression options (private - use factory methods)
+     * @brief Constructor with compression options
      * @param fname Filename to use for storage
      * @param mode File open mode (READ_WRITE or READ_ONLY)
      * @param config Optional configuration (nullptr to load from file)
+     *
+     * NOTE: Constructor is public to enable std::make_shared, but you should
+     * use the static factory methods create() and open() instead.
      */
     StarDataset(const std::string& fname, FileMode mode, const StarConfig* config)
         : m_filename(fname), m_header_dirty(true), meta(this),
@@ -6226,6 +6249,12 @@ private:
             m_layer_presence["__base__"] = std::vector<uint64_t>();
         }
     }
+
+    // Delete copy and move constructors (non-copyable due to std::shared_mutex)
+    StarDataset(const StarDataset&) = delete;
+    StarDataset& operator=(const StarDataset&) = delete;
+    StarDataset(StarDataset&&) = delete;
+    StarDataset& operator=(StarDataset&&) = delete;
 
 public:
     /**
@@ -7798,7 +7827,7 @@ inline std::shared_ptr<LayerView> StarDataset::get_layer(const std::string& laye
         throw std::runtime_error("Layer not found: " + layer_name);
     }
 
-    return std::make_shared<LayerView>(this, layer_name);
+    return std::make_shared<LayerView>(shared_from_this(), layer_name);
 }
 
 inline std::shared_ptr<LayerView> StarDataset::create_layer(const std::string& layer_name) {
@@ -7826,7 +7855,7 @@ inline std::shared_ptr<LayerView> StarDataset::create_layer(const std::string& l
     m_header_dirty = true;  // Header changed
     m_flushed = false;      // Need to flush header changes
 
-    return std::make_shared<LayerView>(this, layer_name);
+    return std::make_shared<LayerView>(shared_from_this(), layer_name);
 }
 
 //==============================================================================
@@ -7844,9 +7873,17 @@ inline void LayerMetadataAccessor::put(const std::string& key, const V& value) {
     // Get layer index
     size_t layer_idx = m_store->m_layer_metadata_registry.get_layer_index(m_layer_name);
 
-    // Ensure this layer's metadata is loaded
+    // Ensure this layer's metadata is loaded (or mark as loaded if it's a new layer)
     if (!m_store->m_layer_metadata_loaded[layer_idx]) {
-        m_store->load_layer_metadata(m_layer_name);
+        // For new layers with no persisted data, just mark as loaded
+        uint32_t block_size = m_store->m_layer_metadata_registry.block_sizes[layer_idx];
+        if (block_size == 0) {
+            // New layer, no data to load
+            m_store->m_layer_metadata_loaded[layer_idx] = true;
+        } else {
+            // Existing layer, load from disk
+            m_store->load_layer_metadata(m_layer_name);
+        }
     }
 
     // Get or create storage index
@@ -7857,6 +7894,9 @@ inline void LayerMetadataAccessor::put(const std::string& key, const V& value) {
     if (it != layer_metadata_map.end()) {
         // Update existing entry
         storage_idx = it->second;
+        if (storage_idx >= m_store->m_data_storage.size()) {
+            throw std::runtime_error("Invalid storage index when updating metadata: " + key);
+        }
         m_store->m_data_storage[storage_idx] = value;
     } else {
         // Create new entry
@@ -7877,29 +7917,58 @@ inline void LayerMetadataAccessor::put(const std::string& key, const V& value) {
 }
 
 inline std::shared_ptr<MetadataValue> LayerMetadataAccessor::get(const std::string& key) {
-    // v1 format: Resolve which layer has this key and load it
-    size_t base_layer_idx = m_store->m_layer_metadata_registry.get_layer_index("__base__");
-
-    // Ensure base layer metadata is loaded
-    if (!m_store->m_layer_metadata_loaded[base_layer_idx]) {
-        m_store->load_layer_metadata("__base__");
-    }
+    // v1 format: Check current layer first, then fall back to base (inheritance)
 
     // Get key index from registry
     uint16_t key_idx;
     try {
         key_idx = m_store->m_key_registry.get_index(key);
     } catch (...) {
-        return nullptr;  // Key doesn't exist
+        return nullptr;  // Key doesn't exist anywhere
     }
 
-    // Check if key exists in base layer
+    // Get layer indices
+    size_t layer_idx = m_store->m_layer_metadata_registry.get_layer_index(m_layer_name);
+    size_t base_layer_idx = m_store->m_layer_metadata_registry.get_layer_index("__base__");
+
+    // Check current layer first (for override)
+    if (m_layer_name != "__base__") {
+        // Ensure current layer metadata is loaded
+        if (!m_store->m_layer_metadata_loaded[layer_idx]) {
+            m_store->load_layer_metadata(m_layer_name);
+        }
+
+        const auto& layer_key_indices = m_store->m_layer_metadata_registry.key_indices[layer_idx];
+        if (layer_key_indices.find(key_idx) != layer_key_indices.end()) {
+            // Key exists in current layer - return it
+            const auto& layer_metadata_map = m_store->m_layer_metadata_indices[layer_idx];
+            auto it = layer_metadata_map.find(key_idx);
+            if (it != layer_metadata_map.end()) {
+                size_t storage_idx = it->second;
+                if (storage_idx >= m_store->m_data_storage.size()) {
+                    throw std::runtime_error("Invalid storage index for key: " + key + " (index=" + std::to_string(storage_idx) + ", storage_size=" + std::to_string(m_store->m_data_storage.size()) + ")");
+                }
+                const ValueVariant& var = m_store->m_data_storage[storage_idx];
+
+                auto meta = std::make_shared<MetadataValue>();
+                meta->data = var;
+                meta->dtype = m_store->m_metadata_dtypes[storage_idx];
+                meta->shape = m_store->m_metadata_shapes[storage_idx];
+                return meta;
+            }
+        }
+    }
+
+    // Fall back to base layer (inheritance)
+    if (!m_store->m_layer_metadata_loaded[base_layer_idx]) {
+        m_store->load_layer_metadata("__base__");
+    }
+
     const auto& base_key_indices = m_store->m_layer_metadata_registry.key_indices[base_layer_idx];
     if (base_key_indices.find(key_idx) == base_key_indices.end()) {
-        return nullptr;  // Key not in base layer
+        return nullptr;  // Key not in base layer either
     }
 
-    // Find the storage index for this key in base layer
     const auto& base_metadata_map = m_store->m_layer_metadata_indices[base_layer_idx];
     auto it = base_metadata_map.find(key_idx);
     if (it == base_metadata_map.end()) {
@@ -7907,9 +7976,11 @@ inline std::shared_ptr<MetadataValue> LayerMetadataAccessor::get(const std::stri
     }
 
     size_t storage_idx = it->second;
+    if (storage_idx >= m_store->m_data_storage.size()) {
+        throw std::runtime_error("Invalid storage index for key: " + key + " (index=" + std::to_string(storage_idx) + ", storage_size=" + std::to_string(m_store->m_data_storage.size()) + ")");
+    }
     const ValueVariant& var = m_store->m_data_storage[storage_idx];
 
-    // Create MetadataValue from storage with dtype and shape
     auto meta = std::make_shared<MetadataValue>();
     meta->data = var;
     meta->dtype = m_store->m_metadata_dtypes[storage_idx];
@@ -7932,25 +8003,28 @@ inline void LayerMetadataAccessor::remove(const std::string& key) {
 }
 
 inline std::vector<std::string> LayerMetadataAccessor::keys() const {
+    // v1 format: Return all keys visible to this layer (layer + base, with layer overriding base)
     std::vector<std::string> result;
-    std::string prefix = "__layer_" + m_layer_name + "__";
+    std::set<std::string> seen;
 
-    // Get ALL metadata keys (including layer-prefixed internal keys)
-    auto all_keys = m_store->get_all_metadata_keys_internal();
+    size_t layer_idx = m_store->m_layer_metadata_registry.get_layer_index(m_layer_name);
+    size_t base_layer_idx = m_store->m_layer_metadata_registry.get_layer_index("__base__");
 
-    // Filter layer-specific keys and strip prefix
-    for (const auto& k : all_keys) {
-        if (k.substr(0, prefix.size()) == prefix) {
-            result.push_back(k.substr(prefix.size()));
-        }
+    // Get all key indices for this layer
+    const auto& layer_key_indices = m_store->m_layer_metadata_registry.key_indices[layer_idx];
+    for (uint16_t key_idx : layer_key_indices) {
+        const std::string& key_name = m_store->m_key_registry.names[key_idx];
+        result.push_back(key_name);
+        seen.insert(key_name);
     }
 
     // Add base keys that aren't overridden
-    for (const auto& k : all_keys) {
-        if (k.substr(0, 8) != "__layer_") {
-            std::string layer_key = make_layer_key(k);
-            if (!m_store->meta.contains(layer_key)) {
-                result.push_back(k);
+    if (m_layer_name != "__base__") {
+        const auto& base_key_indices = m_store->m_layer_metadata_registry.key_indices[base_layer_idx];
+        for (uint16_t key_idx : base_key_indices) {
+            const std::string& key_name = m_store->m_key_registry.names[key_idx];
+            if (seen.find(key_name) == seen.end()) {
+                result.push_back(key_name);
             }
         }
     }

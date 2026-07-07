@@ -22,32 +22,54 @@ starls -d array_name data.star
 starls -a data.star
 ```
 
-**Build**: Always built when `CAMERASTATEFILE_BUILD_TOOLS=ON` (default)
+**Build**: Always built when `STAR_BUILD_TOOLS=ON` (default)
 
 ---
 
 ### 2. star_translate
-**Purpose**: Convert between SCS and other formats (JSON, MessagePack)
+**Purpose**: Convert between STAR and other formats (JSON, MessagePack, CSV, ISDS)
 
 **Usage**:
 ```bash
-# SCS to JSON
+# STAR to JSON
 star_translate data.star data.json
 
-# JSON to SCS
+# JSON to STAR
 star_translate data.json data.star
 
-# With compression
-star_translate -c gzip data.json data.star
-
-# With custom block size
-star_translate -c gzip -b 4096 data.json data.star
+# CSV to STAR (2D arrays only)
+star_translate data.csv data.star
 
 # MessagePack (if built with msgpack support)
 star_translate data.star data.msgpack
+
+# ISDS optimization: reorganize by array size
+# Large arrays go to array storage, small data goes to metadata
+star_translate -f isds input.star output.star
+
+# ISDS with custom threshold (default: 100 elements)
+star_translate -f isds -t 50 input.star output.star
 ```
 
-**Build**: Controlled by `CAMERASTATEFILE_BUILD_TRANSLATE=ON` (default)
+**ISDS Conversion**:
+
+The ISDS (ISIS Dataset) optimization reorganizes STAR files by moving large arrays to efficient block storage and keeping small metadata in the metadata block. This is useful for ISIS camera state files with mixed data sizes.
+
+- Arrays with more elements than threshold → array storage (compressed blocks)
+- Arrays with fewer elements → metadata storage (quick access)
+- Default threshold: 100 elements
+- Preserves all data, just reorganizes storage
+
+Example workflow:
+```bash
+# Convert ISIS camera state file for optimal performance
+star_translate -f isds -t 100 camera_state.star camera_state_optimized.star
+
+# Large arrays (quaternions, ephemeris) → block storage
+# Small scalars (focal_length, detector_center) → metadata
+```
+
+**Build**: Controlled by `STAR_BUILD_TRANSLATE=ON` (default)
 
 **Dependencies**:
 - Required: nlohmann/json (included as submodule)
@@ -62,8 +84,8 @@ star_translate data.star data.msgpack
 ```bash
 mkdir build && cd build
 cmake .. \
-  -DCAMERASTATEFILE_BUILD_TOOLS=ON \
-  -DCAMERASTATEFILE_BUILD_TRANSLATE=ON
+  -DSTAR_BUILD_TOOLS=ON \
+  -DSTAR_BUILD_TRANSLATE=ON
 make
 ```
 
@@ -113,8 +135,8 @@ cd build
 **Tests**:
 - Build verification
 - Installation check
-- SCS → JSON conversion
-- JSON → SCS round-trip
+- STAR → JSON conversion
+- JSON → STAR round-trip
 - Data integrity validation
 - Compression functionality
 - Error handling
@@ -150,7 +172,7 @@ Located in this directory:
 
 2. **test_translate_roundtrip.cpp**
    - Automated integration test
-   - Validates SCS → JSON → SCS round-trip
+   - Validates STAR → JSON → STAR round-trip
    - Checks data integrity
 
 Build examples:
@@ -176,8 +198,8 @@ To add a new format (e.g., HDF5):
 
 1. Add conversion functions to `star_translate.cpp`:
    ```cpp
-   void scs_to_hdf5(const std::string& input, const std::string& output);
-   void hdf5_to_scs(const std::string& input, const std::string& output);
+   void star_to_hdf5(const std::string& input, const std::string& output);
+   void hdf5_to_star(const std::string& input, const std::string& output);
    ```
 
 2. Update format detection:
@@ -187,8 +209,8 @@ To add a new format (e.g., HDF5):
 
 3. Add to main conversion logic:
    ```cpp
-   else if (input_format == "scs" && output_format == "hdf5") {
-       scs_to_hdf5(input_file, output_file);
+   else if (input_format == "star" && output_format == "hdf5") {
+       star_to_hdf5(input_file, output_file);
    }
    ```
 
@@ -198,13 +220,9 @@ To add a new format (e.g., HDF5):
 
 ### Debugging
 
-Enable verbose output:
-
-```bash
-# For star_translate
-export CAMERASTATEFILE_LOG_LEVEL=DEBUG
-./bin/star_translate data.star data.json
-```
+The tools set the library log level to `ERROR` by default. To see more detail,
+lower the level in code with `logger::set_log_level(logger::DEBUG)` (C++) or
+`set_log_level` (Python) before running the conversion.
 
 Check conversion output:
 
@@ -235,7 +253,7 @@ bin/
 ├── CMakeLists.txt                  # Build configuration
 ├── README.md                       # This file
 │
-├── starls.cpp                       # SCS inspector tool
+├── starls.cpp                       # STAR inspector tool
 ├── star_translate.cpp               # Format converter tool
 │
 ├── example_json_conversion.cpp     # Example program
@@ -319,29 +337,23 @@ cmake .. && make
 
 ### Large File Conversion
 
-For files > 1GB:
-
-```bash
-# Use larger block size for better compression ratio
-star_translate -c gzip -b 65536 large.json large.star
-
-# Or no compression for faster conversion
-star_translate -c none large.json large.star
-```
+For large files, prefer converting in batches and configure compression through
+the `StarConfig` API (see the [Compression guide](../docs/guides/compression.md)),
+since the CLI's `-c`/`-b` flags are not currently applied to the output.
 
 ### Batch Conversion
 
 Convert multiple files:
 
 ```bash
-# SCS to JSON
+# STAR to JSON
 for file in *.star; do
     star_translate "$file" "${file%.star}.json"
 done
 
-# JSON to SCS with compression
+# JSON to STAR
 for file in *.json; do
-    star_translate -c gzip "$file" "${file%.json}.star"
+    star_translate "$file" "${file%.json}.star"
 done
 ```
 
@@ -361,6 +373,6 @@ When adding new features to tools:
 
 ## License
 
-Same as parent project (CameraStateFile).
+Same as parent project (StarDS).
 
 **Last Updated**: 2025-03-25

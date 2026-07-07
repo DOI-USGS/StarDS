@@ -1,6 +1,14 @@
 include(CMakeDependentOption)
 cmake_minimum_required(VERSION 3.10)
-project(STAR VERSION 1.0.0 DESCRIPTION "Simple Tensors Arrays and Rasters storage format")
+
+# Single source of truth for the project version: the repo-root VERSION file.
+# CMake stamps this onto the library target and the Python package (via
+# @PROJECT_VERSION@ in setup.py.in / _version.py.in). The header Star/include/star.h
+# hardcodes the same numbers so it still works when copy-pasted standalone — keep
+# STAR_VERSION_* in star.h in sync with VERSION.
+file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/STARDS_VERSION" STAR_VERSION_RAW LIMIT_COUNT 1)
+string(STRIP "${STAR_VERSION_RAW}" STAR_VERSION)
+project(STAR VERSION ${STAR_VERSION} DESCRIPTION "Simple Tensors Arrays and Rasters storage format")
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
@@ -28,13 +36,6 @@ message(STATUS "find path: " ${CMAKE_FIND_ROOT_PATH})
 # Variables required by multiple build options
 set(STAR_BUILD_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Star/include/")
 
-# Generate version header from CMake version
-configure_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/Star/include/version.h.in
-    ${CMAKE_CURRENT_BINARY_DIR}/Star/include/version.h
-    @ONLY
-)
-
 set(default_build_type "Release")
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   message(STATUS "Setting build type to '${default_build_type}' as none was specified.")
@@ -53,11 +54,9 @@ message(STATUS "Using install prefix: ${CMAKE_INSTALL_PREFIX}")
 
 option (STAR_BUILD_LIB "Build the Star Library" ON)
 
-
-
 set(JSON_BuildTests OFF CACHE INTERNAL "")
 
-add_subdirectory("submodules/gularkfilesystem")
+# add_subdirectory("submodules/gularkfilesystem")
 
 set(STAR_INSTALL_INCLUDE_DIR "include/Star")
 

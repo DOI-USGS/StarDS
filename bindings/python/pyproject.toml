@@ -39,10 +39,10 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/DOI-USGS/CameraStateFile"
-Documentation = "https://github.com/DOI-USGS/CameraStateFile/blob/main/README.md"
-Repository = "https://github.com/DOI-USGS/CameraStateFile"
-Issues = "https://github.com/DOI-USGS/CameraStateFile/issues"
+Homepage = "https://code.usgs.gov/astrogeology/stards"
+Documentation = "https://code.usgs.gov/astrogeology/stards/-/blob/main/README.md"
+Repository = "https://code.usgs.gov/astrogeology/stards"
+Issues = "https://code.usgs.gov/astrogeology/stards/-/issues"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

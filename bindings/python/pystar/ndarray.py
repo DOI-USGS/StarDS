@@ -89,8 +89,9 @@ class NDArray:
             return NDArray(cpp_ndarray)
 
         # For numeric types, use fast buffer protocol
-        # Ensure contiguous array
-        arr = np.ascontiguousarray(arr)
+        # Ensure contiguous array (0-d arrays are always contiguous, skip to preserve shape)
+        if arr.ndim > 0:
+            arr = np.ascontiguousarray(arr)
 
         # Map NumPy dtype to buffer protocol function
         dtype_to_func = {

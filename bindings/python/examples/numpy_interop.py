@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-NumPy interoperability example for CameraStateFile Python bindings.
+NumPy interoperability example for StarDS Python bindings.
 
 This example demonstrates:
 - Seamless NumPy integration
