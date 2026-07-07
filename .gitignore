@@ -1,3 +1,21 @@
+# MkDocs documentation
+/site/
+docs-site/site/
+/public/
+.venv-docs/
+docs-site/docs/StarCPPAPI/
+
+# Generated Python binding artifacts (produced by CMake configure_file / SWIG).
+# The templates (*.in) and the SWIG interface (swig/*.i) are the sources.
+bindings/python/setup.py
+bindings/python/pystar/_version.py
+bindings/python/pystar/pystar.py
+
+# Notebook / Python scratch artifacts (generated output, autosaves, bytecode).
+*.zarr/
+.ipynb_checkpoints/
+__pycache__/
+
 # C++ build artifacts
 *.o
 *.obj

@@ -19,36 +19,39 @@ This repository contains software code that was generated or modified with the a
 ### Build Tools with CMake
 
 ```bash
-git clone https://github.com/yourusername/camerastatefile.git
-cd camerastatefile
+git clone https://code.usgs.gov/astrogeology/stards.git
+cd stards
 git submodule update --init --recursive
 
 mkdir build && cd build
 cmake .. \
-  -DCAMERASTATEFILE_BUILD_TOOLS=ON \
-  -DCAMERASTATEFILE_ENABLE_ZLIB=ON \
-  -DCAMERASTATEFILE_ENABLE_CURL=ON \
-  -DCAMERASTATEFILE_ENABLE_S3=ON
+  -DSTAR_BUILD_TOOLS=ON \
+  -DSTAR_ENABLE_ZLIB=ON \
+  -DSTAR_ENABLE_LZ4=ON \
+  -DSTAR_ENABLE_CURL=ON \
+  -DSTAR_ENABLE_S3=ON
 
 make -j$(nproc)
 ```
 
 **CMake Options:**
-- `CAMERASTATEFILE_BUILD_TOOLS=ON` - Build CLI tools (starls, star_translate)
-- `CAMERASTATEFILE_BUILD_PYTHON_BINDINGS=ON` - Build Python bindings
-- `CAMERASTATEFILE_ENABLE_ZLIB=ON` - Enable GZIP compression
-- `CAMERASTATEFILE_ENABLE_CURL=ON` - Enable HTTP remote access
-- `CAMERASTATEFILE_ENABLE_S3=ON` - Enable S3 cloud storage
+- `STAR_BUILD_TOOLS=ON` - Build CLI tools (starls, star_translate)
+- `STAR_BUILD_PYTHON_BINDINGS=ON` - Build Python bindings
+- `STAR_ENABLE_ZLIB=ON` - Enable GZIP compression
+- `STAR_ENABLE_LZ4=ON` - Enable LZ4 compression
+- `STAR_ENABLE_CURL=ON` - Enable HTTP remote access
+- `STAR_ENABLE_S3=ON` - Enable S3 cloud storage
 
 ### Build Python Bindings with CMake
 
 ```bash
 mkdir build && cd build
 cmake .. \
-  -DCAMERASTATEFILE_BUILD_PYTHON_BINDINGS=ON \
-  -DCAMERASTATEFILE_ENABLE_ZLIB=ON \
-  -DCAMERASTATEFILE_ENABLE_CURL=ON \
-  -DCAMERASTATEFILE_ENABLE_S3=ON
+  -DSTAR_BUILD_PYTHON_BINDINGS=ON \
+  -DSTAR_ENABLE_ZLIB=ON \
+  -DSTAR_ENABLE_LZ4=ON \
+  -DSTAR_ENABLE_CURL=ON \
+  -DSTAR_ENABLE_S3=ON
 
 make -j$(nproc)
 sudo make install
@@ -61,12 +64,6 @@ sudo make install
 
 ---
 
-## File Format
-
-For detailed binary format specification, see [FORMAT_SPEC.md](FORMAT_SPEC.md).
-
----
-
 ## Using in Your Project
 
 ### Include Header in C++ Project
@@ -75,7 +72,7 @@ STAR is header-only. Add to your project:
 
 ```cmake
 # CMakeLists.txt
-include_directories(/path/to/camerastatefile/Star/include)
+include_directories(/path/to/stards/Star/include)
 
 # Optional: link compression/S3 support
 find_package(ZLIB)
@@ -165,29 +162,85 @@ star_translate -c gzip -b 4096 data.json data.star
 
 ```cpp
 #include "star.h"
+using namespace star;
 
 // Create arrays
 NDArray<double> matrix = NDArray<double>::zeros({100, 100});
 matrix(10, 20) = 3.14;
 
-// Store with compression
-StarDataset store("data.star", CompressionAlgorithm::GZIP, 1024);
-store.put("matrix", matrix);
-store.flush();  // Write to disk
+// Create dataset with default compression
+auto store = StarDataset::create("data.star");
 
-// Retrieve
-auto data = store.get<NDArray<double>>("matrix");
-std::cout << (*data)(10, 20) << std::endl;  // 3.14
+// Store arrays - these go to block storage
+store->put("matrix", std::move(matrix));
+
+// Store metadata - separate namespace, can use same keys!
+store->meta.put("matrix", NDArray<std::string>({}, {"Matrix description"}));
+store->meta.put("timestamp", NDArray<int64_t>({}, {1234567890}));
+
+store->flush();  // Write to disk
+
+// Read back
+auto store2 = StarDataset::open("data.star");
+
+// Get array
+auto matrix_data = store2->get<double>("matrix");
+std::cout << matrix_data(10, 20) << std::endl;  // 3.14
+
+// Get metadata (different namespace!)
+auto matrix_meta = store2->meta.get("matrix");
+if (matrix_meta) {
+    auto desc = matrix_meta->as<std::string>();
+    std::cout << desc(0) << std::endl;  // "Matrix description"
+}
 
 // Check if key exists
-if (store.contains("matrix")) {
-    // ...
+if (store2->meta.contains("timestamp")) {
+    auto ts = store2->meta.get("timestamp")->as<int64_t>();
+    std::cout << "Timestamp: " << ts(0) << std::endl;
 }
+```
 
-// Iterate over entries
-for (const auto& [key, entry] : store) {
-    std::cout << key << std::endl;
-}
+### Layers in C++
+
+```cpp
+#include "star.h"
+using namespace star;
+
+// Create dataset with base data
+auto store = StarDataset::create("data.star");
+store->put("image", NDArray<double>({512, 512}));
+store->put("wavelengths", NDArray<double>({300}));
+
+// Create layer with different version of data
+auto layer1 = store->create_layer("processed");
+layer1->put("image", processed_image);  // Different image
+// wavelengths inherited from base
+
+// Create another layer
+auto layer2 = store->create_layer("calibrated");
+layer2->put("image", calibrated_image);
+layer2->put("wavelengths", adjusted_wavelengths);  // Override
+
+store->flush();
+
+// Read back
+auto store2 = StarDataset::open("data.star");
+
+// Get base data
+auto base_img = store2->get<double>("image");
+
+// Get layer data
+auto proc_layer = store2->get_layer("processed");
+auto proc_img = proc_layer->get<double>("image");      // Different data
+auto proc_wave = proc_layer->get<double>("wavelengths"); // Inherited
+
+auto cal_layer = store2->get_layer("calibrated");
+auto cal_img = cal_layer->get<double>("image");        // Different data
+auto cal_wave = cal_layer->get<double>("wavelengths");  // Overridden
+
+// Layers also have metadata with inheritance
+layer1->meta.put("description", NDArray<std::string>({}, {"Processed version"}));
 ```
 
 ### File Open Modes
@@ -270,17 +323,20 @@ from pystar import StarDataset
 
 # Create dataset and store arrays
 with StarDataset.create("data.star") as ds:
-    # Dictionary-style access
+    # Dictionary-style access for arrays
     ds["matrix"] = np.random.rand(100, 100)
     ds["vector"] = np.arange(1000)
     
     # Metadata storage (for scalars, small data)
+    # Metadata has separate namespace - same keys allowed!
+    ds.meta["matrix"] = "This is array metadata"
     ds.meta["sensor_id"] = 12345
     ds.meta["timestamp"] = "2024-04-21"
 
 # Read back
 with StarDataset.open("data.star", mode="r") as ds:
-    matrix = ds["matrix"]
+    matrix = ds["matrix"]           # Gets the array
+    matrix_meta = ds.meta["matrix"] # Gets the metadata (different!)
     sensor_id = ds.meta["sensor_id"]
     
     # Iterate over all arrays
@@ -296,7 +352,74 @@ with StarDataset.open("/vsicurl/https://example.com/data.star", mode="r") as ds:
     data = ds["array_name"]
 ```
 
-**See [QUICKSTART.md](QUICKSTART.md) for a complete getting started guide.**
+### Layers - Multi-Version Data Storage
+
+STAR supports **layers** for storing multiple versions of the same data. Each layer can have its own version of an array, or inherit from the base layer.
+
+**Key Concept:** When you access a key in a layer that wasn't explicitly set in that layer, it **automatically falls back to the base layer**. You only override what changes.
+
+```python
+import numpy as np
+from pystar import StarDataset
+
+# Create dataset with base data
+ds = StarDataset.create("hyperspectral.star")
+ds["image"] = np.random.rand(512, 512, 300)  # Base hyperspectral cube
+ds["wavelengths"] = np.linspace(400, 2500, 300)
+ds["metadata"] = calibration_info
+
+# Create layer for processed version
+processed = ds.create_layer("processed")
+processed["image"] = median_filter(ds["image"])  # Override: Different image data
+# "wavelengths" and "metadata" NOT set → will inherit from base automatically!
+
+# Create layer for calibrated version
+calibrated = ds.create_layer("calibrated")
+calibrated["image"] = calibrate(ds["image"])     # Override: Another version
+calibrated["wavelengths"] = adjusted_wavelengths # Override: Different wavelengths
+# "metadata" NOT set → will inherit from base automatically!
+
+ds.flush()
+
+# Read back - inheritance happens automatically
+ds2 = StarDataset.open("hyperspectral.star")
+
+base_img = ds2["image"]                           # Base version
+base_waves = ds2["wavelengths"]                   # [400...2500]
+base_meta = ds2["metadata"]                       # Base metadata
+
+proc_layer = ds2.get_layer("processed")
+proc_img = proc_layer["image"]                    # Processed (overridden)
+proc_waves = proc_layer["wavelengths"]            # ← Inherited from base! Same as base_waves
+proc_meta = proc_layer["metadata"]                # ← Inherited from base! Same as base_meta
+
+cal_layer = ds2.get_layer("calibrated")
+cal_img = cal_layer["image"]                      # Calibrated (overridden)
+cal_waves = cal_layer["wavelengths"]              # Overridden (different from base)
+cal_meta = cal_layer["metadata"]                  # ← Inherited from base! Same as base_meta
+
+# Layers also support metadata with inheritance
+layer = ds.create_layer("variant")
+layer["data"] = modified_array                    # Override data
+layer.meta["variant_info"] = "Layer-specific"     # Layer-specific metadata
+# layer.meta["description"] would inherit from base if base had it
+```
+
+**Key Features:**
+- **Separate namespaces** - Arrays and metadata don't conflict (same keys allowed)
+- **Isolated storage** - Each layer's data is independent (no overwriting)
+- **Automatic inheritance** - Missing keys default to base layer (no duplication needed)
+- **Selective override** - Only store what's different in each layer
+- **Metadata inheritance** - Works for both arrays and metadata
+
+**When to use layers:**
+- Hyperspectral imaging: raw, atmospherically corrected, subsets
+- Multi-temporal datasets: different time periods
+- A/B testing: variant versions for experiments
+- Version control: track dataset evolution
+- Processing pipelines: raw → intermediate → final
+
+**See the [Quick Start guide](docs-site/docs/getting-started/quickstart.md) for a complete getting started guide.**
 
 ---
 

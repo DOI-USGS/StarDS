@@ -7,7 +7,7 @@ if __name__ == '__main__':
         description='STAR (Simple Tensors Arrays and Rasters) for persistent N-dimensional arrays',
         author='USGS Astrogeology',
         author_email='astroweb@usgs.gov',
-        url='https://github.com/DOI-USGS/CameraStateFile',
+        url='https://code.usgs.gov/astrogeology/stards',
         packages=['pystar'],
         package_data={'pystar': ['_pystar.so', '_pystar*.so', '*.so']},
         install_requires=[

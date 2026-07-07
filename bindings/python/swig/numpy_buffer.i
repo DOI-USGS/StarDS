@@ -52,10 +52,11 @@ star::NDArray<T> ndarray_from_numpy_buffer(PyObject* numpy_array) {
     // Get dimensions
     int ndim = PyArray_NDIM(arr);
     npy_intp* dims = PyArray_DIMS(arr);
+
     std::vector<size_t> shape(dims, dims + ndim);
 
     // Calculate total size
-    size_t size = std::accumulate(shape.begin(), shape.end(), size_t(1), std::multiplies<size_t>());
+    size_t size = shape.empty() ? 1 : std::accumulate(shape.begin(), shape.end(), size_t(1), std::multiplies<size_t>());
 
     // Ensure contiguous (may require copy if not already contiguous)
     PyArrayObject* contiguous_arr = arr;

@@ -1,0 +1,116 @@
+site_name: "StarDS Manual"
+site_description: "STAR (Simple Tensors Arrays and Rasters) — persistent N-dimensional arrays with compression and cloud storage."
+repo_url: https://code.usgs.gov/astrogeology/stards
+edit_uri: ""
+
+theme:
+  name: material
+  custom_dir: overrides
+  palette:
+    # Dark mode (default) — click the toggle to switch to light.
+    - scheme: slate
+      toggle:
+        icon: material/weather-night
+        name: Switch to light mode
+    - scheme: default
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to dark mode
+  site_name_style: bold
+  title_style: light
+  font:
+    text: Inter
+    code: Roboto Mono
+  icon:
+    annotation: material/chevron-right-circle
+  highlightjs: true
+  features:
+    - navigation.tabs
+    - navigation.path
+    - navigation.indexes
+    - navigation.sections
+    - navigation.top
+    - search.suggest
+    - content.tabs.link
+    - content.code.copy
+
+extra_css:
+  - stylesheets/extra.css
+
+# Note: the 3D hero (hero-banner.js) is an ES module loaded home-page-only from
+# overrides/home.html with a Three.js import map — not listed here, so it isn't
+# pulled in on every page.
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.caret
+  - pymdownx.mark
+  - pymdownx.tilde
+  - admonition
+  - pymdownx.details
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - tables
+  - attr_list
+  - md_in_html
+
+hooks:
+  - docs_hooks.py
+
+plugins:
+  - search
+  - mkdoxy:
+      projects:
+        StarCPPAPI:
+          src-dirs: ../Star/include/
+          full-doc: True
+          doxy-cfg:
+            FILE_PATTERNS: 'star.h'
+            RECURSIVE: false
+            EXTRACT_ALL: false
+            HIDE_UNDOC_MEMBERS: true
+            PREDEFINED: "ENABLE_ZLIB ENABLE_LZ4 ENABLE_CURL ENABLE_S3 ENABLE_ZSTD"
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [../bindings/python]
+          options:
+            docstring_style: google
+            show_source: false
+            members_order: source
+            show_root_heading: true
+            filters: ["!^_"]
+
+nav:
+  - Home: index.md
+  - Getting Started:
+      - Installation: getting-started/installation.md
+      - Quick Start: getting-started/quickstart.md
+      - Concepts: getting-started/concepts.md
+  - Guides:
+      - Layers: guides/layers.md
+      - Compression: guides/compression.md
+      - Cloud Storage: guides/cloud-storage.md
+      - Slicing: guides/slicing.md
+      - Threading: guides/threading.md
+  - Python API: python-api/index.md
+  - "[ C++ API ]":
+      - Overview: cpp-api/index.md
+      - Classes: StarCPPAPI/classes.md
+      - Class List: StarCPPAPI/annotated.md
+      - Namespaces: StarCPPAPI/namespaces.md
+      - Files: StarCPPAPI/files.md
+  - CLI Tools:
+      - starls: cli/starls.md
+      - star_translate: cli/star-translate.md
+  - Reference:
+      - Format Spec: reference/format-spec.md
+      - API Updates: reference/api-updates.md
+  - "[ USGS Astrogeology Docs ]": https://astrogeology.usgs.gov/docs/

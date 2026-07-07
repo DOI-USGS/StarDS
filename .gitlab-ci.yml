@@ -1,0 +1,134 @@
+# =============================================================================
+# GitLab CI — build the StarDS library, then build & publish the MkDocs site.
+#
+# The pipeline is split into three concerns:
+#   1. build:bindings  (stage: build)  — compile the SWIG `_pystar` extension.
+#   2. docs:build      (stage: docs)   — render the site (validation on MRs/branches).
+#   3. pages           (stage: deploy) — render + publish to GitLab Pages (default branch).
+#
+# Why the docs steps need the library build:
+#   • Python API (mkdocstrings) imports the compiled `_pystar` extension, so the
+#     bindings must be built and importable. build:bindings compiles them once and
+#     hands `build/bindings/python` (with `_pystar.so`) to the docs jobs as an
+#     artifact via `needs:`; the docs jobs put it on PYTHONPATH.
+#   • C++ API (mkdoxy) needs `doxygen` (from the conda env) and parses star.h with
+#     the PREDEFINED macros in mkdocs.yml, so the compression / S3 / HTTP APIs are
+#     documented even though those native features are disabled when compiling the
+#     bindings (they aren't needed to introspect the Python API, and turning them
+#     off keeps the compile lean and free of extra system libs).
+#
+# The conda env is created from the repo's environment.yml (compilers, cmake,
+# ninja, swig, doxygen, numpy, mkdocs, mkdoxy, ...); the docs jobs add the few
+# extras not pinned there. docs:build validates on merge requests / feature
+# branches; pages rebuilds and publishes on the default branch (every merge).
+# =============================================================================
+
+stages:
+  - build
+  - docs
+  - deploy
+
+variables:
+  # gularkfilesystem (and, when enabled, googletest) are git submodules the
+  # CMake build pulls in; fetch them for every job.
+  GIT_SUBMODULE_STRATEGY: recursive
+  # Do NOT override MAMBA_ROOT_PREFIX: the image ships its base env at the default
+  # /opt/conda, and pointing the root prefix at a not-yet-created project dir makes
+  # the image's shell-startup activation fail with
+  # "critical libmamba Cannot activate, prefix does not exist".
+  # Instead, cache only the package DOWNLOAD dir (which may live inside the project
+  # dir — the one place GitLab can cache) plus pip's cache.
+  CONDA_PKGS_DIRS: "$CI_PROJECT_DIR/.conda-pkgs"
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+
+# Shared base: the micromamba image, the package cache, and the conda env
+# created from environment.yml. Both the library build and the docs build need
+# this env (cmake/ninja/swig/compilers for the former; mkdocs/mkdoxy/doxygen for
+# the latter). Each job runs in its own container, so each recreates the env —
+# the .conda-pkgs cache makes the repeat creation fast once warmed.
+.conda-env:
+  image: mambaorg/micromamba:1.5-jammy
+  cache:
+    key: stards-docs-env
+    paths:
+      - .conda-pkgs
+      - .cache/pip
+  before_script:
+    - micromamba create -y -n stards -f environment.yml
+
+# ----------------------------------------------------------------------------
+# 1) LIBRARY BUILD — compile the Python bindings (the SWIG `_pystar` extension).
+#    Optional native features are OFF: the compile then needs only a C++
+#    compiler + swig + python (all from conda), and the docs don't require the
+#    feature code (mkdoxy documents those APIs via PREDEFINED macros). The built
+#    extension is handed to the docs jobs as an artifact.
+# ----------------------------------------------------------------------------
+build:bindings:
+  extends: .conda-env
+  stage: build
+  script:
+    - mkdir build
+    - cd build
+    - >
+      micromamba run -n stards cmake -S .. -G Ninja
+      -DCMAKE_BUILD_TYPE=Release
+      -DSTAR_BUILD_PYTHON_BINDINGS=ON
+      -DSTAR_BUILD_TESTS=OFF
+      -DSTAR_BUILD_TOOLS=OFF
+      -DSTAR_ENABLE_CURL=OFF
+      -DSTAR_ENABLE_ZLIB=OFF
+      -DSTAR_ENABLE_LZ4=OFF
+      -DSTAR_ENABLE_S3=OFF
+    - micromamba run -n stards cmake --build . -j 2
+  artifacts:
+    # Just the built extension + package — consumed by the docs jobs via needs.
+    paths:
+      - build/bindings/python
+    expire_in: 1 hour
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH
+
+# ----------------------------------------------------------------------------
+# DOCS BUILD template — render the MkDocs site into ./public. Consumes the
+# bindings artifact from build:bindings and puts it on PYTHONPATH so mkdocstrings
+# can import pystar. `--strict` fails the build on broken links / warnings.
+# ----------------------------------------------------------------------------
+.build-site:
+  extends: .conda-env
+  needs:
+    - build:bindings
+  script:
+    # Docs-only extras not pinned in environment.yml. pygments is pinned to
+    # 2.18.0 because 2.20 breaks pymdownx highlighting.
+    - micromamba run -n stards pip install "mkdocstrings[python]" "mkdocstrings-python" "pygments==2.18.0"
+    # _pystar.so lives in the artifact at build/bindings/python.
+    - export PYTHONPATH="$CI_PROJECT_DIR/build/bindings/python"
+    # Docs config lives under docs-site/; emit the site to the repo-root public/
+    # dir that GitLab Pages serves.
+    - micromamba run -n stards mkdocs build --strict -f docs-site/mkdocs.yml --site-dir "$CI_PROJECT_DIR/public"
+  artifacts:
+    paths:
+      - public
+
+# ----------------------------------------------------------------------------
+# 2) DOCS VALIDATION — build the site on merge requests and feature branches to
+#    catch broken links / API import failures before merge. Does not deploy.
+# ----------------------------------------------------------------------------
+docs:build:
+  extends: .build-site
+  stage: docs
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH && $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
+
+# ----------------------------------------------------------------------------
+# 3) DEPLOY — publish to GitLab Pages on the default branch (runs on every merge,
+#    since a merge pushes to the default branch). Same build; the public/ artifact
+#    is what GitLab Pages serves.
+# ----------------------------------------------------------------------------
+pages:
+  extends: .build-site
+  stage: deploy
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH

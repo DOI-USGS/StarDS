@@ -1,0 +1,28 @@
+# Documentation build dependencies for the StarDS MkDocs site.
+#
+# Recommended: install everything with conda/mamba (this also provides doxygen,
+# which the `mkdoxy` plugin shells out to, and matches how the bindings are
+# built):
+#
+#   mamba install -c conda-forge \
+#       mkdocs mkdocs-material mkdoxy mkdocstrings mkdocstrings-python doxygen
+#
+# The docs live under docs-site/ (this file's directory). The built pystar
+# extension must be importable so mkdocstrings can introspect the Python API.
+# Build/preview either from inside docs-site/:
+#
+#   export PYTHONPATH="$PWD/../build/bindings/python"
+#   mkdocs serve
+#
+# or from the repo root with an explicit config file:
+#
+#   export PYTHONPATH="$PWD/build/bindings/python"
+#   mkdocs serve -f docs-site/mkdocs.yml
+#
+# The pip requirements below are provided for non-conda environments. Note that
+# `doxygen` is NOT pip-installable and must be provided separately.
+
+mkdocs
+mkdocs-material
+mkdoxy
+mkdocstrings[python]

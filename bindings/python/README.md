@@ -17,14 +17,14 @@ Python bindings for the STAR library - a STAR (Simple Tensors Arrays and Rasters
 
 ```bash
 # Clone the repository
-git clone https://github.com/DOI-USGS/CameraStateFile.git
-cd CameraStateFile
+git clone https://code.usgs.gov/astrogeology/stards.git
+cd stards
 
 # Create build directory
 mkdir build && cd build
 
 # Configure with Python bindings enabled
-cmake .. -DCAMERASTATEFILE_BUILD_PYTHON_BINDINGS=ON
+cmake .. -DSTAR_BUILD_PYTHON_BINDINGS=ON
 
 # Build and install
 make -j$(nproc)
@@ -474,7 +474,7 @@ cd bindings/python
 pytest tests/ -v
 
 # With coverage
-pytest tests/ -v --cov=camerastatefile --cov-report=html
+pytest tests/ -v --cov=pystar --cov-report=html
 ```
 
 ## Examples
@@ -507,7 +507,7 @@ See the `examples/` directory:
 
 ## Contributing
 
-See the main [CameraStateFile repository](https://github.com/DOI-USGS/CameraStateFile) for contribution guidelines.
+See the main [StarDS repository](https://code.usgs.gov/astrogeology/stards) for contribution guidelines.
 
 ## License
 
@@ -515,8 +515,8 @@ MIT License - see repository for full text.
 
 ## Support
 
-- Issues: https://github.com/DOI-USGS/CameraStateFile/issues
-- Documentation: https://github.com/DOI-USGS/CameraStateFile
+- Issues: https://code.usgs.gov/astrogeology/stards/-/issues
+- Documentation: https://code.usgs.gov/astrogeology/stards
 
 ## Version
 

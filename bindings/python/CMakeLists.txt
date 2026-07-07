@@ -6,6 +6,29 @@ find_package(SWIG REQUIRED COMPONENTS python)
 include(UseSWIG)
 list(APPEND CMAKE_SWIG_FLAGS "-c++" "-py3" "-I${CMAKE_SOURCE_DIR}/Star/include")
 
+# On LP64 platforms (e.g. Linux) size_t and uint64_t are the SAME C++ type
+# (unsigned long), so instantiating std::vector<size_t> and std::vector<uint64_t>
+# as separate SWIG templates yields duplicate swig::traits<> specializations and
+# fails to compile. On macOS they are distinct types (unsigned long vs unsigned
+# long long) and both are needed. The C preprocessor cannot detect type identity,
+# so probe it here and tell star.i via -DSTAR_SIZE_T_IS_UINT64.
+# A static_assert compiles only when the two are the SAME type, so the probe's
+# success is exactly the condition we want to detect.
+include(CheckCXXSourceCompiles)
+check_cxx_source_compiles("
+  #include <cstddef>
+  #include <cstdint>
+  #include <type_traits>
+  static_assert(std::is_same<std::size_t, std::uint64_t>::value, \"\");
+  int main() { return 0; }
+  " STAR_SIZE_T_IS_UINT64)
+if(STAR_SIZE_T_IS_UINT64)
+  message(STATUS "size_t is the same type as uint64_t; aliasing VectorUInt64 -> VectorSize in SWIG")
+  list(APPEND CMAKE_SWIG_FLAGS "-DSTAR_SIZE_T_IS_UINT64")
+else()
+  message(STATUS "size_t and uint64_t are distinct types; instantiating both SWIG vectors")
+endif()
+
 # Setup for Python linking
 find_package(Python3 REQUIRED COMPONENTS Interpreter Development NumPy)
 
