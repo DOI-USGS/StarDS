@@ -67,6 +67,31 @@ VectorUInt64 = VectorSize
 // Rename 'print' which is a Python keyword
 %rename(print_info) print;
 
+// --- Silence benign SWIG generation warnings -----------------------------
+// These are cosmetic (SWIG limitations / intentional wrapping choices), not
+// bugs. Filtering them keeps a clean, warning-free binding build.
+
+// W325: ExtractionPlan::ElementRange is a nested struct SWIG can't wrap. It's
+// an internal extraction detail with no Python use; we also %ignore it below,
+// but the warning fires at parse time so filter it too.
+%warnfilter(325) star::ExtractionPlan::ElementRange;
+
+// W401: SWIG doesn't wrap std::enable_shared_from_this (StarDataset's base).
+// shared_ptr handling is provided explicitly via %shared_ptr below, so the base
+// isn't needed on the Python side.
+%warnfilter(401) star::StarDataset;
+
+// W451: MAGIC_STRING is an internal `const char*` constant not needed in Python.
+// Ignoring it avoids the "may leak memory" note (SWIG can't own the literal).
+%ignore star::MAGIC_STRING;
+
+// W509: StarDataset::put and NDArray's vector constructor each expose a move
+// (&&) and a const-ref overload. SWIG can only surface one; the move overload
+// wins (correct for zero-copy) and shadows the copy overload. Filter the
+// "effectively ignored" notices for the affected templates.
+%warnfilter(509) star::StarDataset::put;
+%warnfilter(509) star::NDArray;
+
 // Ignore internal serialization methods (not needed in Python)
 %ignore star::StarDataset::serialize_layer_metadata_block;
 %ignore star::StarDataset::load_layer_metadata;
