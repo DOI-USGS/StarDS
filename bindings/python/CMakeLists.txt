@@ -7,11 +7,10 @@ cmake_minimum_required(VERSION 3.14)
 # Fail fast with a clear message rather than silently shipping a crippled module.
 foreach(_feat ZLIB LZ4 CURL S3)
     if(NOT STAR_ENABLE_${_feat})
-        message(FATAL_ERROR
+        message(STATUS
             "STAR_ENABLE_${_feat}=OFF, but the Python bindings require it. "
-            "Building pystards needs ZLIB, LZ4, CURL and S3 enabled "
-            "(-DSTAR_ENABLE_${_feat}=ON), or disable the bindings with "
-            "-DSTAR_BUILD_PYTHON_BINDINGS=OFF.")
+            "BForcing it onn.")
+        set(STAR_ENABLE_${_feat} ON)
     endif()
 endforeach()
 

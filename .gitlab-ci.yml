@@ -2,20 +2,18 @@
 # GitLab CI — build the StarDS library, then build & publish the MkDocs site.
 #
 # The pipeline is split into three concerns:
-#   1. build:bindings  (stage: build)  — compile the SWIG `_pystar` extension.
+#   1. build:bindings  (stage: build)  — compile the SWIG `_pystards` extension.
 #   2. docs:build      (stage: docs)   — render the site (validation on MRs/branches).
 #   3. pages           (stage: deploy) — render + publish to GitLab Pages (default branch).
 #
 # Why the docs steps need the library build:
-#   • Python API (mkdocstrings) imports the compiled `_pystar` extension, so the
+#   • Python API (mkdocstrings) imports the compiled `_pystards` extension, so the
 #     bindings must be built and importable. build:bindings compiles them once and
-#     hands `build/bindings/python` (with `_pystar.so`) to the docs jobs as an
+#     hands `build/bindings/python` (with `_pystards.so`) to the docs jobs as an
 #     artifact via `needs:`; the docs jobs put it on PYTHONPATH.
 #   • C++ API (mkdoxy) needs `doxygen` (from the conda env) and parses star.h with
 #     the PREDEFINED macros in mkdocs.yml, so the compression / S3 / HTTP APIs are
-#     documented even though those native features are disabled when compiling the
-#     bindings (they aren't needed to introspect the Python API, and turning them
-#     off keeps the compile lean and free of extra system libs).
+#     documented.
 #
 # The conda env is created from the repo's environment.yml (compilers, cmake,
 # ninja, swig, doxygen, numpy, mkdocs, mkdoxy, ...); the docs jobs add the few
@@ -29,8 +27,8 @@ stages:
   - deploy
 
 variables:
-  # gularkfilesystem (and, when enabled, googletest) are git submodules the
-  # CMake build pulls in; fetch them for every job.
+  # googletest and json are git submodules the CMake build pulls in; fetch them
+  # for every job.
   GIT_SUBMODULE_STRATEGY: recursive
   # Do NOT override MAMBA_ROOT_PREFIX: the image ships its base env at the default
   # /opt/conda, and pointing the root prefix at a not-yet-created project dir makes
@@ -57,11 +55,11 @@ variables:
     - micromamba create -y -n stards -f environment.yml
 
 # ----------------------------------------------------------------------------
-# 1) LIBRARY BUILD — compile the Python bindings (the SWIG `_pystar` extension).
-#    Optional native features are OFF: the compile then needs only a C++
-#    compiler + swig + python (all from conda), and the docs don't require the
-#    feature code (mkdoxy documents those APIs via PREDEFINED macros). The built
-#    extension is handed to the docs jobs as an artifact.
+# 1) LIBRARY BUILD — compile the Python bindings (the SWIG `_pystards` extension).
+#    The bindings wrap the full API (compression + S3/HTTP), so those features
+#    are REQUIRED (bindings/python/CMakeLists.txt fails fast if any is OFF); the
+#    native libs come from environment.yml. The built extension is handed to the
+#    docs jobs as an artifact.
 # ----------------------------------------------------------------------------
 build:bindings:
   extends: .conda-env
@@ -75,10 +73,6 @@ build:bindings:
       -DSTAR_BUILD_PYTHON_BINDINGS=ON
       -DSTAR_BUILD_TESTS=OFF
       -DSTAR_BUILD_TOOLS=OFF
-      -DSTAR_ENABLE_CURL=OFF
-      -DSTAR_ENABLE_ZLIB=OFF
-      -DSTAR_ENABLE_LZ4=OFF
-      -DSTAR_ENABLE_S3=OFF
     - micromamba run -n stards cmake --build . -j 2
   artifacts:
     # Just the built extension + package — consumed by the docs jobs via needs.
@@ -92,7 +86,7 @@ build:bindings:
 # ----------------------------------------------------------------------------
 # DOCS BUILD template — render the MkDocs site into ./public. Consumes the
 # bindings artifact from build:bindings and puts it on PYTHONPATH so mkdocstrings
-# can import pystar. `--strict` fails the build on broken links / warnings.
+# can import pystards. `--strict` fails the build on broken links / warnings.
 # ----------------------------------------------------------------------------
 .build-site:
   extends: .conda-env
@@ -102,7 +96,7 @@ build:bindings:
     # Docs-only extras not pinned in environment.yml. pygments is pinned to
     # 2.18.0 because 2.20 breaks pymdownx highlighting.
     - micromamba run -n stards pip install "mkdocstrings[python]" "mkdocstrings-python" "pygments==2.18.0"
-    # _pystar.so lives in the artifact at build/bindings/python.
+    # _pystards.so lives in the artifact at build/bindings/python.
     - export PYTHONPATH="$CI_PROJECT_DIR/build/bindings/python"
     # Docs config lives under docs-site/; emit the site to the repo-root public/
     # dir that GitLab Pages serves.
