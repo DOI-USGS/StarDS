@@ -158,6 +158,16 @@ star_translate -c gzip -b 4096 data.json data.stards
 }
 ```
 
+Without a spec, types will be inferred. Small values like strings and small arrays go into the `.meta` namespace. 
+
+```json
+{
+  "my_array": [0.0, 1.0, ...],
+  "meta" : "name"
+}
+```
+
+
 ---
 
 ## API Usage
