@@ -1,4 +1,4 @@
-# STAR (Simple Tensors Arrays and Rasters)
+# StarDS (Simple Tensors Arrays and Rasters Dataset)
 
 Header-only C++ library for persistent N-dimensional arrays with compression and cloud storage support.
 
