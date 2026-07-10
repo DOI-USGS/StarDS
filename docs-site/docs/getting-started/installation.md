@@ -77,7 +77,7 @@ make -j$(nproc)
 sudo make install
 ```
 
-The bindings are importable as the `pystar` package once built and installed.
+The bindings are importable as the `pystards` package once built and installed.
 
 ## Use the header in your own C++ project
 
@@ -89,7 +89,9 @@ the `-D` preprocessor macros the header checks, and are distinct from the
 
 ```cmake
 # CMakeLists.txt
-include_directories(/path/to/stards/Star/include)
+# In-tree checkout: StarDS/include. Installed: the header is at
+# $PREFIX/include/stards/stards.h (use $PREFIX/include/stards, or find_package(STAR)).
+include_directories(/path/to/stards/StarDS/include)
 
 find_package(ZLIB)
 find_package(CURL)
@@ -114,11 +116,11 @@ endif()
 Then include the single header:
 
 ```cpp
-#include "star.h"
+#include "stards.h"
 using namespace star;
 
 int main() {
-    auto store = StarDataset::create("data.star");
+    auto store = StarDataset::create("data.stards");
     store->put("matrix", NDArray<double>::zeros({100, 100}));
     store->flush();
     return 0;
@@ -128,4 +130,4 @@ int main() {
 ## Next steps
 
 - [Quick Start](quickstart.md) — a 5-minute Python tour.
-- [Concepts](concepts.md) — the data model behind `.star` files.
+- [Concepts](concepts.md) — the data model behind `.stards` files.

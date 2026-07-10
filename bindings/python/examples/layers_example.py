@@ -5,19 +5,19 @@ Layers example for STARDS Python bindings.
 This example demonstrates:
 - Creating layers for multi-version data storage
 - Layer isolation (each layer has independent data)
-- Layer inheritance (layers can inherit from base)
+- Layer inheritance (opt-in: layers can inherit from base)
 - Use case: hyperspectral image processing pipeline
 """
 
 import numpy as np
-from pystar import StarDataset
+from pystards import StarDataset, OpenOptions
 
 def main():
     print("=== STARDS Layers Example ===\n")
 
     # Create a hyperspectral dataset
     print("Creating hyperspectral dataset with multiple processing versions...")
-    ds = StarDataset.create("hyperspectral.star")
+    ds = StarDataset.create("hyperspectral.stards")
 
     # Base layer: raw data
     print("\n1. Storing raw (base) data...")
@@ -66,14 +66,18 @@ def main():
     # Save to disk
     print("\n4. Flushing to disk...")
     ds.flush()
-    print(f"   File written: hyperspectral.star")
+    print(f"   File written: hyperspectral.stards")
 
     # Clean up
     del ds, atm_layer, vnir_layer
 
-    # Read back and verify
+    # Read back and verify. Layer inheritance is OFF by default, so opt in
+    # (via OpenOptions here; StarDataset.set_layer_inheritance(True) also works)
+    # to let layers fall back to base keys they didn't override.
     print("\n=== Reading back from file ===\n")
-    ds2 = StarDataset.open("hyperspectral.star")
+    opts = OpenOptions()
+    opts.layer_inheritance = True
+    ds2 = StarDataset.open("hyperspectral.stards", mode="r", options=opts)
 
     # Base layer
     print("Base layer:")
@@ -126,14 +130,15 @@ def main():
     print("✓ Inheritance works correctly")
     print("✓ Layer isolation verified!")
 
-    print("\n=== Key Concept: Automatic Inheritance ===")
-    print("When you access a key in a layer that wasn't explicitly set,")
-    print("it AUTOMATICALLY falls back to the base layer.")
-    print("\nExample from above:")
+    print("\n=== Key Concept: Opt-in Inheritance ===")
+    print("Inheritance is OFF by default: a key not set in a layer is a miss.")
+    print("Enable it (OpenOptions or set_layer_inheritance(True)) to make a layer")
+    print("fall back to the base layer for keys it didn't override.")
+    print("\nExample from above (inheritance enabled on read):")
     print("- atm_layer['cube'] was SET → returns layer-specific data")
-    print("- atm_layer['wavelengths'] was NOT SET → automatically returns base wavelengths")
+    print("- atm_layer['wavelengths'] was NOT SET → falls back to base wavelengths")
     print("\nThis means you only store what's DIFFERENT in each layer!")
-    print("Everything else is inherited automatically - no duplication needed.")
+    print("Everything else is inherited - no duplication needed.")
 
     print("\n=== Use Cases for Layers ===")
     print("- Hyperspectral processing pipelines (as shown)")

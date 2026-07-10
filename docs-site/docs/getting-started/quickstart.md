@@ -7,10 +7,10 @@ Get started with StarDS in 5 minutes. This guide uses the Python bindings; see
 
 ```python
 import numpy as np
-from pystar import StarDataset
+from pystards import StarDataset
 
 # 1. Create dataset
-ds = StarDataset.create("mydata.star")
+ds = StarDataset.create("mydata.stards")
 
 # 2. Store arrays
 ds["temperatures"] = np.array([20.5, 21.3, 19.8, 22.1])
@@ -32,7 +32,7 @@ print("✓ Dataset created!")
 
 ```python
 # Open for reading
-ds = StarDataset.open("mydata.star", mode="r")
+ds = StarDataset.open("mydata.stards", mode="r")
 
 # Access arrays
 temps = ds["temperatures"]
@@ -54,7 +54,7 @@ ds.close()
 ### Context manager (recommended)
 
 ```python
-with StarDataset.create("data.star") as ds:
+with StarDataset.create("data.stards") as ds:
     ds["data"] = np.arange(1000)
     ds.meta["note"] = "Auto-flushed on exit"
 # File automatically closed and flushed
@@ -64,11 +64,11 @@ with StarDataset.create("data.star") as ds:
 
 ```python
 # Store large array
-with StarDataset.create("large.star") as ds:
+with StarDataset.create("large.stards") as ds:
     ds["big_matrix"] = np.random.rand(10000, 10000)
 
 # Read only a slice (efficient!)
-with StarDataset.open("large.star", mode="r") as ds:
+with StarDataset.open("large.stards", mode="r") as ds:
     subset = ds.get_slice("big_matrix", [(0, 100), (0, 100)])
     print(subset.shape)  # (100, 100)
 ```
@@ -82,11 +82,11 @@ import os
 os.environ["AWS_PROFILE"] = "my-profile"
 
 # Read from S3
-with StarDataset.open("/vsis3/my-bucket/data.star", mode="r") as ds:
+with StarDataset.open("/vsis3/my-bucket/data.stards", mode="r") as ds:
     data = ds["array_name"]
 
 # Write to S3
-with StarDataset.create("/vsis3/my-bucket/output.star") as ds:
+with StarDataset.create("/vsis3/my-bucket/output.stards") as ds:
     ds["results"] = processed_data
 ```
 
@@ -114,11 +114,11 @@ See [Concepts](concepts.md) for the full model.
 
 ## Layers — multiple versions of data
 
-Store multiple versions of the same data in separate layers with **automatic
-inheritance**:
+Store multiple versions of the same data in separate layers, with **opt-in
+inheritance** from the base:
 
 ```python
-ds = StarDataset.create("data.star")
+ds = StarDataset.create("data.stards")
 ds["image"] = raw_image
 ds["metadata"] = calibration_data
 ds["wavelengths"] = [400, 500, 600]
@@ -126,11 +126,13 @@ ds["wavelengths"] = [400, 500, 600]
 # Processed version in a layer
 processed = ds.create_layer("processed")
 processed["image"] = filtered_image  # override: different data, same key!
-# "metadata" and "wavelengths" NOT set → inherited from base when accessed
+# "metadata" and "wavelengths" NOT set → inherited from base if inheritance is on
 
 ds.flush()
 
-ds2 = StarDataset.open("data.star")
+# Inheritance is OFF by default — enable it to fall back to base keys
+ds2 = StarDataset.open("data.stards")
+ds2.set_layer_inheritance(True)
 proc = ds2.get_layer("processed")
 proc_img = proc["image"]          # processed (overridden)
 proc_meta = proc["metadata"]      # inherited from base!

@@ -10,7 +10,7 @@ hide:
 
 **StarDS** — *Simple Tensors, Arrays & Rasters* — is a header-only C++ library
 (with Python bindings via SWIG) for **persistent N-dimensional arrays**. It gives
-you a single `.star` file that stores typed arrays and metadata together, with
+you a single `.stards` file that stores typed arrays and metadata together, with
 optional compression, cloud storage, layered versioning, and efficient partial
 reads.
 
@@ -30,14 +30,14 @@ reads.
 
     Read and write directly over S3 (`/vsis3/`) and HTTP (`/vsicurl/`) paths.
 
--   :material-layers-outline: **Layers with inheritance**
+-   :material-layers-outline: **Layers with optional inheritance**
 
     Keep multiple versions of the same data — layers override only what changes
-    and inherit the rest from the base.
+    and can inherit the rest from the base (opt-in).
 
 -   :material-file-document-outline: **Specification**
 
-    The complete `.star` binary format — header, key registry, layer metadata,
+    The complete `.stards` binary format — header, key registry, layer metadata,
     index entries, and data blocks.
 
     [:octicons-arrow-right-24: Format Specification](reference/format-spec.md)
@@ -50,17 +50,17 @@ reads.
 
     ```python
     import numpy as np
-    from pystar import StarDataset
+    from pystards import StarDataset
 
     # Create a dataset and store arrays + metadata
-    with StarDataset.create("data.star") as ds:
+    with StarDataset.create("data.stards") as ds:
         ds["matrix"] = np.random.rand(100, 100)   # array namespace
         ds["vector"] = np.arange(1000)
         ds.meta["sensor_id"] = 12345              # metadata namespace
         ds.meta["timestamp"] = "2024-04-21"
 
     # Read it back
-    with StarDataset.open("data.star", mode="r") as ds:
+    with StarDataset.open("data.stards", mode="r") as ds:
         matrix = ds["matrix"]
         sensor = ds.meta["sensor_id"]
         for key in ds:
@@ -70,17 +70,17 @@ reads.
 === "C++"
 
     ```cpp
-    #include "star.h"
+    #include "stards.h"
     using namespace star;
 
     // Create a dataset and store an array + metadata
-    auto store = StarDataset::create("data.star");
+    auto store = StarDataset::create("data.stards");
     store->put("matrix", NDArray<double>::zeros({100, 100}));
     store->meta.put("timestamp", NDArray<int64_t>({}, {1234567890}));
     store->flush();
 
     // Read it back
-    auto store2 = StarDataset::open("data.star");
+    auto store2 = StarDataset::open("data.stards");
     auto matrix = store2->get<double>("matrix");
     auto ts = store2->meta.get("timestamp")->as<int64_t>();
     ```
@@ -89,7 +89,7 @@ reads.
 
 - **[Installation](getting-started/installation.md)** — build from source with CMake.
 - **[Quick Start](getting-started/quickstart.md)** — a 5-minute tour in Python.
-- **[Concepts](getting-started/concepts.md)** — arrays vs. metadata, namespaces, layers, and the `.star` model.
+- **[Concepts](getting-started/concepts.md)** — arrays vs. metadata, namespaces, layers, and the `.stards` model.
 - **[Guides](guides/layers.md)** — layers, compression, cloud storage, slicing, and threading.
 - **[Python API](python-api/index.md)** / **[C++ API](cpp-api/index.md)** — full reference.
 

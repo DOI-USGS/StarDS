@@ -1,16 +1,20 @@
 include(CMakeDependentOption)
 cmake_minimum_required(VERSION 3.10)
 
-# Single source of truth for the project version: the repo-root VERSION file.
+# Single source of truth for the project version: the repo-root STARDS_VERSION file.
 # CMake stamps this onto the library target and the Python package (via
-# @PROJECT_VERSION@ in setup.py.in / _version.py.in). The header Star/include/star.h
+# @PROJECT_VERSION@ in setup.py.in / _version.py.in). The header StarDS/include/stards.h
 # hardcodes the same numbers so it still works when copy-pasted standalone — keep
-# STAR_VERSION_* in star.h in sync with VERSION.
+# STAR_VERSION_* in stards.h in sync with STARDS_VERSION.
 file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/STARDS_VERSION" STAR_VERSION_RAW LIMIT_COUNT 1)
 string(STRIP "${STAR_VERSION_RAW}" STAR_VERSION)
 project(STAR VERSION ${STAR_VERSION} DESCRIPTION "Simple Tensors Arrays and Rasters storage format")
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
+# Defines CMAKE_INSTALL_LIBDIR etc.; without it the package config installs to an
+# absolute "/cmake/STAR" outside the install prefix.
+include(GNUInstallDirs)
 
 message(STATUS "CMake Module Path: " ${CMAKE_MODULE_PATH})
 
@@ -19,8 +23,9 @@ set(CMAKE_CXX_STANDARD 20)
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# to avoid complaints in conda-forge, see https://conda-forge.org/docs/maintainer/knowledge_base/#newer-c-features-with-old-sdk 
-set(CXXFLAGS, "${CXXFLAGS} -D_LIBCPP_DISABLE_AVAILABILITY")
+# to avoid complaints in conda-forge, see https://conda-forge.org/docs/maintainer/knowledge_base/#newer-c-features-with-old-sdk
+# (only affects libc++; harmless elsewhere)
+add_compile_definitions(_LIBCPP_DISABLE_AVAILABILITY)
 
 # Set up Anaconda prefix in the case with a non-default conda env is activated
 if(EXISTS $ENV{CONDA_PREFIX})
@@ -34,7 +39,7 @@ list(APPEND CMAKE_FIND_ROOT_PATH /var/lang/)
 message(STATUS "find path: " ${CMAKE_FIND_ROOT_PATH})
 
 # Variables required by multiple build options
-set(STAR_BUILD_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Star/include/")
+set(STAR_BUILD_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/StarDS/include/")
 
 set(default_build_type "Release")
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
@@ -58,16 +63,19 @@ set(JSON_BuildTests OFF CACHE INTERNAL "")
 
 # add_subdirectory("submodules/gularkfilesystem")
 
-set(STAR_INSTALL_INCLUDE_DIR "include/Star")
+# The public header installs to $PREFIX/include/stards/stards.h. Point the
+# install interface at that same directory so downstream find_package(STAR)
+# consumers keep using the bare `#include "stards.h"` (matching in-tree usage).
+set(STAR_INSTALL_INCLUDE_DIR "${CMAKE_INSTALL_INCLUDEDIR}/stards")
 
 
-set(STAR_HEADER_FILES ${STAR_BUILD_INCLUDE_DIR}/star.h
+set(STAR_HEADER_FILES ${STAR_BUILD_INCLUDE_DIR}/stards.h
                                  )
 add_library(Star INTERFACE)
 target_include_directories(Star INTERFACE
     $<BUILD_INTERFACE:${STAR_BUILD_INCLUDE_DIR}>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/Star/include>
-    $<INSTALL_INTERFACE:include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/StarDS/include>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/stards>
 )
 
 # set(STAR_PRIVATE_HEADER_FILES ${STAR_BUILD_INCLUDE_DIR}/memo.h
@@ -80,8 +88,8 @@ set_target_properties(Star PROPERTIES
 
 target_include_directories(Star
                           INTERFACE
-                          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Star/include>
-                          $<INSTALL_INTERFACE:include>)
+                          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/StarDS/include>
+                          $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/stards>)
 
 
 # Option to enable curl support
@@ -160,7 +168,17 @@ else()
 endif()
 
 
-install(TARGETS Star LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
+# Install the (header-only INTERFACE) target as an export set so a matching
+# STARTargets.cmake is generated for find_package(STAR).
+install(TARGETS Star EXPORT StarTargets
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
+
+# Generate/install STARTargets.cmake with the STAR:: namespace that
+# config.cmake.in expects (STAR::Star).
+install(EXPORT StarTargets
+        FILE ${PROJECT_NAME}Targets.cmake
+        NAMESPACE ${PROJECT_NAME}::
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
 
 # Generate the package config
 configure_file(cmake/config.cmake.in
@@ -174,11 +192,20 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.cmake
 # Install the headers
 install(FILES ${STAR_HEADER_FILES} DESTINATION ${STAR_INSTALL_INCLUDE_DIR})
 
-# # Install the target
-# install(EXPORT Star
-#         NAMESPACE usgs::
-#         DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
 
+###############
+# Tools Build #
+###############
+
+cmake_dependent_option (STAR_BUILD_TOOLS "Build the Star Command-Line Tools" ON STAR_BUILD_LIB OFF)
+
+# Built before the tests so the conversion-parity test can reference the
+# star_translate target (via $<TARGET_FILE:...> and add_dependencies).
+if(STAR_BUILD_TOOLS)
+  add_subdirectory(bin)
+else()
+  message(STATUS "Skipping Tools")
+endif()
 
 ###############
 # Tests Build #
@@ -193,21 +220,9 @@ if(STAR_BUILD_TESTS)
 
   find_package (Threads)
   enable_testing()
-  add_subdirectory(Star/tests)
+  add_subdirectory(StarDS/tests)
 else()
   message(STATUS "Skipping Tests")
-endif()
-
-###############
-# Tools Build #
-###############
-
-cmake_dependent_option (STAR_BUILD_TOOLS "Build the Star Command-Line Tools" ON STAR_BUILD_LIB OFF)
-
-if(STAR_BUILD_TOOLS)
-  add_subdirectory(bin)
-else()
-  message(STATUS "Skipping Tools")
 endif()
 
 ##################

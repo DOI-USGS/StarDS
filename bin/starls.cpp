@@ -1,4 +1,4 @@
-#include "../Star/include/star.h"
+#include "../StarDS/include/stards.h"
 #include <iostream>
 #include <iomanip>
 #include <string>
@@ -6,8 +6,21 @@
 
 using namespace star;
 
+// Human-readable name for a compression algorithm.
+const char* compression_name(CompressionAlgorithm c) {
+    switch (c) {
+        case CompressionAlgorithm::NONE: return "None";
+        case CompressionAlgorithm::GZIP: return "GZIP";
+        case CompressionAlgorithm::ZSTD: return "ZSTD";
+        case CompressionAlgorithm::LZ4:  return "LZ4";
+        case CompressionAlgorithm::GZIP_SHUFFLE: return "GZIP+shuffle";
+        case CompressionAlgorithm::LZ4_SHUFFLE:  return "LZ4+shuffle";
+        default: return "Unknown";
+    }
+}
+
 void print_usage(const char* program_name) {
-    std::cout << "Usage: " << program_name << " [OPTIONS] <file.star>\n\n";
+    std::cout << "Usage: " << program_name << " [OPTIONS] <file.stards>\n\n";
     std::cout << "Options:\n";
     std::cout << "  -h, --help           Show this help message\n";
     std::cout << "  -k, --keys           List keys only (default)\n";
@@ -17,12 +30,12 @@ void print_usage(const char* program_name) {
     std::cout << "  -v, --verbose        Verbose output with detailed metadata\n";
     std::cout << "  -f, --force          Force loading large arrays (bypass safety check)\n";
     std::cout << "\nExamples:\n";
-    std::cout << "  " << program_name << " data.star              # List all keys\n";
-    std::cout << "  " << program_name << " -v data.star           # Verbose listing\n";
-    std::cout << "  " << program_name << " -m data data.star      # Show metadata only\n";
-    std::cout << "  " << program_name << " -d mykey data.star     # Print specific key\n";
-    std::cout << "  " << program_name << " -d mykey -f data.star  # Force load large array\n";
-    std::cout << "  " << program_name << " -a data.star           # Print all data\n";
+    std::cout << "  " << program_name << " data.stards              # List all keys\n";
+    std::cout << "  " << program_name << " -v data.stards           # Verbose listing\n";
+    std::cout << "  " << program_name << " -m data data.stards      # Show metadata only\n";
+    std::cout << "  " << program_name << " -d mykey data.stards     # Print specific key\n";
+    std::cout << "  " << program_name << " -d mykey -f data.stards  # Force load large array\n";
+    std::cout << "  " << program_name << " -a data.stards           # Print all data\n";
 }
 
 template<typename T>
@@ -93,15 +106,7 @@ void print_key_metadata(StarDataset* store, const std::string& key, bool verbose
               << (uncompressed_size / (1024.0 * 1024.0 * 1024.0)) << " GB\n";
 
     // Compression info
-    std::cout << "  Compression: ";
-    switch(store->m_cold.compressions[idx]) {
-        case CompressionAlgorithm::NONE: std::cout << "None"; break;
-        case CompressionAlgorithm::GZIP: std::cout << "GZIP"; break;
-        case CompressionAlgorithm::ZSTD: std::cout << "ZSTD"; break;
-        case CompressionAlgorithm::LZ4: std::cout << "LZ4"; break;
-        default: std::cout << "Unknown";
-    }
-    std::cout << "\n";
+    std::cout << "  Compression: " << compression_name(store->m_cold.compressions[idx]) << "\n";
 
     std::cout << "  Num blocks: " << store->m_cold.block_infos[idx].size() << "\n";
     std::cout << "  Stored in metadata: " << (store->m_cold.stored_in_metadata_flags[idx] ? "yes" : "no") << "\n";
@@ -127,14 +132,66 @@ void print_key_metadata(StarDataset* store, const std::string& key, bool verbose
     std::cout << "\n  Note: Data not loaded. Use -d to load data (if size permits).\n";
 }
 
-void print_metadata_block_summary(StarDataset* store, bool verbose) {
-    // Get all metadata keys (stored_in_metadata_flags = 1)
-    std::vector<std::string> metadata_keys;
-    for (size_t i = 0; i < store->m_hot.keys.size(); i++) {
-        if (store->m_cold.stored_in_metadata_flags[i] == 1) {
-            metadata_keys.push_back(store->m_hot.keys[i]);
-        }
+// Print a single metadata-namespace value in full (type, shape, all elements).
+// Used by -d/-m for keys stored in the metadata block (not separate arrays).
+void print_metadata_value(StarDataset* store, const std::string& key, bool verbose) {
+    auto mv = store->meta.get(key);
+    if (!mv) {
+        std::cout << "  Key not found!\n";
+        return;
     }
+
+    std::cout << "\n=== Key: " << key << " (metadata) ===\n";
+    std::cout << "  Type: " << datatype_to_string(mv->dtype);
+    if (!mv->shape.empty()) {
+        std::cout << "[";
+        for (size_t i = 0; i < mv->shape.size(); ++i) {
+            if (i > 0) std::cout << ", ";
+            std::cout << mv->shape[i];
+        }
+        std::cout << "]";
+    } else {
+        std::cout << " (scalar)";
+    }
+    std::cout << "\n  Elements: " << mv->size() << "\n";
+
+    // Print all values, dispatching on dtype via as<T>().
+    std::cout << "  Data: [";
+    auto dump = [](auto&& arr) {
+        for (size_t j = 0; j < arr.size(); ++j) {
+            if (j > 0) std::cout << ", ";
+            std::cout << arr.flat(j);
+        }
+    };
+    switch (mv->dtype) {
+        case DataType::INT8: { auto a = mv->as<int8_t>();
+            for (size_t j = 0; j < a.size(); ++j) { if (j) std::cout << ", "; std::cout << (int)a.flat(j);} break; }
+        case DataType::INT16:  dump(mv->as<int16_t>());  break;
+        case DataType::INT32:  dump(mv->as<int32_t>());  break;
+        case DataType::INT64:  dump(mv->as<int64_t>());  break;
+        case DataType::UINT8: { auto a = mv->as<uint8_t>();
+            for (size_t j = 0; j < a.size(); ++j) { if (j) std::cout << ", "; std::cout << (unsigned)a.flat(j);} break; }
+        case DataType::UINT16: dump(mv->as<uint16_t>()); break;
+        case DataType::UINT32: dump(mv->as<uint32_t>()); break;
+        case DataType::UINT64: dump(mv->as<uint64_t>()); break;
+        case DataType::FLOAT32: { auto a = mv->as<float>();
+            std::cout << std::fixed << std::setprecision(6);
+            for (size_t j = 0; j < a.size(); ++j) { if (j) std::cout << ", "; std::cout << a.flat(j);} break; }
+        case DataType::FLOAT64: { auto a = mv->as<double>();
+            std::cout << std::fixed << std::setprecision(6);
+            for (size_t j = 0; j < a.size(); ++j) { if (j) std::cout << ", "; std::cout << a.flat(j);} break; }
+        case DataType::STRING: { auto a = mv->as<std::string>();
+            for (size_t j = 0; j < a.size(); ++j) { if (j) std::cout << ", "; std::cout << "\"" << a.flat(j) << "\"";} break; }
+        default: std::cout << "<unsupported dtype>";
+    }
+    std::cout << "]\n";
+    (void)verbose;
+}
+
+void print_metadata_block_summary(StarDataset* store, bool verbose) {
+    // Metadata lives in the (lazily-loaded) per-layer metadata registry, not in
+    // m_hot, so query it through the public API rather than iterating m_hot.
+    std::vector<std::string> metadata_keys = store->get_metadata_keys();
 
     if (metadata_keys.empty()) {
         return;
@@ -385,15 +442,7 @@ void print_key_data(StarDataset* store, const std::string& key, bool verbose) {
         // Calculate num_elements
         size_t num_elements = shape.empty() ? 1 : std::accumulate(shape.begin(), shape.end(), 1ULL, std::multiplies<size_t>());
         std::cout << "  Elements: " << num_elements << "\n";
-        std::cout << "  Compression: ";
-        switch(store->m_cold.compressions[idx]) {
-            case CompressionAlgorithm::NONE: std::cout << "None"; break;
-            case CompressionAlgorithm::GZIP: std::cout << "GZIP"; break;
-            case CompressionAlgorithm::ZSTD: std::cout << "ZSTD"; break;
-            case CompressionAlgorithm::LZ4: std::cout << "LZ4"; break;
-            default: std::cout << "Unknown";
-        }
-        std::cout << "\n";
+        std::cout << "  Compression: " << compression_name(store->m_cold.compressions[idx]) << "\n";
 
         std::cout << "  Num blocks: " << store->m_cold.block_infos[idx].size() << "\n";
         std::cout << "  Total bytes: " << store->m_cold.compressed_sizes[idx] << "\n";
@@ -412,71 +461,48 @@ void print_key_data(StarDataset* store, const std::string& key, bool verbose) {
         }
     }
 
-    // Use new store->meta API (works for all metadata, single call with type introspection)
     std::cout << "\n  Reading data...\n";
 
-    try {
-        auto meta = store->meta.get(key);
-        if (!meta) {
-            std::cout << "    Key not found\n";
-            return;
-        }
+    // A key can live in the ARRAY namespace (separate, block-compressed storage,
+    // read via store->get<T>()) or the METADATA namespace (read via meta.get()).
+    // Separately-stored arrays are NOT in the metadata block, so pick the right
+    // reader based on where the key actually is.
+    bool is_array = (store->m_cold.stored_in_metadata_flags[idx] == 0);
+    DataType dtype = store->m_hot.dtypes[idx];
 
-        // Use type introspection to print the correct type
-        switch (meta->dtype) {
-            case DataType::INT8: {
-                auto arr = meta->as<int8_t>();
-                print_NDArray_data(arr);
-                break;
+    try {
+        // Dispatch on dtype; read from the array or metadata namespace as needed.
+        // The lambda gives us one place per type that handles both cases.
+        auto read_and_print = [&](auto tag) {
+            using T = decltype(tag);
+            if (is_array) {
+                print_NDArray_data(store->get<T>(key));
+            } else {
+                auto meta = store->meta.get(key);
+                if (!meta) { std::cout << "    Key not found\n"; return; }
+                print_NDArray_data(meta->template as<T>());
             }
-            case DataType::INT16: {
-                auto arr = meta->as<int16_t>();
-                print_NDArray_data(arr);
-                break;
-            }
-            case DataType::INT32: {
-                auto arr = meta->as<int32_t>();
-                print_NDArray_data(arr);
-                break;
-            }
-            case DataType::INT64: {
-                auto arr = meta->as<int64_t>();
-                print_NDArray_data(arr);
-                break;
-            }
-            case DataType::UINT8: {
-                auto arr = meta->as<uint8_t>();
-                print_NDArray_data(arr);
-                break;
-            }
-            case DataType::UINT16: {
-                auto arr = meta->as<uint16_t>();
-                print_NDArray_data(arr);
-                break;
-            }
-            case DataType::UINT32: {
-                auto arr = meta->as<uint32_t>();
-                print_NDArray_data(arr);
-                break;
-            }
-            case DataType::UINT64: {
-                auto arr = meta->as<uint64_t>();
-                print_NDArray_data(arr);
-                break;
-            }
-            case DataType::FLOAT32: {
-                auto arr = meta->as<float>();
-                print_NDArray_data(arr);
-                break;
-            }
-            case DataType::FLOAT64: {
-                auto arr = meta->as<double>();
-                print_NDArray_data(arr);
-                break;
-            }
+        };
+
+        switch (dtype) {
+            case DataType::INT8:    read_and_print(int8_t{});   break;
+            case DataType::INT16:   read_and_print(int16_t{});  break;
+            case DataType::INT32:   read_and_print(int32_t{});  break;
+            case DataType::INT64:   read_and_print(int64_t{});  break;
+            case DataType::UINT8:   read_and_print(uint8_t{});  break;
+            case DataType::UINT16:  read_and_print(uint16_t{}); break;
+            case DataType::UINT32:  read_and_print(uint32_t{}); break;
+            case DataType::UINT64:  read_and_print(uint64_t{}); break;
+            case DataType::FLOAT32: read_and_print(float{});    break;
+            case DataType::FLOAT64: read_and_print(double{});   break;
             case DataType::STRING: {
-                auto arr = meta->as<std::string>();
-                print_NDArray_data(arr, 20);
+                if (is_array) {
+                    print_NDArray_data(store->get<std::string>(key), 20);
+                } else {
+                    auto meta = store->meta.get(key);
+                    if (!meta) { std::cout << "    Key not found\n"; break; }
+                    print_NDArray_data(meta->as<std::string>(), 20);
+                }
                 break;
             }
             default:
@@ -556,20 +582,16 @@ int main(int argc, char* argv[]) {
 
         std::cout << "File: " << filename << "\n";
 
-        // Count user keys (separately stored arrays with stored_in_metadata_flags = 0)
+        // Separately-stored array keys live in m_hot (stored_in_metadata_flags==0).
+        // Metadata-block keys are tracked in the per-layer registry (lazy-loaded,
+        // NOT in m_hot on open), so count them via the public metadata API.
         size_t user_key_count = 0;
-        size_t metadata_key_count = 0;
         for (size_t i = 0; i < store->m_hot.keys.size(); i++) {
-            if (store->m_cold.stored_in_metadata_flags[i] == 1) {
-                metadata_key_count++;
-            } else {
+            if (store->m_cold.stored_in_metadata_flags[i] == 0) {
                 user_key_count++;
             }
         }
-
-        // Get all keys including those in metadata block
-        auto all_keys = store->get_all_keys();
-        size_t total_key_count = all_keys.size();
+        size_t metadata_key_count = store->get_metadata_count();
 
         // Display file header information
         const auto& header = store->getFileHeader();
@@ -589,29 +611,107 @@ int main(int argc, char* argv[]) {
             return 0;
         }
 
-        // Calculate total data size for separately stored arrays
+        // Calculate total data size for separately stored arrays, and tally the
+        // compression codec used across those arrays.
         size_t total_bytes = 0;
         size_t total_elements = 0;
+        std::map<CompressionAlgorithm, size_t> comp_counts;
+        // Per-array (uncompressed) block size, taken from the first block of each
+        // array. Block size can differ between arrays, so tally distinct values.
+        std::map<size_t, size_t> block_size_counts;
         for (size_t i = 0; i < store->m_hot.keys.size(); i++) {
             if (store->m_cold.stored_in_metadata_flags[i] == 0) {
                 total_bytes += store->m_cold.compressed_sizes[i];
                 const auto& shape = store->m_cold.shapes[i];
                 size_t num_elements = shape.empty() ? 1 : std::accumulate(shape.begin(), shape.end(), 1ULL, std::multiplies<size_t>());
                 total_elements += num_elements;
+                comp_counts[store->m_cold.compressions[i]]++;
+                const auto& blocks = store->m_cold.block_infos[i];
+                if (!blocks.empty()) {
+                    block_size_counts[blocks[0].uncompressed_size]++;
+                }
             }
         }
         std::cout << "Total data: " << total_bytes << " bytes, " << total_elements << " elements\n";
+
+        // Compression is per-array: report the single codec if uniform, else a
+        // per-codec breakdown across the stored arrays.
+        if (!comp_counts.empty()) {
+            std::cout << "Compression: ";
+            if (comp_counts.size() == 1) {
+                std::cout << compression_name(comp_counts.begin()->first);
+            } else {
+                bool first = true;
+                for (const auto& [algo, count] : comp_counts) {
+                    if (!first) std::cout << ", ";
+                    std::cout << compression_name(algo) << " (" << count << ")";
+                    first = false;
+                }
+            }
+            std::cout << "\n";
+        }
+
+        // Block size (uncompressed chunk size) for the separately-stored arrays.
+        // Reported separately from the metadata block since the two can differ.
+        if (!block_size_counts.empty()) {
+            std::cout << "Array block size: ";
+            if (block_size_counts.size() == 1) {
+                std::cout << block_size_counts.begin()->first << " bytes";
+            } else {
+                bool first = true;
+                for (const auto& [bs, count] : block_size_counts) {
+                    if (!first) std::cout << ", ";
+                    std::cout << bs << " bytes (" << count << ")";
+                    first = false;
+                }
+            }
+            std::cout << "\n";
+        }
+
+        // Metadata block: a single per-layer compressed unit. Report the base
+        // layer's metadata block size (compressed bytes on disk); this is
+        // independent of the array block size above. Use get_metadata_count()
+        // rather than has_metadata_block() since the block is lazily loaded and
+        // may not be reflected in m_cold on open.
+        if (store->get_metadata_count() > 0) {
+            size_t base_idx = store->m_layer_metadata_registry.get_layer_index("__base__");
+            size_t meta_block_bytes = store->m_layer_metadata_registry.block_sizes[base_idx];
+            std::cout << "Metadata block size: " << meta_block_bytes
+                      << " bytes (compressed, single block)\n";
+        }
 
         // If metadata-only requested
         if (!metadata_key.empty()) {
             auto it = store->m_key_to_index.find(metadata_key);
             if (it != store->m_key_to_index.end()) {
+                // Separately-stored array: show block/compression details.
                 print_key_metadata(store.get(), metadata_key, verbose);
+            } else if (store->meta.contains(metadata_key)) {
+                // Metadata-namespace value: describe it via the meta API.
+                auto mv = store->meta.get(metadata_key);
+                std::cout << "\n=== Key: " << metadata_key << " (metadata) ===\n";
+                std::cout << "  Type: " << datatype_to_string(mv->dtype);
+                if (!mv->shape.empty()) {
+                    std::cout << "[";
+                    for (size_t i = 0; i < mv->shape.size(); ++i) {
+                        if (i > 0) std::cout << ", ";
+                        std::cout << mv->shape[i];
+                    }
+                    std::cout << "]";
+                } else {
+                    std::cout << " (scalar)";
+                }
+                std::cout << "\n  Elements: " << mv->size() << "\n";
+                std::cout << "  Stored in metadata: yes\n";
             } else {
                 std::cerr << "\nError: Key '" << metadata_key << "' not found in file\n";
                 std::cout << "\nAvailable keys:\n";
                 for (size_t i = 0; i < store->m_hot.keys.size(); i++) {
-                    std::cout << "  - " << store->m_hot.keys[i] << "\n";
+                    if (store->m_cold.stored_in_metadata_flags[i] == 0)
+                        std::cout << "  - " << store->m_hot.keys[i] << "\n";
+                }
+                for (const auto& k : store->get_metadata_keys()) {
+                    std::cout << "  - " << k << " (metadata)\n";
                 }
                 return 1;
             }
@@ -642,11 +742,18 @@ int main(int argc, char* argv[]) {
                 }
 
                 print_key_data(store.get(), specific_key, verbose);
+            } else if (store->meta.contains(specific_key)) {
+                // Key lives in the metadata namespace, not separate array storage.
+                print_metadata_value(store.get(), specific_key, verbose);
             } else {
                 std::cerr << "\nError: Key '" << specific_key << "' not found in file\n";
                 std::cout << "\nAvailable keys:\n";
                 for (size_t i = 0; i < store->m_hot.keys.size(); i++) {
-                    std::cout << "  - " << store->m_hot.keys[i] << "\n";
+                    if (store->m_cold.stored_in_metadata_flags[i] == 0)
+                        std::cout << "  - " << store->m_hot.keys[i] << "\n";
+                }
+                for (const auto& k : store->get_metadata_keys()) {
+                    std::cout << "  - " << k << " (metadata)\n";
                 }
                 return 1;
             }
@@ -674,10 +781,10 @@ int main(int argc, char* argv[]) {
 
             for (size_t idx = 0; idx < store->m_hot.keys.size(); idx++) {
                 const std::string& key = store->m_hot.keys[idx];
-                std::cout << "│ [" << std::setw(2) << idx << "] " << std::left << std::setw(52) << key << "│\n";
+                std::cout << "│ [" << std::right << std::setw(2) << idx << "] " << std::left << std::setw(54) << key << "│\n";
 
                 if (verbose) {
-                    std::cout << "│     Type: " << std::left << std::setw(46) << datatype_to_string(store->m_hot.dtypes[idx]);
+                    std::cout << "│     Type: " << std::left << std::setw(49) << datatype_to_string(store->m_hot.dtypes[idx]);
 
                     const auto& shape = store->m_cold.shapes[idx];
                     if (!shape.empty()) {
@@ -688,30 +795,27 @@ int main(int argc, char* argv[]) {
                         }
                         std::cout << "]";
                         // Padding
-                        size_t shape_str_len = 12; // "     Shape: ["
+                        size_t shape_str_len = 13; // "     Shape: ["
                         for (size_t i = 0; i < shape.size(); ++i) {
                             if (i > 0) shape_str_len += 2;
                             shape_str_len += std::to_string(shape[i]).length();
                         }
                         shape_str_len += 1; // "]"
-                        std::cout << std::string(54 - shape_str_len, ' ') << "│\n";
+                        std::cout << std::string(60 - shape_str_len, ' ') << "│\n";
                     } else {
-                        std::cout << "│\n│     Scalar" << std::string(44, ' ') << "│\n";
+                        std::cout << "│\n│     Scalar" << std::string(49, ' ') << "│\n";
                     }
 
                     size_t num_elements = shape.empty() ? 1 : std::accumulate(shape.begin(), shape.end(), 1ULL, std::multiplies<size_t>());
-                    std::cout << "│     Elements: " << std::left << std::setw(41) << num_elements << "│\n";
-                    std::cout << "│     Size: " << std::left << std::setw(45) << (std::to_string(store->m_cold.compressed_sizes[idx]) + " bytes") << "│\n";
+                    std::cout << "│     Elements: " << std::left << std::setw(45) << num_elements << "│\n";
+                    std::cout << "│     Size: " << std::left << std::setw(49) << (std::to_string(store->m_cold.compressed_sizes[idx]) + " bytes") << "│\n";
 
-                    std::string comp_str;
-                    switch(store->m_cold.compressions[idx]) {
-                        case CompressionAlgorithm::NONE: comp_str = "None"; break;
-                        case CompressionAlgorithm::GZIP: comp_str = "GZIP (" + std::to_string(store->m_cold.block_infos[idx].size()) + " blocks)"; break;
-                        case CompressionAlgorithm::ZSTD: comp_str = "ZSTD (" + std::to_string(store->m_cold.block_infos[idx].size()) + " blocks)"; break;
-                        case CompressionAlgorithm::LZ4: comp_str = "LZ4 (" + std::to_string(store->m_cold.block_infos[idx].size()) + " blocks)"; break;
-                        default: comp_str = "Unknown";
+                    CompressionAlgorithm algo = store->m_cold.compressions[idx];
+                    std::string comp_str = compression_name(algo);
+                    if (algo != CompressionAlgorithm::NONE) {
+                        comp_str += " (" + std::to_string(store->m_cold.block_infos[idx].size()) + " blocks)";
                     }
-                    std::cout << "│     Compression: " << std::left << std::setw(38) << comp_str << "│\n";
+                    std::cout << "│     Compression: " << std::left << std::setw(42) << comp_str << "│\n";
                     std::cout << "├────────────────────────────────────────────────────────────┤\n";
                 } else if (!verbose) {
                     // For non-verbose, show type info
@@ -732,11 +836,17 @@ int main(int argc, char* argv[]) {
                         type_info += ", " + std::to_string(store->m_cold.compressed_sizes[idx]) + " bytes";
                     }
 
-                    std::cout << "│     " << std::left << std::setw(52) << type_info << "│\n";
+                    std::cout << "│     " << std::left << std::setw(55) << type_info << "│\n";
                 }
             }
 
             std::cout << "└────────────────────────────────────────────────────────────┘\n";
+
+            // Array keys (above) come from m_hot; metadata-block keys live in the
+            // per-layer registry and won't appear there, so list them separately.
+            if (metadata_key_count > 0) {
+                print_metadata_block_summary(store.get(), verbose);
+            }
 
             if (!verbose) {
                 std::cout << "\nUse -v/--verbose for detailed metadata\n";

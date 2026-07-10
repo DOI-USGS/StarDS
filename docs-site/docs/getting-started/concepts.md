@@ -1,11 +1,11 @@
 # Concepts
 
-This page explains the data model behind a `.star` file so the rest of the API
+This page explains the data model behind a `.stards` file so the rest of the API
 makes sense.
 
-## The `.star` file
+## The `.stards` file
 
-A StarDS dataset is a single `.star` file that contains:
+A StarDS dataset is a single `.stards` file that contains:
 
 - a **header** with a magic string, format version, and an index of every entry;
 - an **array section** holding (optionally compressed) N-dimensional array data;
@@ -70,15 +70,17 @@ both without conflict:
 ## Layers
 
 **Layers** store multiple versions of the same logical data in one file. Each
-layer has **isolated storage** and **automatic inheritance** from the base:
+layer has **isolated storage** and **opt-in inheritance** from the base:
 
 - Setting a key in a layer overrides it **for that layer only** — it never
   overwrites the base or other layers.
 - Accessing a key that a layer did *not* set **falls back to the base layer**
-  transparently.
+  only when inheritance is enabled. Inheritance is **off by default**; without
+  it, a missing key raises. Enable it with `ds.set_layer_inheritance(True)` (or
+  at open time via `OpenOptions`).
 
-This means you only store what changes in each layer; everything else is
-inherited. Layers apply to both arrays and metadata.
+With inheritance on you only store what changes in each layer; everything else
+is inherited. Layers apply to both arrays and metadata.
 
 ```python
 ds["cube"] = raw_cube
@@ -86,8 +88,9 @@ ds["wavelengths"] = np.linspace(400, 2500, 300)
 
 processed = ds.create_layer("processed")
 processed["cube"] = corrected_cube   # override
-# "wavelengths" not set → inherited from base
+# "wavelengths" not set → inherited from base when inheritance is on
 
+ds.set_layer_inheritance(True)       # off by default
 layer = ds.get_layer("processed")
 layer["cube"]         # processed data
 layer["wavelengths"]  # inherited base wavelengths
@@ -106,6 +109,6 @@ see the [Compression guide](../guides/compression.md).
 
 ## Cloud storage
 
-A `.star` file can live locally or in the cloud. Prefix a path with `/vsis3/` for
+A `.stards` file can live locally or in the cloud. Prefix a path with `/vsis3/` for
 S3 or `/vsicurl/` for HTTP, and the same API reads and (for S3) writes remotely.
 See the [Cloud Storage guide](../guides/cloud-storage.md).

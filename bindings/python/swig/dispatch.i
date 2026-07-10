@@ -78,7 +78,11 @@ static PyObject* star_string_ndarray_to_numpy(const star::NDArray<std::string>& 
     PyObject* it = PyArray_IterNew(result);
     if (!it) throw std::runtime_error("Failed to iterate output object array");
     for (size_t i = 0; i < data.size(); ++i) {
-        PyObject* s = PyUnicode_FromStringAndSize(data[i].data(), (Py_ssize_t)data[i].size());
+        // Non-UTF-8 bytes make PyUnicode_FromStringAndSize return NULL (and set an
+        // exception), which would leave a NULL slot in the object array. Decode with
+        // "surrogateescape" so arbitrary byte content always yields a valid str.
+        PyObject* s = PyUnicode_DecodeUTF8(data[i].data(), (Py_ssize_t)data[i].size(),
+                                           "surrogateescape");
         // The slot holds a borrowed PyObject*; store our new reference directly.
         PyObject** slot = reinterpret_cast<PyObject**>(PyArray_ITER_DATA(it));
         *slot = s;  // steals our reference (freshly created object array is all-NULL)

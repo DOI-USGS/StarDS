@@ -1,6 +1,6 @@
 # star_translate
 
-`star_translate` converts between `.star` files and other formats (JSON,
+`star_translate` converts between `.stards` files and other formats (JSON,
 MessagePack, CSV), and can reorganize a file for ISDS (ISIS Dataset)
 optimization.
 
@@ -13,21 +13,21 @@ Built when `STAR_BUILD_TRANSLATE=ON` (the default); see
 star_translate [OPTIONS] <input_file> <output_file>
 
 # STAR ↔ JSON (format auto-detected from the file extensions)
-star_translate data.star data.json
-star_translate data.json data.star
+star_translate data.stards data.json
+star_translate data.json data.stards
 
 # CSV to STAR (2D arrays only)
-star_translate data.csv data.star
+star_translate data.csv data.stards
 
 # Force the output format explicitly
-star_translate -f json data.star out.json
+star_translate -f json data.stards out.json
 
 # MessagePack (if built with msgpack support)
-star_translate data.star data.msgpack
+star_translate data.stards data.msgpack
 ```
 
 The output format is auto-detected from the output file's extension
-(`.star`, `.json`, `.csv`, `.msgpack`/`.mp`), or you can force it with
+(`.stards`, `.json`, `.csv`, `.msgpack`/`.mp`), or you can force it with
 `-f`.
 
 ## Options
@@ -36,15 +36,13 @@ The output format is auto-detected from the output file's extension
 |------|-----------|-------------|
 | `-h` | `--help` | Show the help message |
 | `-f <fmt>` | `--format <fmt>` | Output format: `json`, `msgpack`, or `isds` (otherwise auto-detected from the extension) |
-| `-c <alg>` | `--compression <alg>` | Compression for STAR output: `none`, `gzip`, `lz4`, `zstd`. Default: `lz4`. **See the note below.** |
-| `-b <bytes>` | `--block-size <bytes>` | Block size for STAR compression. Default: `1048576` (1 MB). **See the note below.** |
+| `-c <alg>` | `--compression <alg>` | Compression for STAR output: `none`, `gzip`, `lz4`, `gzip-shuffle`, `lz4-shuffle`. Default: `lz4`. |
+| `-b <bytes>` | `--block-size <bytes>` | Block size for STAR compression. Default: `1048576` (1 MB). |
 | `-t <n>` | `--threshold <n>` | ISDS element threshold (default: `100`) |
 
-!!! warning "`-c` and `-b` are currently not applied"
-    The tool parses `--compression` and `--block-size` but writes its STAR output
-    with the default `StarConfig`, so these flags have no effect on the result.
-    To control the codec or block size, use the `StarConfig` API — see the
-    [Compression guide](../guides/compression.md).
+The `*-shuffle` codecs add a byte-shuffle prefilter that greatly improves
+compression of numeric arrays (e.g. float64); shuffled arrays are read whole
+rather than sliced.
 
 ## JSON format
 
@@ -62,7 +60,7 @@ The output format is auto-detected from the output file's extension
 
 ## ISDS optimization
 
-The ISDS (ISIS Dataset) mode reorganizes a `.star` file by size: large arrays go
+The ISDS (ISIS Dataset) mode reorganizes a `.stards` file by size: large arrays go
 to efficient block storage, while small values are kept in the metadata block for
 quick access. This suits ISIS camera-state files that mix large arrays
 (quaternions, ephemeris) with small scalars (focal length, detector center).
@@ -74,23 +72,23 @@ quick access. This suits ISIS camera-state files that mix large arrays
 
 ```bash
 # Reorganize by array size (default threshold of 100 elements)
-star_translate -f isds input.star output.star
+star_translate -f isds input.stards output.stards
 
 # Custom threshold
-star_translate -f isds -t 50 input.star output.star
+star_translate -f isds -t 50 input.stards output.stards
 ```
 
 ## Batch conversion
 
 ```bash
 # STAR → JSON for every file in a directory
-for file in *.star; do
-    star_translate "$file" "${file%.star}.json"
+for file in *.stards; do
+    star_translate "$file" "${file%.stards}.json"
 done
 
 # JSON → STAR
 for file in *.json; do
-    star_translate "$file" "${file%.json}.star"
+    star_translate "$file" "${file%.json}.stards"
 done
 ```
 

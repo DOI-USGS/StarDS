@@ -1,9 +1,6 @@
 """
 Tests for layer functionality
 """
-import sys
-sys.path.insert(0, 'build/bindings/python')
-
 try:
     import pytest
     HAVE_PYTEST = True
@@ -11,7 +8,7 @@ except ImportError:
     HAVE_PYTEST = False
 
 import numpy as np
-from pystar import StarDataset
+from pystards import StarDataset, OpenOptions
 import tempfile
 import os
 
@@ -21,7 +18,7 @@ class TestLayerBasics:
 
     def test_create_layer(self):
         """Test creating a new layer"""
-        with tempfile.NamedTemporaryFile(suffix=".star", delete=False) as f:
+        with tempfile.NamedTemporaryFile(suffix=".stards", delete=False) as f:
             filename = f.name
 
         try:
@@ -40,7 +37,7 @@ class TestLayerBasics:
 
     def test_get_layer(self):
         """Test retrieving existing layer"""
-        with tempfile.NamedTemporaryFile(suffix=".star", delete=False) as f:
+        with tempfile.NamedTemporaryFile(suffix=".stards", delete=False) as f:
             filename = f.name
 
         try:
@@ -56,7 +53,7 @@ class TestLayerBasics:
 
     def test_get_nonexistent_layer_raises(self):
         """Test that getting non-existent layer raises error"""
-        with tempfile.NamedTemporaryFile(suffix=".star", delete=False) as f:
+        with tempfile.NamedTemporaryFile(suffix=".stards", delete=False) as f:
             filename = f.name
 
         try:
@@ -77,7 +74,7 @@ class TestLayerBasics:
 
     def test_create_duplicate_layer_raises(self):
         """Test that creating duplicate layer raises error"""
-        with tempfile.NamedTemporaryFile(suffix=".star", delete=False) as f:
+        with tempfile.NamedTemporaryFile(suffix=".stards", delete=False) as f:
             filename = f.name
 
         try:
@@ -99,7 +96,7 @@ class TestLayerBasics:
 
     def test_list_layers(self):
         """Test listing all layers"""
-        with tempfile.NamedTemporaryFile(suffix=".star", delete=False) as f:
+        with tempfile.NamedTemporaryFile(suffix=".stards", delete=False) as f:
             filename = f.name
 
         try:
@@ -128,7 +125,7 @@ class TestLayerInheritance:
 
     def test_inheritance_keys(self):
         """Test that layer inherits keys from base"""
-        with tempfile.NamedTemporaryFile(suffix=".star", delete=False) as f:
+        with tempfile.NamedTemporaryFile(suffix=".stards", delete=False) as f:
             filename = f.name
 
         try:
@@ -142,6 +139,7 @@ class TestLayerInheritance:
             ds["cube"] = np.random.rand(10, 10, 10)
 
             # Create layer
+            ds.set_layer_inheritance(True)  # inheritance is off by default
             layer1 = ds.create_layer("layer1")
 
             # Layer should see base keys
@@ -155,11 +153,12 @@ class TestLayerInheritance:
 
     def test_contains_inherited_keys(self):
         """Test that contains() works for inherited keys"""
-        with tempfile.NamedTemporaryFile(suffix=".star", delete=False) as f:
+        with tempfile.NamedTemporaryFile(suffix=".stards", delete=False) as f:
             filename = f.name
 
         try:
             ds = StarDataset.create(filename)
+            ds.set_layer_inheritance(True)  # inheritance is off by default
             ds.meta["base_key"] = "base_value"
 
             layer1 = ds.create_layer("layer1")
@@ -176,11 +175,12 @@ class TestHyperspectralUseCase:
 
     def test_create_many_layers(self):
         """Test creating 100 wavelength bands"""
-        with tempfile.NamedTemporaryFile(suffix=".star", delete=False) as f:
+        with tempfile.NamedTemporaryFile(suffix=".stards", delete=False) as f:
             filename = f.name
 
         try:
             ds = StarDataset.create(filename)
+            ds.set_layer_inheritance(True)  # inheritance is off by default
 
             # Base metadata
             ds.meta["instrument"] = "AVIRIS"
@@ -205,7 +205,7 @@ class TestHyperspectralUseCase:
 
     def test_persistence(self):
         """Test that layers persist across close/open"""
-        with tempfile.NamedTemporaryFile(suffix=".star", delete=False) as f:
+        with tempfile.NamedTemporaryFile(suffix=".stards", delete=False) as f:
             filename = f.name
 
         try:
@@ -217,8 +217,10 @@ class TestHyperspectralUseCase:
             ds.create_layer("band_2")
             ds.close()
 
-            # Reopen and verify
-            ds = StarDataset.open(filename)
+            # Reopen and verify (opt into inheritance, off by default)
+            opts = OpenOptions()
+            opts.layer_inheritance = True
+            ds = StarDataset.open(filename, mode="r", options=opts)
             layers = ds.list_layers()
             assert len(layers) == 3
             assert "band_0" in layers
@@ -228,6 +230,70 @@ class TestHyperspectralUseCase:
             # Verify inheritance works after reload
             layer1 = ds.get_layer("band_1")
             assert "instrument" in layer1
+        finally:
+            if os.path.exists(filename):
+                os.unlink(filename)
+
+
+class TestLayerInheritanceToggle:
+    """Layer inheritance is off by default; opt in via OpenOptions or setter."""
+
+    def _make_file(self):
+        with tempfile.NamedTemporaryFile(suffix=".stards", delete=False) as f:
+            filename = f.name
+        ds = StarDataset.create(filename)
+        ds["A"] = np.full((8,), 1.0)      # base-only key
+        layer = ds.create_layer("L")
+        layer["B"] = np.full((8,), 2.0)   # layer-owned key
+        ds.flush()
+        ds.close()
+        return filename
+
+    def test_inheritance_off_by_default(self):
+        """Base-only key is a miss through a layer when inheritance is off."""
+        filename = self._make_file()
+        try:
+            ds = StarDataset.open(filename, mode="r")
+            assert ds.layer_inheritance() is False
+            layer = ds.get_layer("L")
+            # Base-only key is not visible.
+            assert "A" not in layer
+            with pytest.raises(KeyError):
+                _ = layer["A"]
+        finally:
+            if os.path.exists(filename):
+                os.unlink(filename)
+
+    def test_inheritance_opt_in_via_open_options(self):
+        """OpenOptions(layer_inheritance=True) restores base fallback."""
+        filename = self._make_file()
+        try:
+            opts = OpenOptions()
+            opts.layer_inheritance = True
+            ds = StarDataset.open(filename, mode="r", options=opts)
+            assert ds.layer_inheritance() is True
+            layer = ds.get_layer("L")
+            assert "A" in layer
+            assert layer["A"][0] == 1.0
+        finally:
+            if os.path.exists(filename):
+                os.unlink(filename)
+
+    def test_inheritance_post_open_toggle(self):
+        """set_layer_inheritance() toggles behavior live on an open dataset."""
+        filename = self._make_file()
+        try:
+            ds = StarDataset.open(filename, mode="r")
+            layer = ds.get_layer("L")
+            assert "A" not in layer
+
+            ds.set_layer_inheritance(True)
+            assert ds.layer_inheritance() is True
+            assert "A" in layer
+            assert layer["A"][0] == 1.0
+
+            ds.set_layer_inheritance(False)
+            assert "A" not in layer
         finally:
             if os.path.exists(filename):
                 os.unlink(filename)

@@ -10,16 +10,16 @@ This directory contains command-line tools for working with STAR files.
 **Usage**:
 ```bash
 # List all keys
-starls data.star
+starls data.stards
 
 # Verbose output with metadata
-starls -v data.star
+starls -v data.stards
 
 # Print specific key data
-starls -d array_name data.star
+starls -d array_name data.stards
 
 # Print all data
-starls -a data.star
+starls -a data.stards
 ```
 
 **Build**: Always built when `STAR_BUILD_TOOLS=ON` (default)
@@ -32,23 +32,23 @@ starls -a data.star
 **Usage**:
 ```bash
 # STAR to JSON
-star_translate data.star data.json
+star_translate data.stards data.json
 
 # JSON to STAR
-star_translate data.json data.star
+star_translate data.json data.stards
 
 # CSV to STAR (2D arrays only)
-star_translate data.csv data.star
+star_translate data.csv data.stards
 
 # MessagePack (if built with msgpack support)
-star_translate data.star data.msgpack
+star_translate data.stards data.msgpack
 
 # ISDS optimization: reorganize by array size
 # Large arrays go to array storage, small data goes to metadata
-star_translate -f isds input.star output.star
+star_translate -f isds input.stards output.stards
 
 # ISDS with custom threshold (default: 100 elements)
-star_translate -f isds -t 50 input.star output.star
+star_translate -f isds -t 50 input.stards output.stards
 ```
 
 **ISDS Conversion**:
@@ -63,7 +63,7 @@ The ISDS (ISIS Dataset) optimization reorganizes STAR files by moving large arra
 Example workflow:
 ```bash
 # Convert ISIS camera state file for optimal performance
-star_translate -f isds -t 100 camera_state.star camera_state_optimized.star
+star_translate -f isds -t 100 camera_state.stards camera_state_optimized.stards
 
 # Large arrays (quaternions, ephemeris) → block storage
 # Small scalars (focal_length, detector_center) → metadata
@@ -231,7 +231,7 @@ Check conversion output:
 cat data.json | jq '.arrays | keys'
 
 # Compare file sizes
-ls -lh data.star data.json
+ls -lh data.stards data.json
 ```
 
 Validate JSON structure:
@@ -254,16 +254,7 @@ bin/
 ├── README.md                       # This file
 │
 ├── starls.cpp                       # STAR inspector tool
-├── star_translate.cpp               # Format converter tool
-│
-├── example_json_conversion.cpp     # Example program
-├── test_translate_roundtrip.cpp    # Integration test
-│
-├── quick_test_translate.sh         # Quick smoke test
-├── validate_star_translate.sh       # Full validation suite
-├── test_translate.sh               # Manual test helper
-│
-└── TRANSLATE_TOOL_SUMMARY.md       # Detailed documentation
+└── star_translate.cpp               # Format converter tool
 ```
 
 ---
@@ -337,9 +328,9 @@ cmake .. && make
 
 ### Large File Conversion
 
-For large files, prefer converting in batches and configure compression through
-the `StarConfig` API (see the [Compression guide](../docs/guides/compression.md)),
-since the CLI's `-c`/`-b` flags are not currently applied to the output.
+For large files, use the CLI's `-c`/`--compression` and `-b`/`--block-size` flags
+to control the output codec and block size (see the
+[Compression guide](../docs/guides/compression.md) for the available codecs).
 
 ### Batch Conversion
 
@@ -347,13 +338,13 @@ Convert multiple files:
 
 ```bash
 # STAR to JSON
-for file in *.star; do
-    star_translate "$file" "${file%.star}.json"
+for file in *.stards; do
+    star_translate "$file" "${file%.stards}.json"
 done
 
 # JSON to STAR
 for file in *.json; do
-    star_translate "$file" "${file%.json}.star"
+    star_translate "$file" "${file%.json}.stards"
 done
 ```
 

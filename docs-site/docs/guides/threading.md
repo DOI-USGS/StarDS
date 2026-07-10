@@ -9,7 +9,7 @@ the process.
 The controls live in the `star` namespace:
 
 ```cpp
-#include "star.h"
+#include "stards.h"
 using namespace star;
 
 // Set the worker count:

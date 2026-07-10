@@ -7,7 +7,7 @@ translate to improved performance in the Python bindings.
 """
 
 import numpy as np
-import pystar
+import pystards
 import time
 import os
 import sys
@@ -23,14 +23,14 @@ def benchmark_put_scaling():
 
     for array_size in array_sizes:
         for num_arrays in num_arrays_list:
-            filepath = f"/tmp/bench_python_{array_size}_{num_arrays}.star"
+            filepath = f"/tmp/bench_python_{array_size}_{num_arrays}.stards"
 
             # Clean up if exists
             if os.path.exists(filepath):
                 os.remove(filepath)
 
             # Create dataset
-            store = pystar.StarDataset.create(filepath)
+            store = pystards.StarDataset.create(filepath)
 
             # Measure time to store num_arrays arrays
             start = time.perf_counter()

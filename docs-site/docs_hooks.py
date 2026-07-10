@@ -1,7 +1,7 @@
 """MkDocs build hooks for the StarDS documentation site.
 
 Suppresses griffe's cosmetic "No type or annotation for parameter/return"
-warnings emitted while mkdocstrings introspects the SWIG-backed ``pystar``
+warnings emitted while mkdocstrings introspects the SWIG-backed ``pystards``
 package. These aren't actionable — the C++-backed functions legitimately lack
 Python type hints — and they would otherwise abort ``mkdocs build --strict``,
 which we keep enabled to catch *real* problems such as broken links.

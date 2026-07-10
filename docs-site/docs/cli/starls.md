@@ -1,6 +1,6 @@
 # starls
 
-`starls` inspects and lists the contents of a `.star` file — keys, metadata, and
+`starls` inspects and lists the contents of a `.stards` file — keys, metadata, and
 optionally the array data itself.
 
 Built when `STAR_BUILD_TOOLS=ON` (the default); see
@@ -9,25 +9,25 @@ Built when `STAR_BUILD_TOOLS=ON` (the default); see
 ## Usage
 
 ```bash
-starls [OPTIONS] <file.star>
+starls [OPTIONS] <file.stards>
 
 # List all keys (default)
-starls data.star
+starls data.stards
 
 # Verbose output with metadata
-starls -v data.star
+starls -v data.stards
 
 # Show a key's metadata without loading its data
-starls -m array_name data.star
+starls -m array_name data.stards
 
 # Print a specific key's data
-starls -d array_name data.star
+starls -d array_name data.stards
 
 # Force-load a large array that the safety check would block
-starls -d array_name -f data.star
+starls -d array_name -f data.stards
 
 # Print all data (may be large)
-starls -a data.star
+starls -a data.stards
 ```
 
 ## Options

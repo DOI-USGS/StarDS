@@ -7,13 +7,13 @@ import os
 
 def test_dict_style_setitem_getitem(tmp_path):
     """Test dictionary-style array access with [] operator"""
-    import pystar
+    import pystards
 
     # Create test file
-    test_file = tmp_path / "dict_test.star"
+    test_file = tmp_path / "dict_test.stards"
 
     # Write using dict syntax
-    store = pystar.StarDataset(str(test_file), "rw")
+    store = pystards.StarDataset(str(test_file), "rw")
 
     # Test __setitem__
     store["vector"] = np.array([1, 2, 3, 4, 5], dtype=np.int64)
@@ -24,7 +24,7 @@ def test_dict_style_setitem_getitem(tmp_path):
     store.close()
 
     # Read using dict syntax
-    store = pystar.StarDataset(str(test_file), "r")
+    store = pystards.StarDataset(str(test_file), "r")
 
     # Test __getitem__
     vector = store["vector"]
@@ -44,11 +44,11 @@ def test_dict_style_setitem_getitem(tmp_path):
 
 def test_dict_style_contains(tmp_path):
     """Test 'in' operator with dictionary-style access"""
-    import pystar
+    import pystards
 
-    test_file = tmp_path / "contains_test.star"
+    test_file = tmp_path / "contains_test.stards"
 
-    store = pystar.StarDataset(str(test_file), "rw")
+    store = pystards.StarDataset(str(test_file), "rw")
     store["test_key"] = np.array([1, 2, 3])
     store.flush()
 
@@ -61,11 +61,11 @@ def test_dict_style_contains(tmp_path):
 
 def test_dict_mixed_api(tmp_path):
     """Test mixing old put/get API with new dict syntax"""
-    import pystar
+    import pystards
 
-    test_file = tmp_path / "mixed_test.star"
+    test_file = tmp_path / "mixed_test.stards"
 
-    store = pystar.StarDataset(str(test_file), "rw")
+    store = pystards.StarDataset(str(test_file), "rw")
 
     # Mix both styles
     store.put("old_style", np.array([1, 2, 3]))
@@ -92,99 +92,99 @@ def test_dict_mixed_api(tmp_path):
 
 def test_logger_set_get():
     """Test logger level get/set"""
-    import pystar
+    import pystards
 
     # Get default level
-    default_level = pystar.get_log_level()
+    default_level = pystards.get_log_level()
     assert isinstance(default_level, int)
     assert default_level == 4  # ERROR is default
 
     # Set to DEBUG
-    pystar.set_log_level(pystar.LogLevel.DEBUG)
-    assert pystar.get_log_level() == 1
+    pystards.set_log_level(pystards.LogLevel.DEBUG)
+    assert pystards.get_log_level() == 1
 
     # Set to TRACE
-    pystar.set_log_level(pystar.LogLevel.TRACE)
-    assert pystar.get_log_level() == 0
+    pystards.set_log_level(pystards.LogLevel.TRACE)
+    assert pystards.get_log_level() == 0
 
     # Set to INFO
-    pystar.set_log_level(pystar.LogLevel.INFO)
-    assert pystar.get_log_level() == 2
+    pystards.set_log_level(pystards.LogLevel.INFO)
+    assert pystards.get_log_level() == 2
 
     # Set to WARN
-    pystar.set_log_level(pystar.LogLevel.WARN)
-    assert pystar.get_log_level() == 3
+    pystards.set_log_level(pystards.LogLevel.WARN)
+    assert pystards.get_log_level() == 3
 
     # Set to ERROR
-    pystar.set_log_level(pystar.LogLevel.ERROR)
-    assert pystar.get_log_level() == 4
+    pystards.set_log_level(pystards.LogLevel.ERROR)
+    assert pystards.get_log_level() == 4
 
     # Set using integer
-    pystar.set_log_level(1)
-    assert pystar.get_log_level() == 1
+    pystards.set_log_level(1)
+    assert pystards.get_log_level() == 1
 
     # Restore default
-    pystar.set_log_level(default_level)
+    pystards.set_log_level(default_level)
 
 
 def test_logger_string_names():
     """Test setting log level with string names"""
-    import pystar
+    import pystards
 
-    original_level = pystar.get_log_level()
+    original_level = pystards.get_log_level()
 
     # Test string names (case insensitive)
-    pystar.set_log_level("DEBUG")
-    assert pystar.get_log_level() == 1
+    pystards.set_log_level("DEBUG")
+    assert pystards.get_log_level() == 1
 
-    pystar.set_log_level("debug")
-    assert pystar.get_log_level() == 1
+    pystards.set_log_level("debug")
+    assert pystards.get_log_level() == 1
 
-    pystar.set_log_level("INFO")
-    assert pystar.get_log_level() == 2
+    pystards.set_log_level("INFO")
+    assert pystards.get_log_level() == 2
 
-    pystar.set_log_level("WARN")
-    assert pystar.get_log_level() == 3
+    pystards.set_log_level("WARN")
+    assert pystards.get_log_level() == 3
 
-    pystar.set_log_level("ERROR")
-    assert pystar.get_log_level() == 4
+    pystards.set_log_level("ERROR")
+    assert pystards.get_log_level() == 4
 
-    pystar.set_log_level("TRACE")
-    assert pystar.get_log_level() == 0
+    pystards.set_log_level("TRACE")
+    assert pystards.get_log_level() == 0
 
     # Restore
-    pystar.set_log_level(original_level)
+    pystards.set_log_level(original_level)
 
 
 def test_logger_invalid_input():
     """Test logger with invalid inputs"""
-    import pystar
+    import pystards
 
     with pytest.raises(ValueError):
-        pystar.set_log_level("INVALID")
+        pystards.set_log_level("INVALID")
 
     with pytest.raises(ValueError):
-        pystar.set_log_level(5)  # Out of range
+        pystards.set_log_level(5)  # Out of range
 
     with pytest.raises(ValueError):
-        pystar.set_log_level(-1)  # Out of range
+        pystards.set_log_level(-1)  # Out of range
 
 
 def test_explicit_close(tmp_path):
     """Test explicit close() method"""
-    import pystar
+    import pystards
 
-    test_file = tmp_path / "close_test.star"
+    test_file = tmp_path / "close_test.stards"
 
     # Without context manager
-    store = pystar.StarDataset(str(test_file), "rw")
+    store = pystards.StarDataset(str(test_file), "rw")
     store["data"] = np.array([1, 2, 3, 4, 5])
 
     # Explicit close
     store.close()
 
     # Verify data was written
-    store2 = pystar.StarDataset(str(test_file), "r")
+    store2 = pystards.StarDataset(str(test_file), "r")
     data = store2["data"]
     np.testing.assert_array_equal(data, [1, 2, 3, 4, 5])
     store2.close()
@@ -192,33 +192,33 @@ def test_explicit_close(tmp_path):
 
 def test_close_in_context_manager(tmp_path):
     """Test that context manager still auto-closes"""
-    import pystar
+    import pystards
 
-    test_file = tmp_path / "context_test.star"
+    test_file = tmp_path / "context_test.stards"
 
     # Use context manager
-    with pystar.StarDataset(str(test_file), "rw") as store:
+    with pystards.StarDataset(str(test_file), "rw") as store:
         store["data"] = np.array([10, 20, 30])
         # No explicit close needed
 
     # Verify data was written by context manager
-    with pystar.StarDataset(str(test_file), "r") as store:
+    with pystards.StarDataset(str(test_file), "r") as store:
         data = store["data"]
         np.testing.assert_array_equal(data, [10, 20, 30])
 
 
 def test_close_read_only_mode(tmp_path):
     """Test close() in read-only mode (should not error)"""
-    import pystar
+    import pystards
 
-    test_file = tmp_path / "readonly_test.star"
+    test_file = tmp_path / "readonly_test.stards"
 
     # Create file first
-    with pystar.StarDataset(str(test_file), "rw") as store:
+    with pystards.StarDataset(str(test_file), "rw") as store:
         store["data"] = np.array([1, 2, 3])
 
     # Open in read-only and close
-    store = pystar.StarDataset(str(test_file), "r")
+    store = pystards.StarDataset(str(test_file), "r")
     data = store["data"]
     np.testing.assert_array_equal(data, [1, 2, 3])
 

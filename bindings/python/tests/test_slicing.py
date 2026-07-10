@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from pystar import StarDataset
+from pystards import StarDataset
 
 
 def test_1d_slicing(store):
