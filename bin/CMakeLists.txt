@@ -12,7 +12,7 @@ target_link_libraries(starls
                       Star
                       )
 
-target_include_directories(starls PRIVATE ${CMAKE_SOURCE_DIR}/Star/include/)
+target_include_directories(starls PRIVATE ${CMAKE_SOURCE_DIR}/StarDS/include/)
 
 # Optional: Install the tool
 install(TARGETS starls
@@ -44,7 +44,7 @@ if(STAR_BUILD_TRANSLATE)
                           )
 
     target_include_directories(star_translate PRIVATE
-                               ${CMAKE_SOURCE_DIR}/Star/include/)
+                               ${CMAKE_SOURCE_DIR}/StarDS/include/)
 
     # Add msgpack support if available
     if(msgpack_FOUND)
@@ -66,7 +66,7 @@ if(STAR_BUILD_TRANSLATE)
                               PRIVATE
                               Star)
         target_include_directories(test_translate_roundtrip PRIVATE
-                                   ${CMAKE_SOURCE_DIR}/Star/include/)
+                                   ${CMAKE_SOURCE_DIR}/StarDS/include/)
         message(STATUS "  Building translate round-trip test")
     endif()
 

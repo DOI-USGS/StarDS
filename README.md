@@ -72,7 +72,10 @@ STAR is header-only. Add to your project:
 
 ```cmake
 # CMakeLists.txt
-include_directories(/path/to/stards/Star/include)
+# In-tree checkout: point at StarDS/include. Installed: the header lives at
+# $PREFIX/include/stards/stards.h, so use $PREFIX/include/stards (or just
+# find_package(STAR), which sets the include path for you).
+include_directories(/path/to/stards/StarDS/include)
 
 # Optional: link compression/S3 support
 find_package(ZLIB)
@@ -81,31 +84,32 @@ find_package(OpenSSL)
 
 if(ZLIB_FOUND)
     target_link_libraries(your_target PRIVATE ZLIB::ZLIB)
-    target_compile_definitions(your_target PRIVATE HAS_ZLIB)
+    target_compile_definitions(your_target PRIVATE ENABLE_ZLIB)
 endif()
 
 if(CURL_FOUND)
     target_link_libraries(your_target PRIVATE CURL::libcurl)
-    target_compile_definitions(your_target PRIVATE HAS_CURL)
+    target_compile_definitions(your_target PRIVATE ENABLE_CURL)
 endif()
 
-if(OPENSSL_FOUND)
+# S3 support (needs CURL + OpenSSL)
+if(OPENSSL_FOUND AND CURL_FOUND)
     target_link_libraries(your_target PRIVATE OpenSSL::SSL OpenSSL::Crypto)
-    target_compile_definitions(your_target PRIVATE HAS_OPENSSL)
+    target_compile_definitions(your_target PRIVATE ENABLE_S3)
 endif()
 ```
 
 Then in your code:
 
 ```cpp
-#include "star.h"
+#include "stards.h"
 
 int main() {
     // Create and store arrays
     NDArray<double> data = NDArray<double>::zeros({100, 100});
-    StarDataset store("data.star");
-    store.put("matrix", data);
-    store.flush();
+    auto store = star::StarDataset::create("data.stards");
+    store->put("matrix", data);
+    store->flush();
 
     return 0;
 }
@@ -119,26 +123,26 @@ int main() {
 
 ```bash
 # List all keys in a file
-starls data.star
+starls data.stards
 
 # Show detailed metadata
-starls -v data.star
+starls -v data.stards
 
 # Print specific array data
-starls -d matrix data.star
+starls -d matrix data.stards
 ```
 
 ### star_translate - Format Conversion
 
 ```bash
 # Convert JSON to STAR
-star_translate data.json data.star
+star_translate data.json data.stards
 
 # Convert STAR to JSON
-star_translate data.star data.json
+star_translate data.stards data.json
 
 # With compression
-star_translate -c gzip -b 4096 data.json data.star
+star_translate -c gzip -b 4096 data.json data.stards
 ```
 
 **JSON Format Example:**
@@ -161,7 +165,7 @@ star_translate -c gzip -b 4096 data.json data.star
 ### Basic C++ API
 
 ```cpp
-#include "star.h"
+#include "stards.h"
 using namespace star;
 
 // Create arrays
@@ -169,7 +173,7 @@ NDArray<double> matrix = NDArray<double>::zeros({100, 100});
 matrix(10, 20) = 3.14;
 
 // Create dataset with default compression
-auto store = StarDataset::create("data.star");
+auto store = StarDataset::create("data.stards");
 
 // Store arrays - these go to block storage
 store->put("matrix", std::move(matrix));
@@ -181,7 +185,7 @@ store->meta.put("timestamp", NDArray<int64_t>({}, {1234567890}));
 store->flush();  // Write to disk
 
 // Read back
-auto store2 = StarDataset::open("data.star");
+auto store2 = StarDataset::open("data.stards");
 
 // Get array
 auto matrix_data = store2->get<double>("matrix");
@@ -204,28 +208,34 @@ if (store2->meta.contains("timestamp")) {
 ### Layers in C++
 
 ```cpp
-#include "star.h"
+#include "stards.h"
 using namespace star;
 
 // Create dataset with base data
-auto store = StarDataset::create("data.star");
-store->put("image", NDArray<double>({512, 512}));
-store->put("wavelengths", NDArray<double>({300}));
+auto store = StarDataset::create("data.stards");
+store->put("image", NDArray<double>::zeros({512, 512}));
+store->put("wavelengths", NDArray<double>::zeros({300}));
 
-// Create layer with different version of data
+// Create layer with a different version of the image
 auto layer1 = store->create_layer("processed");
-layer1->put("image", processed_image);  // Different image
+layer1->put("image", NDArray<double>::full({512, 512}, 1.0));  // Different image
 // wavelengths inherited from base
 
 // Create another layer
 auto layer2 = store->create_layer("calibrated");
-layer2->put("image", calibrated_image);
-layer2->put("wavelengths", adjusted_wavelengths);  // Override
+layer2->put("image", NDArray<double>::full({512, 512}, 2.0));
+layer2->put("wavelengths", NDArray<double>::full({300}, 42.0));  // Override
 
 store->flush();
 
-// Read back
-auto store2 = StarDataset::open("data.star");
+// Read back. Layer inheritance is OFF by default: a key absent from a layer is
+// a miss, not a fall-through to the base. Opt in when you want base fallback,
+// either at open time via OpenOptions...
+OpenOptions opts;
+opts.layer_inheritance = true;
+auto store2 = StarDataset::open("data.stards", FileMode::READ_ONLY, opts);
+// ...or after opening with the post-open setter on any already-open dataset:
+store2->setLayerInheritance(true);
 
 // Get base data
 auto base_img = store2->get<double>("image");
@@ -233,7 +243,7 @@ auto base_img = store2->get<double>("image");
 // Get layer data
 auto proc_layer = store2->get_layer("processed");
 auto proc_img = proc_layer->get<double>("image");      // Different data
-auto proc_wave = proc_layer->get<double>("wavelengths"); // Inherited
+auto proc_wave = proc_layer->get<double>("wavelengths"); // Inherited (needs inheritance on)
 
 auto cal_layer = store2->get_layer("calibrated");
 auto cal_img = cal_layer->get<double>("image");        // Different data
@@ -248,15 +258,17 @@ layer1->meta.put("description", NDArray<std::string>({}, {"Processed version"}))
 STAR supports both **string modes** (Python-style) and **enum modes** for opening files:
 
 ```cpp
-// String modes 
-StarDataset store1("data.star", "r");   // Read-only
-StarDataset store2("data.star", "w");   // Read-write (create if missing)
-StarDataset store3("data.star", "rw");  // Read-write (explicit)
-StarDataset store4("data.star");        // Default: read-write
+// String modes
+auto store1 = StarDataset::open("data.stards", "r");   // Read-only
+auto store2 = StarDataset::open("data.stards", "w");   // Read-write (create if missing)
+auto store3 = StarDataset::open("data.stards", "rw");  // Read-write (explicit)
 
 // Enum modes (explicit, type-safe)
-StarDataset store5("data.star", FileMode::READ_ONLY);
-StarDataset store6("data.star", FileMode::READ_WRITE);
+auto store5 = StarDataset::open("data.stards", FileMode::READ_ONLY);
+auto store6 = StarDataset::open("data.stards", FileMode::READ_WRITE);
+
+// Create a new file
+auto store7 = StarDataset::create("data.stards");
 ```
 
 **Supported string modes:**
@@ -267,31 +279,31 @@ StarDataset store6("data.star", FileMode::READ_WRITE);
 
 ```cpp
 // Read from HTTP (read-only)
-StarDataset store("/vsicurl/https://example.com/data.star", "r");
-auto data = store.get<NDArray<double>>("sensor_data");
+auto store = StarDataset::open("/vsicurl/https://example.com/data.stards", "r");
+auto data = store->get<double>("sensor_data");
 
 // Cannot write to HTTP source, but can save locally
-store.saveTo("/tmp/local-copy.star");
+store->saveTo("/tmp/local-copy.stards");
 ```
 
 ### S3 Cloud Storage
 
 ```cpp
 // Read from S3 (both modes work)
-StarDataset store("/vsis3/my-bucket/data.star", "r");  // String mode
-// or: StarDataset store("/vsis3/my-bucket/data.star", FileMode::READ_ONLY);
-auto data = store.get<NDArray<double>>("sensor_data");
+auto store = StarDataset::open("/vsis3/my-bucket/data.stards", "r");  // String mode
+// or: StarDataset::open("/vsis3/my-bucket/data.stards", FileMode::READ_ONLY);
+auto data = store->get<double>("sensor_data");
 
 // Write to S3
-StarDataset output("/vsis3/output-bucket/results.star", "w");
-output.put("results", processed_data);
-output.flush();
+auto output = StarDataset::open("/vsis3/output-bucket/results.stards", "w");
+output->put("results", NDArray<double>::zeros({256, 256}));
+output->flush();
 
 // Save S3 file locally
-store.saveTo("/tmp/local-copy.star");
+store->saveTo("/tmp/local-copy.stards");
 ```
 
-**S3 URL Format:** `/vsis3/bucket-name/path/to/file.star`
+**S3 URL Format:** `/vsis3/bucket-name/path/to/file.stards`
 
 **Authentication** (choose one method):
 
@@ -319,10 +331,10 @@ aws_secret_access_key = KEY
 
 ```python
 import numpy as np
-from pystar import StarDataset
+from pystards import StarDataset
 
 # Create dataset and store arrays
-with StarDataset.create("data.star") as ds:
+with StarDataset.create("data.stards") as ds:
     # Dictionary-style access for arrays
     ds["matrix"] = np.random.rand(100, 100)
     ds["vector"] = np.arange(1000)
@@ -334,7 +346,7 @@ with StarDataset.create("data.star") as ds:
     ds.meta["timestamp"] = "2024-04-21"
 
 # Read back
-with StarDataset.open("data.star", mode="r") as ds:
+with StarDataset.open("data.stards", mode="r") as ds:
     matrix = ds["matrix"]           # Gets the array
     matrix_meta = ds.meta["matrix"] # Gets the metadata (different!)
     sensor_id = ds.meta["sensor_id"]
@@ -344,11 +356,11 @@ with StarDataset.open("data.star", mode="r") as ds:
         print(f"{key}: {ds[key].shape}")
 
 # S3 access
-with StarDataset.open("/vsis3/my-bucket/data.star", mode="r") as ds:
+with StarDataset.open("/vsis3/my-bucket/data.stards", mode="r") as ds:
     data = ds["sensor_data"]
 
 # HTTP access
-with StarDataset.open("/vsicurl/https://example.com/data.star", mode="r") as ds:
+with StarDataset.open("/vsicurl/https://example.com/data.stards", mode="r") as ds:
     data = ds["array_name"]
 ```
 
@@ -356,33 +368,41 @@ with StarDataset.open("/vsicurl/https://example.com/data.star", mode="r") as ds:
 
 STAR supports **layers** for storing multiple versions of the same data. Each layer can have its own version of an array, or inherit from the base layer.
 
-**Key Concept:** When you access a key in a layer that wasn't explicitly set in that layer, it **automatically falls back to the base layer**. You only override what changes.
+**Key Concept:** A key that isn't set in a layer can **fall back to the base layer** (inheritance). Inheritance is **off by default** — a missing key is reported as missing. Opt in either at open time with `OpenOptions`, or after opening with `set_layer_inheritance(True)`, when you want a layer to see base keys it didn't override.
 
 ```python
 import numpy as np
-from pystar import StarDataset
+from pystards import StarDataset
 
 # Create dataset with base data
-ds = StarDataset.create("hyperspectral.star")
+ds = StarDataset.create("hyperspectral.stards")
 ds["image"] = np.random.rand(512, 512, 300)  # Base hyperspectral cube
 ds["wavelengths"] = np.linspace(400, 2500, 300)
-ds["metadata"] = calibration_info
+ds["metadata"] = np.array([1, 2, 3])          # Base calibration info
 
 # Create layer for processed version
 processed = ds.create_layer("processed")
-processed["image"] = median_filter(ds["image"])  # Override: Different image data
-# "wavelengths" and "metadata" NOT set → will inherit from base automatically!
+processed["image"] = ds["image"] * 2          # Override: Different image data
+# "wavelengths" and "metadata" NOT set → inherited from base if inheritance is on
 
 # Create layer for calibrated version
 calibrated = ds.create_layer("calibrated")
-calibrated["image"] = calibrate(ds["image"])     # Override: Another version
-calibrated["wavelengths"] = adjusted_wavelengths # Override: Different wavelengths
-# "metadata" NOT set → will inherit from base automatically!
+calibrated["image"] = ds["image"] + 1              # Override: Another version
+calibrated["wavelengths"] = np.linspace(410, 2510, 300)  # Override: Different wavelengths
+# "metadata" NOT set → inherited from base if inheritance is on
 
 ds.flush()
 
-# Read back - inheritance happens automatically
-ds2 = StarDataset.open("hyperspectral.star")
+# Read back. Inheritance is OFF by default, so opt in to get base fallback.
+# Option 1 — at open time via OpenOptions:
+import pystards
+opts = pystards.OpenOptions()
+opts.layer_inheritance = True
+ds2 = StarDataset.open("hyperspectral.stards", mode="r", options=opts)
+
+# Option 2 — after opening, on any dataset:
+ds2 = StarDataset.open("hyperspectral.stards")
+ds2.set_layer_inheritance(True)
 
 base_img = ds2["image"]                           # Base version
 base_waves = ds2["wavelengths"]                   # [400...2500]
@@ -400,7 +420,7 @@ cal_meta = cal_layer["metadata"]                  # ← Inherited from base! Sam
 
 # Layers also support metadata with inheritance
 layer = ds.create_layer("variant")
-layer["data"] = modified_array                    # Override data
+layer["image"] = ds["image"] * 0.5                # Override data
 layer.meta["variant_info"] = "Layer-specific"     # Layer-specific metadata
 # layer.meta["description"] would inherit from base if base had it
 ```

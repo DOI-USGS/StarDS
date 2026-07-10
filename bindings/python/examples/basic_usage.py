@@ -12,12 +12,12 @@ This example demonstrates:
 """
 
 import numpy as np
-from pystar import StarDataset
+from pystards import StarDataset
 
 def main():
     # Create a new dataset
     print("Creating dataset...")
-    with StarDataset.create("example_basic.star") as ds:
+    with StarDataset.create("example_basic.stards") as ds:
         # Store arrays using dictionary syntax
         print("\nStoring arrays...")
         ds["integers"] = np.array([1, 2, 3, 4, 5], dtype=np.int32)
@@ -40,7 +40,7 @@ def main():
 
     # Reopen and read
     print("\nReading from dataset...")
-    with StarDataset.open("example_basic.star", mode="r") as ds:
+    with StarDataset.open("example_basic.stards", mode="r") as ds:
         print(f"Dataset contains {len(ds)} arrays")
 
         # Iterate over all arrays

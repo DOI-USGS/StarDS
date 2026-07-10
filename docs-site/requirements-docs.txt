@@ -7,7 +7,7 @@
 #   mamba install -c conda-forge \
 #       mkdocs mkdocs-material mkdoxy mkdocstrings mkdocstrings-python doxygen
 #
-# The docs live under docs-site/ (this file's directory). The built pystar
+# The docs live under docs-site/ (this file's directory). The built pystards
 # extension must be importable so mkdocstrings can introspect the Python API.
 # Build/preview either from inside docs-site/:
 #

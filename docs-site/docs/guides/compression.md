@@ -11,15 +11,23 @@ StarDS compresses array and metadata blocks independently. Compression is
 | `CompressionAlgorithm.NONE` | Fastest | — | Largest files; best for temporary or pre-compressed data |
 | `CompressionAlgorithm.LZ4` | Very fast | Modest | ~3× faster than GZIP; great for fast writes |
 | `CompressionAlgorithm.GZIP` | Balanced | Good | Default; widely compatible (zlib / RFC 1952) |
+| `CompressionAlgorithm.GZIP_SHUFFLE` | Balanced | Better on numeric | GZIP with a byte-shuffle prefilter; improves numeric-array ratios |
+| `CompressionAlgorithm.LZ4_SHUFFLE` | Very fast | Better on numeric | LZ4 with a byte-shuffle prefilter |
 
 The native codec must be enabled at build time (`STAR_ENABLE_ZLIB` for GZIP,
 `STAR_ENABLE_LZ4` for LZ4) — both on by default; see
 [Installation](../getting-started/installation.md).
 
+The `*_SHUFFLE` variants apply a byte-shuffle prefilter (grouping the same byte
+position across elements) before compressing, which markedly improves the
+compression of fixed-width numeric arrays such as float64. Shuffled arrays are
+read as whole blocks rather than sliced.
+
 !!! note "ZSTD is reserved but not implemented"
     `CompressionAlgorithm.ZSTD` exists in the enum for forward compatibility, but
-    the current reference library only reads and writes `NONE`, `GZIP`, and `LZ4`.
-    Selecting `ZSTD` raises an "unsupported compression algorithm" error.
+    the current reference library reads and writes `NONE`, `GZIP`, `LZ4`, and the
+    two shuffle variants. Selecting `ZSTD` raises an "unsupported compression
+    algorithm" error.
 
 ## Configuring compression (`StarConfig`)
 
@@ -27,7 +35,7 @@ Pass a `StarConfig` to `StarDataset.create()` to control the codec and block
 size:
 
 ```python
-from pystar import StarDataset, StarConfig, CompressionAlgorithm
+from pystards import StarDataset, StarConfig, CompressionAlgorithm
 import numpy as np
 
 # High compression for archival storage
@@ -36,7 +44,7 @@ config.compression = CompressionAlgorithm.GZIP
 config.block_size = 512 * 1024               # 512 KB blocks
 config.metadata_compression = CompressionAlgorithm.GZIP
 
-store = StarDataset.create("/tmp/archive.star", config)
+store = StarDataset.create("/tmp/archive.stards", config)
 store["data"] = np.random.rand(1000, 1000)
 store.flush()
 ```
@@ -47,7 +55,7 @@ config = StarConfig()
 config.compression = CompressionAlgorithm.LZ4
 config.block_size = 2 * 1024 * 1024          # 2 MB blocks
 
-store = StarDataset.create("/tmp/fast.star", config)
+store = StarDataset.create("/tmp/fast.stards", config)
 store["data"] = np.random.rand(1000, 1000)
 store.flush()
 ```
@@ -58,7 +66,7 @@ config = StarConfig()
 config.compression = CompressionAlgorithm.NONE
 config.block_size = 4 * 1024 * 1024          # 4 MB blocks
 
-store = StarDataset.create("/tmp/uncompressed.star", config)
+store = StarDataset.create("/tmp/uncompressed.stards", config)
 store["data"] = np.random.rand(1000, 1000)
 store.flush()
 ```
@@ -103,7 +111,7 @@ config = StarConfig()
 config.metadata_max_block_size = 256 * 1024   # 256 KB (default is 64 KB)
 config.metadata_compression = CompressionAlgorithm.GZIP
 
-store = StarDataset.create("/tmp/rich_metadata.star", config)
+store = StarDataset.create("/tmp/rich_metadata.stards", config)
 for i in range(100):
     store.meta[f"note_{i}"] = f"observation {i}"
 store.flush()
@@ -111,16 +119,14 @@ store.flush()
 
 ## Choosing the codec in code
 
-Compression for a `.star` file is set through `StarConfig` when the dataset is
+Compression for a `.stards` file is set through `StarConfig` when the dataset is
 created (see the examples above). To re-encode an existing file with a different
 codec or block size, open it with the desired `StarConfig` and copy its contents
 into a newly created dataset.
 
-!!! warning "`star_translate -c` / `-b` are not applied"
-    The [`star_translate`](../cli/star-translate.md) CLI accepts `-c`/`--compression`
-    and `-b`/`--block-size` flags, but the current tool creates its STAR output
-    with the **default** `StarConfig` and does not apply these values. Use the
-    `StarConfig` API above to control the codec and block size.
+For command-line conversion, [`star_translate`](../cli/star-translate.md) applies
+its `-c`/`--compression` and `-b`/`--block-size` flags to the STAR output (the
+codecs are `none`, `gzip`, `lz4`, `gzip-shuffle`, `lz4-shuffle`).
 
 ## Tips
 

@@ -12,14 +12,14 @@ dimension:
 
 ```python
 import numpy as np
-from pystar import StarDataset
+from pystards import StarDataset
 
 # Store a large array
-with StarDataset.create("large.star") as ds:
+with StarDataset.create("large.stards") as ds:
     ds["big_matrix"] = np.random.rand(10000, 10000)
 
 # Read only a 100×100 corner (efficient!)
-with StarDataset.open("large.star", mode="r") as ds:
+with StarDataset.open("large.stards", mode="r") as ds:
     subset = ds.get_slice("big_matrix", [(0, 100), (0, 100)])
     print(subset.shape)  # (100, 100)
 ```
@@ -60,10 +60,10 @@ than as metadata.
 ## C++
 
 ```cpp
-#include "star.h"
+#include "stards.h"
 using namespace star;
 
-auto store = StarDataset::open("large.star", "r");
+auto store = StarDataset::open("large.stards", "r");
 // Slice specs are per-dimension {start, stop[, step]}
 auto subset = store->get_slice<double>("big_matrix", {{0, 100}, {0, 100}});
 ```

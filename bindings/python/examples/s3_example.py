@@ -11,7 +11,7 @@ Note: Requires AWS credentials configured (e.g., via environment variables)
 """
 
 import numpy as np
-from pystar import StarDataset
+from pystards import StarDataset
 import os
 
 def main():
@@ -25,8 +25,8 @@ def main():
         print("   This example will use local file instead\n")
 
     # Example S3 paths (update with your bucket)
-    s3_path = "/vsis3/your-bucket-name/data.star"
-    local_path = "example_s3_local.star"
+    s3_path = "/vsis3/your-bucket-name/data.stards"
+    local_path = "example_s3_local.stards"
 
     # Use local path if no AWS credentials
     file_path = s3_path if has_aws else local_path
@@ -68,7 +68,7 @@ def main():
     # Demonstrate HTTP streaming (read-only)
     print("\n3. HTTP streaming example")
     print("   (This requires a publicly accessible HTTP URL)")
-    http_url = "/vsicurl/https://example.com/data.star"
+    http_url = "/vsicurl/https://example.com/data.stards"
     print(f"   URL: {http_url}")
     print("   Skipping - requires valid public URL")
 
@@ -80,7 +80,7 @@ def main():
         print("\n✓ S3 example complete!")
         print(f"\nNote: S3 file written to: {s3_path}")
         print("      You may want to clean it up:")
-        print(f"      aws s3 rm s3://your-bucket-name/data.star")
+        print(f"      aws s3 rm s3://your-bucket-name/data.stards")
     else:
         print("\n✓ Local file example complete (S3 requires credentials)")
         print(f"\nLocal file: {local_path}")

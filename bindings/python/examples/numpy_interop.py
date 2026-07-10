@@ -10,13 +10,13 @@ This example demonstrates:
 """
 
 import numpy as np
-from pystar import StarDataset, zeros, ones, arange, full
+from pystards import StarDataset, zeros, ones, arange, full
 
 def main():
     print("NumPy Interoperability Example\n" + "="*50)
 
     # Create store
-    with StarDataset("example_numpy.star") as store:
+    with StarDataset("example_numpy.stards") as store:
         # Store NumPy arrays directly
         print("\n1. Storing NumPy arrays...")
         random_data = np.random.rand(100, 100)
@@ -35,7 +35,7 @@ def main():
 
     # Reopen and demonstrate slicing
     print("\n3. Demonstrating array slicing...")
-    with StarDataset("example_numpy.star") as store:
+    with StarDataset("example_numpy.stards") as store:
         # Check if array is sliceable
         if store.is_sliceable("large_array"):
             print("   ✓ large_array is sliceable")
@@ -57,7 +57,7 @@ def main():
 
     # Demonstrate array creation helpers
     print("\n4. Using array creation helpers...")
-    with StarDataset("example_helpers.star") as store:
+    with StarDataset("example_helpers.stards") as store:
         # Create arrays using helper functions
         store.put("zeros_5x5", zeros((5, 5)))
         store.put("ones_3x4", ones((3, 4)))
@@ -67,7 +67,7 @@ def main():
         print("   Created arrays with helpers")
 
     # Verify
-    with StarDataset("example_helpers.star", mode="r") as store:
+    with StarDataset("example_helpers.stards", mode="r") as store:
         zeros_arr = store.get("zeros_5x5")
         print(f"\n   zeros array: shape={zeros_arr.shape}, all zero? {np.all(zeros_arr == 0)}")
 

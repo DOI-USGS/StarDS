@@ -42,10 +42,10 @@ make install
 
 ```python
 import numpy as np
-from pystar import StarDataset
+from pystards import StarDataset
 
 # Create a new dataset
-with StarDataset.create("data.star") as ds:
+with StarDataset.create("data.stards") as ds:
     # Dictionary-style access (recommended)
     ds["matrix"] = np.random.rand(100, 100)
     ds["vector"] = np.arange(1000)
@@ -57,7 +57,7 @@ with StarDataset.create("data.star") as ds:
     # Data auto-flushed on exit
 
 # Read back
-with StarDataset.open("data.star", mode="r") as ds:
+with StarDataset.open("data.stards", mode="r") as ds:
     matrix = ds["matrix"]
     
     # Iterate over keys
@@ -71,10 +71,10 @@ with StarDataset.open("data.star", mode="r") as ds:
 
 ```python
 import numpy as np
-from pystar import StarDataset
+from pystards import StarDataset
 
 # Create/open dataset
-ds = StarDataset.create("example.star")
+ds = StarDataset.create("example.stards")
 
 # Store arrays - dictionary style
 ds["integers"] = np.array([1, 2, 3, 4, 5])
@@ -164,29 +164,29 @@ for key, value in all_meta.items():
 Control STARDS logging level at runtime:
 
 ```python
-import pystar
+import pystards
 
 # Check current log level
-print(f"Current level: {pystar.get_log_level()}")  # Default: 4 (ERROR)
+print(f"Current level: {pystards.get_log_level()}")  # Default: 4 (ERROR)
 
 # Enable debug logging to see internal operations
-pystar.set_log_level(pystar.LogLevel.DEBUG)
+pystards.set_log_level(pystards.LogLevel.DEBUG)
 
 # Available levels:
-# pystar.LogLevel.TRACE   (0) - Most verbose
-# pystar.LogLevel.DEBUG   (1) - Debug messages
-# pystar.LogLevel.INFO    (2) - Info messages
-# pystar.LogLevel.WARN    (3) - Warnings
-# pystar.LogLevel.ERROR   (4) - Errors only (default)
+# pystards.LogLevel.TRACE   (0) - Most verbose
+# pystards.LogLevel.DEBUG   (1) - Debug messages
+# pystards.LogLevel.INFO    (2) - Info messages
+# pystards.LogLevel.WARN    (3) - Warnings
+# pystards.LogLevel.ERROR   (4) - Errors only (default)
 
 # Or use string names
-pystar.set_log_level("DEBUG")
+pystards.set_log_level("DEBUG")
 
 # Or use integers directly
-pystar.set_log_level(1)  # DEBUG
+pystards.set_log_level(1)  # DEBUG
 
 # Reset to default (errors only)
-pystar.set_log_level(pystar.LogLevel.ERROR)
+pystards.set_log_level(pystards.LogLevel.ERROR)
 ```
 
 ### Explicit Close (New!)
@@ -195,12 +195,12 @@ Close datasets explicitly when not using context managers:
 
 ```python
 # Without context manager
-store = StarDataset("data.star")
+store = StarDataset("data.stards")
 store["data"] = np.array([1, 2, 3])
 store.close()  # Explicitly flush and close
 
 # Context manager still recommended (auto-close)
-with StarDataset("data.star") as store:
+with StarDataset("data.stards") as store:
     store["data"] = np.array([1, 2, 3])
     # Automatically closed on exit
 ```
@@ -241,22 +241,22 @@ subset_3d = store.get_slice("3d_data", [(0, 20, 2), (5, 15), (0, 20)])
 
 ```python
 # Write to S3 (requires AWS credentials)
-with StarDataset("/vsis3/my-bucket/data.star") as store:
+with StarDataset("/vsis3/my-bucket/data.stards") as store:
     store.put("cloud_data", np.random.rand(1000, 100))
 
 # Read from S3
-with StarDataset("/vsis3/my-bucket/data.star", mode="r") as store:
+with StarDataset("/vsis3/my-bucket/data.stards", mode="r") as store:
     data = store.get("cloud_data")
 
 # Read from HTTP (read-only)
-with StarDataset("/vsicurl/https://example.com/data.star", mode="r") as store:
+with StarDataset("/vsicurl/https://example.com/data.stards", mode="r") as store:
     data = store.get("some_array")
 ```
 
 ### Array Creation Helpers
 
 ```python
-from pystar import zeros, ones, arange, full
+from pystards import zeros, ones, arange, full
 
 # Create arrays similar to NumPy
 z = zeros((5, 5))           # 5x5 array of zeros
@@ -274,7 +274,7 @@ store.put("ones", o)
 Customize compression, block sizes, and metadata storage when creating files:
 
 ```python
-from pystar import StarDataset, StarConfig, CompressionAlgorithm
+from pystards import StarDataset, StarConfig, CompressionAlgorithm
 
 # Example 1: High compression for archival storage
 config = StarConfig()
@@ -282,7 +282,7 @@ config.compression = CompressionAlgorithm.ZSTD
 config.block_size = 512 * 1024  # 512KB blocks
 config.metadata_compression = CompressionAlgorithm.ZSTD
 
-store = StarDataset.create("/tmp/archive.star", config)
+store = StarDataset.create("/tmp/archive.stards", config)
 store["data"] = np.random.rand(1000, 1000)
 store.flush()
 
@@ -291,7 +291,7 @@ config = StarConfig()
 config.compression = CompressionAlgorithm.LZ4
 config.block_size = 2 * 1024 * 1024  # 2MB blocks
 
-store = StarDataset.create("/tmp/fast.star", config)
+store = StarDataset.create("/tmp/fast.stards", config)
 store["data"] = np.random.rand(1000, 1000)
 store.flush()
 
@@ -300,7 +300,7 @@ config = StarConfig()
 config.compression = CompressionAlgorithm.NONE
 config.block_size = 4 * 1024 * 1024  # 4MB blocks
 
-store = StarDataset.create("/tmp/uncompressed.star", config)
+store = StarDataset.create("/tmp/uncompressed.stards", config)
 store["data"] = np.random.rand(1000, 1000)
 store.flush()
 
@@ -308,7 +308,7 @@ store.flush()
 config = StarConfig()
 config.metadata_block_enabled = False  # Makes small arrays sliceable
 
-store = StarDataset.create("/tmp/no_metadata.star", config)
+store = StarDataset.create("/tmp/no_metadata.stards", config)
 store["small"] = np.array([1, 2, 3])  # Normally goes to metadata block
 store.flush()
 # Now even small arrays support slicing
@@ -317,7 +317,7 @@ store.flush()
 config = StarConfig()
 config.metadata_max_block_size = 256 * 1024  # 256KB (default is 64KB)
 
-store = StarDataset.create("/tmp/large_metadata.star", config)
+store = StarDataset.create("/tmp/large_metadata.stards", config)
 for i in range(100):
     store[f"array_{i}"] = np.arange(100, dtype=np.float64)
 store.flush()
@@ -425,7 +425,7 @@ Configuration for file creation. Pass to `StarDataset.create()`.
 config = StarConfig()
 config.compression = CompressionAlgorithm.ZSTD
 config.block_size = 512 * 1024
-store = StarDataset.create("output.star", config)
+store = StarDataset.create("output.stards", config)
 ```
 
 ### NDArray
@@ -474,7 +474,7 @@ cd bindings/python
 pytest tests/ -v
 
 # With coverage
-pytest tests/ -v --cov=pystar --cov-report=html
+pytest tests/ -v --cov=pystards --cov-report=html
 ```
 
 ## Examples

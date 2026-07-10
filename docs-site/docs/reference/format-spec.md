@@ -2,11 +2,11 @@
 
 This document describes the on-disk binary structure of StarDS (Simple Tensors
 Arrays and Rasters) files, as written and read by the reference implementation in
-`Star/include/star.h`.
+`StarDS/include/stards.h`.
 
 ## File extension
 
-`.star`
+`.stards`
 
 ## Format version
 
@@ -18,7 +18,7 @@ at runtime via `getLibraryVersion()`.)
 
 ## Binary structure
 
-A `.star` file is a **header section** followed by a **data section**:
+A `.stards` file is a **header section** followed by a **data section**:
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
@@ -151,11 +151,29 @@ Compression is stored as a single-byte enum:
 | 1 | GZIP | GZIP/zlib compression (RFC 1952) |
 | 2 | ZSTD | Zstandard — reserved; not implemented by the reference library |
 | 3 | LZ4 | LZ4 compression |
+| 4 | GZIP_SHUFFLE | Byte-shuffle prefilter, then GZIP |
+| 5 | LZ4_SHUFFLE | Byte-shuffle prefilter, then LZ4 |
 
 !!! note
     The `ZSTD` value is reserved in the enum but the reference implementation
-    currently reads and writes only `NONE`, `GZIP`, and `LZ4`. See the
-    [Compression guide](../guides/compression.md).
+    currently reads and writes only `NONE`, `GZIP`, and `LZ4` (and their
+    `*_SHUFFLE` variants). See the [Compression guide](../guides/compression.md).
+
+### Byte-shuffle prefilter (`*_SHUFFLE`)
+
+The shuffle variants apply a reversible **byte-shuffle** to a fixed-width numeric
+array before the base codec: for elements of `N` bytes, all byte-0s are written
+contiguously, then all byte-1s, and so on. This groups the slowly-varying
+high-order bytes of numeric data (e.g. `float64` coordinates), which GZIP/LZ4
+then compress far more effectively. The shuffle is applied to the whole array's
+serialized bytes prior to block splitting and reversed on read using the element
+width from the array's data type.
+
+- Applied only to **fixed-width numeric** arrays stored separately; `string`
+  arrays and the metadata block always use the base codec.
+- Because the shuffle spans the entire array, shuffled arrays are **not
+  sliceable** (`get_slice()` throws; `is_sliceable()` returns false) — read them
+  in full with `get<T>()`.
 
 ## Data section
 
@@ -195,7 +213,7 @@ When compressed:
 
 ## Validation
 
-A valid `.star` file must:
+A valid `.stards` file must:
 
 1. Start with the magic string `"STARDS"`.
 2. Use a recognized format version.

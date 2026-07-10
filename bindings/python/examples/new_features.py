@@ -3,9 +3,9 @@ Example demonstrating standard STARDS Python API features:
 1. Dictionary-style accessors: ds["key"] = array
 2. Metadata storage: ds.meta["key"] = value
 3. Iteration: for key in ds
-4. Logger control: pystar.set_log_level()
+4. Logger control: pystards.set_log_level()
 """
-import pystar
+import pystards
 import numpy as np
 import tempfile
 import os
@@ -16,15 +16,15 @@ def main():
     print("Feature 1: Logger Control")
     print("=" * 60)
 
-    print(f"Default log level: {pystar.get_log_level()} (4=ERROR)")
+    print(f"Default log level: {pystards.get_log_level()} (4=ERROR)")
 
     # Enable debug logging
-    pystar.set_log_level(pystar.LogLevel.DEBUG)
-    print(f"New log level: {pystar.get_log_level()} (1=DEBUG)")
+    pystards.set_log_level(pystards.LogLevel.DEBUG)
+    print(f"New log level: {pystards.get_log_level()} (1=DEBUG)")
     print("Debug messages will now be printed by STARDS C++ code\n")
 
     # Create a temporary file
-    with tempfile.NamedTemporaryFile(suffix='.star', delete=False) as f:
+    with tempfile.NamedTemporaryFile(suffix='.stards', delete=False) as f:
         temp_file = f.name
 
     try:
@@ -34,7 +34,7 @@ def main():
         print("=" * 60)
 
         # Create dataset
-        store = pystar.StarDataset.create(temp_file)
+        store = pystards.StarDataset.create(temp_file)
 
         # Dictionary-style assignment for arrays
         print("Storing arrays with dict syntax: ds['key'] = array")
@@ -58,7 +58,7 @@ def main():
         print("Feature 3: Reading & Iteration")
         print("=" * 60)
 
-        store = pystar.StarDataset.open(temp_file, mode="r")
+        store = pystards.StarDataset.open(temp_file, mode="r")
 
         # Dictionary-style access for arrays
         print("Reading arrays with dict syntax: array = ds['key']")
@@ -89,7 +89,7 @@ def main():
         print("Context Manager (Automatic close)")
         print("=" * 60)
 
-        with pystar.StarDataset(temp_file, "r") as store:
+        with pystards.StarDataset(temp_file, "r") as store:
             print("Inside context manager")
             all_keys = store.keys()
             print(f"All keys: {all_keys}")
@@ -101,8 +101,8 @@ def main():
         print("Context manager closed automatically\n")
 
         # Reset log level to default (ERROR)
-        pystar.set_log_level(pystar.LogLevel.ERROR)
-        print(f"Log level reset to: {pystar.get_log_level()} (4=ERROR)")
+        pystards.set_log_level(pystards.LogLevel.ERROR)
+        print(f"Log level reset to: {pystards.get_log_level()} (4=ERROR)")
 
     finally:
         # Cleanup

@@ -3,9 +3,6 @@ Test LayerView metadata accessor with inheritance
 
 Tests that each layer has its own meta object and can inherit from base.
 """
-import sys
-sys.path.insert(0, 'build/bindings/python')
-
 try:
     import pytest
     HAVE_PYTEST = True
@@ -13,7 +10,7 @@ except ImportError:
     HAVE_PYTEST = False
 
 import numpy as np
-from pystar import StarDataset
+from pystards import StarDataset
 import tempfile
 import os
 
@@ -23,7 +20,7 @@ class TestLayerMetadata:
 
     def test_layer_meta_put_get(self):
         """Test layer.meta['key'] = value and layer.meta['key']"""
-        with tempfile.NamedTemporaryFile(suffix=".star", delete=False) as f:
+        with tempfile.NamedTemporaryFile(suffix=".stards", delete=False) as f:
             filename = f.name
 
         try:
@@ -52,11 +49,12 @@ class TestLayerMetadata:
 
     def test_layer_meta_inheritance(self):
         """Test that layer.meta inherits from base"""
-        with tempfile.NamedTemporaryFile(suffix=".star", delete=False) as f:
+        with tempfile.NamedTemporaryFile(suffix=".stards", delete=False) as f:
             filename = f.name
 
         try:
             ds = StarDataset.create(filename)
+            ds.set_layer_inheritance(True)  # inheritance is off by default
 
             # Store base metadata
             ds.meta["instrument"] = "AVIRIS"
@@ -91,7 +89,7 @@ class TestLayerMetadata:
 
     def test_layer_meta_override(self):
         """Test that layer metadata can override base metadata"""
-        with tempfile.NamedTemporaryFile(suffix=".star", delete=False) as f:
+        with tempfile.NamedTemporaryFile(suffix=".stards", delete=False) as f:
             filename = f.name
 
         try:
@@ -120,11 +118,12 @@ class TestLayerMetadata:
 
     def test_layer_meta_isolation(self):
         """Test that layer metadata is isolated between layers"""
-        with tempfile.NamedTemporaryFile(suffix=".star", delete=False) as f:
+        with tempfile.NamedTemporaryFile(suffix=".stards", delete=False) as f:
             filename = f.name
 
         try:
             ds = StarDataset.create(filename)
+            ds.set_layer_inheritance(True)  # inheritance is off by default
             ds.meta["instrument"] = "AVIRIS"
 
             # Create two layers with different metadata
@@ -154,7 +153,7 @@ class TestLayerMetadata:
 
     def test_layer_meta_persistence(self):
         """Test that layer metadata persists across close/reopen"""
-        with tempfile.NamedTemporaryFile(suffix=".star", delete=False) as f:
+        with tempfile.NamedTemporaryFile(suffix=".stards", delete=False) as f:
             filename = f.name
 
         try:
@@ -168,8 +167,9 @@ class TestLayerMetadata:
 
             ds.close()
 
-            # Read
+            # Read (opt into inheritance, off by default)
             ds = StarDataset.open(filename)
+            ds.set_layer_inheritance(True)
             layer = ds.get_layer("band_0")
 
             # Layer metadata should persist
@@ -183,9 +183,35 @@ class TestLayerMetadata:
             if os.path.exists(filename):
                 os.unlink(filename)
 
+    def test_meta_accessor_outlives_temporary_layer_view(self):
+        """A metadata accessor obtained from a temporary LayerView must stay
+        valid after that view is dropped (regression: use-after-free / segfault).
+        """
+        with tempfile.NamedTemporaryFile(suffix=".stards", delete=False) as f:
+            filename = f.name
+
+        try:
+            ds = StarDataset.create(filename)
+            ds.set_layer_inheritance(True)  # inheritance is off by default
+            ds.meta["instrument"] = "AVIRIS"
+            layer = ds.create_layer("band_0")
+            layer.meta["wavelength"] = 450.5
+
+            # get_layer(...) returns a fresh LayerView that is discarded right
+            # after we grab its accessor. Previously the underlying C++ view was
+            # freed, leaving the accessor dangling.
+            acc = ds.get_layer("band_0")._meta_accessor
+            assert len(acc) == len(acc.keys())
+            assert "wavelength" in acc.keys()
+            assert "instrument" in acc.keys()
+
+        finally:
+            if os.path.exists(filename):
+                os.unlink(filename)
+
     def test_hyperspectral_use_case(self):
         """Test full hyperspectral workflow with per-band metadata"""
-        with tempfile.NamedTemporaryFile(suffix=".star", delete=False) as f:
+        with tempfile.NamedTemporaryFile(suffix=".stards", delete=False) as f:
             filename = f.name
 
         try:
@@ -214,8 +240,9 @@ class TestLayerMetadata:
 
             ds.close()
 
-            # Reopen and verify
+            # Reopen and verify (opt into inheritance, off by default)
             ds = StarDataset.open(filename)
+            ds.set_layer_inheritance(True)
 
             # Check base metadata
             assert ds.meta["instrument"] == "AVIRIS"

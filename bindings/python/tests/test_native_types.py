@@ -7,9 +7,6 @@ Scalars should return as native Python types, not NumPy arrays:
 - Float -> float
 - Arrays -> np.ndarray
 """
-import sys
-sys.path.insert(0, 'build/bindings/python')
-
 try:
     import pytest
     HAVE_PYTEST = True
@@ -17,7 +14,7 @@ except ImportError:
     HAVE_PYTEST = False
 
 import numpy as np
-from pystar import StarDataset
+from pystards import StarDataset
 import tempfile
 import os
 
@@ -27,7 +24,7 @@ class TestNativeTypes:
 
     def test_scalar_string_returns_str(self):
         """Test that scalar strings return as str, not np.ndarray"""
-        with tempfile.NamedTemporaryFile(suffix=".star", delete=False) as f:
+        with tempfile.NamedTemporaryFile(suffix=".stards", delete=False) as f:
             filename = f.name
 
         try:
@@ -63,7 +60,7 @@ class TestNativeTypes:
 
     def test_scalar_numbers_return_native(self):
         """Test that scalar numbers return as int/float"""
-        with tempfile.NamedTemporaryFile(suffix=".star", delete=False) as f:
+        with tempfile.NamedTemporaryFile(suffix=".stards", delete=False) as f:
             filename = f.name
 
         try:
@@ -94,7 +91,7 @@ class TestNativeTypes:
 
     def test_arrays_return_ndarray(self):
         """Test that arrays still return as np.ndarray"""
-        with tempfile.NamedTemporaryFile(suffix=".star", delete=False) as f:
+        with tempfile.NamedTemporaryFile(suffix=".stards", delete=False) as f:
             filename = f.name
 
         try:
@@ -125,11 +122,12 @@ class TestNativeTypes:
 
     def test_layer_metadata_returns_native_types(self):
         """Test that layer metadata also returns native types"""
-        with tempfile.NamedTemporaryFile(suffix=".star", delete=False) as f:
+        with tempfile.NamedTemporaryFile(suffix=".stards", delete=False) as f:
             filename = f.name
 
         try:
             ds = StarDataset.create(filename)
+            ds.set_layer_inheritance(True)  # inheritance is off by default
 
             # Base metadata
             ds.meta["instrument"] = "AVIRIS"
@@ -165,7 +163,7 @@ class TestNativeTypes:
 
     def test_persistence_with_native_types(self):
         """Test that native types persist across close/reopen"""
-        with tempfile.NamedTemporaryFile(suffix=".star", delete=False) as f:
+        with tempfile.NamedTemporaryFile(suffix=".stards", delete=False) as f:
             filename = f.name
 
         try:
@@ -205,7 +203,7 @@ class TestNativeTypes:
 
     def test_direct_usage(self):
         """Test direct string usage without type checking"""
-        with tempfile.NamedTemporaryFile(suffix=".star", delete=False) as f:
+        with tempfile.NamedTemporaryFile(suffix=".stards", delete=False) as f:
             filename = f.name
 
         try:
@@ -228,7 +226,7 @@ class TestNativeTypes:
 
             # String operations should work
             assert scene.upper() == "YELLOWSTONE NATIONAL PARK"
-            assert len(scene) == 26
+            assert len(scene) == len("Yellowstone National Park")
             assert round(altitude, 1) == 2357.5
 
         finally:

@@ -1,12 +1,12 @@
 # Python API
 
-The `pystar` package provides a Pythonic, NumPy-friendly interface to StarDS.
+The `pystards` package provides a Pythonic, NumPy-friendly interface to StarDS.
 This page is generated from the package docstrings.
 
 !!! note
     The API reference below is rendered by
-    [mkdocstrings](https://mkdocstrings.github.io/). Because `pystar` loads a
-    compiled SWIG extension at import time, the built `_pystar` module must be
+    [mkdocstrings](https://mkdocstrings.github.io/). Because `pystards` loads a
+    compiled SWIG extension at import time, the built `_pystards` module must be
     importable when the docs are built (see
     [Building the docs](#building-this-page)).
 
@@ -14,7 +14,7 @@ This page is generated from the package docstrings.
 
 | Class / function | Purpose |
 |------------------|---------|
-| `StarDataset` | Create, open, read, and write `.star` files |
+| `StarDataset` | Create, open, read, and write `.stards` files |
 | `NDArray` | NumPy-compatible array wrapper |
 | `MetadataValue` | Type-erased metadata container |
 | `zeros`, `ones`, `arange`, `full` | Array creation helpers |
@@ -23,46 +23,46 @@ This page is generated from the package docstrings.
 
 ## StarDataset
 
-::: pystar.dataset.StarDataset
+::: pystards.dataset.StarDataset
     options:
       heading_level: 3
 
 ## NDArray
 
-::: pystar.ndarray.NDArray
+::: pystards.ndarray.NDArray
     options:
       heading_level: 3
 
 ### Array creation helpers
 
-::: pystar.ndarray.zeros
+::: pystards.ndarray.zeros
     options:
       heading_level: 4
-::: pystar.ndarray.ones
+::: pystards.ndarray.ones
     options:
       heading_level: 4
-::: pystar.ndarray.arange
+::: pystards.ndarray.arange
     options:
       heading_level: 4
-::: pystar.ndarray.full
+::: pystards.ndarray.full
     options:
       heading_level: 4
 
 ## MetadataValue
 
-::: pystar.metadata.MetadataValue
+::: pystards.metadata.MetadataValue
     options:
       heading_level: 3
 
 ## Logging
 
-::: pystar.logger
+::: pystards.logger
     options:
       heading_level: 3
 
 ## Building this page
 
-`pystar` imports the compiled SWIG extension (`_pystar`) at import time, so the
+`pystards` imports the compiled SWIG extension (`_pystards`) at import time, so the
 extension must be built and importable before the documentation is built:
 
 ```bash

@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from pystar import NDArray, zeros, ones, arange, full
+from pystards import NDArray, zeros, ones, arange, full
 
 
 def test_from_numpy():

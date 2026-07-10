@@ -12,8 +12,12 @@ dependencies:
   - pytest
   - python
   - swig
-  - spdlog
   - numpy
+  # Native libraries required by a default-options build (find_package REQUIRED):
+  - zlib
+  - lz4-c
+  - libcurl
+  - openssl
   - pip:
     - mkdocs
     - mkdoxy

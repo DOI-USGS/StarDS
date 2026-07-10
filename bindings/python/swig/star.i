@@ -1,10 +1,31 @@
-%module(directors="1") pystar
+%module(directors="1") pystards
 
 %{
 #define SWIG_FILE_WITH_INIT
-#include "star.h"
+#include "stards.h"
 using namespace star;
 %}
+
+// Feature macros (ENABLE_CURL / ENABLE_ZLIB / ENABLE_LZ4 / ENABLE_S3) are always
+// defined when building the bindings (the bindings CMake requires all four), and
+// the C++ compiler sees them via the %{ %} block above. But directory-scoped
+// add_definitions() also feed them to SWIG's PARSER, where they'd (a) be wrapped
+// as broken valueless module constants and (b) pull the internal CURL/S3 stream
+// classes (HttpStreamBuf, S3Stream, ...) into the wrapper half-formed, breaking
+// `import pystards`. Those classes derive from std::streambuf/std::istream and are
+// pure implementation detail — Python never touches them; the compiled extension
+// provides the real HTTP/S3 behaviour. So undefine the macros for the PARSER
+// ONLY (harmless to the already-compiled %{ %} block, which keeps them), which
+// cleanly excludes those #ifdef'd internal blocks from wrapping, then re-expose
+// the feature flags as genuine integer constants for introspection.
+#undef ENABLE_CURL
+#undef ENABLE_ZLIB
+#undef ENABLE_LZ4
+#undef ENABLE_S3
+%constant int ENABLE_CURL = 1;
+%constant int ENABLE_ZLIB = 1;
+%constant int ENABLE_LZ4  = 1;
+%constant int ENABLE_S3   = 1;
 
 // Work around SWIG's inability to parse std::enable_if SFINAE
 // Tell SWIG to see a simplified version
@@ -53,7 +74,7 @@ namespace std {
 // size_t and uint64_t are the same C++ type on this platform (LP64): reuse the
 // VectorSize instantiation instead of emitting a duplicate std::vector<uint64_t>
 // (which would produce a redefined swig::traits<>). Expose the VectorUInt64 name
-// as a Python alias so callers (e.g. pystar.ndarray) still find it.
+// as a Python alias so callers (e.g. pystards.ndarray) still find it.
 %pythoncode %{
 VectorUInt64 = VectorSize
 %}
@@ -66,6 +87,43 @@ VectorUInt64 = VectorSize
 // Ignore problematic methods BEFORE parsing header
 // Rename 'print' which is a Python keyword
 %rename(print_info) print;
+
+// --- Silence benign SWIG generation warnings -----------------------------
+// These are cosmetic (SWIG limitations / intentional wrapping choices), not
+// bugs. Filtering them keeps a clean, warning-free binding build.
+
+// W325: ExtractionPlan::ElementRange is a nested struct SWIG can't wrap. It's
+// an internal extraction detail with no Python use; we also %ignore it below,
+// but the warning fires at parse time so filter it too.
+%warnfilter(325) star::ExtractionPlan::ElementRange;
+
+// W401: SWIG doesn't wrap std::enable_shared_from_this (StarDataset's base).
+// shared_ptr handling is provided explicitly via %shared_ptr below, so the base
+// isn't needed on the Python side.
+%warnfilter(401) star::StarDataset;
+
+// W451: MAGIC_STRING is an internal `const char*` constant not needed in Python.
+// Ignoring it avoids the "may leak memory" note (SWIG can't own the literal).
+%ignore star::MAGIC_STRING;
+
+// W509: StarDataset::put and NDArray's vector constructor each expose a move
+// (&&) and a const-ref overload. SWIG can only surface one; the move overload
+// wins (correct for zero-copy) and shadows the copy overload. Filter the
+// "effectively ignored" notices for the affected templates.
+%warnfilter(509) star::StarDataset::put;
+%warnfilter(509) star::NDArray;
+
+// Ignore internal HTTP/S3 streaming classes. These derive from std::streambuf /
+// std::istream (which SWIG cannot wrap), are implementation details never used
+// from Python, and wrapping them produces broken proxies (missing delete_*).
+%ignore star::HttpStreamBuf;
+%ignore star::HttpStream;
+%ignore star::S3StreamBuf;
+%ignore star::S3Stream;
+%ignore star::S3Writer;
+%ignore star::AWSV4Signer;
+%ignore star::AWSConfigParser;
+%ignore star::AWSTokenCache;
 
 // Ignore internal serialization methods (not needed in Python)
 %ignore star::StarDataset::serialize_layer_metadata_block;
@@ -137,7 +195,7 @@ VectorUInt64 = VectorSize
 %rename(open) StarDataset::open;
 
 // Parse main header first (defines classes)
-%include "star.h"
+%include "stards.h"
 
 // Import star namespace for SWIG (after header is parsed)
 using namespace star;
@@ -227,3 +285,8 @@ class logger:
 %include "rename_operators.i"
 %include "iterators.i"
 %include "ndarray.i"
+
+// Generic type-dispatching helpers (star_put / star_get / ...). Must come after
+// stards.h (needs the full class definitions + dtype_of) and after numpy_buffer.i
+// (uses ndarray_from_numpy_buffer / ndarray_to_numpy_buffer).
+%include "dispatch.i"

@@ -1,10 +1,24 @@
 cmake_minimum_required(VERSION 3.14)
 
+# The Python bindings wrap the full StarDataset API, including compression and
+# cloud (HTTP/S3) storage. Those features are therefore REQUIRED here (not
+# optional): the built extension always exposes the same, complete surface, and
+# the ENABLE_* macros are guaranteed defined so the wrapper is deterministic.
+# Fail fast with a clear message rather than silently shipping a crippled module.
+foreach(_feat ZLIB LZ4 CURL S3)
+    if(NOT STAR_ENABLE_${_feat})
+        message(STATUS
+            "STAR_ENABLE_${_feat}=OFF, but the Python bindings require it. "
+            "BForcing it onn.")
+        set(STAR_ENABLE_${_feat} ON)
+    endif()
+endforeach()
+
 # Setup for SWIG
 set(CMAKE_SWIG_FLAGS)
 find_package(SWIG REQUIRED COMPONENTS python)
 include(UseSWIG)
-list(APPEND CMAKE_SWIG_FLAGS "-c++" "-py3" "-I${CMAKE_SOURCE_DIR}/Star/include")
+list(APPEND CMAKE_SWIG_FLAGS "-c++" "-py3" "-I${CMAKE_SOURCE_DIR}/StarDS/include")
 
 # On LP64 platforms (e.g. Linux) size_t and uint64_t are the SAME C++ type
 # (unsigned long), so instantiating std::vector<size_t> and std::vector<uint64_t>
@@ -38,60 +52,61 @@ message(STATUS "Python include: ${Python3_INCLUDE_DIRS}")
 message(STATUS "NumPy include: ${Python3_NumPy_INCLUDE_DIRS}")
 
 # Setup for wrapper library
-set(PYSTAR_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/pystar")
+set(PYSTARDS_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/pystards")
 
 set_source_files_properties(swig/star.i PROPERTIES CPLUSPLUS ON)
 
-swig_add_library(pystar
+swig_add_library(pystards
                  LANGUAGE python
                  SOURCES swig/star.i
-                 OUTPUT_DIR ${PYSTAR_OUTPUT_DIR})
+                 OUTPUT_DIR ${PYSTARDS_OUTPUT_DIR})
 
-swig_link_libraries(pystar Star Python3::Module)
+swig_link_libraries(pystards Star Python3::Module)
 
-set_target_properties(pystar PROPERTIES
+set_target_properties(pystards PROPERTIES
     SWIG_USE_TARGET_INCLUDE_DIRECTORIES TRUE
-    LIBRARY_OUTPUT_DIRECTORY ${PYSTAR_OUTPUT_DIR}
+    LIBRARY_OUTPUT_DIRECTORY ${PYSTARDS_OUTPUT_DIR}
 )
 
 # Include directories
-target_include_directories(pystar PRIVATE
-    ${CMAKE_SOURCE_DIR}/Star/include
+target_include_directories(pystards PRIVATE
+    ${CMAKE_SOURCE_DIR}/StarDS/include
     ${Python3_INCLUDE_DIRS}
     ${Python3_NumPy_INCLUDE_DIRS}
 )
 
 # Optional dependencies
 if(STAR_ENABLE_ZLIB)
-    target_compile_definitions(pystar PRIVATE ENABLE_ZLIB)
-    swig_link_libraries(pystar ZLIB::ZLIB)
+    target_compile_definitions(pystards PRIVATE ENABLE_ZLIB)
+    swig_link_libraries(pystards ZLIB::ZLIB)
 endif()
 
 if(STAR_ENABLE_CURL)
-    target_compile_definitions(pystar PRIVATE ENABLE_CURL)
+    target_compile_definitions(pystards PRIVATE ENABLE_CURL)
 endif()
 
 if(STAR_ENABLE_S3)
-    target_compile_definitions(pystar PRIVATE ENABLE_S3)
+    target_compile_definitions(pystards PRIVATE ENABLE_S3)
 endif()
 
 # Set C++20 standard
-set_property(TARGET pystar PROPERTY CXX_STANDARD 20)
-set_property(TARGET pystar PROPERTY CXX_STANDARD_REQUIRED ON)
+set_property(TARGET pystards PROPERTY CXX_STANDARD 20)
+set_property(TARGET pystards PROPERTY CXX_STANDARD_REQUIRED ON)
 
 # Copy Python wrapper files to output directory
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/pystar/__init__.py
-          ${CMAKE_CURRENT_SOURCE_DIR}/pystar/dataset.py
-          ${CMAKE_CURRENT_SOURCE_DIR}/pystar/ndarray.py
-          ${CMAKE_CURRENT_SOURCE_DIR}/pystar/metadata.py
-          ${CMAKE_CURRENT_SOURCE_DIR}/pystar/enums.py
-          ${CMAKE_CURRENT_SOURCE_DIR}/pystar/logger.py
-     DESTINATION ${PYSTAR_OUTPUT_DIR})
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/pystards/__init__.py
+          ${CMAKE_CURRENT_SOURCE_DIR}/pystards/dataset.py
+          ${CMAKE_CURRENT_SOURCE_DIR}/pystards/ndarray.py
+          ${CMAKE_CURRENT_SOURCE_DIR}/pystards/metadata.py
+          ${CMAKE_CURRENT_SOURCE_DIR}/pystards/enums.py
+          ${CMAKE_CURRENT_SOURCE_DIR}/pystards/logger.py
+          ${CMAKE_CURRENT_SOURCE_DIR}/pystards/_dtypes.py
+     DESTINATION ${PYSTARDS_OUTPUT_DIR})
 
 # Generate version file from CMake version
 configure_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/pystar/_version.py.in
-    ${PYSTAR_OUTPUT_DIR}/_version.py
+    ${CMAKE_CURRENT_SOURCE_DIR}/pystards/_version.py.in
+    ${PYSTARDS_OUTPUT_DIR}/_version.py
     @ONLY
 )
 
@@ -104,8 +119,8 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/setup.py.in
 if(STAR_BUILD_TESTS)
     add_custom_target(pytest
         COMMAND ${Python3_EXECUTABLE} -m pytest ${CMAKE_CURRENT_SOURCE_DIR}/tests -v
-        DEPENDS pystar
-        WORKING_DIRECTORY ${PYSTAR_OUTPUT_DIR}
+        DEPENDS pystards
+        WORKING_DIRECTORY ${PYSTARDS_OUTPUT_DIR}
     )
 endif()
 

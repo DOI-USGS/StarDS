@@ -69,10 +69,10 @@ plugins:
   - mkdoxy:
       projects:
         StarCPPAPI:
-          src-dirs: ../Star/include/
+          src-dirs: ../StarDS/include/
           full-doc: True
           doxy-cfg:
-            FILE_PATTERNS: 'star.h'
+            FILE_PATTERNS: 'stards.h'
             RECURSIVE: false
             EXTRACT_ALL: false
             HIDE_UNDOC_MEMBERS: true

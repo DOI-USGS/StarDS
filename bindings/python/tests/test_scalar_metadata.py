@@ -3,9 +3,6 @@ Test that scalar strings and numbers work correctly in metadata
 
 This test documents the expected behavior for scalar metadata values.
 """
-import sys
-sys.path.insert(0, 'build/bindings/python')
-
 try:
     import pytest
     HAVE_PYTEST = True
@@ -13,7 +10,7 @@ except ImportError:
     HAVE_PYTEST = False
 
 import numpy as np
-from pystar import StarDataset
+from pystards import StarDataset
 import tempfile
 import os
 
@@ -23,7 +20,7 @@ class TestScalarMetadata:
 
     def test_scalar_string(self):
         """Test that scalar strings remain scalars, not arrays"""
-        with tempfile.NamedTemporaryFile(suffix=".star", delete=False) as f:
+        with tempfile.NamedTemporaryFile(suffix=".stards", delete=False) as f:
             filename = f.name
 
         try:
@@ -37,21 +34,10 @@ class TestScalarMetadata:
             instrument = ds.meta["instrument"]
             scene = ds.meta["scene"]
 
-            # Should be scalar (shape ())
-            print(f"Instrument shape: {instrument.shape}")
-            print(f"Instrument value: {instrument}")
-
-            # For scalars, access with item() or index []
-            if instrument.shape == ():
-                instrument_str = str(instrument)
-            else:
-                instrument_str = str(instrument[0])
-
-            print(f"Instrument as string: {instrument_str}")
-
-            # Basic assertion - value should be correct
-            # (shape may vary between scalar and 1-element array depending on implementation)
-            assert "AVIRIS" in str(instrument)
+            # Scalars are returned as native Python values (not 0-d arrays).
+            assert isinstance(instrument, str)
+            assert instrument == "AVIRIS"
+            assert scene == "Yellowstone"
 
         finally:
             if os.path.exists(filename):
@@ -59,7 +45,7 @@ class TestScalarMetadata:
 
     def test_scalar_numbers(self):
         """Test that scalar numbers work correctly"""
-        with tempfile.NamedTemporaryFile(suffix=".star", delete=False) as f:
+        with tempfile.NamedTemporaryFile(suffix=".stards", delete=False) as f:
             filename = f.name
 
         try:
@@ -75,21 +61,10 @@ class TestScalarMetadata:
             temperature = ds.meta["temperature"]
             calibration = ds.meta["calibration_factor"]
 
-            print(f"Count: {count}, shape: {count.shape}")
-            print(f"Temperature: {temperature}, shape: {temperature.shape}")
-            print(f"Calibration: {calibration}, shape: {calibration.shape}")
-
-            # Values should be correct
-            # Handle both scalar and 1-element array cases
-            def get_value(arr):
-                if arr.shape == ():
-                    return float(arr)
-                else:
-                    return float(arr[0])
-
-            assert get_value(count) == 42
-            assert np.isclose(get_value(temperature), 23.5)
-            assert np.isclose(get_value(calibration), 1.05)
+            # Scalars come back as native Python numbers.
+            assert float(count) == 42
+            assert np.isclose(float(temperature), 23.5)
+            assert np.isclose(float(calibration), 1.05)
 
         finally:
             if os.path.exists(filename):
@@ -97,11 +72,12 @@ class TestScalarMetadata:
 
     def test_layer_scalar_metadata(self):
         """Test scalar metadata in layers"""
-        with tempfile.NamedTemporaryFile(suffix=".star", delete=False) as f:
+        with tempfile.NamedTemporaryFile(suffix=".stards", delete=False) as f:
             filename = f.name
 
         try:
             ds = StarDataset.create(filename)
+            ds.set_layer_inheritance(True)  # inheritance is off by default
 
             # Base scalar metadata
             ds.meta["instrument"] = "AVIRIS"
@@ -131,7 +107,7 @@ class TestScalarMetadata:
 
     def test_array_vs_scalar(self):
         """Test distinction between arrays and scalars"""
-        with tempfile.NamedTemporaryFile(suffix=".star", delete=False) as f:
+        with tempfile.NamedTemporaryFile(suffix=".stards", delete=False) as f:
             filename = f.name
 
         try:
@@ -151,11 +127,8 @@ class TestScalarMetadata:
             array1 = ds.meta["array_1elem"]
             array_multi = ds.meta["array_multi"]
 
-            print(f"Scalar: shape={scalar.shape}, value={scalar}")
-            print(f"1-elem array: shape={array1.shape}, value={array1}")
-            print(f"Multi-elem array: shape={array_multi.shape}, value={array_multi}")
-
-            # Multi-element should definitely be an array
+            # A scalar collapses to a native number; lists stay ndarrays.
+            assert float(scalar) == 42
             assert array_multi.shape == (3,)
             assert np.array_equal(array_multi, [1, 2, 3])
 

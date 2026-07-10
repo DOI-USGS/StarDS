@@ -1,28 +1,72 @@
 # Layers
 
-Layers let you store **multiple versions of the same data** in one `.star` file.
-Each layer has isolated storage and automatically inherits anything it doesn't
+Layers let you store **multiple versions of the same data** in one `.stards` file.
+Each layer has isolated storage and can optionally inherit anything it doesn't
 override from the base layer.
 
 ## Key ideas
 
 - **Isolation** — setting a key in a layer never overwrites the base or other
   layers. Each layer keeps its own copy of the keys it defines.
-- **Automatic inheritance** — accessing a key a layer did not set falls back to
-  the base layer transparently. You only store what changes.
-- **Selective override** — override just the keys that differ; the rest are
-  inherited.
+- **Opt-in inheritance** — inheritance is **off by default**. A key a layer did
+  not set is reported as missing. Turn inheritance on (see below) to make a
+  layer fall back to the base for keys it didn't override.
+- **Selective override** — with inheritance on, override just the keys that
+  differ; the rest are inherited.
 - **Works for metadata too** — layer metadata inherits from base metadata the
-  same way.
+  same way when inheritance is enabled.
+
+## Enabling inheritance
+
+Inheritance is a **read-time** setting, controlled by `OpenOptions` (distinct
+from `StarConfig`, which configures how a new file is written). Nothing about it
+is persisted to the file — it only affects how an open dataset resolves keys.
+
+You can enable it two ways:
+
+=== "Python"
+
+    ```python
+    import pystards
+    from pystards import StarDataset
+
+    # At open time
+    opts = pystards.OpenOptions()
+    opts.layer_inheritance = True
+    ds = StarDataset.open("data.stards", mode="r", options=opts)
+
+    # ...or after opening (works on any already-open dataset)
+    ds = StarDataset.open("data.stards")
+    ds.set_layer_inheritance(True)
+    print(ds.layer_inheritance())  # True
+    ```
+
+=== "C++"
+
+    ```cpp
+    // At open time
+    OpenOptions opts;
+    opts.layer_inheritance = true;
+    auto ds = StarDataset::open("data.stards", FileMode::READ_ONLY, opts);
+
+    // ...or after opening
+    auto ds2 = StarDataset::open("data.stards");
+    ds2->setLayerInheritance(true);
+    bool on = ds2->layerInheritance();  // true
+    ```
+
+With inheritance **off** (the default), a layer lookup for a base-only key raises
+(Python `KeyError` / C++ `std::runtime_error`) instead of returning the base
+value. The examples below assume inheritance has been enabled.
 
 ## Python
 
 ```python
 import numpy as np
-from pystar import StarDataset
+from pystards import StarDataset
 
 # Base data
-ds = StarDataset.create("data.star")
+ds = StarDataset.create("data.stards")
 ds["image"] = raw_image
 ds["metadata"] = calibration_data
 ds["wavelengths"] = [400, 500, 600]
@@ -40,8 +84,9 @@ enhanced["wavelengths"] = [450, 550, 650]  # override wavelengths
 
 ds.flush()
 
-# Read back — inheritance happens automatically
-ds2 = StarDataset.open("data.star")
+# Read back — enable inheritance so layers fall back to base keys
+ds2 = StarDataset.open("data.stards")
+ds2.set_layer_inheritance(True)
 base_img = ds2["image"]                     # raw
 
 proc = ds2.get_layer("processed")
@@ -68,11 +113,11 @@ config = layer.meta["config"]               # inherited: "default config"
 ## C++
 
 ```cpp
-#include "star.h"
+#include "stards.h"
 using namespace star;
 
 // Create dataset with base data
-auto store = StarDataset::create("data.star");
+auto store = StarDataset::create("data.stards");
 store->put("image", base_image);
 store->put("wavelengths", wavelengths);
 
@@ -88,8 +133,9 @@ layer2->put("wavelengths", adjusted_wavelengths);  // override
 
 store->flush();
 
-// Read back — each layer has independent data
-auto store2 = StarDataset::open("data.star");
+// Read back — enable inheritance so layers fall back to base keys
+auto store2 = StarDataset::open("data.stards");
+store2->setLayerInheritance(true);
 auto base_img = store2->get<double>("image");
 auto proc_img = store2->get_layer("processed")->get<double>("image");
 auto cal_img  = store2->get_layer("calibrated")->get<double>("image");
@@ -106,9 +152,9 @@ then adds two layers:
 
 ```python
 import numpy as np
-from pystar import StarDataset
+from pystards import StarDataset
 
-ds = StarDataset.create("hyperspectral.star")
+ds = StarDataset.create("hyperspectral.stards")
 
 # Base: raw data
 raw_cube = np.random.rand(512, 512, 300).astype(np.float32)
@@ -132,9 +178,11 @@ vnir["wavelengths"] = wavelengths[vnir_mask]
 ds.flush()
 ```
 
-On read-back, `atm_corrected["wavelengths"]` returns the full 300-band base
+On read-back (with inheritance enabled via `set_layer_inheritance(True)` or
+`OpenOptions`), `atm_corrected["wavelengths"]` returns the full 300-band base
 wavelengths (inherited), while `vnir_only["wavelengths"]` returns the overridden
-subset.
+subset. Without inheritance, `atm_corrected["wavelengths"]` would raise, since
+that layer never set its own `wavelengths`.
 
 ## When to use layers
 

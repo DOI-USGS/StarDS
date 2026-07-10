@@ -4,9 +4,6 @@ Test LayerView item assignment (layer[key] = value)
 Note: This test documents the expected API. The actual functionality
 requires the Python bindings to be properly built and installed.
 """
-import sys
-sys.path.insert(0, 'build/bindings/python')
-
 try:
     import pytest
     HAVE_PYTEST = True
@@ -14,7 +11,7 @@ except ImportError:
     HAVE_PYTEST = False
 
 import numpy as np
-from pystar import StarDataset
+from pystards import StarDataset
 import tempfile
 import os
 
@@ -24,7 +21,7 @@ class TestLayerItemAssignment:
 
     def test_layer_setitem(self):
         """Test layer['key'] = value"""
-        with tempfile.NamedTemporaryFile(suffix=".star", delete=False) as f:
+        with tempfile.NamedTemporaryFile(suffix=".stards", delete=False) as f:
             filename = f.name
 
         try:
@@ -43,11 +40,12 @@ class TestLayerItemAssignment:
 
     def test_layer_getitem(self):
         """Test value = layer['key']"""
-        with tempfile.NamedTemporaryFile(suffix=".star", delete=False) as f:
+        with tempfile.NamedTemporaryFile(suffix=".stards", delete=False) as f:
             filename = f.name
 
         try:
             ds = StarDataset.create(filename)
+            ds.set_layer_inheritance(True)  # inheritance is off by default
             layer = ds.create_layer("band_0")
 
             # Store via parent
@@ -62,7 +60,7 @@ class TestLayerItemAssignment:
 
     def test_layer_get_put_methods(self):
         """Test layer.get() and layer.put() methods"""
-        with tempfile.NamedTemporaryFile(suffix=".star", delete=False) as f:
+        with tempfile.NamedTemporaryFile(suffix=".stards", delete=False) as f:
             filename = f.name
 
         try:
@@ -85,11 +83,12 @@ class TestLayerItemAssignment:
 
     def test_layer_inheritance_via_getitem(self):
         """Test that layer[key] can access base layer data"""
-        with tempfile.NamedTemporaryFile(suffix=".star", delete=False) as f:
+        with tempfile.NamedTemporaryFile(suffix=".stards", delete=False) as f:
             filename = f.name
 
         try:
             ds = StarDataset.create(filename)
+            ds.set_layer_inheritance(True)  # inheritance is off by default
 
             # Store in base
             ds["base_array"] = np.array([10, 20, 30])
@@ -110,7 +109,7 @@ class TestLayerItemAssignment:
 
     def test_layer_setitem_with_different_types(self):
         """Test layer[key] = value with various data types"""
-        with tempfile.NamedTemporaryFile(suffix=".star", delete=False) as f:
+        with tempfile.NamedTemporaryFile(suffix=".stards", delete=False) as f:
             filename = f.name
 
         try:

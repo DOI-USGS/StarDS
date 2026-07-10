@@ -8,8 +8,8 @@ docs-site/docs/StarCPPAPI/
 # Generated Python binding artifacts (produced by CMake configure_file / SWIG).
 # The templates (*.in) and the SWIG interface (swig/*.i) are the sources.
 bindings/python/setup.py
-bindings/python/pystar/_version.py
-bindings/python/pystar/pystar.py
+bindings/python/pystards/_version.py
+bindings/python/pystards/pystards.py
 
 # Notebook / Python scratch artifacts (generated output, autosaves, bytecode).
 *.zarr/
