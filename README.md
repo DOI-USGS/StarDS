@@ -8,6 +8,8 @@ Header-only C++ library for persistent N-dimensional arrays with compression and
 
 This repository contains software code that was generated or modified with the assistance of artificial intelligence (AI) tools, in accordance with U.S. Geological Survey (USGS) disclosure requirements. All AI-generated or AI-assisted code has been reviewed and validated by USGS developers. 
 
+See also: [DISCLAIMER.MD](./DISCLAIMER.md)
+
 ## Building
 
 ### Requirements
@@ -25,33 +27,33 @@ git submodule update --init --recursive
 
 mkdir build && cd build
 cmake .. \
-  -DSTAR_BUILD_TOOLS=ON \
-  -DSTAR_ENABLE_ZLIB=ON \
-  -DSTAR_ENABLE_LZ4=ON \
-  -DSTAR_ENABLE_CURL=ON \
-  -DSTAR_ENABLE_S3=ON
+  -DSTARDS_BUILD_TOOLS=ON \
+  -DSTARDS_ENABLE_ZLIB=ON \
+  -DSTARDS_ENABLE_LZ4=ON \
+  -DSTARDS_ENABLE_CURL=ON \
+  -DSTARDS_ENABLE_S3=ON
 
 make -j$(nproc)
 ```
 
 **CMake Options:**
-- `STAR_BUILD_TOOLS=ON` - Build CLI tools (starls, star_translate)
-- `STAR_BUILD_PYTHON_BINDINGS=ON` - Build Python bindings
-- `STAR_ENABLE_ZLIB=ON` - Enable GZIP compression
-- `STAR_ENABLE_LZ4=ON` - Enable LZ4 compression
-- `STAR_ENABLE_CURL=ON` - Enable HTTP remote access
-- `STAR_ENABLE_S3=ON` - Enable S3 cloud storage
+- `STARDS_BUILD_TOOLS=ON` - Build CLI tools (stardsls, stards_translate)
+- `STARDS_BUILD_PYTHON_BINDINGS=ON` - Build Python bindings
+- `STARDS_ENABLE_ZLIB=ON` - Enable GZIP compression
+- `STARDS_ENABLE_LZ4=ON` - Enable LZ4 compression
+- `STARDS_ENABLE_CURL=ON` - Enable HTTP remote access
+- `STARDS_ENABLE_S3=ON` - Enable S3 cloud storage
 
 ### Build Python Bindings with CMake
 
 ```bash
 mkdir build && cd build
 cmake .. \
-  -DSTAR_BUILD_PYTHON_BINDINGS=ON \
-  -DSTAR_ENABLE_ZLIB=ON \
-  -DSTAR_ENABLE_LZ4=ON \
-  -DSTAR_ENABLE_CURL=ON \
-  -DSTAR_ENABLE_S3=ON
+  -DSTARDS_BUILD_PYTHON_BINDINGS=ON \
+  -DSTARDS_ENABLE_ZLIB=ON \
+  -DSTARDS_ENABLE_LZ4=ON \
+  -DSTARDS_ENABLE_CURL=ON \
+  -DSTARDS_ENABLE_S3=ON
 
 make -j$(nproc)
 sudo make install
@@ -74,7 +76,7 @@ STAR is header-only. Add to your project:
 # CMakeLists.txt
 # In-tree checkout: point at StarDS/include. Installed: the header lives at
 # $PREFIX/include/stards/stards.h, so use $PREFIX/include/stards (or just
-# find_package(STAR), which sets the include path for you).
+# find_package(STARDS), which sets the include path for you).
 include_directories(/path/to/stards/StarDS/include)
 
 # Optional: link compression/S3 support
@@ -119,30 +121,30 @@ int main() {
 
 ## Command-Line Tools
 
-### starls - Inspect Files
+### stardsls - Inspect Files
 
 ```bash
 # List all keys in a file
-starls data.stards
+stardsls data.stards
 
 # Show detailed metadata
-starls -v data.stards
+stardsls -v data.stards
 
 # Print specific array data
-starls -d matrix data.stards
+stardsls -d matrix data.stards
 ```
 
-### star_translate - Format Conversion
+### stards_translate - Format Conversion
 
 ```bash
 # Convert JSON to STAR
-star_translate data.json data.stards
+stards_translate data.json data.stards
 
 # Convert STAR to JSON
-star_translate data.stards data.json
+stards_translate data.stards data.json
 
 # With compression
-star_translate -c gzip -b 4096 data.json data.stards
+stards_translate -c gzip -b 4096 data.json data.stards
 ```
 
 **JSON Format Example:**
@@ -285,6 +287,31 @@ auto store7 = StarDataset::create("data.stards");
 - `"r"` - Read-only (cannot modify file)
 - `"w"`, `"rw"`, `"a"` - Read-write (can modify file)
 
+### In-Memory (Byte Array) I/O
+
+Read and write a complete `.stards` image as a byte array — no filesystem needed
+(e.g. data received over a socket or stored in a database):
+
+```cpp
+// Serialize a dataset to bytes (the same image saveTo() would write to disk).
+auto store = StarDataset::open("data.stards", "r");
+std::vector<char> bytes = store->writeBytes();
+
+// Open a dataset directly from bytes (read-only; use writeBytes() to persist edits).
+auto in_mem = StarDataset::openBytes(bytes);
+auto data = in_mem->get<double>("sensor_data");
+
+// Also accepts a raw pointer + length.
+auto in_mem2 = StarDataset::openBytes(bytes.data(), bytes.size());
+```
+
+In Python:
+
+```python
+blob = ds.write_bytes()               # -> bytes
+ds2  = StarDataset.open_bytes(blob)   # accepts bytes / bytearray / memoryview / uint8 ndarray
+```
+
 ### HTTP Remote Access
 
 ```cpp
@@ -315,7 +342,7 @@ store->saveTo("/tmp/local-copy.stards");
 
 **S3 URL Format:** `/vsis3/bucket-name/path/to/file.stards`
 
-**Authentication** (choose one method):
+**Authentication** (choose one method)
 
 **Environment Variables:**
 ```bash
