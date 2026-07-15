@@ -23,12 +23,10 @@
       "vcs": "git",
       "laborHours": 520,
       "tags": [
-        "Remote Sensing",
         "Data Processing",
-        "Spatial",
         "Cloud Optimized",
         "Cloud Native",
-        "data format"
+        "Data Format"
     ],
   
       "languages": [
