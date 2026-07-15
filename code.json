@@ -17,7 +17,7 @@
       },
   
       "homepageURL": "https://code.usgs.gov/astrogeology/stards/",
-      "downloadURL": "https://code.usgs.gov/astrogeology/stards/-/archive/main/stards-main.zip?ref_type=heads",
+      "downloadURL": "https://code.usgs.gov/astrogeology/stards/-/archive/main/stards-main.zip",
       "disclaimerURL": "https://code.usgs.gov/astrogeology/stards/-/raw/main/DISCLAIMER.md",
       "repositoryURL": "https://code.usgs.gov/astrogeology/stards.git",
       "vcs": "git",
@@ -27,7 +27,7 @@
         "Cloud Optimized",
         "Cloud Native",
         "Data Format"
-    ],
+      ],
   
       "languages": [
         "C++"
