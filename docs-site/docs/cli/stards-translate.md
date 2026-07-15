@@ -1,29 +1,29 @@
-# star_translate
+# stards_translate
 
-`star_translate` converts between `.stards` files and other formats (JSON,
+`stards_translate` converts between `.stards` files and other formats (JSON,
 MessagePack, CSV), and can reorganize a file for ISDS (ISIS Dataset)
 optimization.
 
-Built when `STAR_BUILD_TRANSLATE=ON` (the default); see
+Built when `STARDS_BUILD_TRANSLATE=ON` (the default); see
 [Installation](../getting-started/installation.md).
 
 ## Usage
 
 ```bash
-star_translate [OPTIONS] <input_file> <output_file>
+stards_translate [OPTIONS] <input_file> <output_file>
 
 # STAR ↔ JSON (format auto-detected from the file extensions)
-star_translate data.stards data.json
-star_translate data.json data.stards
+stards_translate data.stards data.json
+stards_translate data.json data.stards
 
 # CSV to STAR (2D arrays only)
-star_translate data.csv data.stards
+stards_translate data.csv data.stards
 
 # Force the output format explicitly
-star_translate -f json data.stards out.json
+stards_translate -f json data.stards out.json
 
 # MessagePack (if built with msgpack support)
-star_translate data.stards data.msgpack
+stards_translate data.stards data.msgpack
 ```
 
 The output format is auto-detected from the output file's extension
@@ -72,10 +72,10 @@ quick access. This suits ISIS camera-state files that mix large arrays
 
 ```bash
 # Reorganize by array size (default threshold of 100 elements)
-star_translate -f isds input.stards output.stards
+stards_translate -f isds input.stards output.stards
 
 # Custom threshold
-star_translate -f isds -t 50 input.stards output.stards
+stards_translate -f isds -t 50 input.stards output.stards
 ```
 
 ## Batch conversion
@@ -83,16 +83,16 @@ star_translate -f isds -t 50 input.stards output.stards
 ```bash
 # STAR → JSON for every file in a directory
 for file in *.stards; do
-    star_translate "$file" "${file%.stards}.json"
+    stards_translate "$file" "${file%.stards}.json"
 done
 
 # JSON → STAR
 for file in *.json; do
-    star_translate "$file" "${file%.json}.stards"
+    stards_translate "$file" "${file%.json}.stards"
 done
 ```
 
 ## See also
 
-- [starls](starls.md) — inspect file contents.
+- [stardsls](stardsls.md) — inspect file contents.
 - [Compression guide](../guides/compression.md) — codecs and block sizes.

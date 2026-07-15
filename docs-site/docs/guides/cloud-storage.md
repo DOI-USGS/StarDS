@@ -6,8 +6,8 @@ scheme and the same API reads (and, for S3, writes) remotely:
 - **S3** — `/vsis3/bucket-name/path/to/file.stards` (read and write)
 - **HTTP** — `/vsicurl/https://example.com/path/data.stards` (read-only)
 
-These require the library to be built with `STAR_ENABLE_CURL` (HTTP) and
-`STAR_ENABLE_S3` (S3) — both on by default; see
+These require the library to be built with `STARDS_ENABLE_CURL` (HTTP) and
+`STARDS_ENABLE_S3` (S3) — both on by default; see
 [Installation](../getting-started/installation.md).
 
 ## Python

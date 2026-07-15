@@ -70,9 +70,9 @@ build:bindings:
     - >
       micromamba run -n stards cmake -S .. -G Ninja
       -DCMAKE_BUILD_TYPE=Release
-      -DSTAR_BUILD_PYTHON_BINDINGS=ON
-      -DSTAR_BUILD_TESTS=OFF
-      -DSTAR_BUILD_TOOLS=OFF
+      -DSTARDS_BUILD_PYTHON_BINDINGS=ON
+      -DSTARDS_BUILD_TESTS=OFF
+      -DSTARDS_BUILD_TOOLS=OFF
     - micromamba run -n stards cmake --build . -j 2
   artifacts:
     # Just the built extension + package — consumed by the docs jobs via needs.

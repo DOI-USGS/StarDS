@@ -14,8 +14,8 @@ StarDS compresses array and metadata blocks independently. Compression is
 | `CompressionAlgorithm.GZIP_SHUFFLE` | Balanced | Better on numeric | GZIP with a byte-shuffle prefilter; improves numeric-array ratios |
 | `CompressionAlgorithm.LZ4_SHUFFLE` | Very fast | Better on numeric | LZ4 with a byte-shuffle prefilter |
 
-The native codec must be enabled at build time (`STAR_ENABLE_ZLIB` for GZIP,
-`STAR_ENABLE_LZ4` for LZ4) — both on by default; see
+The native codec must be enabled at build time (`STARDS_ENABLE_ZLIB` for GZIP,
+`STARDS_ENABLE_LZ4` for LZ4) — both on by default; see
 [Installation](../getting-started/installation.md).
 
 The `*_SHUFFLE` variants apply a byte-shuffle prefilter (grouping the same byte
@@ -124,7 +124,7 @@ created (see the examples above). To re-encode an existing file with a different
 codec or block size, open it with the desired `StarConfig` and copy its contents
 into a newly created dataset.
 
-For command-line conversion, [`star_translate`](../cli/star-translate.md) applies
+For command-line conversion, [`stards_translate`](../cli/stards-translate.md) applies
 its `-c`/`--compression` and `-b`/`--block-size` flags to the STAR output (the
 codecs are `none`, `gzip`, `lz4`, `gzip-shuffle`, `lz4-shuffle`).
 

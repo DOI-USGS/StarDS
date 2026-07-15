@@ -6,11 +6,11 @@ cmake_minimum_required(VERSION 3.14)
 # the ENABLE_* macros are guaranteed defined so the wrapper is deterministic.
 # Fail fast with a clear message rather than silently shipping a crippled module.
 foreach(_feat ZLIB LZ4 CURL S3)
-    if(NOT STAR_ENABLE_${_feat})
+    if(NOT STARDS_ENABLE_${_feat})
         message(STATUS
-            "STAR_ENABLE_${_feat}=OFF, but the Python bindings require it. "
-            "BForcing it onn.")
-        set(STAR_ENABLE_${_feat} ON)
+            "STARDS_ENABLE_${_feat}=OFF, but the Python bindings require it. "
+            "Forcing it on.")
+        set(STARDS_ENABLE_${_feat} ON)
     endif()
 endforeach()
 
@@ -25,7 +25,7 @@ list(APPEND CMAKE_SWIG_FLAGS "-c++" "-py3" "-I${CMAKE_SOURCE_DIR}/StarDS/include
 # as separate SWIG templates yields duplicate swig::traits<> specializations and
 # fails to compile. On macOS they are distinct types (unsigned long vs unsigned
 # long long) and both are needed. The C preprocessor cannot detect type identity,
-# so probe it here and tell star.i via -DSTAR_SIZE_T_IS_UINT64.
+# so probe it here and tell star.i via -DSTARDS_SIZE_T_IS_UINT64.
 # A static_assert compiles only when the two are the SAME type, so the probe's
 # success is exactly the condition we want to detect.
 include(CheckCXXSourceCompiles)
@@ -35,10 +35,10 @@ check_cxx_source_compiles("
   #include <type_traits>
   static_assert(std::is_same<std::size_t, std::uint64_t>::value, \"\");
   int main() { return 0; }
-  " STAR_SIZE_T_IS_UINT64)
-if(STAR_SIZE_T_IS_UINT64)
+  " STARDS_SIZE_T_IS_UINT64)
+if(STARDS_SIZE_T_IS_UINT64)
   message(STATUS "size_t is the same type as uint64_t; aliasing VectorUInt64 -> VectorSize in SWIG")
-  list(APPEND CMAKE_SWIG_FLAGS "-DSTAR_SIZE_T_IS_UINT64")
+  list(APPEND CMAKE_SWIG_FLAGS "-DSTARDS_SIZE_T_IS_UINT64")
 else()
   message(STATUS "size_t and uint64_t are distinct types; instantiating both SWIG vectors")
 endif()
@@ -61,7 +61,7 @@ swig_add_library(pystards
                  SOURCES swig/star.i
                  OUTPUT_DIR ${PYSTARDS_OUTPUT_DIR})
 
-swig_link_libraries(pystards Star Python3::Module)
+swig_link_libraries(pystards StarDS Python3::Module)
 
 set_target_properties(pystards PROPERTIES
     SWIG_USE_TARGET_INCLUDE_DIRECTORIES TRUE
@@ -76,16 +76,16 @@ target_include_directories(pystards PRIVATE
 )
 
 # Optional dependencies
-if(STAR_ENABLE_ZLIB)
+if(STARDS_ENABLE_ZLIB)
     target_compile_definitions(pystards PRIVATE ENABLE_ZLIB)
     swig_link_libraries(pystards ZLIB::ZLIB)
 endif()
 
-if(STAR_ENABLE_CURL)
+if(STARDS_ENABLE_CURL)
     target_compile_definitions(pystards PRIVATE ENABLE_CURL)
 endif()
 
-if(STAR_ENABLE_S3)
+if(STARDS_ENABLE_S3)
     target_compile_definitions(pystards PRIVATE ENABLE_S3)
 endif()
 
@@ -116,7 +116,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/setup.py.in
                @ONLY)
 
 # Test target
-if(STAR_BUILD_TESTS)
+if(STARDS_BUILD_TESTS)
     add_custom_target(pytest
         COMMAND ${Python3_EXECUTABLE} -m pytest ${CMAKE_CURRENT_SOURCE_DIR}/tests -v
         DEPENDS pystards

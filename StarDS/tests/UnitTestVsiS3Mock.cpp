@@ -145,7 +145,8 @@ TEST_F(VsiS3MockTest, RegionRedirectHandled) {
         store->flush();
     }
     srv.addObject("/test-bucket/redir.stards", star_test::read_file_bytes(local));
-    // First HEAD gets a 301 + region; the S3StreamBuf retries and then succeeds.
+    // The first request (a ranged GET, since we no longer HEAD) gets a 301 +
+    // region; the S3RangeReader re-signs for the correct region and retries.
     srv.addRegionRedirectOnce("/test-bucket/redir.stards", "us-west-2");
 
     auto store = StarDataset::open("/vsis3/test-bucket/redir.stards", FileMode::READ_ONLY);
@@ -153,10 +154,16 @@ TEST_F(VsiS3MockTest, RegionRedirectHandled) {
     ASSERT_EQ(arr.size(), 3u);
     EXPECT_EQ(arr.flat(0), 7);
 
-    // The 301 should have been followed by a retry (>=2 HEADs, or a redirect seen).
-    int heads = 0;
-    for (const auto& r : srv.requests()) if (r.method == "HEAD") heads++;
-    EXPECT_GE(heads, 2) << "expected a retry HEAD after the 301 region redirect";
+    // The 301 must have been followed by a successful retry. We no longer issue
+    // HEADs at all; the redirect is absorbed on the GET path, so assert that a
+    // GET succeeded (data read back) and that NO HEAD was ever sent.
+    int heads = 0, gets = 0;
+    for (const auto& r : srv.requests()) {
+        if (r.method == "HEAD") heads++;
+        if (r.method == "GET") gets++;
+    }
+    EXPECT_EQ(heads, 0) << "the optimized read path should never issue a HEAD";
+    EXPECT_GE(gets, 2) << "expected a retry GET after the 301 region redirect";
 }
 
 TEST_F(VsiS3MockTest, MissingObjectThrows) {

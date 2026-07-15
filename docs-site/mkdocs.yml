@@ -63,6 +63,7 @@ markdown_extensions:
 
 hooks:
   - docs_hooks.py
+  - llms_txt_hook.py
 
 plugins:
   - search
@@ -108,8 +109,8 @@ nav:
       - Namespaces: StarCPPAPI/namespaces.md
       - Files: StarCPPAPI/files.md
   - CLI Tools:
-      - starls: cli/starls.md
-      - star_translate: cli/star-translate.md
+      - stardsls: cli/stardsls.md
+      - stards_translate: cli/stards-translate.md
   - Reference:
       - Format Spec: reference/format-spec.md
       - API Updates: reference/api-updates.md

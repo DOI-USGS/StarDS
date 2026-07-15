@@ -4,6 +4,17 @@ This document describes the on-disk binary structure of StarDS (Simple Tensors
 Arrays and Rasters) files, as written and read by the reference implementation in
 `StarDS/include/stards.h`.
 
+!!! tip "Machine-readable spec"
+    A [Kaitai Struct](https://kaitai.io) description of this format lives at
+    [`stards.ksy`](stards.ksy). It is pinned to **format version 1** (it asserts
+    `format_version == 1`), so it doubles as the single, versioned source of truth
+    for the v1 binary layout — feed it to `kaitai-struct-compiler` to generate a
+    parser/validator in any supported language, or open it in the
+    [Kaitai Web IDE](https://ide.kaitai.io) to inspect a `.stards` file. When the
+    format changes incompatibly, a new `stards_v2.ksy` is added rather than
+    editing the v1 spec, so each version's structure is described in exactly one
+    place.
+
 ## File extension
 
 `.stards`

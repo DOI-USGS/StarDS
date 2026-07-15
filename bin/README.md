@@ -4,51 +4,51 @@ This directory contains command-line tools for working with STAR files.
 
 ## Tools
 
-### 1. starls
+### 1. stardsls
 **Purpose**: Inspect and list contents of STAR files
 
 **Usage**:
 ```bash
 # List all keys
-starls data.stards
+stardsls data.stards
 
 # Verbose output with metadata
-starls -v data.stards
+stardsls -v data.stards
 
 # Print specific key data
-starls -d array_name data.stards
+stardsls -d array_name data.stards
 
 # Print all data
-starls -a data.stards
+stardsls -a data.stards
 ```
 
-**Build**: Always built when `STAR_BUILD_TOOLS=ON` (default)
+**Build**: Always built when `STARDS_BUILD_TOOLS=ON` (default)
 
 ---
 
-### 2. star_translate
+### 2. stards_translate
 **Purpose**: Convert between STAR and other formats (JSON, MessagePack, CSV, ISDS)
 
 **Usage**:
 ```bash
 # STAR to JSON
-star_translate data.stards data.json
+stards_translate data.stards data.json
 
 # JSON to STAR
-star_translate data.json data.stards
+stards_translate data.json data.stards
 
 # CSV to STAR (2D arrays only)
-star_translate data.csv data.stards
+stards_translate data.csv data.stards
 
 # MessagePack (if built with msgpack support)
-star_translate data.stards data.msgpack
+stards_translate data.stards data.msgpack
 
 # ISDS optimization: reorganize by array size
 # Large arrays go to array storage, small data goes to metadata
-star_translate -f isds input.stards output.stards
+stards_translate -f isds input.stards output.stards
 
 # ISDS with custom threshold (default: 100 elements)
-star_translate -f isds -t 50 input.stards output.stards
+stards_translate -f isds -t 50 input.stards output.stards
 ```
 
 **ISDS Conversion**:
@@ -63,13 +63,13 @@ The ISDS (ISIS Dataset) optimization reorganizes STAR files by moving large arra
 Example workflow:
 ```bash
 # Convert ISIS camera state file for optimal performance
-star_translate -f isds -t 100 camera_state.stards camera_state_optimized.stards
+stards_translate -f isds -t 100 camera_state.stards camera_state_optimized.stards
 
 # Large arrays (quaternions, ephemeris) → block storage
 # Small scalars (focal_length, detector_center) → metadata
 ```
 
-**Build**: Controlled by `STAR_BUILD_TRANSLATE=ON` (default)
+**Build**: Controlled by `STARDS_BUILD_TRANSLATE=ON` (default)
 
 **Dependencies**:
 - Required: nlohmann/json (included as submodule)
@@ -84,19 +84,19 @@ star_translate -f isds -t 100 camera_state.stards camera_state_optimized.stards
 ```bash
 mkdir build && cd build
 cmake .. \
-  -DSTAR_BUILD_TOOLS=ON \
-  -DSTAR_BUILD_TRANSLATE=ON
+  -DSTARDS_BUILD_TOOLS=ON \
+  -DSTARDS_BUILD_TRANSLATE=ON
 make
 ```
 
 ### Build Specific Tool
 
 ```bash
-# Build only starls
-make starls
+# Build only stardsls
+make stardsls
 
-# Build only star_translate
-make star_translate
+# Build only stards_translate
+make stards_translate
 ```
 
 ### Install
@@ -196,7 +196,7 @@ make example_json_conversion
 
 To add a new format (e.g., HDF5):
 
-1. Add conversion functions to `star_translate.cpp`:
+1. Add conversion functions to `stards_translate.cpp`:
    ```cpp
    void star_to_hdf5(const std::string& input, const std::string& output);
    void hdf5_to_star(const std::string& input, const std::string& output);
@@ -253,22 +253,22 @@ bin/
 ├── CMakeLists.txt                  # Build configuration
 ├── README.md                       # This file
 │
-├── starls.cpp                       # STAR inspector tool
-└── star_translate.cpp               # Format converter tool
+├── stardsls.cpp                       # STAR inspector tool
+└── stards_translate.cpp               # Format converter tool
 ```
 
 ---
 
 ## Troubleshooting
 
-### "star_translate not found"
+### "stards_translate not found"
 
 **Problem**: Tool not in PATH after installation
 
 **Solution**:
 ```bash
 # Check installation location
-find build/install -name star_translate
+find build/install -name stards_translate
 
 # Add to PATH or use full path
 export PATH="$PATH:$(pwd)/build/install/bin"
@@ -300,7 +300,7 @@ brew install msgpack
 conda install -c conda-forge msgpack-cxx
 
 # Rebuild
-cd build && cmake .. && make star_translate
+cd build && cmake .. && make stards_translate
 ```
 
 ### Build Errors
@@ -339,12 +339,12 @@ Convert multiple files:
 ```bash
 # STAR to JSON
 for file in *.stards; do
-    star_translate "$file" "${file%.stards}.json"
+    stards_translate "$file" "${file%.stards}.json"
 done
 
 # JSON to STAR
 for file in *.json; do
-    star_translate "$file" "${file%.json}.stards"
+    stards_translate "$file" "${file%.json}.stards"
 done
 ```
 

@@ -1,33 +1,33 @@
-# starls
+# stardsls
 
-`starls` inspects and lists the contents of a `.stards` file — keys, metadata, and
+`stardsls` inspects and lists the contents of a `.stards` file — keys, metadata, and
 optionally the array data itself.
 
-Built when `STAR_BUILD_TOOLS=ON` (the default); see
+Built when `STARDS_BUILD_TOOLS=ON` (the default); see
 [Installation](../getting-started/installation.md).
 
 ## Usage
 
 ```bash
-starls [OPTIONS] <file.stards>
+stardsls [OPTIONS] <file.stards>
 
 # List all keys (default)
-starls data.stards
+stardsls data.stards
 
 # Verbose output with metadata
-starls -v data.stards
+stardsls -v data.stards
 
 # Show a key's metadata without loading its data
-starls -m array_name data.stards
+stardsls -m array_name data.stards
 
 # Print a specific key's data
-starls -d array_name data.stards
+stardsls -d array_name data.stards
 
 # Force-load a large array that the safety check would block
-starls -d array_name -f data.stards
+stardsls -d array_name -f data.stards
 
 # Print all data (may be large)
-starls -a data.stards
+stardsls -a data.stards
 ```
 
 ## Options
@@ -44,5 +44,5 @@ starls -a data.stards
 
 ## See also
 
-- [star_translate](star-translate.md) — convert between formats.
-- [Format Specification](../reference/format-spec.md) — the on-disk layout `starls` reads.
+- [stards_translate](stards-translate.md) — convert between formats.
+- [Format Specification](../reference/format-spec.md) — the on-disk layout `stardsls` reads.

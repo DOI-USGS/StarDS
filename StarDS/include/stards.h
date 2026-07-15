@@ -19,6 +19,7 @@
 #include <variant>
 #include <vector>
 #include <chrono>
+#include <atomic>
 #include <shared_mutex>
 #include <mutex>
 #include <thread>
@@ -74,6 +75,66 @@ inline const char* MAGIC_STRING = "STARDS";
 inline const size_t MAGIC_STRING_LENGTH = 6;
 
 //==============================================================================
+// Fixed-width serialization helpers
+//==============================================================================
+//
+// The on-disk format uses fixed-width little-endian integers so a file written
+// on one platform reads identically on another. In-memory sizes/offsets are
+// C++ `size_t` (width varies: 8 bytes on LP64, 4 bytes on ILP32/Win32), so
+// serializing a raw `size_t` would emit a platform-dependent number of bytes and
+// break cross-platform portability. These helpers pin every persisted count,
+// offset, and dimension to a fixed 64-bit (or 32-bit) wire type regardless of
+// the host `size_t`.
+//
+// The format is defined as little-endian (see the format spec), so on a
+// big-endian host the bytes must be swapped. STARDS_IS_BIG_ENDIAN detects this;
+// on the overwhelmingly common little-endian targets these helpers are a plain
+// fixed-width copy with no byte swapping.
+
+#if defined(__BYTE_ORDER__) && defined(__ORDER_BIG_ENDIAN__) && \
+    __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+#define STARDS_IS_BIG_ENDIAN 1
+#else
+#define STARDS_IS_BIG_ENDIAN 0
+#endif
+
+// Write `value` as `N` little-endian bytes to the stream.
+template <typename UInt>
+inline void write_le(std::ostream& os, UInt value) {
+    static_assert(std::is_unsigned<UInt>::value, "write_le requires an unsigned type");
+    unsigned char buf[sizeof(UInt)];
+    for (size_t i = 0; i < sizeof(UInt); ++i) {
+        buf[i] = static_cast<unsigned char>((value >> (8 * i)) & 0xFF);
+    }
+    os.write(reinterpret_cast<const char*>(buf), sizeof(UInt));
+}
+
+// Read `N` little-endian bytes from the stream into an unsigned integer.
+template <typename UInt>
+inline UInt read_le(std::istream& is) {
+    static_assert(std::is_unsigned<UInt>::value, "read_le requires an unsigned type");
+    unsigned char buf[sizeof(UInt)];
+    is.read(reinterpret_cast<char*>(buf), sizeof(UInt));
+    UInt value = 0;
+    for (size_t i = 0; i < sizeof(UInt); ++i) {
+        value |= static_cast<UInt>(buf[i]) << (8 * i);
+    }
+    return value;
+}
+
+// Convenience wrappers for the two persisted integer widths. Callers pass any
+// integer (e.g. a size_t count) and it is narrowed to the fixed wire width.
+inline void write_u64(std::ostream& os, uint64_t v) { write_le<uint64_t>(os, v); }
+inline void write_u32(std::ostream& os, uint32_t v) { write_le<uint32_t>(os, v); }
+inline void write_u16(std::ostream& os, uint16_t v) { write_le<uint16_t>(os, v); }
+inline void write_u8(std::ostream& os, uint8_t v)   { os.write(reinterpret_cast<const char*>(&v), 1); }
+
+inline uint64_t read_u64(std::istream& is) { return read_le<uint64_t>(is); }
+inline uint32_t read_u32(std::istream& is) { return read_le<uint32_t>(is); }
+inline uint16_t read_u16(std::istream& is) { return read_le<uint16_t>(is); }
+inline uint8_t  read_u8(std::istream& is)  { unsigned char b = 0; is.read(reinterpret_cast<char*>(&b), 1); return b; }
+
+//==============================================================================
 // Threading Configuration (Global, Runtime)
 //==============================================================================
 
@@ -111,6 +172,28 @@ inline void setMinBytesForThreading(size_t min_bytes) {
 inline size_t getNumThreads() {
     return g_num_threads;
 }
+
+//==============================================================================
+// Network Request Counter (Global, Runtime) — observability for remote reads
+//==============================================================================
+
+// Incremented on every network round trip (each curl_easy_perform: HEAD, GET,
+// PUT, ...). Local-file reads never touch it. Lets tests and callers verify that
+// opening/reading a remote .stards issues the expected (small) number of
+// requests, and catch regressions that reintroduce per-read connections/HEADs.
+inline std::atomic<uint64_t> g_network_request_count{0};
+
+// Total network requests issued this process (across all datasets/threads).
+inline uint64_t getNetworkRequestCount() {
+    return g_network_request_count.load(std::memory_order_relaxed);
+}
+
+// Reset the counter (e.g. at the start of a test or a timed section).
+inline void resetNetworkRequestCount() {
+    g_network_request_count.store(0, std::memory_order_relaxed);
+}
+// NOTE: the curl-performing wrapper star_curl_perform() is defined just after
+// <curl/curl.h> is included (further down), since it needs the CURL type.
 
 //==============================================================================
 // File Format Structures
@@ -163,11 +246,11 @@ struct FileHeader {
      */
     void write(std::ostream& os) const {
         os.write(magic, MAGIC_STRING_LENGTH);
-        os.write(reinterpret_cast<const char*>(&format_version), sizeof(format_version));
-        os.write(reinterpret_cast<const char*>(&header_size), sizeof(header_size));
-        os.write(reinterpret_cast<const char*>(&entry_count), sizeof(entry_count));
-        os.write(reinterpret_cast<const char*>(&layer_count), sizeof(layer_count));
-        os.write(reinterpret_cast<const char*>(&key_registry_count), sizeof(key_registry_count));
+        write_u8(os, format_version);
+        write_u64(os, header_size);
+        write_u64(os, entry_count);
+        write_u32(os, layer_count);
+        write_u32(os, key_registry_count);
     }
 
     /**
@@ -175,11 +258,11 @@ struct FileHeader {
      */
     void read(std::istream& is) {
         is.read(magic, MAGIC_STRING_LENGTH);
-        is.read(reinterpret_cast<char*>(&format_version), sizeof(format_version));
-        is.read(reinterpret_cast<char*>(&header_size), sizeof(header_size));
-        is.read(reinterpret_cast<char*>(&entry_count), sizeof(entry_count));
-        is.read(reinterpret_cast<char*>(&layer_count), sizeof(layer_count));
-        is.read(reinterpret_cast<char*>(&key_registry_count), sizeof(key_registry_count));
+        format_version = read_u8(is);
+        header_size = read_u64(is);
+        entry_count = read_u64(is);
+        layer_count = read_u32(is);
+        key_registry_count = read_u32(is);
     }
 };
 
@@ -590,16 +673,18 @@ struct BlockInfo {
     size_t compressed_size;     // Compressed size (may equal uncompressed if not compressed)
     size_t uncompressed_size;   // Original block size
 
+    // On-disk each field is a fixed 64-bit little-endian integer (not a raw
+    // size_t, whose width is platform-dependent) so files are portable.
     void write(std::ostream& os) const {
-        os.write(reinterpret_cast<const char*>(&offset), sizeof(offset));
-        os.write(reinterpret_cast<const char*>(&compressed_size), sizeof(compressed_size));
-        os.write(reinterpret_cast<const char*>(&uncompressed_size), sizeof(uncompressed_size));
+        write_u64(os, offset);
+        write_u64(os, compressed_size);
+        write_u64(os, uncompressed_size);
     }
 
     void read(std::istream& is) {
-        is.read(reinterpret_cast<char*>(&offset), sizeof(offset));
-        is.read(reinterpret_cast<char*>(&compressed_size), sizeof(compressed_size));
-        is.read(reinterpret_cast<char*>(&uncompressed_size), sizeof(uncompressed_size));
+        offset = static_cast<size_t>(read_u64(is));
+        compressed_size = static_cast<size_t>(read_u64(is));
+        uncompressed_size = static_cast<size_t>(read_u64(is));
     }
 };
 
@@ -719,63 +804,62 @@ struct IndexEntry {
         return total;
     }
 
+    // On-disk all counts/offsets/dims are fixed-width little-endian integers
+    // (u64 for sizes/offsets/dims, u8 for the type + compression + flag enums) so
+    // the layout is identical on 32- and 64-bit platforms. serialized_size()
+    // below must mirror this byte-for-byte (calculateHeaderSize() relies on it).
     void write(std::ostream& os) const {
-        os.write(reinterpret_cast<const char*>(&position), sizeof(position));
-        os.write(reinterpret_cast<const char*>(&total_bytes), sizeof(total_bytes));
-        os.write(reinterpret_cast<const char*>(&datatype), sizeof(datatype));
+        write_u64(os, position);
+        write_u64(os, total_bytes);
+        write_u8(os, static_cast<uint8_t>(datatype));
 
         // Write shape (ndim = 0 means scalar)
-        size_t ndim = shape.size();
-        os.write(reinterpret_cast<const char*>(&ndim), sizeof(ndim));
-        if (ndim > 0) {
-            os.write(reinterpret_cast<const char*>(shape.data()), sizeof(size_t) * ndim);
+        write_u64(os, shape.size());
+        for (size_t dim : shape) {
+            write_u64(os, dim);
         }
 
-        os.write(reinterpret_cast<const char*>(&compression), sizeof(compression));
-        os.write(reinterpret_cast<const char*>(&block_size), sizeof(block_size));
+        write_u8(os, static_cast<uint8_t>(compression));
+        write_u64(os, block_size);
 
-        // Write number of blocks
-        size_t num_blocks = blocks.size();
-        os.write(reinterpret_cast<const char*>(&num_blocks), sizeof(num_blocks));
-
-        // Write each block info
+        // Write number of blocks, then each block info
+        write_u64(os, blocks.size());
         for (const auto& block : blocks) {
             block.write(os);
         }
 
         // Write stored_in_metadata flag
-        uint8_t stored_flag = stored_in_metadata ? 1 : 0;
-        os.write(reinterpret_cast<const char*>(&stored_flag), sizeof(stored_flag));
+        write_u8(os, stored_in_metadata ? 1 : 0);
     }
 
     void read(std::istream& is) {
-        is.read(reinterpret_cast<char*>(&position), sizeof(position));
-        is.read(reinterpret_cast<char*>(&total_bytes), sizeof(total_bytes));
-        is.read(reinterpret_cast<char*>(&datatype), sizeof(datatype));
+        position = static_cast<size_t>(read_u64(is));
+        total_bytes = static_cast<size_t>(read_u64(is));
+        datatype = static_cast<DataType>(read_u8(is));
         LOG_TRACE("IndexEntry::read - position=", position, ", total_bytes=", total_bytes, ", datatype=", (int)datatype);
 
         // Read shape (ndim = 0 means scalar)
-        size_t ndim;
-        is.read(reinterpret_cast<char*>(&ndim), sizeof(ndim));
+        uint64_t ndim = read_u64(is);
         LOG_TRACE("IndexEntry::read - ndim=", ndim);
         if (ndim > 0) {
             if (ndim > 100) {
                 LOG_ERROR("SUSPICIOUS: ndim=", ndim, " is too large!");
                 throw std::runtime_error("Invalid ndim value: " + std::to_string(ndim));
             }
-            shape.resize(ndim);
-            is.read(reinterpret_cast<char*>(shape.data()), sizeof(size_t) * ndim);
+            shape.resize(static_cast<size_t>(ndim));
+            for (auto& dim : shape) {
+                dim = static_cast<size_t>(read_u64(is));
+            }
         } else {
             shape.clear(); // Explicitly make empty for scalar
         }
 
-        is.read(reinterpret_cast<char*>(&compression), sizeof(compression));
-        is.read(reinterpret_cast<char*>(&block_size), sizeof(block_size));
+        compression = static_cast<CompressionAlgorithm>(read_u8(is));
+        block_size = static_cast<size_t>(read_u64(is));
         LOG_TRACE("IndexEntry::read - compression=", (int)compression, ", block_size=", block_size);
 
         // Read number of blocks
-        size_t num_blocks;
-        is.read(reinterpret_cast<char*>(&num_blocks), sizeof(num_blocks));
+        uint64_t num_blocks = read_u64(is);
         LOG_TRACE("IndexEntry::read - num_blocks=", num_blocks);
 
         if (num_blocks > 10000) {
@@ -784,23 +868,24 @@ struct IndexEntry {
         }
 
         // Read each block info
-        blocks.resize(num_blocks);
+        blocks.resize(static_cast<size_t>(num_blocks));
         for (auto& block : blocks) {
             block.read(is);
         }
 
         // Read stored_in_metadata flag
-        uint8_t stored_flag = 0;
-        is.read(reinterpret_cast<char*>(&stored_flag), sizeof(stored_flag));
-        stored_in_metadata = (stored_flag != 0);
+        stored_in_metadata = (read_u8(is) != 0);
         LOG_TRACE("IndexEntry::read - complete, stored_in_metadata=", stored_in_metadata);
     }
 
     size_t serialized_size() const {
-        return sizeof(position) + sizeof(total_bytes) + sizeof(datatype) +
-               sizeof(size_t) + (shape.size() * sizeof(size_t)) +
-               sizeof(compression) + sizeof(block_size) + sizeof(size_t) +
-               (blocks.size() * (sizeof(size_t) * 3)) +
+        // Must match write() exactly: position(u64) + total_bytes(u64) +
+        // datatype(u8) + ndim(u64) + shape(u64*ndim) + compression(u8) +
+        // block_size(u64) + num_blocks(u64) + blocks(u64*3 each) + stored_flag(u8).
+        return sizeof(uint64_t) + sizeof(uint64_t) + sizeof(uint8_t) +
+               sizeof(uint64_t) + (shape.size() * sizeof(uint64_t)) +
+               sizeof(uint8_t) + sizeof(uint64_t) + sizeof(uint64_t) +
+               (blocks.size() * (sizeof(uint64_t) * 3)) +
                sizeof(uint8_t);  // stored_in_metadata flag
     }
 
@@ -839,6 +924,14 @@ struct IndexEntry {
 #include <streambuf>
 #include <iostream>
 #include <memory>
+
+// Perform a curl request and count it (see g_network_request_count above). Every
+// network round trip in this header MUST go through this wrapper so the counter
+// stays authoritative for observability/tests.
+inline CURLcode star_curl_perform(CURL* handle) {
+    g_network_request_count.fetch_add(1, std::memory_order_relaxed);
+    return curl_easy_perform(handle);
+}
 
 /**
  * @brief Custom streambuf implementation for HTTP requests with range support
@@ -892,7 +985,7 @@ private:
         curl_easy_setopt(m_curl, CURLOPT_HTTPHEADER, headers);
         
         // Perform request
-        CURLcode res = curl_easy_perform(m_curl);
+        CURLcode res = star_curl_perform(m_curl);
         curl_slist_free_all(headers);
         
         if (res != CURLE_OK) {
@@ -1008,7 +1101,7 @@ public:
         
         // Make HEAD request to get content length
         curl_easy_setopt(m_curl, CURLOPT_NOBODY, 1L);
-        CURLcode res = curl_easy_perform(m_curl);
+        CURLcode res = star_curl_perform(m_curl);
         curl_easy_setopt(m_curl, CURLOPT_NOBODY, 0L);
 
         if (res != CURLE_OK) {
@@ -1078,7 +1171,9 @@ inline FileMode parseModeString(const std::string& mode_str) {
 
 // File path information after parsing
 struct FilePathInfo {
-    enum Type { LOCAL, HTTP, S3 };
+    // MEMORY is an in-process source/sink (no path): the whole .stards image
+    // lives in a byte buffer. Used by StarDataset::openBytes()/writeBytes().
+    enum Type { LOCAL, HTTP, S3, MEMORY };
     Type type;
     std::string path;      // For LOCAL/HTTP
     std::string bucket;    // For S3
@@ -1625,7 +1720,7 @@ public:
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, +write_callback);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response_data);
 
-        CURLcode res = curl_easy_perform(curl);
+        CURLcode res = star_curl_perform(curl);
         curl_slist_free_all(headers);
         curl_easy_cleanup(curl);
 
@@ -1794,64 +1889,6 @@ private:
 // Helper functions for S3 support
 
 /**
- * @brief Parse a file path and determine its type (local, HTTP, or S3)
- */
-inline FilePathInfo parseFilePath(const std::string& filename) {
-    FilePathInfo info;
-
-    if (filename.substr(0, 7) == "/vsis3/") {
-        // S3 path: /vsis3/bucket/path/to/key
-        info.type = FilePathInfo::S3;
-        std::string remainder = filename.substr(7);
-        size_t slash = remainder.find('/');
-        if (slash == std::string::npos) {
-            throw std::runtime_error("Invalid S3 path format. Expected: /vsis3/bucket/key");
-        }
-        info.bucket = remainder.substr(0, slash);
-        info.key = remainder.substr(slash + 1);
-
-        // Get region (priority: AWS_DEFAULT_REGION env var > AWS config file > default)
-        const char* env_region = std::getenv("AWS_DEFAULT_REGION");
-        if (env_region) {
-            info.region = env_region;
-        } else {
-            // Try to read region from AWS config file
-            std::string config_path = AWSConfigParser::getConfigPath();
-            if (!config_path.empty()) {
-                AWSConfigParser config(config_path);
-                const char* env_profile = std::getenv("AWS_PROFILE");
-                std::string profile = env_profile ? std::string(env_profile) : "default";
-
-                if (config.hasProfile(profile)) {
-                    std::string config_region = config.getValue(profile, "region");
-                    if (!config_region.empty()) {
-                        info.region = config_region;
-                    } else {
-                        info.region = "us-east-1";  // Default fallback
-                    }
-                } else {
-                    info.region = "us-east-1";  // Default fallback
-                }
-            } else {
-                info.region = "us-east-1";  // Default fallback
-            }
-        }
-
-        return info;
-    } else if (filename.substr(0, 9) == "/vsicurl/") {
-        // HTTP path
-        info.type = FilePathInfo::HTTP;
-        info.path = filename.substr(9);
-        return info;
-    } else {
-        // Local file path
-        info.type = FilePathInfo::LOCAL;
-        info.path = filename;
-        return info;
-    }
-}
-
-/**
  * @brief Get S3 region from environment or default
  */
 inline std::string getS3Region() {
@@ -1991,7 +2028,7 @@ private:
         curl_easy_setopt(m_curl, CURLOPT_HEADERFUNCTION, nullptr);
         curl_easy_setopt(m_curl, CURLOPT_HEADERDATA, nullptr);
 
-        CURLcode res = curl_easy_perform(m_curl);
+        CURLcode res = star_curl_perform(m_curl);
         curl_slist_free_all(headers);
 
         if (res != CURLE_OK) {
@@ -2147,7 +2184,7 @@ public:
         curl_easy_setopt(m_curl, CURLOPT_HTTPHEADER, headers);
         curl_easy_setopt(m_curl, CURLOPT_NOBODY, 1L);  // HEAD request
 
-        CURLcode res = curl_easy_perform(m_curl);
+        CURLcode res = star_curl_perform(m_curl);
         curl_slist_free_all(headers);
         curl_easy_setopt(m_curl, CURLOPT_NOBODY, 0L);
 
@@ -2207,7 +2244,7 @@ public:
             curl_easy_setopt(m_curl, CURLOPT_HTTPHEADER, headers);
             curl_easy_setopt(m_curl, CURLOPT_NOBODY, 1L);
 
-            res = curl_easy_perform(m_curl);
+            res = star_curl_perform(m_curl);
             curl_slist_free_all(headers);
             curl_easy_setopt(m_curl, CURLOPT_NOBODY, 0L);
 
@@ -2457,7 +2494,7 @@ public:
             curl_easy_setopt(m_curl, CURLOPT_READDATA, &upload_data);
 
             // Perform upload
-            CURLcode res = curl_easy_perform(m_curl);
+            CURLcode res = star_curl_perform(m_curl);
 
             // Clean up
             curl_slist_free_all(header_list);
@@ -2500,6 +2537,497 @@ public:
     }
 };
 
+#endif // ENABLE_S3
+
+
+/**
+ * @brief Parse a file path and determine its type (local, HTTP, or S3)
+ *
+ * Defined unconditionally: StarDataset::open()/ctor call it for every path, and
+ * the LOCAL branch (the common case) has no S3/curl dependency. Only the
+ * `/vsis3/` region-resolution needs AWSConfigParser, so that part is gated on
+ * ENABLE_S3; without S3 support an S3 path is rejected with a clear error.
+ */
+inline FilePathInfo parseFilePath(const std::string& filename) {
+    FilePathInfo info;
+
+    if (filename.substr(0, 7) == "/vsis3/") {
+        // S3 path: /vsis3/bucket/path/to/key
+        info.type = FilePathInfo::S3;
+        std::string remainder = filename.substr(7);
+        size_t slash = remainder.find('/');
+        if (slash == std::string::npos) {
+            throw std::runtime_error("Invalid S3 path format. Expected: /vsis3/bucket/key");
+        }
+        info.bucket = remainder.substr(0, slash);
+        info.key = remainder.substr(slash + 1);
+
+#ifdef ENABLE_S3
+        // Get region (priority: AWS_DEFAULT_REGION env var > AWS config file > default)
+        const char* env_region = std::getenv("AWS_DEFAULT_REGION");
+        if (env_region) {
+            info.region = env_region;
+        } else {
+            // Try to read region from AWS config file
+            std::string config_path = AWSConfigParser::getConfigPath();
+            if (!config_path.empty()) {
+                AWSConfigParser config(config_path);
+                const char* env_profile = std::getenv("AWS_PROFILE");
+                std::string profile = env_profile ? std::string(env_profile) : "default";
+
+                if (config.hasProfile(profile)) {
+                    std::string config_region = config.getValue(profile, "region");
+                    if (!config_region.empty()) {
+                        info.region = config_region;
+                    } else {
+                        info.region = "us-east-1";  // Default fallback
+                    }
+                } else {
+                    info.region = "us-east-1";  // Default fallback
+                }
+            } else {
+                info.region = "us-east-1";  // Default fallback
+            }
+        }
+
+        return info;
+#else
+        throw std::runtime_error(
+            "S3 path '" + filename + "' requires S3 support, but this build was "
+            "compiled without ENABLE_S3.");
+#endif
+    } else if (filename.substr(0, 9) == "/vsicurl/") {
+        // HTTP path
+        info.type = FilePathInfo::HTTP;
+        info.path = filename.substr(9);
+        return info;
+    } else {
+        // Local file path
+        info.type = FilePathInfo::LOCAL;
+        info.path = filename;
+        return info;
+    }
+}
+
+
+//==============================================================================
+// RangeReader - a persistent, connection-reusing byte-range reader
+//==============================================================================
+//
+// StarDS reads a file as a sequence of explicit byte ranges (the header, then
+// per-array/per-layer blocks whose exact offsets+sizes are already in the
+// header). RangeReader collapses those reads onto ONE reused connection and
+// issues only ranged GETs — no HEAD, no new TLS handshake per read. A single
+// RangeReader is held by StarDataset for its lifetime.
+//
+// Phases this implements:
+//   1. connection reuse   — one handle/connection for the whole dataset
+//   2. no HEAD requests    — reads are range-explicit; size() is derived lazily
+//   3. coalesced reads     — read_at(off, len) fetches the exact span in 1 GET
+//   4. whole-file cache    — small files are fetched once and served from memory
+
+// Small buffer of raw bytes at a known file offset.
+class RangeReader {
+public:
+    virtual ~RangeReader() = default;
+
+    // Read exactly `len` bytes starting at absolute file offset `offset` into
+    // `out` (resized to the bytes actually available). Returns the number of
+    // bytes read. Implementations fetch the requested span in as few requests
+    // as possible (one GET for remote readers).
+    virtual size_t read_at(size_t offset, size_t len, std::vector<char>& out) = 0;
+
+    // Total size of the underlying object, if known cheaply. Returns SIZE_MAX
+    // when unknown (e.g. a remote object whose size we have not needed yet).
+    virtual size_t size_or_unknown() = 0;
+
+    // True if the object is known to exist / be readable.
+    virtual bool good() const = 0;
+
+    // Phase 4 small-file fast path: if the whole object is no larger than
+    // `max_bytes`, pull it into memory in a SINGLE request and serve all
+    // subsequent read_at() calls from that buffer. Returns true if the object is
+    // now fully cached. Implementations must do this without a prior HEAD — a
+    // remote reader issues one ranged GET of [0, max_bytes] and uses the
+    // Content-Range total to decide whether the whole object fit.
+    virtual bool ensure_whole_cached(size_t max_bytes) { (void)max_bytes; return false; }
+};
+
+// LOCAL: a plain file. seek+read; no network. Optionally slurps the whole file.
+class LocalRangeReader : public RangeReader {
+public:
+    explicit LocalRangeReader(const std::string& path) : m_path(path) {}
+
+    size_t read_at(size_t offset, size_t len, std::vector<char>& out) override {
+        if (!m_whole.empty() || m_cached) {
+            return serve_from_cache(offset, len, out);
+        }
+        std::ifstream in(m_path, std::ios::binary);
+        if (!in.good()) { out.clear(); return 0; }
+        in.seekg(static_cast<std::streamoff>(offset));
+        out.resize(len);
+        in.read(out.data(), static_cast<std::streamsize>(len));
+        out.resize(static_cast<size_t>(in.gcount()));
+        return out.size();
+    }
+
+    size_t size_or_unknown() override {
+        if (m_cached) return m_whole.size();
+        std::ifstream in(m_path, std::ios::binary | std::ios::ate);
+        if (!in.good()) return SIZE_MAX;
+        std::streamoff n = in.tellg();
+        return n < 0 ? SIZE_MAX : static_cast<size_t>(n);
+    }
+
+    bool good() const override {
+        std::ifstream in(m_path, std::ios::binary);
+        return in.good();
+    }
+
+    bool ensure_whole_cached(size_t max_bytes) override {
+        if (m_cached) return true;
+        std::ifstream in(m_path, std::ios::binary | std::ios::ate);
+        if (!in.good()) return false;
+        std::streamoff n = in.tellg();
+        if (n < 0) return false;
+        if (static_cast<size_t>(n) > max_bytes) return false;  // too big to cache
+        in.seekg(0);
+        m_whole.resize(static_cast<size_t>(n));
+        in.read(m_whole.data(), n);
+        m_whole.resize(static_cast<size_t>(in.gcount()));
+        m_cached = true;
+        return true;
+    }
+
+private:
+    size_t serve_from_cache(size_t offset, size_t len, std::vector<char>& out) {
+        if (offset >= m_whole.size()) { out.clear(); return 0; }
+        size_t avail = std::min(len, m_whole.size() - offset);
+        out.assign(m_whole.begin() + offset, m_whole.begin() + offset + avail);
+        return avail;
+    }
+    std::string m_path;
+    std::vector<char> m_whole;
+    bool m_cached = false;
+};
+
+// MEMORY: the entire .stards image is held in a byte buffer (no file, no
+// network). Serves every read from that buffer — this backs openBytes().
+class MemoryRangeReader : public RangeReader {
+public:
+    explicit MemoryRangeReader(std::vector<char> bytes) : m_bytes(std::move(bytes)) {}
+
+    size_t read_at(size_t offset, size_t len, std::vector<char>& out) override {
+        if (offset >= m_bytes.size()) { out.clear(); return 0; }
+        size_t avail = std::min(len, m_bytes.size() - offset);
+        out.assign(m_bytes.begin() + offset, m_bytes.begin() + offset + avail);
+        return avail;
+    }
+
+    size_t size_or_unknown() override { return m_bytes.size(); }
+    bool good() const override { return true; }
+    // Already fully in memory; nothing to fetch.
+    bool ensure_whole_cached(size_t /*max_bytes*/) override { return true; }
+
+private:
+    std::vector<char> m_bytes;
+};
+
+#ifdef ENABLE_CURL
+// HTTP: one persistent CURL handle, reused across ranged GETs. libcurl keeps the
+// TCP+TLS connection alive between star_curl_perform() calls on the same handle,
+// so N array reads cost ~N GETs on ONE connection (vs N HEAD+GET+handshakes).
+class HttpRangeReader : public RangeReader {
+public:
+    explicit HttpRangeReader(const std::string& url) : m_url(url) {
+        m_curl = curl_easy_init();
+        if (m_curl) {
+            curl_easy_setopt(m_curl, CURLOPT_URL, m_url.c_str());
+            curl_easy_setopt(m_curl, CURLOPT_WRITEFUNCTION, &HttpRangeReader::write_cb);
+            curl_easy_setopt(m_curl, CURLOPT_WRITEDATA, this);
+            curl_easy_setopt(m_curl, CURLOPT_HEADERFUNCTION, &HttpRangeReader::header_cb);
+            curl_easy_setopt(m_curl, CURLOPT_HEADERDATA, this);
+            curl_easy_setopt(m_curl, CURLOPT_FOLLOWLOCATION, 1L);
+            // Reuse the connection across requests (default, but be explicit).
+            curl_easy_setopt(m_curl, CURLOPT_FORBID_REUSE, 0L);
+        }
+    }
+    ~HttpRangeReader() override { if (m_curl) curl_easy_cleanup(m_curl); }
+
+    size_t read_at(size_t offset, size_t len, std::vector<char>& out) override {
+        if (m_cached) return serve_from_cache(offset, len, out);
+        out.clear();
+        if (!m_curl || len == 0) return 0;
+        m_sink = &out;
+        std::string range = "Range: bytes=" + std::to_string(offset) + "-" +
+                            std::to_string(offset + len - 1);
+        struct curl_slist* headers = curl_slist_append(nullptr, range.c_str());
+        curl_easy_setopt(m_curl, CURLOPT_HTTPHEADER, headers);
+        CURLcode res = star_curl_perform(m_curl);  // single ranged GET
+        curl_slist_free_all(headers);
+        m_sink = nullptr;
+        if (res != CURLE_OK) { out.clear(); return 0; }
+        return out.size();
+    }
+
+    // Content-Length is captured opportunistically from the Content-Range of any
+    // GET we already made; we never issue a HEAD just to learn the size.
+    size_t size_or_unknown() override { return m_total_size; }
+
+    bool good() const override { return m_curl != nullptr; }
+
+    bool ensure_whole_cached(size_t max_bytes) override {
+        if (m_cached) return true;
+        if (!m_curl || max_bytes == 0) return false;
+        // ONE ranged GET of [0, max_bytes]. The server reports the object's true
+        // size in Content-Range ("bytes 0-N/TOTAL"); if TOTAL <= max_bytes we got
+        // the whole object in this single request and can cache it. If it's
+        // larger, we bail (the partial bytes are discarded; a real ranged read
+        // path is used instead) — but no HEAD was ever issued.
+        std::vector<char> buf;
+        m_sink = &buf;
+        std::string range = "Range: bytes=0-" + std::to_string(max_bytes - 1);
+        struct curl_slist* headers = curl_slist_append(nullptr, range.c_str());
+        curl_easy_setopt(m_curl, CURLOPT_HTTPHEADER, headers);
+        CURLcode res = star_curl_perform(m_curl);
+        curl_slist_free_all(headers);
+        m_sink = nullptr;
+        if (res != CURLE_OK) return false;
+        // If we learned the total size and it fits, or the server returned fewer
+        // bytes than we asked for (=> whole object), treat as fully cached.
+        bool whole = (m_total_size != SIZE_MAX && m_total_size <= max_bytes) ||
+                     (buf.size() < max_bytes);
+        if (whole) {
+            m_whole = std::move(buf);
+            m_cached = true;
+            if (m_total_size == SIZE_MAX) m_total_size = m_whole.size();
+            return true;
+        }
+        return false;
+    }
+
+private:
+    static size_t write_cb(char* ptr, size_t size, size_t nmemb, void* userdata) {
+        auto* self = static_cast<HttpRangeReader*>(userdata);
+        size_t bytes = size * nmemb;
+        if (self->m_sink) self->m_sink->insert(self->m_sink->end(), ptr, ptr + bytes);
+        return bytes;
+    }
+    static size_t header_cb(char* buffer, size_t size, size_t nitems, void* userdata) {
+        auto* self = static_cast<HttpRangeReader*>(userdata);
+        size_t bytes = size * nitems;
+        std::string h(buffer, bytes);
+        // Prefer Content-Range total ("bytes a-b/TOTAL"); fall back to
+        // Content-Length only for a non-ranged (whole-object) response.
+        auto lower = h; std::transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
+        if (lower.rfind("content-range:", 0) == 0) {
+            auto slash = h.find('/');
+            if (slash != std::string::npos) {
+                try { self->m_total_size = std::stoull(h.substr(slash + 1)); } catch (...) {}
+            }
+        }
+        return bytes;
+    }
+    size_t serve_from_cache(size_t offset, size_t len, std::vector<char>& out) {
+        if (offset >= m_whole.size()) { out.clear(); return 0; }
+        size_t avail = std::min(len, m_whole.size() - offset);
+        out.assign(m_whole.begin() + offset, m_whole.begin() + offset + avail);
+        return avail;
+    }
+
+    CURL* m_curl = nullptr;
+    std::string m_url;
+    std::vector<char>* m_sink = nullptr;
+    std::vector<char> m_whole;
+    bool m_cached = false;
+    size_t m_total_size = SIZE_MAX;
+};
+#endif // ENABLE_CURL
+
+#ifdef ENABLE_S3
+// S3: one persistent CURL handle + one cached AWS SigV4 signer, reused across
+// signed ranged GETs. Bucket-region (301) resolution happens lazily on the first
+// request and is then cached — no per-read HEAD, no per-read handshake.
+class S3RangeReader : public RangeReader {
+public:
+    S3RangeReader(std::string bucket, std::string key, std::string region,
+                  S3Credentials creds)
+        : m_bucket(std::move(bucket)), m_key(std::move(key)),
+          m_region(std::move(region)), m_creds(std::move(creds)) {
+        m_curl = curl_easy_init();
+        if (m_curl) {
+            curl_easy_setopt(m_curl, CURLOPT_WRITEFUNCTION, &S3RangeReader::write_cb);
+            curl_easy_setopt(m_curl, CURLOPT_WRITEDATA, this);
+            curl_easy_setopt(m_curl, CURLOPT_HEADERFUNCTION, &S3RangeReader::header_cb);
+            curl_easy_setopt(m_curl, CURLOPT_HEADERDATA, this);
+            curl_easy_setopt(m_curl, CURLOPT_FOLLOWLOCATION, 0L);  // signed; no redirects
+            curl_easy_setopt(m_curl, CURLOPT_FORBID_REUSE, 0L);
+        }
+        m_signer = std::make_unique<AWSV4Signer>(
+            m_creds.access_key, m_creds.secret_key, m_region, m_creds.session_token);
+    }
+    ~S3RangeReader() override { if (m_curl) curl_easy_cleanup(m_curl); }
+
+    size_t read_at(size_t offset, size_t len, std::vector<char>& out) override {
+        if (m_cached) return serve_from_cache(offset, len, out);
+        out.clear();
+        if (!m_curl || len == 0) return 0;
+        // One signed ranged GET, with a one-time region retry on 301.
+        if (!signed_get(offset, offset + len - 1, out)) { out.clear(); return 0; }
+        return out.size();
+    }
+
+    size_t size_or_unknown() override { return m_total_size; }
+    bool good() const override { return m_curl != nullptr; }
+
+    bool ensure_whole_cached(size_t max_bytes) override {
+        if (m_cached) return true;
+        if (!m_curl || max_bytes == 0) return false;
+        // ONE signed ranged GET of [0, max_bytes]. Use the Content-Range total to
+        // decide whether the whole object fit; no HEAD is issued.
+        std::vector<char> buf;
+        if (!signed_get(0, max_bytes - 1, buf)) return false;
+        bool whole = (m_total_size != SIZE_MAX && m_total_size <= max_bytes) ||
+                     (buf.size() < max_bytes);
+        if (whole) {
+            m_whole = std::move(buf);
+            m_cached = true;
+            if (m_total_size == SIZE_MAX) m_total_size = m_whole.size();
+            return true;
+        }
+        return false;
+    }
+
+private:
+    static size_t write_cb(char* ptr, size_t size, size_t nmemb, void* userdata) {
+        auto* self = static_cast<S3RangeReader*>(userdata);
+        size_t bytes = size * nmemb;
+        if (self->m_sink) self->m_sink->insert(self->m_sink->end(), ptr, ptr + bytes);
+        return bytes;
+    }
+    static size_t header_cb(char* buffer, size_t size, size_t nitems, void* userdata) {
+        auto* self = static_cast<S3RangeReader*>(userdata);
+        size_t bytes = size * nitems;
+        std::string h(buffer, bytes);
+        std::string lower = h;
+        std::transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
+        if (lower.rfind("content-range:", 0) == 0) {
+            auto slash = h.find('/');
+            if (slash != std::string::npos) {
+                try { self->m_total_size = std::stoull(h.substr(slash + 1)); } catch (...) {}
+            }
+        } else if (lower.rfind("x-amz-bucket-region:", 0) == 0) {
+            auto colon = h.find(':');
+            if (colon != std::string::npos) {
+                std::string v = h.substr(colon + 1);
+                // trim
+                v.erase(0, v.find_first_not_of(" \t\r\n"));
+                v.erase(v.find_last_not_of(" \t\r\n") + 1);
+                self->m_redirect_region = v;
+            }
+        }
+        return bytes;
+    }
+
+    std::string getUrl() const {
+        return S3EndpointConfig::resolve().url(m_bucket, m_region,
+                                               AWSV4Signer::urlEncode(m_key));
+    }
+    std::string getHost() const {
+        return S3EndpointConfig::resolve().host(m_bucket, m_region);
+    }
+    static std::string timestamp() {
+        auto now = std::chrono::system_clock::now();
+        std::time_t t = std::chrono::system_clock::to_time_t(now);
+        std::tm tm{};
+#ifdef _WIN32
+        gmtime_s(&tm, &t);
+#else
+        gmtime_r(&t, &tm);
+#endif
+        char buf[17];
+        std::strftime(buf, sizeof(buf), "%Y%m%dT%H%M%SZ", &tm);
+        return std::string(buf);
+    }
+
+    // Perform one signed GET for [start, end] (end==SIZE_MAX => open-ended to EOF).
+    // Retries once against the bucket's real region if the first attempt 301s.
+    bool signed_get(size_t start, size_t end, std::vector<char>& out) {
+        for (int attempt = 0; attempt < 2; ++attempt) {
+            out.clear();
+            m_sink = &out;
+            m_redirect_region.clear();
+
+            static const char* kEmptyHash =
+                "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
+            std::string url = getUrl();
+            std::string host = getHost();
+            std::string ts = timestamp();
+
+            std::map<std::string, std::string> sign_headers;
+            sign_headers["host"] = host;
+            sign_headers["x-amz-content-sha256"] = kEmptyHash;
+            sign_headers["x-amz-date"] = ts;
+            if (!m_creds.session_token.empty()) {
+                sign_headers["x-amz-security-token"] = m_creds.session_token;
+            }
+            std::string authorization = m_signer->signRequest(
+                "GET", m_bucket, m_key, kEmptyHash, sign_headers);
+
+            struct curl_slist* headers = nullptr;
+            std::string range = (end == SIZE_MAX)
+                ? ("Range: bytes=" + std::to_string(start) + "-")
+                : ("Range: bytes=" + std::to_string(start) + "-" + std::to_string(end));
+            headers = curl_slist_append(headers, range.c_str());
+            headers = curl_slist_append(headers, ("Host: " + host).c_str());
+            headers = curl_slist_append(headers, ("x-amz-date: " + ts).c_str());
+            headers = curl_slist_append(headers,
+                (std::string("x-amz-content-sha256: ") + kEmptyHash).c_str());
+            headers = curl_slist_append(headers, ("Authorization: " + authorization).c_str());
+            if (!m_creds.session_token.empty()) {
+                headers = curl_slist_append(headers,
+                    ("x-amz-security-token: " + m_creds.session_token).c_str());
+            }
+
+            curl_easy_setopt(m_curl, CURLOPT_URL, url.c_str());
+            curl_easy_setopt(m_curl, CURLOPT_HTTPHEADER, headers);
+            CURLcode res = star_curl_perform(m_curl);
+            curl_slist_free_all(headers);
+            m_sink = nullptr;
+
+            if (res != CURLE_OK) return false;
+            long code = 0;
+            curl_easy_getinfo(m_curl, CURLINFO_RESPONSE_CODE, &code);
+
+            if (code == 301 && !m_redirect_region.empty() && attempt == 0) {
+                // Re-sign for the correct region and retry once.
+                m_region = m_redirect_region;
+                m_signer = std::make_unique<AWSV4Signer>(
+                    m_creds.access_key, m_creds.secret_key, m_region, m_creds.session_token);
+                continue;
+            }
+            return code >= 200 && code < 300;
+        }
+        return false;
+    }
+
+    size_t serve_from_cache(size_t offset, size_t len, std::vector<char>& out) {
+        if (offset >= m_whole.size()) { out.clear(); return 0; }
+        size_t avail = std::min(len, m_whole.size() - offset);
+        out.assign(m_whole.begin() + offset, m_whole.begin() + offset + avail);
+        return avail;
+    }
+
+    CURL* m_curl = nullptr;
+    std::string m_bucket, m_key, m_region;
+    S3Credentials m_creds;
+    std::unique_ptr<AWSV4Signer> m_signer;
+    std::vector<char>* m_sink = nullptr;
+    std::string m_redirect_region;
+    std::vector<char> m_whole;
+    bool m_cached = false;
+    size_t m_total_size = SIZE_MAX;
+};
 #endif // ENABLE_S3
 
 
@@ -2797,87 +3325,49 @@ public:
 #endif
 
     /**
-     * @brief Calculate total bytes needed to store the array
-     * @return Total bytes (uncompressed)
-     */
-    size_t totalBytes() const {
-        // Compute uncompressed size
-        size_t uncompressed_size = 0;
-        if constexpr (std::is_same<T, std::string>::value) {
-            size_t string_bytes = 0;
-            for (const auto& str : m_data) {
-                string_bytes += str.size() + sizeof(size_t); // String length + string data
-            }
-            uncompressed_size = sizeof(size_t) +                      // Number of dimensions
-                                sizeof(size_t) * m_shape.size() +     // Shape dimensions
-                                sizeof(size_t) * m_strides.size() +   // Strides
-                                string_bytes;                         // Actual string data
-        } else {
-            uncompressed_size = sizeof(size_t) +                      // Number of dimensions
-                                sizeof(size_t) * m_shape.size() +     // Shape dimensions
-                                sizeof(size_t) * m_strides.size() +   // Strides
-                                sizeof(T) * m_data.size();            // Actual data
-        }
-
-        LOG_TRACE("Uncompressed size: ", uncompressed_size);
-        return uncompressed_size;
-    }
-
-    /**
      * @brief Write array to output stream
      * @param os Output stream
      */
     friend std::ostream& operator<<(std::ostream& os, const NDArray<T>& arr) {
         LOG_TRACE("Writing NDArray<", typeid(T).name(), "> to output stream at position ", os.tellp());
-        size_t total_bytes = 0;
-        size_t size_to_write = 0;
+        // All counts/dims/lengths are written as fixed 64-bit little-endian
+        // integers (not raw size_t, whose width varies by platform) so the
+        // stream is portable across 32- and 64-bit builds.
 
         // Write number of dimensions
-        size_t num_dims = arr.m_shape.size();
-        size_to_write = sizeof(num_dims);
-        os.write(reinterpret_cast<const char*>(&num_dims), size_to_write);
-        LOG_TRACE("Wrote number of dimensions: ", num_dims, " with total number of elements ", sizeof(num_dims));
-        total_bytes += size_to_write;
+        uint64_t num_dims = arr.m_shape.size();
+        write_u64(os, num_dims);
+        LOG_TRACE("Wrote number of dimensions: ", num_dims);
 
         // Write shape
-        size_to_write = sizeof(size_t) * num_dims;
-        os.write(reinterpret_cast<const char*>(arr.m_shape.data()), size_to_write);
-        LOG_TRACE("Wrote shape of size ", sizeof(size_t) * num_dims);
-        total_bytes += size_to_write;
+        for (size_t dim : arr.m_shape) {
+            write_u64(os, dim);
+        }
 
         // Write strides
-        size_to_write = sizeof(size_t) * num_dims;
-        os.write(reinterpret_cast<const char*>(arr.m_strides.data()), size_to_write);
-        LOG_TRACE("Wrote strides of size ", sizeof(size_t) * num_dims);
-        total_bytes += size_to_write;
+        for (size_t stride : arr.m_strides) {
+            write_u64(os, stride);
+        }
 
         if constexpr (std::is_same<T, std::string>::value) {
-            // Write data (strings need special handling)
+            // Write data (strings need special handling): u64 length + bytes.
             for (const auto& str : arr.m_data) {
-                size_t str_len = str.size();
-                os.write(reinterpret_cast<const char*>(&str_len), sizeof(str_len));
-                total_bytes += sizeof(str_len);
-                os.write(str.data(), str_len);
+                write_u64(os, str.size());
+                os.write(str.data(), static_cast<std::streamsize>(str.size()));
             }
         } else {
-            // Write data in chunks
+            // Write data in chunks (raw element bytes; sizeof(T) is fixed).
             constexpr size_t CHUNK_SIZE = 1024; // 1KB chunks
-            size_to_write = sizeof(T) * arr.m_data.size();
+            size_t size_to_write = sizeof(T) * arr.m_data.size();
             const char* data_ptr = reinterpret_cast<const char*>(arr.m_data.data());
-            total_bytes += size_to_write;
 
             size_t bytes_written = 0;
             while (bytes_written < size_to_write) {
                 size_t bytes_to_write = std::min(CHUNK_SIZE, size_to_write - bytes_written);
                 os.write(data_ptr + bytes_written, bytes_to_write);
                 bytes_written += bytes_to_write;
-
-                LOG_TRACE("Wrote data chunk of size ", bytes_to_write,
-                          " (", bytes_written, "/", size_to_write, " bytes)");
-
             }
             LOG_TRACE("Completed writing data of size ", size_to_write);
-            LOG_TRACE("Total bytes written: ", total_bytes);
         }
         return os;
     }
@@ -2889,35 +3379,32 @@ public:
     friend std::istream& operator>>(std::istream& is, NDArray<T>& arr) {
         LOG_TRACE("Reading NDArray<", typeid(T).name(), "> from input stream from byte position ", is.tellg());
 
-        // Read number of dimensions
-        size_t num_dims;
-        is.read(reinterpret_cast<char*>(&num_dims), sizeof(num_dims));
+        // Read number of dimensions (fixed u64, matching operator<<).
+        size_t num_dims = static_cast<size_t>(read_u64(is));
         LOG_TRACE("Read number of dimensions: ", num_dims);
 
         // Read shape
         arr.m_shape.resize(num_dims);
-        is.read(reinterpret_cast<char*>(arr.m_shape.data()), sizeof(size_t) * num_dims);
-        LOG_TRACE("Read shape array of ", sizeof(size_t) * num_dims, " bytes");
+        for (auto& dim : arr.m_shape) {
+            dim = static_cast<size_t>(read_u64(is));
+        }
 
         // Read strides
         arr.m_strides.resize(num_dims);
-        is.read(reinterpret_cast<char*>(arr.m_strides.data()), sizeof(size_t) * num_dims);
-        LOG_TRACE("Read strides array of ", sizeof(size_t) * num_dims, " bytes");
+        for (auto& stride : arr.m_strides) {
+            stride = static_cast<size_t>(read_u64(is));
+        }
 
         // Calculate total size and read data
         size_t total_size = arr.computeTotalSize();
         if constexpr (std::is_same<T, std::string>::value) {
             arr.m_data.resize(total_size);
             for (size_t i = 0; i < total_size; ++i) {
-                size_t str_len;
-                is.read(reinterpret_cast<char*>(&str_len), sizeof(str_len));
-
+                size_t str_len = static_cast<size_t>(read_u64(is));
                 std::string str(str_len, '\0');
-                is.read(&str[0], str_len);
+                is.read(&str[0], static_cast<std::streamsize>(str_len));
                 arr.m_data[i] = std::move(str);
-                LOG_TRACE("Read string ", i, " with length ", str_len);
             }
-
             LOG_TRACE("Finished reading NDArray<std::string>");
         } else {
             arr.m_data.resize(total_size);
@@ -3693,6 +4180,14 @@ struct OpenOptions {
     // inheriting the base value. Set to true to opt into base-layer inheritance
     // (a key missing from a layer resolves to the base layer's value).
     bool layer_inheritance = false;
+
+    // Whole-file prefetch threshold (bytes) for REMOTE reads (HTTP/S3). If the
+    // object's size is known to be at or below this, StarDS fetches it once into
+    // memory on open and serves every subsequent read from that buffer — one GET
+    // instead of many ranged requests. Camera-model .stards files are small, so
+    // the default (8 MiB) covers them. Set to 0 to disable the whole-file cache
+    // and always use ranged reads. Local files are unaffected.
+    size_t prefetch_whole_below_bytes = 8u * 1024u * 1024u;
 };
 
 /**
@@ -4022,6 +4517,19 @@ public:
     bool m_flushed = false;                                     // Track if already flushed (prevents redundant flushes)
     std::unique_ptr<ThreadPool> m_thread_pool;                  // Thread pool for parallel operations
 
+    // Persistent byte-range reader (one reused connection for the whole dataset).
+    // Lazily created on first read; all read paths (index, layer metadata, array
+    // blocks) go through this so remote reads reuse the connection and never HEAD.
+    std::unique_ptr<RangeReader> m_reader;
+
+    // In-memory source for openBytes(): the whole .stards image as bytes. When
+    // set (MEMORY path type), reader() serves from a MemoryRangeReader over this.
+    std::vector<char> m_memory_source;
+
+    // When non-null, flush_internal() writes the assembled file image here
+    // instead of to disk/S3 — this backs writeBytes(). Cleared after capture.
+    std::vector<char>* m_capture_image = nullptr;
+
     /**
      * @brief Check if threading should be used based on workload
      * @param num_blocks Number of blocks to process
@@ -4036,48 +4544,68 @@ public:
 
 
     /**
-     * @brief Open an input stream for the backing file, honoring the location
-     *        (local file, S3, or HTTP). Centralizes the stream-selection logic
-     *        so every read path supports remote storage identically.
-     * @return A ready-to-read istream positioned at the start of the file.
+     * @brief Return the dataset's persistent byte-range reader, creating it on
+     *        first use. One reader (= one reused connection for remote files) is
+     *        shared by every read path — the index load, layer-metadata loads,
+     *        and array-block reads — so remote reads never open a new connection
+     *        or issue a HEAD per read.
+     *
+     * For small REMOTE files, this also triggers the whole-file prefetch
+     * (OpenOptions::prefetch_whole_below_bytes): the object is fetched once and
+     * all subsequent reads are served from memory.
      */
-    std::unique_ptr<std::istream> openReadStream() {
-        std::unique_ptr<std::istream> file;
+    RangeReader& reader() {
+        if (m_reader) return *m_reader;
 
-#ifdef ENABLE_S3
         switch (m_path_info.type) {
+            case FilePathInfo::MEMORY:
+                // Serve reads from the in-memory image supplied to openBytes().
+                m_reader = std::make_unique<MemoryRangeReader>(m_memory_source);
+                break;
+            case FilePathInfo::LOCAL:
+                m_reader = std::make_unique<LocalRangeReader>(m_path_info.path);
+                break;
+            case FilePathInfo::HTTP:
+#ifdef ENABLE_CURL
+                m_reader = std::make_unique<HttpRangeReader>(m_path_info.path);
+#else
+                throw std::runtime_error("CURL support not enabled, cannot open HTTP URL");
+#endif
+                break;
             case FilePathInfo::S3:
+#ifdef ENABLE_S3
                 if (!m_s3_credentials) {
                     throw std::runtime_error("S3 credentials not available");
                 }
-                file = std::make_unique<S3Stream>(m_path_info.bucket, m_path_info.key,
-                                                 m_path_info.region, *m_s3_credentials);
-                break;
-            case FilePathInfo::HTTP:
-                #ifdef ENABLE_CURL
-                file = std::make_unique<HttpStream>(m_path_info.path);
-                #else
-                throw std::runtime_error("CURL support not enabled, cannot open HTTP URL");
-                #endif
-                break;
-            case FilePathInfo::LOCAL:
-                file = std::make_unique<std::ifstream>(m_path_info.path, std::ios::binary);
-                break;
-        }
+                m_reader = std::make_unique<S3RangeReader>(
+                    m_path_info.bucket, m_path_info.key, m_path_info.region,
+                    *m_s3_credentials);
 #else
-        if (m_filename.substr(0, 9) == "/vsicurl/") {
-            #ifdef ENABLE_CURL
-            std::string url = m_filename.substr(9);
-            file = std::make_unique<HttpStream>(url);
-            #else
-            throw std::runtime_error("CURL support not enabled, cannot open HTTP URL");
-            #endif
-        } else {
-            file = std::make_unique<std::ifstream>(m_filename, std::ios::binary);
-        }
+                throw std::runtime_error("S3 support not enabled, cannot open S3 URL");
 #endif
+                break;
+        }
 
-        return file;
+        // Phase 4: whole-file fast path for small REMOTE objects. One ranged GET
+        // of [0, threshold] pulls the whole object if it fits (the reader learns
+        // the true size from Content-Range) and serves every later read from
+        // memory — turning "header GET + N block GETs" into a single request.
+        // Local files are cheap to seek, so they are not prefetched here.
+        if (m_path_info.type != FilePathInfo::LOCAL &&
+            m_open_options.prefetch_whole_below_bytes > 0) {
+            m_reader->ensure_whole_cached(m_open_options.prefetch_whole_below_bytes);
+        }
+        return *m_reader;
+    }
+
+    /**
+     * @brief Read exactly [position, position+len) from the backing file via the
+     *        persistent reader. Returns the bytes actually read.
+     */
+    std::vector<char> read_range(size_t position, size_t len) {
+        std::vector<char> buf;
+        reader().read_at(position, len, buf);
+        return buf;
     }
 
     /**
@@ -4102,17 +4630,14 @@ public:
         size_t position = m_cold.file_positions[idx];
         size_t compressed_size = m_cold.compressed_sizes[idx];
 
-        // Open file (supporting S3/HTTP) and seek to position
-        std::unique_ptr<std::istream> in = openReadStream();
-        if (!in->good()) {
-            throw std::runtime_error("Failed to open file for reading entry");
+        // Read the entry's compressed bytes in a single ranged request via the
+        // dataset's persistent reader (one reused connection, no HEAD).
+        std::vector<char> compressed_data = read_range(position, compressed_size);
+        if (compressed_data.size() != compressed_size) {
+            throw std::runtime_error("Short read loading entry (expected " +
+                std::to_string(compressed_size) + ", got " +
+                std::to_string(compressed_data.size()) + ")");
         }
-
-        in->seekg(position);
-
-        // Read compressed data
-        std::vector<char> compressed_data(compressed_size);
-        in->read(compressed_data.data(), compressed_size);
 
         // Decompress data (with parallel decompression if thread pool available)
         std::vector<char> decompressed_data = decompressBlocks(
@@ -4240,64 +4765,34 @@ public:
     void loadIndex() {
         LOG_TRACE("Loading index for file ", m_filename);
 
-        std::unique_ptr<std::istream> file;
-
-#ifdef ENABLE_S3
-        // Use cached path info (parsed once in constructor)
-        switch (m_path_info.type) {
-            case FilePathInfo::S3:
-                LOG_TRACE("Opening S3 stream for bucket: ", m_path_info.bucket, ", key: ", m_path_info.key);
-                if (!m_s3_credentials) {
-                    throw std::runtime_error("S3 credentials not available");
-                }
-                file = std::make_unique<S3Stream>(m_path_info.bucket, m_path_info.key,
-                                                 m_path_info.region, *m_s3_credentials);
-                break;
-            case FilePathInfo::HTTP:
-                #ifdef ENABLE_CURL
-                LOG_TRACE("Opening HTTP stream for URL: ", m_path_info.path);
-                file = std::make_unique<HttpStream>(m_path_info.path);
-                #else
-                throw std::runtime_error("CURL support not enabled, cannot open HTTP URL");
-                #endif
-                break;
-            case FilePathInfo::LOCAL:
-                file = std::make_unique<std::ifstream>(m_path_info.path, std::ios::binary);
-                break;
-        }
-#else
-        // Check if this is a HTTP URL
-        if (m_filename.substr(0, 9) == "/vsicurl/") {
-            #ifdef ENABLE_CURL
-            std::string url = m_filename.substr(9);
-            LOG_TRACE("Opening HTTP stream for URL: ", url);
-            file = std::make_unique<HttpStream>(url);
-            #else
-            throw std::runtime_error("CURL support not enabled, cannot open HTTP URL");
-            #endif
-        } else {
-            file = std::make_unique<std::ifstream>(m_filename, std::ios::binary);
-        }
-#endif
-
-        if (!file->good()) {
+        // Use the dataset's persistent reader (one reused connection; no HEAD).
+        if (!reader().good()) {
             return;
         }
 
-        // First read the initial INITIAL_READ_SIZE bytes into a stack buffer
+        // First read the initial INITIAL_READ_SIZE bytes in one ranged request.
         constexpr size_t INITIAL_READ_SIZE = 2056;
-        char initial_buffer[INITIAL_READ_SIZE];
-        file->read(initial_buffer, INITIAL_READ_SIZE);
-        size_t bytes_read = file->gcount();
-        
+        std::vector<char> initial = read_range(0, INITIAL_READ_SIZE);
+        size_t bytes_read = initial.size();
+        const char* initial_buffer = initial.data();
+
         LOG_TRACE("Read initial ", bytes_read, " bytes");
+
+        // Too few bytes for even a header prefix: the object is absent or empty
+        // (e.g. a remote path opened READ_WRITE that doesn't exist yet). Leave
+        // m_header_size == 0 so open() treats it as a new file, rather than
+        // throwing a spurious "magic mismatch".
+        if (bytes_read < MAGIC_STRING_LENGTH + sizeof(uint8_t) + sizeof(m_header_size)) {
+            LOG_TRACE("Initial read too short (", bytes_read, " bytes); treating as empty/new file");
+            return;
+        }
 
         // Create a stream from the initial buffer
         std::stringstream initial_stream;
-        initial_stream.rdbuf()->sputn(initial_buffer, bytes_read);        
+        initial_stream.rdbuf()->sputn(initial_buffer, bytes_read);
         initial_stream.seekg(0);
         initial_stream.clear();
-        
+
         char magic[MAGIC_STRING_LENGTH];
         initial_stream.read(magic, MAGIC_STRING_LENGTH);
         std::string magic_string(magic, MAGIC_STRING_LENGTH);
@@ -4307,8 +4802,8 @@ public:
             throw std::runtime_error("Magic string mismatch");
         }
 
-        // Read format 
-        uint8_t format_version = 1; 
+        // Read format
+        uint8_t format_version = 1;
         initial_stream.read(reinterpret_cast<char*>(&format_version), sizeof(format_version));
         LOG_TRACE("Found format version: ", (int)format_version);
         m_file_header.format_version = format_version;
@@ -4323,13 +4818,12 @@ public:
 
         std::stringstream header_stream;
 
-        // If header is larger than our initial read, read the full header
+        // If header is larger than our initial read, fetch the full header in one
+        // more ranged request; otherwise reuse the bytes we already have.
         if (m_header_size > INITIAL_READ_SIZE) {
             LOG_TRACE("Header size (", m_header_size, ") exceeds initial read (", INITIAL_READ_SIZE, "), reading full header");
-            file->seekg(0);  // Go back to beginning of file
-            auto header_buffer = std::make_unique<char[]>(m_header_size);
-            file->read(header_buffer.get(), m_header_size);
-            header_stream.write(header_buffer.get(), m_header_size);
+            std::vector<char> header_buffer = read_range(0, m_header_size);
+            header_stream.write(header_buffer.data(), header_buffer.size());
         } else {
             // Use the data we already read
             LOG_TRACE("Using initial read for header, size: ", m_header_size);
@@ -4676,15 +5170,14 @@ public:
             std::visit([&](auto&& arr) {
                 using T = typename std::decay_t<decltype(arr)>::value_type;
                 DataType dtype = TypeToDataType<T>::value;
-                uint8_t dtype_byte = static_cast<uint8_t>(dtype);
-                os.write(reinterpret_cast<const char*>(&dtype_byte), sizeof(uint8_t));
+                write_u8(os, static_cast<uint8_t>(dtype));
 
-                // Shape
+                // Shape: 1-byte ndim, then each dimension as a fixed u64 (a raw
+                // size_t would be 4 bytes on 32-bit hosts, breaking portability).
                 const auto& arr_shape = arr.shape();
-                uint8_t ndim = static_cast<uint8_t>(arr_shape.size());
-                os.write(reinterpret_cast<const char*>(&ndim), sizeof(uint8_t));
+                write_u8(os, static_cast<uint8_t>(arr_shape.size()));
                 for (size_t dim : arr_shape) {
-                    os.write(reinterpret_cast<const char*>(&dim), sizeof(size_t));
+                    write_u64(os, dim);
                 }
 
                 // Data
@@ -4703,8 +5196,7 @@ public:
         os.write(magic, 8);
 
         // Format version
-        uint8_t version = 1;
-        os.write(reinterpret_cast<const char*>(&version), 1);
+        write_u8(os, 1);
 
         // Count entries stored in metadata block (using SoA)
         uint32_t count = 0;
@@ -4713,7 +5205,7 @@ public:
                 count++;
             }
         }
-        os.write(reinterpret_cast<const char*>(&count), 4);
+        write_u32(os, count);
 
         // Serialize all metadata block entries from SoA
         for (size_t i = 0; i < m_hot.keys.size(); i++) {
@@ -4726,25 +5218,20 @@ public:
             const auto& variant = m_data_storage[m_hot.data_indices[i]];
 
             // Key
-            uint16_t key_len = static_cast<uint16_t>(key.size());
-            os.write(reinterpret_cast<const char*>(&key_len), 2);
-            os.write(key.data(), key_len);
+            write_u16(os, static_cast<uint16_t>(key.size()));
+            os.write(key.data(), static_cast<std::streamsize>(key.size()));
 
             // Type and value (visit variant)
             std::visit([&](auto&& arr) {
                 using T = typename std::decay_t<decltype(arr)>::value_type;
                 DataType dtype = TypeToDataType<T>::value;
-                uint8_t dtype_byte = static_cast<uint8_t>(dtype);
-                os.write(reinterpret_cast<const char*>(&dtype_byte), 1);
+                write_u8(os, static_cast<uint8_t>(dtype));
 
-                // Shape
+                // Shape: 1-byte ndim, then each dimension as a fixed u64.
                 const auto& arr_shape = arr.shape();
-                uint8_t ndim = static_cast<uint8_t>(arr_shape.size());
-                os.write(reinterpret_cast<const char*>(&ndim), 1);
-                if (ndim > 0) {
-                    for (size_t dim : arr_shape) {
-                        os.write(reinterpret_cast<const char*>(&dim), sizeof(size_t));
-                    }
+                write_u8(os, static_cast<uint8_t>(arr_shape.size()));
+                for (size_t dim : arr_shape) {
+                    write_u64(os, dim);
                 }
 
                 // Data bytes - different handling for strings vs numeric types
@@ -4856,17 +5343,6 @@ public:
     }
 
     /**
-     * @brief Deserializes metadata block from stream
-     * @param is Input stream
-     */
-    void deserialize_metadata_block(std::istream& is) {
-        // Stub: In SoA design, metadata is loaded by loadIndex()
-        // This method is kept for backwards compatibility with tests
-        LOG_WARN("deserialize_metadata_block() is deprecated - metadata loaded via loadIndex()");
-        return;
-    }
-
-    /**
      * @brief Loads metadata block from file if not already loaded (supports HTTP/remote URLs)
      */
     /**
@@ -4904,15 +5380,14 @@ public:
             return;
         }
 
-        // Read compressed block from file (supporting S3/HTTP)
-        std::unique_ptr<std::istream> file = openReadStream();
-        if (!file->good()) {
-            throw std::runtime_error("Failed to open file for reading layer metadata");
+        // Read the compressed metadata block in one ranged request via the
+        // dataset's persistent reader (one reused connection, no HEAD).
+        std::vector<char> compressed = read_range(position, size);
+        if (compressed.size() != size) {
+            throw std::runtime_error("Short read loading layer metadata for '" +
+                layer_name + "' (expected " + std::to_string(size) + ", got " +
+                std::to_string(compressed.size()) + ")");
         }
-
-        file->seekg(position);
-        std::vector<char> compressed(size);
-        file->read(compressed.data(), size);
 
         // Decompress
         std::vector<char> decompressed = decompress_single_block(compressed, compression);
@@ -4955,35 +5430,33 @@ public:
         stream.read(reinterpret_cast<char*>(&version), sizeof(uint8_t));
 
         // Read layer name
-        uint16_t layer_name_len;
-        stream.read(reinterpret_cast<char*>(&layer_name_len), sizeof(uint16_t));
+        uint16_t layer_name_len = read_u16(stream);
         std::string layer_name(layer_name_len, '\0');
         stream.read(&layer_name[0], layer_name_len);
 
         // Read entry count
-        uint16_t entry_count;
-        stream.read(reinterpret_cast<char*>(&entry_count), sizeof(uint16_t));
+        uint16_t entry_count = read_u16(stream);
 
         LOG_TRACE("Parsing STARMeta block for layer ", layer_name, " with ", entry_count, " entries");
 
         // Parse each entry
         for (uint16_t i = 0; i < entry_count; ++i) {
             // Read key index
-            uint16_t key_index;
-            stream.read(reinterpret_cast<char*>(&key_index), sizeof(uint16_t));
+            uint16_t key_index = read_u16(stream);
             LOG_TRACE("  Entry ", i, ": key_index=", key_index);
 
             // Read data type
-            uint8_t dtype_byte;
-            stream.read(reinterpret_cast<char*>(&dtype_byte), sizeof(uint8_t));
+            uint8_t dtype_byte = read_u8(stream);
             LOG_TRACE("  Entry ", i, ": dtype_byte=", static_cast<int>(dtype_byte));
             DataType dtype = static_cast<DataType>(dtype_byte);
 
-            // Read shape
-            uint8_t ndim;
-            stream.read(reinterpret_cast<char*>(&ndim), sizeof(uint8_t));
+            // Read shape: 1-byte ndim, then each dimension as a fixed u64
+            // (matches serialize_layer_metadata_block()).
+            uint8_t ndim = read_u8(stream);
             std::vector<size_t> shape(ndim);
-            stream.read(reinterpret_cast<char*>(shape.data()), ndim * sizeof(size_t));
+            for (auto& dim : shape) {
+                dim = static_cast<size_t>(read_u64(stream));
+            }
 
             // Calculate data size based on dtype and shape
             size_t num_elements = 1;
@@ -5173,202 +5646,6 @@ public:
             LOG_TRACE("Could not load base layer metadata: ", e.what());
             m_metadata_loaded = true;
         }
-    }
-
-    // OLD v2 load_metadata_block implementation (DEPRECATED)
-    void load_metadata_block_v2_DEPRECATED() {
-        if (m_metadata_loaded) {
-            return;
-        }
-
-        // In v1 format, metadata block position is stored in base layer registry
-        size_t base_layer_idx = m_layer_metadata_registry.get_layer_index("__base__");
-        size_t metadata_block_position = m_layer_metadata_registry.block_positions[base_layer_idx];
-        size_t metadata_block_size = m_layer_metadata_registry.block_sizes[base_layer_idx];
-        CompressionAlgorithm metadata_compression = m_layer_metadata_registry.compressions[base_layer_idx];
-
-        if (metadata_block_position == 0 || metadata_block_size == 0) {
-            LOG_TRACE("No metadata block found in base layer");
-            m_metadata_loaded = true;
-            return;
-        }
-
-        LOG_TRACE("Loading metadata block from position ", metadata_block_position,
-                 " with size ", metadata_block_size);
-
-        // Open file (supporting S3/HTTP) and read metadata block
-        std::unique_ptr<std::istream> file;
-
-#ifdef ENABLE_S3
-        switch (m_path_info.type) {
-            case FilePathInfo::S3:
-                if (!m_s3_credentials) {
-                    throw std::runtime_error("S3 credentials not available");
-                }
-                file = std::make_unique<S3Stream>(m_path_info.bucket, m_path_info.key,
-                                                 m_path_info.region, *m_s3_credentials);
-                break;
-            case FilePathInfo::HTTP:
-                #ifdef ENABLE_CURL
-                file = std::make_unique<HttpStream>(m_path_info.path);
-                #else
-                throw std::runtime_error("CURL support not enabled, cannot open HTTP URL");
-                #endif
-                break;
-            case FilePathInfo::LOCAL:
-                file = std::make_unique<std::ifstream>(m_path_info.path, std::ios::binary);
-                break;
-        }
-#else
-        if (m_filename.substr(0, 9) == "/vsicurl/") {
-            #ifdef ENABLE_CURL
-            std::string url = m_filename.substr(9);
-            file = std::make_unique<HttpStream>(url);
-            #else
-            throw std::runtime_error("CURL support not enabled, cannot open HTTP URL");
-            #endif
-        } else {
-            file = std::make_unique<std::ifstream>(m_filename, std::ios::binary);
-        }
-#endif
-
-        if (!file->good()) {
-            throw std::runtime_error("Failed to open file for reading metadata block");
-        }
-
-        file->seekg(metadata_block_position);
-
-        // Read compressed metadata block
-        std::vector<char> compressed_data(metadata_block_size);
-        file->read(compressed_data.data(), metadata_block_size);
-        file.reset();  // Close file
-
-        // Decompress metadata block directly (simple decompression without block info)
-        std::vector<char> decompressed_data;
-
-        if (metadata_compression == CompressionAlgorithm::GZIP) {
-            #ifdef ENABLE_ZLIB
-            // Estimate uncompressed size (try progressively larger buffers)
-            for (size_t buffer_size = metadata_block_size * 10; buffer_size < metadata_block_size * 1000; buffer_size *= 2) {
-                decompressed_data.resize(buffer_size);
-                uLongf dest_len = buffer_size;
-                int result = uncompress(
-                    reinterpret_cast<Bytef*>(decompressed_data.data()),
-                    &dest_len,
-                    reinterpret_cast<const Bytef*>(compressed_data.data()),
-                    compressed_data.size()
-                );
-                if (result == Z_OK) {
-                    decompressed_data.resize(dest_len);
-                    break;
-                } else if (result != Z_BUF_ERROR) {
-                    throw std::runtime_error("Metadata block decompression failed");
-                }
-            }
-            #else
-            throw std::runtime_error("GZIP support not enabled");
-            #endif
-        } else {
-            throw std::runtime_error("Unsupported metadata compression algorithm");
-        }
-
-        // Parse metadata block
-        std::stringstream metadata_stream;
-        metadata_stream.write(decompressed_data.data(), decompressed_data.size());
-        metadata_stream.seekg(0);
-
-        // Read magic header
-        char magic[8];
-        metadata_stream.read(magic, 8);
-        if (std::memcmp(magic, "STARMETA", 8) != 0) {
-            throw std::runtime_error("Invalid metadata block magic header");
-        }
-
-        // Read version
-        uint8_t version;
-        metadata_stream.read(reinterpret_cast<char*>(&version), 1);
-        if (version != 1) {
-            throw std::runtime_error("Unsupported metadata block version: " +
-                                    std::to_string(version));
-        }
-
-        // Read count
-        uint32_t count;
-        metadata_stream.read(reinterpret_cast<char*>(&count), 4);
-        LOG_TRACE("Metadata block contains ", count, " entries");
-
-        // Read each entry
-        for (uint32_t i = 0; i < count; i++) {
-            // Read key
-            uint16_t key_len;
-            metadata_stream.read(reinterpret_cast<char*>(&key_len), 2);
-            std::string key(key_len, '\0');
-            metadata_stream.read(&key[0], key_len);
-
-            // Read type
-            uint8_t dtype_byte;
-            metadata_stream.read(reinterpret_cast<char*>(&dtype_byte), 1);
-            DataType dtype = static_cast<DataType>(dtype_byte);
-
-            // Read shape
-            uint8_t ndim;
-            metadata_stream.read(reinterpret_cast<char*>(&ndim), 1);
-            std::vector<size_t> shape(ndim);
-            for (uint8_t d = 0; d < ndim; d++) {
-                metadata_stream.read(reinterpret_cast<char*>(&shape[d]), sizeof(size_t));
-            }
-
-            // Calculate data length
-            size_t data_len;
-            if (dtype == DataType::STRING) {
-                // For strings, read the total length field
-                metadata_stream.read(reinterpret_cast<char*>(&data_len), 4);
-            } else {
-                // For numeric types, calculate from shape
-                size_t num_elements = 1;
-                for (size_t dim : shape) {
-                    num_elements *= dim;
-                }
-                if (num_elements == 0) num_elements = 1;  // Scalar
-                data_len = num_elements * datatype_size(dtype);
-            }
-
-            // Deserialize value
-            ValueVariant value = deserialize_typed_value(metadata_stream, dtype, shape, data_len);
-
-            // v1 format: Add metadata to layer metadata system (NOT to m_hot.keys)
-            // Get or create key index in key registry
-            uint16_t key_idx = m_key_registry.get_or_create(key);
-            size_t base_layer_idx = m_layer_metadata_registry.get_layer_index("__base__");
-
-            // Add to layer metadata storage
-            auto& layer_metadata_map = m_layer_metadata_indices[base_layer_idx];
-            auto it = layer_metadata_map.find(key_idx);
-
-            if (it == layer_metadata_map.end()) {
-                // Create new metadata entry (only in layer metadata storage, NOT in m_hot.keys)
-                size_t storage_idx = m_data_storage.size();
-                m_data_storage.push_back(std::move(value));
-                m_metadata_dtypes[storage_idx] = dtype;
-                m_metadata_shapes[storage_idx] = shape;
-
-                // Track in layer metadata system (separate from arrays)
-                layer_metadata_map[key_idx] = storage_idx;
-
-                LOG_TRACE("Loaded metadata entry: ", key, " at storage index ", storage_idx);
-            } else {
-                // Update existing metadata entry
-                size_t storage_idx = it->second;
-                m_data_storage[storage_idx] = std::move(value);
-                m_metadata_dtypes[storage_idx] = dtype;
-                m_metadata_shapes[storage_idx] = shape;
-
-                LOG_TRACE("Updated metadata entry: ", key, " at storage index ", storage_idx);
-            }
-        }
-
-        m_metadata_loaded = true;
-        LOG_TRACE("Metadata block loaded successfully");
     }
 
     /**
@@ -5928,7 +6205,11 @@ private:
         }
 
         // Phase 3f: sink the image to the destination.
-        if (m_path_info.type == FilePathInfo::S3) {
+        if (m_capture_image != nullptr) {
+            // In-memory sink (writeBytes): hand the assembled image to the caller
+            // instead of writing to disk/S3.
+            *m_capture_image = std::move(image);
+        } else if (m_path_info.type == FilePathInfo::S3) {
 #ifdef ENABLE_S3
             if (!m_s3_credentials) {
                 throw std::runtime_error("S3 credentials not available for writing to: " + m_filename);
@@ -5971,6 +6252,11 @@ private:
 
         m_flushed = true;
         m_header_dirty = false;
+
+        // The on-disk bytes just changed (offsets shifted, header rewritten), so
+        // the persistent reader — and any whole-file cache it holds — is now
+        // stale. Drop it; the next read lazily re-creates it against the new file.
+        m_reader.reset();
 
         // Shrink persistent buffers if they've grown too large (memory optimization)
         if (m_serialize_buffer.capacity() > m_config.buffer_shrink_threshold) {
@@ -6099,6 +6385,46 @@ public:
     }
 
     /**
+     * @brief Serialize the dataset to an in-memory byte buffer.
+     *
+     * The byte-array counterpart of saveTo(): returns a complete .stards image
+     * (the exact bytes that would be written to a file) instead of writing to a
+     * path. Works on any dataset — including read-only ones and datasets opened
+     * with openBytes() — since it never touches the source file. Round-trips with
+     * openBytes(): `openBytes(ds->writeBytes())` reconstructs the dataset.
+     *
+     * @return A complete .stards image as a byte array.
+     */
+    std::vector<char> writeBytes() {
+        // Load + dirty every entry so flush_internal() rewrites all data into the
+        // captured image (clean entries are otherwise skipped — see saveTo()).
+        stage_all_entries_for_resave();
+
+        std::vector<char> image;
+        // Redirect the write to memory and force a full (write-mode) flush,
+        // restoring all mutated state afterward so the dataset is unchanged.
+        std::vector<char>* prev_capture = m_capture_image;
+        FileMode original_mode = m_file_mode;
+        bool original_flushed = m_flushed;
+        m_capture_image = &image;
+        m_file_mode = FileMode::READ_WRITE;  // allow write even if source is read-only
+        try {
+            flush_internal();
+        } catch (...) {
+            m_capture_image = prev_capture;
+            m_file_mode = original_mode;
+            m_flushed = original_flushed;
+            throw;
+        }
+        m_capture_image = prev_capture;
+        m_file_mode = original_mode;
+        // Restore the flushed flag: capturing to memory did not persist the
+        // source file, so a later real flush()/saveTo() must still run.
+        m_flushed = original_flushed;
+        return image;
+    }
+
+    /**
      * @brief Check if file is in read-only mode
      * @return True if read-only
      */
@@ -6182,64 +6508,54 @@ public:
     static std::shared_ptr<StarDataset> open(const std::string& filename,
                                              FileMode mode = FileMode::READ_WRITE,
                                              const OpenOptions& opts = {}) {
-        // Check if file exists
-        bool file_exists = false;
-
-        // Parse the path so remote schemes (S3, HTTP) are checked appropriately;
+        // Parse the path so remote schemes (S3, HTTP) are handled appropriately;
         // a plain ifstream can only see local files and would wrongly report a
         // remote URL as "does not exist".
         FilePathInfo path_info = parseFilePath(filename);
+        const bool is_remote = (path_info.type != FilePathInfo::LOCAL);
 
-        if (path_info.type == FilePathInfo::HTTP) {
-#ifdef ENABLE_CURL
-            // HTTP/vsicurl: a successful HEAD yields a non-zero content length.
-            try {
-                HttpStream http_stream(path_info.path);
-                file_exists = http_stream.size() > 0;
-            } catch (...) {
-                file_exists = false;
-            }
-#else
-            throw std::runtime_error("CURL support not enabled, cannot open HTTP URL: " + filename);
-#endif
-        } else
-#ifdef ENABLE_S3
-        if (path_info.type == FilePathInfo::S3) {
-            // For S3, check existence by trying to open a stream
-            try {
-                S3Credentials creds = S3Credentials::resolve();
-                S3Stream s3_stream(path_info.bucket, path_info.key, path_info.region, creds);
-                file_exists = s3_stream.good();
-            } catch (...) {
-                file_exists = false;
-            }
-        } else
-#endif
-        {
-            // For local files, use ifstream
+        // Local existence is free to check (no network); do it up front so a
+        // missing local file gives a precise message. For REMOTE files we do NOT
+        // issue a HEAD just to probe existence — instead we construct the dataset
+        // (which reads the header via a single ranged GET on the reused
+        // connection) and infer existence from whether a valid header was read.
+        if (!is_remote) {
             std::ifstream check_file(filename, std::ios::binary);
-            file_exists = check_file.good();
+            bool file_exists = check_file.good();
             check_file.close();
-        }
 
-        // If file doesn't exist and mode is READ_ONLY, throw error
-        if (!file_exists && mode == FileMode::READ_ONLY) {
-            throw std::runtime_error("File does not exist: " + filename + ". Cannot open non-existent file in read-only mode.");
+            if (!file_exists && mode == FileMode::READ_ONLY) {
+                throw std::runtime_error("File does not exist: " + filename +
+                    ". Cannot open non-existent file in read-only mode.");
+            }
+            if (!file_exists && mode == FileMode::READ_WRITE) {
+                // File will be created on first flush.
+                return std::make_shared<StarDataset>(filename, mode, nullptr, opts);
+            }
         }
-
-        // If file doesn't exist but mode is READ_WRITE, create it
-        if (!file_exists && mode == FileMode::READ_WRITE) {
-            // File will be created on first flush
-            return std::make_shared<StarDataset>(filename, mode, nullptr, opts);
+#if !defined(ENABLE_CURL) && !defined(ENABLE_S3)
+        if (is_remote) {
+            throw std::runtime_error("Remote URL support not enabled, cannot open: " + filename);
         }
+#endif
 
-        // File exists, open it
+        // Construct: loadIndex() reads the header through the persistent reader
+        // (one ranged request, no HEAD). If nothing valid was read, m_header_size
+        // stays 0 -> the object is absent/empty/corrupt.
         auto store = std::make_shared<StarDataset>(filename, mode, nullptr, opts);
 
-        // Verify that the file was loaded successfully by checking if we have any index info
-        // A valid STAR file should have header_size set after loadIndex()
         if (store->m_header_size == 0) {
-            throw std::runtime_error("Failed to load file: " + filename + ". File may be corrupt or not a valid STAR file.");
+            // No readable header. For a REMOTE read-write target this means the
+            // object doesn't exist yet -> treat as a new file (created on flush).
+            if (is_remote && mode == FileMode::READ_WRITE) {
+                return store;
+            }
+            if (mode == FileMode::READ_ONLY) {
+                throw std::runtime_error("File does not exist or is unreadable: " +
+                    filename + ". Cannot open in read-only mode.");
+            }
+            throw std::runtime_error("Failed to load file: " + filename +
+                ". File may be corrupt or not a valid STAR file.");
         }
 
         return store;
@@ -6259,6 +6575,44 @@ public:
     }
 
     /**
+     * @brief Open a dataset from an in-memory byte buffer.
+     *
+     * Mirrors open(), but the source is a byte array holding a complete .stards
+     * image (e.g. bytes received over a socket or pulled from a database) instead
+     * of a path. The dataset is READ_ONLY — there is no backing file to flush to;
+     * use writeBytes() to serialize modifications back out to a new byte array.
+     *
+     * @param bytes A complete .stards image.
+     * @param opts  Read-time options (e.g. layer_inheritance).
+     * @return Opened StarDataset backed by the provided bytes.
+     * @throws std::runtime_error if the bytes are not a valid STAR image.
+     */
+    static std::shared_ptr<StarDataset> openBytes(std::vector<char> bytes,
+                                                  const OpenOptions& opts = {}) {
+        if (bytes.empty()) {
+            throw std::runtime_error("openBytes: empty byte buffer is not a valid STAR image.");
+        }
+        // The in-memory source is READ_ONLY: there is no path to flush back to.
+        auto store = std::make_shared<StarDataset>("<memory>", FileMode::READ_ONLY,
+                                                   nullptr, opts, &bytes);
+        if (store->m_header_size == 0) {
+            throw std::runtime_error(
+                "openBytes: byte buffer is not a valid STAR image (bad or missing header).");
+        }
+        return store;
+    }
+
+    /**
+     * @brief Convenience overload taking a raw pointer + length (e.g. from a
+     *        C buffer, Python bytes, or a mapped region).
+     */
+    static std::shared_ptr<StarDataset> openBytes(const void* data, size_t size,
+                                                  const OpenOptions& opts = {}) {
+        const char* p = static_cast<const char*>(data);
+        return openBytes(std::vector<char>(p, p + size), opts);
+    }
+
+    /**
      * @brief Constructor with compression options
      * @param fname Filename to use for storage
      * @param mode File open mode (READ_WRITE or READ_ONLY)
@@ -6268,7 +6622,8 @@ public:
      * use the static factory methods create() and open() instead.
      */
     StarDataset(const std::string& fname, FileMode mode, const StarConfig* config,
-                const OpenOptions& open_options = {})
+                const OpenOptions& open_options = {},
+                std::vector<char>* memory_source = nullptr)
         : m_filename(fname), m_header_dirty(true), meta(this),
           m_config(config ? *config : StarConfig()),
           m_open_options(open_options)
@@ -6276,15 +6631,25 @@ public:
         , m_file_mode(mode)
 #endif
     {
+        // In-memory dataset (openBytes / a fresh writeBytes target): take the
+        // bytes as the read source and skip all path parsing / credential setup.
+        if (memory_source != nullptr) {
+            m_memory_source = std::move(*memory_source);
+            m_path_info.type = FilePathInfo::MEMORY;
+        } else {
 #ifdef ENABLE_S3
-        // Parse path once at construction (minimize allocations)
-        m_path_info = parseFilePath(fname);
+            // Parse path once at construction (minimize allocations)
+            m_path_info = parseFilePath(fname);
 
-        // Resolve credentials once (cache hot data)
-        if (m_path_info.type == FilePathInfo::S3) {
-            m_s3_credentials = std::make_unique<S3Credentials>(S3Credentials::resolve());
-        }
+            // Resolve credentials once (cache hot data)
+            if (m_path_info.type == FilePathInfo::S3) {
+                m_s3_credentials = std::make_unique<S3Credentials>(S3Credentials::resolve());
+            }
+#else
+            m_path_info.type = FilePathInfo::LOCAL;
+            m_path_info.path = fname;
 #endif
+        }
 
         // PRE-ALLOCATE CAPACITY FOR VECTORS (Performance optimization)
         // Reduces O(N²) reallocation overhead when storing many arrays
@@ -7512,68 +7877,84 @@ private:
             return result;
         }
 
-        // Pre-allocate exact size (no reallocation)
-        result.reserve(block_map.total_compressed_bytes);
-
-        // Open file stream (same pattern as loadIndex)
-        std::unique_ptr<std::istream> file;
-
-#ifdef ENABLE_S3
-        // Use cached path info (parsed once in constructor)
-        switch (m_path_info.type) {
-            case FilePathInfo::S3:
-                if (!m_s3_credentials) {
-                    throw std::runtime_error("S3 credentials not available");
-                }
-                file = std::make_unique<S3Stream>(m_path_info.bucket, m_path_info.key,
-                                                 m_path_info.region, *m_s3_credentials);
-                break;
-            case FilePathInfo::HTTP:
-                #ifdef ENABLE_CURL
-                file = std::make_unique<HttpStream>(m_path_info.path);
-                #else
-                throw std::runtime_error("CURL support not enabled, cannot open HTTP URL");
-                #endif
-                break;
-            case FilePathInfo::LOCAL:
-                file = std::make_unique<std::ifstream>(m_path_info.path, std::ios::binary);
-                break;
-        }
-#else
-        // Check if this is a HTTP URL
-        if (m_filename.substr(0, 9) == "/vsicurl/") {
-            #ifdef ENABLE_CURL
-            std::string url = m_filename.substr(9);
-            file = std::make_unique<HttpStream>(url);
-            #else
-            throw std::runtime_error("CURL support not enabled, cannot open HTTP URL");
-            #endif
-        } else {
-            file = std::make_unique<std::ifstream>(m_filename, std::ios::binary);
-        }
-#endif
-
-        if (!file->good()) {
+        // All reads go through the dataset's persistent reader (one reused
+        // connection for remote files; no per-read HEAD/handshake).
+        if (!reader().good()) {
             throw std::runtime_error("Failed to open file for reading blocks: " + m_filename);
         }
 
         if (block_map.blocks_contiguous) {
-            // Single I/O operation, linear memory write
-            result.resize(block_map.total_compressed_bytes);
-            file->seekg(entry.position + block_map.contiguous_start_offset);
-            file->read(result.data(), block_map.total_compressed_bytes);
-        } else {
-            // Batch small operations
-            for (size_t i = 0; i < block_map.block_indices.size(); ++i) {
-                size_t block_idx = block_map.block_indices[i];
-                const BlockInfo& block = entry.blocks[block_idx];
-
-                size_t old_size = result.size();
-                result.resize(old_size + block.compressed_size);
-
-                file->seekg(entry.position + block.offset);
-                file->read(result.data() + old_size, block.compressed_size);
+            // Contiguous blocks: fetch the whole span in a SINGLE ranged request.
+            result = read_range(entry.position + block_map.contiguous_start_offset,
+                                block_map.total_compressed_bytes);
+            if (result.size() != block_map.total_compressed_bytes) {
+                throw std::runtime_error("Short read of contiguous blocks (expected " +
+                    std::to_string(block_map.total_compressed_bytes) + ", got " +
+                    std::to_string(result.size()) + ")");
             }
+            return result;
+        }
+
+        // Non-contiguous blocks (e.g. a partial slice): coalesce the requested
+        // blocks into the fewest maximal contiguous spans, fetch each span in one
+        // request, then copy the individual blocks out. This turns "one request
+        // per block" into "one request per run of adjacent blocks".
+        result.resize(block_map.total_compressed_bytes);
+
+        // Sort the requested block indices by their file offset so adjacent
+        // blocks can be merged into a single range.
+        std::vector<size_t> ordered = block_map.block_indices;
+        std::sort(ordered.begin(), ordered.end(), [&](size_t a, size_t b) {
+            return entry.blocks[a].offset < entry.blocks[b].offset;
+        });
+
+        // Map each block index -> where its bytes go in `result` (result is laid
+        // out in the caller's original block_indices order).
+        std::unordered_map<size_t, size_t> out_offset;
+        {
+            size_t running = 0;
+            for (size_t bi : block_map.block_indices) {
+                out_offset[bi] = running;
+                running += entry.blocks[bi].compressed_size;
+            }
+        }
+
+        size_t run_start = 0;   // index into `ordered` where the current run begins
+        while (run_start < ordered.size()) {
+            size_t run_end = run_start;  // inclusive
+            size_t span_begin = entry.blocks[ordered[run_start]].offset;
+            size_t span_end   = span_begin + entry.blocks[ordered[run_start]].compressed_size;
+
+            // Extend the run while the next block starts exactly where this one
+            // ended (truly contiguous on disk).
+            while (run_end + 1 < ordered.size()) {
+                const BlockInfo& next = entry.blocks[ordered[run_end + 1]];
+                if (next.offset == span_end) {
+                    span_end += next.compressed_size;
+                    run_end++;
+                } else {
+                    break;
+                }
+            }
+
+            // Fetch this run in a single request.
+            std::vector<char> span = read_range(entry.position + span_begin,
+                                                span_end - span_begin);
+            if (span.size() != span_end - span_begin) {
+                throw std::runtime_error("Short read of block run (expected " +
+                    std::to_string(span_end - span_begin) + ", got " +
+                    std::to_string(span.size()) + ")");
+            }
+
+            // Copy each block in the run to its slot in `result`.
+            for (size_t k = run_start; k <= run_end; ++k) {
+                const BlockInfo& blk = entry.blocks[ordered[k]];
+                size_t within_span = blk.offset - span_begin;
+                std::memcpy(result.data() + out_offset[ordered[k]],
+                            span.data() + within_span, blk.compressed_size);
+            }
+
+            run_start = run_end + 1;
         }
 
         return result; // NRVO avoids copy
@@ -8065,10 +8446,6 @@ inline void LayerMetadataAccessor::put(const std::string& key, const V& value) {
 }
 
 inline std::shared_ptr<MetadataValue> LayerMetadataAccessor::get(const std::string& key) {
-    // v1 format: Check current layer first, then fall back to base (inheritance)
-    // unique_lock (not shared): the lazy load_layer_metadata() path mutates
-    // m_data_storage / m_layer_metadata_indices, and put() writes under the same
-    // lock — read here must be mutually exclusive with those writes.
     std::unique_lock<std::shared_mutex> lock(m_store->m_mutex);
 
     // Get key index from registry

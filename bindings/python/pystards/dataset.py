@@ -217,6 +217,40 @@ class StarDataset:
         instance.meta = MetadataAccessor(instance._store.meta, instance)
         return instance
 
+    @classmethod
+    def open_bytes(cls, data, options=None):
+        """Open a dataset from an in-memory byte buffer.
+
+        The byte counterpart of :meth:`open`: ``data`` is a bytes-like object
+        (``bytes``, ``bytearray``, ``memoryview``, or a uint8 NumPy array) holding
+        a complete ``.stards`` image — e.g. bytes received over a socket or read
+        from a database — rather than a file path.
+
+        The dataset is read-only (there is no backing file to flush to); use
+        :meth:`write_bytes` to serialize modifications back out to ``bytes``.
+
+        Args:
+            data: A complete ``.stards`` image as a bytes-like object.
+            options: Optional ``pystards.OpenOptions`` (e.g. ``layer_inheritance``).
+        """
+        instance = cls.__new__(cls)
+        instance._mode = "r"
+        opts = options if options is not None else _star.OpenOptions()
+        instance._store = _pystar.star_open_bytes(data, opts)
+        instance.meta = MetadataAccessor(instance._store.meta, instance)
+        return instance
+
+    def write_bytes(self) -> bytes:
+        """Serialize this dataset to a ``bytes`` object (a complete ``.stards``
+        image).
+
+        The byte counterpart of :meth:`save_to`: returns the exact bytes that
+        would be written to a file, without touching the filesystem. Works on any
+        dataset, including read-only ones and datasets from :meth:`open_bytes`.
+        Round-trips with :meth:`open_bytes`.
+        """
+        return _pystar.star_write_bytes(self._store)
+
     def __enter__(self):
         return self
 

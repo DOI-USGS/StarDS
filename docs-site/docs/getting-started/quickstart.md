@@ -156,4 +156,4 @@ ds["count"] = np.array(5) # ✓ OK (0-d array)
 
 - Read the [Python API reference](../python-api/index.md).
 - Explore the [Guides](../guides/layers.md) for compression, cloud storage, slicing, and threading.
-- Browse the [CLI tools](../cli/starls.md) for inspecting and converting files.
+- Browse the [CLI tools](../cli/stardsls.md) for inspecting and converting files.

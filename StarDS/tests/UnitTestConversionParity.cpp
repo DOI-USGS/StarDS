@@ -1,11 +1,11 @@
 // Conversion parity test: convert the same JSON example with every supported
 // compression codec (none / gzip / lz4 / gzip-shuffle / lz4-shuffle) via the
-// real star_translate tool, then verify all outputs decode to byte-identical
+// real stards_translate tool, then verify all outputs decode to byte-identical
 // data. This guards the compression + shuffle round-trip end to end.
 //
-// The star_translate executable path and the example JSON path are injected at
-// build time via the STAR_TRANSLATE_EXE / STAR_EXAMPLE_JSON compile definitions
-// (see Star/tests/CMakeLists.txt), so the test is independent of the working dir.
+// The stards_translate executable path and the example JSON path are injected at
+// build time via the STARDS_TRANSLATE_EXE / STARDS_EXAMPLE_JSON compile definitions
+// (see StarDS/tests/CMakeLists.txt), so the test is independent of the working dir.
 
 #include <gtest/gtest.h>
 #include "stards.h"
@@ -19,11 +19,11 @@
 
 using namespace star;
 
-#ifndef STAR_TRANSLATE_EXE
-#define STAR_TRANSLATE_EXE ""
+#ifndef STARDS_TRANSLATE_EXE
+#define STARDS_TRANSLATE_EXE ""
 #endif
-#ifndef STAR_EXAMPLE_JSON
-#define STAR_EXAMPLE_JSON ""
+#ifndef STARDS_EXAMPLE_JSON
+#define STARDS_EXAMPLE_JSON ""
 #endif
 
 namespace {
@@ -110,11 +110,11 @@ std::map<std::string, ValueSnapshot> snapshot_file(const std::string& path) {
     return out;
 }
 
-// Convert STAR_EXAMPLE_JSON to `out_path` with the given codec via star_translate.
+// Convert STARDS_EXAMPLE_JSON to `out_path` with the given codec via stards_translate.
 // Returns the process exit code.
 int run_translate(const std::string& codec, const std::string& out_path) {
-    std::string cmd = std::string("\"") + STAR_TRANSLATE_EXE + "\" -c " + codec +
-                      " \"" + STAR_EXAMPLE_JSON + "\" \"" + out_path + "\" > /dev/null 2>&1";
+    std::string cmd = std::string("\"") + STARDS_TRANSLATE_EXE + "\" -c " + codec +
+                      " \"" + STARDS_EXAMPLE_JSON + "\" \"" + out_path + "\" > /dev/null 2>&1";
     return std::system(cmd.c_str());
 }
 
@@ -122,12 +122,12 @@ class ConversionParityTest : public star_test::TempDirTest {
 protected:
     void SetUp() override {
         star_test::TempDirTest::SetUp();  // per-test temp dir (auto-deleted)
-        if (std::string(STAR_TRANSLATE_EXE).empty() || std::string(STAR_EXAMPLE_JSON).empty()) {
-            GTEST_SKIP() << "star_translate/example JSON paths not configured";
+        if (std::string(STARDS_TRANSLATE_EXE).empty() || std::string(STARDS_EXAMPLE_JSON).empty()) {
+            GTEST_SKIP() << "stards_translate/example JSON paths not configured";
         }
         // Confirm the example JSON is present.
-        FILE* f = std::fopen(STAR_EXAMPLE_JSON, "rb");
-        if (!f) GTEST_SKIP() << "example JSON not found: " << STAR_EXAMPLE_JSON;
+        FILE* f = std::fopen(STARDS_EXAMPLE_JSON, "rb");
+        if (!f) GTEST_SKIP() << "example JSON not found: " << STARDS_EXAMPLE_JSON;
         std::fclose(f);
     }
 };

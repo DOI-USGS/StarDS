@@ -70,7 +70,7 @@ namespace std {
 %template(VectorUInt8) std::vector<uint8_t>;
 %template(VectorUInt16) std::vector<uint16_t>;
 %template(VectorUInt32) std::vector<uint32_t>;
-#ifdef STAR_SIZE_T_IS_UINT64
+#ifdef STARDS_SIZE_T_IS_UINT64
 // size_t and uint64_t are the same C++ type on this platform (LP64): reuse the
 // VectorSize instantiation instead of emitting a duplicate std::vector<uint64_t>
 // (which would produce a redefined swig::traits<>). Expose the VectorUInt64 name
@@ -125,6 +125,20 @@ VectorUInt64 = VectorSize
 %ignore star::AWSConfigParser;
 %ignore star::AWSTokenCache;
 
+// Ignore the internal byte-range reader hierarchy (persistent-connection read
+// path). These are implementation details never used from Python, and their
+// interfaces (raw CURL handles, std::vector<char> out-params) don't wrap cleanly.
+%ignore star::RangeReader;
+%ignore star::LocalRangeReader;
+%ignore star::HttpRangeReader;
+%ignore star::S3RangeReader;
+
+// Ignore the global network-request counter: it's a std::atomic<uint64_t>, whose
+// deleted copy-assignment makes SWIG's generated setter fail to compile. The
+// accessor functions (getNetworkRequestCount / resetNetworkRequestCount) are
+// still wrapped and are the intended Python entry points.
+%ignore star::g_network_request_count;
+
 // Ignore internal serialization methods (not needed in Python)
 %ignore star::StarDataset::serialize_layer_metadata_block;
 %ignore star::StarDataset::load_layer_metadata;
@@ -170,17 +184,21 @@ VectorUInt64 = VectorSize
 %ignore star::StarDataset::m_mutex;
 %ignore star::StarDataset::m_thread_pool;
 %ignore star::StarDataset::m_file;
+%ignore star::StarDataset::m_reader;
 %ignore StarDataset::m_mutex;
 %ignore StarDataset::m_thread_pool;
 %ignore StarDataset::m_file;
+%ignore StarDataset::m_reader;
 %ignore m_pending_metadata;
 %ignore m_pending_arrays;
 
 // Disable member variable wrapping for non-copyable types
 %feature("immutable") star::StarDataset::m_mutex;
 %feature("immutable") star::StarDataset::m_thread_pool;
+%feature("immutable") star::StarDataset::m_reader;
 %feature("immutable") StarDataset::m_mutex;
 %feature("immutable") StarDataset::m_thread_pool;
+%feature("immutable") StarDataset::m_reader;
 
 // Define shared_ptr handling for MetadataValue before parsing header
 // Define shared_ptr handling for StarDataset (returned by create/open)

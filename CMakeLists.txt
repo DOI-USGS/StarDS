@@ -6,14 +6,14 @@ cmake_minimum_required(VERSION 3.10)
 # @PROJECT_VERSION@ in setup.py.in / _version.py.in). The header StarDS/include/stards.h
 # hardcodes the same numbers so it still works when copy-pasted standalone — keep
 # STAR_VERSION_* in stards.h in sync with STARDS_VERSION.
-file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/STARDS_VERSION" STAR_VERSION_RAW LIMIT_COUNT 1)
-string(STRIP "${STAR_VERSION_RAW}" STAR_VERSION)
-project(STAR VERSION ${STAR_VERSION} DESCRIPTION "Simple Tensors Arrays and Rasters storage format")
+file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/STARDS_VERSION" STARDS_VERSION_RAW LIMIT_COUNT 1)
+string(STRIP "${STARDS_VERSION_RAW}" STARDS_VERSION)
+project(STARDS VERSION ${STARDS_VERSION} DESCRIPTION "Simple Tensors Arrays and Rasters storage format")
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 # Defines CMAKE_INSTALL_LIBDIR etc.; without it the package config installs to an
-# absolute "/cmake/STAR" outside the install prefix.
+# absolute "/cmake/STARDS" outside the install prefix.
 include(GNUInstallDirs)
 
 message(STATUS "CMake Module Path: " ${CMAKE_MODULE_PATH})
@@ -39,7 +39,7 @@ list(APPEND CMAKE_FIND_ROOT_PATH /var/lang/)
 message(STATUS "find path: " ${CMAKE_FIND_ROOT_PATH})
 
 # Variables required by multiple build options
-set(STAR_BUILD_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/StarDS/include/")
+set(STARDS_BUILD_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/StarDS/include/")
 
 set(default_build_type "Release")
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
@@ -57,63 +57,63 @@ message(STATUS "Using install prefix: ${CMAKE_INSTALL_PREFIX}")
 # Library Build #
 #################
 
-option (STAR_BUILD_LIB "Build the Star Library" ON)
+option (STARDS_BUILD_LIB "Build the StarDS Library" ON)
 
 set(JSON_BuildTests OFF CACHE INTERNAL "")
 
 # add_subdirectory("submodules/gularkfilesystem")
 
 # The public header installs to $PREFIX/include/stards/stards.h. Point the
-# install interface at that same directory so downstream find_package(STAR)
+# install interface at that same directory so downstream find_package(STARDS)
 # consumers keep using the bare `#include "stards.h"` (matching in-tree usage).
-set(STAR_INSTALL_INCLUDE_DIR "${CMAKE_INSTALL_INCLUDEDIR}/stards")
+set(STARDS_INSTALL_INCLUDE_DIR "${CMAKE_INSTALL_INCLUDEDIR}/stards")
 
 
-set(STAR_HEADER_FILES ${STAR_BUILD_INCLUDE_DIR}/stards.h
+set(STARDS_HEADER_FILES ${STARDS_BUILD_INCLUDE_DIR}/stards.h
                                  )
-add_library(Star INTERFACE)
-target_include_directories(Star INTERFACE
-    $<BUILD_INTERFACE:${STAR_BUILD_INCLUDE_DIR}>
+add_library(StarDS INTERFACE)
+target_include_directories(StarDS INTERFACE
+    $<BUILD_INTERFACE:${STARDS_BUILD_INCLUDE_DIR}>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/StarDS/include>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/stards>
 )
 
-# set(STAR_PRIVATE_HEADER_FILES ${STAR_BUILD_INCLUDE_DIR}/memo.h
-#                                  ${STAR_BUILD_INCLUDE_DIR}/restincurl.h)
+# set(STARDS_PRIVATE_HEADER_FILES ${STARDS_BUILD_INCLUDE_DIR}/memo.h
+#                                  ${STARDS_BUILD_INCLUDE_DIR}/restincurl.h)
 
 
-set_target_properties(Star PROPERTIES
+set_target_properties(StarDS PROPERTIES
                                 VERSION ${PROJECT_VERSION}
                                 SOVERSION 0)
 
-target_include_directories(Star
+target_include_directories(StarDS
                           INTERFACE
                           $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/StarDS/include>
                           $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/stards>)
 
 
 # Option to enable curl support
-option (STAR_ENABLE_CURL "Enable curl support for HTTP streaming" ON)
-if(STAR_ENABLE_CURL)
+option (STARDS_ENABLE_CURL "Enable curl support for HTTP streaming" ON)
+if(STARDS_ENABLE_CURL)
   add_definitions(-DENABLE_CURL)
   # Find curl package if needed
   find_package(CURL REQUIRED)
-  target_link_libraries(Star INTERFACE ${CURL_LIBRARIES})
-  target_include_directories(Star INTERFACE ${CURL_INCLUDE_DIRS})
+  target_link_libraries(StarDS INTERFACE ${CURL_LIBRARIES})
+  target_include_directories(StarDS INTERFACE ${CURL_INCLUDE_DIRS})
 endif()
- 
+
 # Option to enable zlib support
-option (STAR_ENABLE_ZLIB "Enable zlib support for compression" ON)
-if(STAR_ENABLE_ZLIB)
+option (STARDS_ENABLE_ZLIB "Enable zlib support for compression" ON)
+if(STARDS_ENABLE_ZLIB)
   add_definitions(-DENABLE_ZLIB)
   find_package(ZLIB REQUIRED)
-  target_include_directories(Star INTERFACE ${ZLIB_INCLUDE_DIRS})
-  target_link_libraries(Star INTERFACE ${ZLIB_LIBRARIES})
+  target_include_directories(StarDS INTERFACE ${ZLIB_INCLUDE_DIRS})
+  target_link_libraries(StarDS INTERFACE ${ZLIB_LIBRARIES})
 endif()
 
 # Option to enable LZ4 support
-option(STAR_ENABLE_LZ4 "Enable LZ4 support for fast compression" ON)
-if(STAR_ENABLE_LZ4)
+option(STARDS_ENABLE_LZ4 "Enable LZ4 support for fast compression" ON)
+if(STARDS_ENABLE_LZ4)
   add_definitions(-DENABLE_LZ4)
 
   # Try pkg-config first, then manual search
@@ -136,8 +136,8 @@ if(STAR_ENABLE_LZ4)
 
   if(LZ4_FOUND)
     message(STATUS "Found LZ4: ${LZ4_LIBRARIES}")
-    target_include_directories(Star INTERFACE ${LZ4_INCLUDE_DIRS})
-    target_link_libraries(Star INTERFACE ${LZ4_LIBRARIES})
+    target_include_directories(StarDS INTERFACE ${LZ4_INCLUDE_DIRS})
+    target_link_libraries(StarDS INTERFACE ${LZ4_LIBRARIES})
   else()
     message(WARNING "LZ4 library not found. Disabling LZ4 support.")
     remove_definitions(-DENABLE_LZ4)
@@ -145,11 +145,11 @@ if(STAR_ENABLE_LZ4)
 endif()
 
 # Option to enable S3 support
-option(STAR_ENABLE_S3 "Enable S3 support for cloud storage" ON)
-if(STAR_ENABLE_S3)
+option(STARDS_ENABLE_S3 "Enable S3 support for cloud storage" ON)
+if(STARDS_ENABLE_S3)
   # S3 requires CURL for HTTP and OpenSSL for signing
-  if(NOT STAR_ENABLE_CURL)
-    message(FATAL_ERROR "S3 support requires CURL. Enable STAR_ENABLE_CURL.")
+  if(NOT STARDS_ENABLE_CURL)
+    message(FATAL_ERROR "S3 support requires CURL. Enable STARDS_ENABLE_CURL.")
   endif()
 
   # Find OpenSSL for SHA256 and HMAC-SHA256
@@ -159,8 +159,8 @@ if(STAR_ENABLE_S3)
   add_definitions(-DENABLE_S3)
 
   # Link OpenSSL
-  target_link_libraries(Star INTERFACE ${OPENSSL_LIBRARIES})
-  target_include_directories(Star INTERFACE ${OPENSSL_INCLUDE_DIR})
+  target_link_libraries(StarDS INTERFACE ${OPENSSL_LIBRARIES})
+  target_include_directories(StarDS INTERFACE ${OPENSSL_INCLUDE_DIR})
 
   message(STATUS "S3 support: enabled (requires CURL and OpenSSL)")
 else()
@@ -169,13 +169,13 @@ endif()
 
 
 # Install the (header-only INTERFACE) target as an export set so a matching
-# STARTargets.cmake is generated for find_package(STAR).
-install(TARGETS Star EXPORT StarTargets
+# STARDSTargets.cmake is generated for find_package(STARDS).
+install(TARGETS StarDS EXPORT StarDSTargets
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
-# Generate/install STARTargets.cmake with the STAR:: namespace that
-# config.cmake.in expects (STAR::Star).
-install(EXPORT StarTargets
+# Generate/install STARDSTargets.cmake with the STARDS:: namespace that
+# config.cmake.in expects (STARDS::StarDS).
+install(EXPORT StarDSTargets
         FILE ${PROJECT_NAME}Targets.cmake
         NAMESPACE ${PROJECT_NAME}::
         DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
@@ -190,18 +190,18 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.cmake
               DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
 
 # Install the headers
-install(FILES ${STAR_HEADER_FILES} DESTINATION ${STAR_INSTALL_INCLUDE_DIR})
+install(FILES ${STARDS_HEADER_FILES} DESTINATION ${STARDS_INSTALL_INCLUDE_DIR})
 
 
 ###############
 # Tools Build #
 ###############
 
-cmake_dependent_option (STAR_BUILD_TOOLS "Build the Star Command-Line Tools" ON STAR_BUILD_LIB OFF)
+cmake_dependent_option (STARDS_BUILD_TOOLS "Build the StarDS Command-Line Tools" ON STARDS_BUILD_LIB OFF)
 
 # Built before the tests so the conversion-parity test can reference the
-# star_translate target (via $<TARGET_FILE:...> and add_dependencies).
-if(STAR_BUILD_TOOLS)
+# stards_translate target (via $<TARGET_FILE:...> and add_dependencies).
+if(STARDS_BUILD_TOOLS)
   add_subdirectory(bin)
 else()
   message(STATUS "Skipping Tools")
@@ -211,9 +211,9 @@ endif()
 # Tests Build #
 ###############
 
-cmake_dependent_option (STAR_BUILD_TESTS "Build the Star Tests" ON STAR_BUILD_LIB OFF)
+cmake_dependent_option (STARDS_BUILD_TESTS "Build the StarDS Tests" ON STARDS_BUILD_LIB OFF)
 
-if(STAR_BUILD_TESTS)
+if(STARDS_BUILD_TESTS)
   include(GoogleTest)
   include(cmake/gtest.cmake)
   include(CTest)
@@ -229,11 +229,11 @@ endif()
 # Bindings Build #
 ##################
 
-cmake_dependent_option(STAR_BUILD_PYTHON_BINDINGS
+cmake_dependent_option(STARDS_BUILD_PYTHON_BINDINGS
     "Build Python bindings using SWIG" ON
-    "STAR_BUILD_LIB" OFF)
+    "STARDS_BUILD_LIB" OFF)
 
-if(STAR_BUILD_PYTHON_BINDINGS)
+if(STARDS_BUILD_PYTHON_BINDINGS)
   add_subdirectory(bindings/python)
 else()
   message(STATUS "Skipping Python bindings")

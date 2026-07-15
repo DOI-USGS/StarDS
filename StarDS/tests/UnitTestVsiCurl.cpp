@@ -57,7 +57,11 @@ TEST_F(VsiCurlTest, ReadRoundTrip) {
     std::string local = makeDataset(5);
     srv.addObject("/data.stards", star_test::read_file_bytes(local));
 
-    auto store = StarDataset::open(vsicurlUrl(srv, "/data.stards"), FileMode::READ_ONLY);
+    // Disable the whole-file prefetch so we can observe the individual ranged
+    // reads the read path issues (prefetch is exercised separately below).
+    OpenOptions opts;
+    opts.prefetch_whole_below_bytes = 0;
+    auto store = StarDataset::open(vsicurlUrl(srv, "/data.stards"), FileMode::READ_ONLY, opts);
 
     // Metadata value survives the HTTP round-trip.
     auto label = store->meta.get("label");
@@ -69,23 +73,55 @@ TEST_F(VsiCurlTest, ReadRoundTrip) {
     ASSERT_EQ(arr.size(), 5u);
     for (size_t i = 0; i < 5; ++i) EXPECT_EQ(arr.flat(i), static_cast<int64_t>(i));
 
-    // The client did a HEAD (to discover Content-Length) at least once.
-    bool saw_head = false;
-    for (const auto& r : srv.requests()) if (r.method == "HEAD") saw_head = true;
-    EXPECT_TRUE(saw_head);
+    // The optimized read path issues ranged GETs on one reused connection and
+    // NEVER a HEAD (byte ranges come straight from the header index).
+    int heads = 0, gets = 0;
+    for (const auto& r : srv.requests()) {
+        if (r.method == "HEAD") heads++;
+        if (r.method == "GET") gets++;
+    }
+    EXPECT_EQ(heads, 0) << "read path must not issue any HEAD requests";
+    EXPECT_GT(gets, 0) << "expected at least one ranged GET";
 }
 
-TEST_F(VsiCurlTest, MultiChunkRangeReads) {
+TEST_F(VsiCurlTest, WholeFilePrefetchServesFromCache) {
     MockHttpServer srv;
     if (!srv.ok()) GTEST_SKIP() << "could not bind a local port for the mock server";
 
-    // 40k int64 = 320 KB uncompressed. With NONE compression the array block is
-    // large enough that reading it issues multiple 64 KB Range GETs.
+    std::string local = makeDataset(64);
+    srv.addObject("/small.stards", star_test::read_file_bytes(local));
+
+    // Default OpenOptions -> small file is prefetched whole on open. Every read
+    // is then served from memory, so the total request count is tiny (and there
+    // are no HEADs).
+    resetNetworkRequestCount();
+    auto store = StarDataset::open(vsicurlUrl(srv, "/small.stards"), FileMode::READ_ONLY);
+    auto label = store->meta.get("label");
+    ASSERT_NE(label, nullptr);
+    EXPECT_EQ(label->as<std::string>()(0), "vsicurl-test");
+    auto arr = store->get<int64_t>("data");
+    ASSERT_EQ(arr.size(), 64u);
+    for (size_t i = 0; i < 64; ++i) EXPECT_EQ(arr.flat(i), static_cast<int64_t>(i));
+
+    int heads = 0;
+    for (const auto& r : srv.requests()) if (r.method == "HEAD") heads++;
+    EXPECT_EQ(heads, 0) << "prefetch path must not HEAD";
+    // Whole-file prefetch = a single GET; reads after that hit the cache.
+    EXPECT_LE(getNetworkRequestCount(), 2u)
+        << "small-file open+read should be ~1 request (whole-file prefetch)";
+}
+
+TEST_F(VsiCurlTest, LargeArrayCoalescedRead) {
+    MockHttpServer srv;
+    if (!srv.ok()) GTEST_SKIP() << "could not bind a local port for the mock server";
+
+    // 40k int64 = 320 KB uncompressed. Previously this spanned many 64 KB Range
+    // GETs; the coalesced read path now fetches the contiguous block in ONE GET.
     const size_t N = 40000;
     std::string local = tempFile("big");
     {
         StarConfig cfg;
-        cfg.compression = CompressionAlgorithm::NONE;  // keep it large -> multi-chunk
+        cfg.compression = CompressionAlgorithm::NONE;
         auto store = StarDataset::create(local, cfg);
         NDArray<int64_t> arr({N});
         for (size_t i = 0; i < N; ++i) arr.flat(i) = static_cast<int64_t>(i * 3 + 1);
@@ -94,19 +130,27 @@ TEST_F(VsiCurlTest, MultiChunkRangeReads) {
     }
     srv.addObject("/big.stards", star_test::read_file_bytes(local));
 
-    auto store = StarDataset::open(vsicurlUrl(srv, "/big.stards"), FileMode::READ_ONLY);
+    // Disable whole-file prefetch (file is > threshold anyway) to isolate the
+    // array read into its own ranged GET(s).
+    OpenOptions opts;
+    opts.prefetch_whole_below_bytes = 0;
+    auto store = StarDataset::open(vsicurlUrl(srv, "/big.stards"), FileMode::READ_ONLY, opts);
+
+    size_t before = getNetworkRequestCount();
     auto arr = store->get<int64_t>("big");
     ASSERT_EQ(arr.size(), N);
     for (size_t i = 0; i < N; ++i) {
         ASSERT_EQ(arr.flat(i), static_cast<int64_t>(i * 3 + 1)) << "mismatch at " << i;
     }
 
-    // Multiple ranged GETs should have occurred (fetchRange in 64 KB chunks).
-    int ranged_gets = 0;
-    for (const auto& r : srv.requests()) {
-        if (r.method == "GET" && !r.range.empty()) ranged_gets++;
-    }
-    EXPECT_GT(ranged_gets, 1) << "expected the large array to span multiple Range reads";
+    // The contiguous array block is fetched in a single request now, not many.
+    size_t gets_for_array = getNetworkRequestCount() - before;
+    EXPECT_EQ(gets_for_array, 1u)
+        << "a contiguous array should be read in exactly one coalesced GET";
+
+    int heads = 0;
+    for (const auto& r : srv.requests()) if (r.method == "HEAD") heads++;
+    EXPECT_EQ(heads, 0) << "read path must not issue any HEAD requests";
 }
 
 TEST_F(VsiCurlTest, MissingUrlThrows) {

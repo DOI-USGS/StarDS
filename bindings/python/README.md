@@ -24,7 +24,7 @@ cd stards
 mkdir build && cd build
 
 # Configure with Python bindings enabled
-cmake .. -DSTAR_BUILD_PYTHON_BINDINGS=ON
+cmake .. -DSTARDS_BUILD_PYTHON_BINDINGS=ON
 
 # Build and install
 make -j$(nproc)

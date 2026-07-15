@@ -1,5 +1,5 @@
 {
-  "tests": 180,
+  "tests": 187,
   "name": "AllTests",
   "testsuites": [
     {
@@ -837,6 +837,47 @@
           "name": "NDArrayFactories",
           "file": "\/Users\/krodriguez\/repos\/stards\/StarDS\/tests\/UnitTestReadmeExamples.cpp",
           "line": 209
+        }
+      ]
+    },
+    {
+      "name": "BytesApiTest",
+      "tests": 7,
+      "testsuite": [
+        {
+          "name": "WriteBytesThenOpenBytesRoundTrip",
+          "file": "\/Users\/krodriguez\/repos\/stards\/StarDS\/tests\/UnitTestBytesAPI.cpp",
+          "line": 43
+        },
+        {
+          "name": "OpenBytesIsReadOnly",
+          "file": "\/Users\/krodriguez\/repos\/stards\/StarDS\/tests\/UnitTestBytesAPI.cpp",
+          "line": 74
+        },
+        {
+          "name": "WriteBytesEqualsSaveToImage",
+          "file": "\/Users\/krodriguez\/repos\/stards\/StarDS\/tests\/UnitTestBytesAPI.cpp",
+          "line": 89
+        },
+        {
+          "name": "PointerOverloadRoundTrip",
+          "file": "\/Users\/krodriguez\/repos\/stards\/StarDS\/tests\/UnitTestBytesAPI.cpp",
+          "line": 104
+        },
+        {
+          "name": "LayersSurviveByteRoundTrip",
+          "file": "\/Users\/krodriguez\/repos\/stards\/StarDS\/tests\/UnitTestBytesAPI.cpp",
+          "line": 119
+        },
+        {
+          "name": "OpenBytesRejectsGarbage",
+          "file": "\/Users\/krodriguez\/repos\/stards\/StarDS\/tests\/UnitTestBytesAPI.cpp",
+          "line": 142
+        },
+        {
+          "name": "ModifyInMemoryThenReserialize",
+          "file": "\/Users\/krodriguez\/repos\/stards\/StarDS\/tests\/UnitTestBytesAPI.cpp",
+          "line": 150
         }
       ]
     },

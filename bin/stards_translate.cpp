@@ -37,9 +37,14 @@ void star_to_csv(const std::string& input_file, const std::string& output_file);
 void isds_to_star(const std::string& input_file, const std::string& output_file,
                  CompressionAlgorithm compression, size_t block_size);
 
+// STAR-to-STAR re-encode (change compression / block size, preserve structure)
+void star_to_star(const std::string& input_file, const std::string& output_file,
+                 CompressionAlgorithm compression, size_t block_size);
+
 void print_usage(const char* program_name) {
     std::cout << "Usage: " << program_name << " [OPTIONS] <input_file> <output_file>\n\n";
-    std::cout << "Convert between STAR and other formats (JSON, MessagePack, ISDS)\n\n";
+    std::cout << "Convert between STAR and other formats (JSON, MessagePack, ISDS),\n";
+    std::cout << "or re-encode a STAR file to change its compression / block size.\n\n";
     std::cout << "Options:\n";
     std::cout << "  -h, --help              Show this help message\n";
     std::cout << "  -f, --format <fmt>      Output format (json, msgpack, isds)\n";
@@ -69,6 +74,8 @@ void print_usage(const char* program_name) {
     std::cout << "  " << program_name << " data.stards data.json           # STARDS to JSON\n";
     std::cout << "  " << program_name << " data.json data.stards           # JSON to STARDS\n";
     std::cout << "  " << program_name << " -c gzip data.json data.stards   # JSON to STARDS with GZIP\n";
+    std::cout << "  " << program_name << " -c gzip in.stards out.stards    # Re-encode STARDS (change codec)\n";
+    std::cout << "  " << program_name << " -c lz4-shuffle -b 262144 in.stards out.stards # Re-encode (codec + block size)\n";
     std::cout << "  " << program_name << " data.csv data.stards            # CSV to STARDS\n";
     std::cout << "  " << program_name << " data.stards data.csv            # STARDS to CSV\n";
     std::cout << "  " << program_name << " -f isds input.stards out.stards # ISDS to STARDS conversion\n";
@@ -165,6 +172,69 @@ std::vector<std::string> all_keys_both_namespaces(const std::shared_ptr<StarData
         }
     }
     return keys;
+}
+
+// Read a key from the ARRAY namespace only (separate block storage), returning a
+// fully-populated MetadataValue. Unlike read_value_any_namespace() this never
+// consults the metadata block, so it stays correct even when the same logical key
+// exists in both namespaces. Returns nullptr if the key isn't an array. Works for
+// layer-prefixed internal keys ("__layer_<name>__:<key>") too, since those live in
+// the base array namespace.
+std::shared_ptr<MetadataValue> read_array_only(
+        const std::shared_ptr<StarDataset>& store, const std::string& key) {
+    if (!store->contains(key)) {
+        return nullptr;
+    }
+    DataType dtype;
+    try {
+        dtype = store->dtype_of(key);  // throws if not in array storage
+    } catch (const std::exception&) {
+        return nullptr;  // key is metadata-only, not an array
+    }
+    auto build = [&](auto sample) -> std::shared_ptr<MetadataValue> {
+        using T = decltype(sample);
+        NDArray<T> arr = store->get<T>(key);
+        auto mv = std::make_shared<MetadataValue>();
+        mv->dtype = dtype;
+        mv->shape = arr.shape();
+        mv->data = std::move(arr);
+        return mv;
+    };
+    switch (dtype) {
+        case DataType::INT8:    return build(int8_t{});
+        case DataType::INT16:   return build(int16_t{});
+        case DataType::INT32:   return build(int32_t{});
+        case DataType::INT64:   return build(int64_t{});
+        case DataType::UINT8:   return build(uint8_t{});
+        case DataType::UINT16:  return build(uint16_t{});
+        case DataType::UINT32:  return build(uint32_t{});
+        case DataType::UINT64:  return build(uint64_t{});
+        case DataType::FLOAT32: return build(float{});
+        case DataType::FLOAT64: return build(double{});
+        case DataType::STRING:  return build(std::string{});
+        default:                return nullptr;
+    }
+}
+
+// Dispatch a MetadataValue to a generic sink by its dtype, handing the sink a
+// typed NDArray<T> (moved). Used to copy values without per-call-site type
+// branching. Returns false if the dtype is unsupported.
+template <typename Sink>
+bool dispatch_value(const std::shared_ptr<MetadataValue>& mv, Sink&& sink) {
+    switch (mv->dtype) {
+        case DataType::INT8:    { auto a = mv->as<int8_t>();      sink(std::move(a)); return true; }
+        case DataType::INT16:   { auto a = mv->as<int16_t>();     sink(std::move(a)); return true; }
+        case DataType::INT32:   { auto a = mv->as<int32_t>();     sink(std::move(a)); return true; }
+        case DataType::INT64:   { auto a = mv->as<int64_t>();     sink(std::move(a)); return true; }
+        case DataType::UINT8:   { auto a = mv->as<uint8_t>();     sink(std::move(a)); return true; }
+        case DataType::UINT16:  { auto a = mv->as<uint16_t>();    sink(std::move(a)); return true; }
+        case DataType::UINT32:  { auto a = mv->as<uint32_t>();    sink(std::move(a)); return true; }
+        case DataType::UINT64:  { auto a = mv->as<uint64_t>();    sink(std::move(a)); return true; }
+        case DataType::FLOAT32: { auto a = mv->as<float>();       sink(std::move(a)); return true; }
+        case DataType::FLOAT64: { auto a = mv->as<double>();      sink(std::move(a)); return true; }
+        case DataType::STRING:  { auto a = mv->as<std::string>(); sink(std::move(a)); return true; }
+        default:                return false;
+    }
 }
 
 json NDArray_to_json(const ValueVariant& variant) {
@@ -506,15 +576,38 @@ void json_to_star(const std::string& input_file, const std::string& output_file,
     std::cout << "  Compression: " << compression_name(compression) << "\n";
     std::cout << "  Block size: " << block_size << " bytes\n";
 
-    // Read JSON file
+    // Read the input file into a string so any non-JSON preamble can be
+    // stripped before parsing.
     std::ifstream ifs(input_file);
     if (!ifs) {
         throw std::runtime_error("Failed to open input file: " + input_file);
     }
-
-    json root;
-    ifs >> root;
+    std::stringstream file_buf;
+    file_buf << ifs.rdbuf();
     ifs.close();
+    std::string file_contents = file_buf.str();
+
+    // USGSCSM model-state files (the output of getModelState() /
+    // "usgscsm_cam_test --output-model-state") and GXP .sup files prepend a text
+    // preamble -- e.g. "USGS_ASTRO_LINE_SCANNER_SENSOR_MODEL\n" -- before the
+    // JSON state body. Strip anything before the first '{' (and after the
+    // matching last '}') so these convert directly, mirroring how USGSCSM's own
+    // stateAsJson() extracts the state. A plain JSON file (starts with '{') is
+    // unaffected. The model name is preserved: it also lives in the body under
+    // the "m_modelName" key, which is what USGSCSM reads back.
+    size_t first_brace = file_contents.find_first_of('{');
+    size_t last_brace = file_contents.find_last_of('}');
+    if (first_brace != std::string::npos && last_brace != std::string::npos &&
+        last_brace >= first_brace) {
+        if (first_brace > 0) {
+            std::cout << "  Detected model-state preamble; stripping "
+                      << first_brace << " leading byte(s) before JSON body\n";
+        }
+        file_contents = file_contents.substr(first_brace,
+                                             last_brace - first_brace + 1);
+    }
+
+    json root = json::parse(file_contents);
 
     // Create STAR store with the requested compression + block size. Apply it to
     // both the main (separately-stored array) data and the metadata block so the
@@ -1227,6 +1320,116 @@ void star_to_csv(const std::string& input_file, const std::string& output_file) 
     std::cout << "Conversion complete!\n";
 }
 
+// STAR-to-STAR re-encode: copy every value into a fresh file that uses the
+// requested compression / block size, faithfully preserving the ORIGINAL
+// structure (which namespace each key lives in, and which layer owns it). This
+// is a lossless re-pack — unlike the ISDS path, it does NOT move values between
+// the array and metadata namespaces. Use it to change codec or block size on an
+// existing dataset.
+void star_to_star(const std::string& input_file, const std::string& output_file,
+                 CompressionAlgorithm compression, size_t block_size) {
+    std::cout << "Re-encoding STAR to STAR...\n";
+    std::cout << "  Input:  " << input_file << "\n";
+    std::cout << "  Output: " << output_file << "\n";
+    std::cout << "  Compression: " << compression_name(compression) << "\n";
+    std::cout << "  Block size: " << block_size << " bytes\n";
+
+    if (input_file == output_file) {
+        throw std::runtime_error(
+            "Refusing to re-encode a file onto itself; choose a different output path.");
+    }
+
+    auto in = StarDataset::open(input_file, FileMode::READ_ONLY);
+    // Layer keys inherit from base by default-off; enable inheritance so we can
+    // read base-only values through a layer if ever needed. Copies below only
+    // touch layer-OWNED keys, so this is belt-and-suspenders.
+    in->setLayerInheritance(true);
+
+    StarConfig config;
+    config.compression = compression;
+    // The metadata block holds mixed-type/variable-width values and is read as a
+    // unit (never unshuffled), so use the base codec there, not a shuffle variant.
+    config.metadata_compression = base_compression(compression);
+    config.block_size = block_size;
+    auto out = StarDataset::create(output_file, config);
+
+    size_t array_count = 0, meta_count = 0, layer_array_count = 0, layer_meta_count = 0;
+
+    // --- Base level -----------------------------------------------------------
+    // Array namespace: get_all_keys() returns array-storage keys, but that
+    // includes layer-prefixed internal keys ("__layer_<name>__:<key>"), which we
+    // handle separately per layer below. Skip them here.
+    for (const auto& key : in->get_all_keys()) {
+        if (key.rfind("__layer_", 0) == 0) continue;  // layer-owned, handled later
+        auto mv = read_array_only(in, key);
+        if (!mv) continue;  // not actually an array (shouldn't happen for these keys)
+        bool ok = dispatch_value(mv, [&](auto&& arr) {
+            out->put(key, std::move(arr));
+        });
+        if (ok) { std::cout << "  [array]  " << key << "\n"; array_count++; }
+        else std::cerr << "  Warning: unsupported dtype for array key: " << key << "\n";
+    }
+
+    // Metadata namespace (base layer): keys tracked in the base metadata registry.
+    for (const auto& key : in->get_metadata_keys()) {
+        auto mv = in->meta.get(key);
+        if (!mv) continue;
+        bool ok = dispatch_value(mv, [&](auto&& arr) {
+            out->meta.put(key, arr);
+        });
+        if (ok) { std::cout << "  [meta]   " << key << "\n"; meta_count++; }
+        else std::cerr << "  Warning: unsupported dtype for metadata key: " << key << "\n";
+    }
+
+    // --- Layers ---------------------------------------------------------------
+    // Recreate each layer and copy only the keys it OWNS (not inherited base
+    // keys), preserving the array vs. metadata split within the layer.
+    for (const auto& layer_name : in->list_layers()) {
+        std::cout << "  Layer: " << layer_name << "\n";
+        auto in_layer = in->get_layer(layer_name);
+        auto out_layer = out->create_layer(layer_name);
+
+        // Layer-owned array keys: stored under "__layer_<name>__:<logical_key>".
+        const std::string prefix = "__layer_" + layer_name + "__:";
+        for (const auto& storage_key : in->get_all_keys()) {
+            if (storage_key.rfind(prefix, 0) != 0) continue;
+            std::string logical_key = storage_key.substr(prefix.size());
+            auto mv = read_array_only(in, storage_key);
+            if (!mv) continue;
+            bool ok = dispatch_value(mv, [&](auto&& arr) {
+                out_layer->put(logical_key, std::move(arr));
+            });
+            if (ok) { std::cout << "    [array]  " << logical_key << "\n"; layer_array_count++; }
+            else std::cerr << "    Warning: unsupported dtype for layer array key: " << logical_key << "\n";
+        }
+
+        // Layer-owned metadata keys: everything the layer's own metadata registry
+        // holds. With inheritance on, keys() also lists inherited base keys, so
+        // filter to keys the layer actually owns via key_in_layer().
+        for (const auto& key : in_layer->meta.keys()) {
+            if (!in->key_in_layer(key, layer_name)) continue;  // inherited, skip
+            auto mv = in_layer->meta.get(key);
+            if (!mv) continue;
+            bool ok = dispatch_value(mv, [&](auto&& arr) {
+                out_layer->meta.put(key, arr);
+            });
+            if (ok) { std::cout << "    [meta]   " << key << "\n"; layer_meta_count++; }
+            else std::cerr << "    Warning: unsupported dtype for layer metadata key: " << key << "\n";
+        }
+    }
+
+    out->flush();
+
+    std::cout << "\nRe-encode complete!\n";
+    std::cout << "  Base arrays:    " << array_count << "\n";
+    std::cout << "  Base metadata:  " << meta_count << "\n";
+    if (!in->list_layers().empty()) {
+        std::cout << "  Layers:         " << in->list_layers().size() << "\n";
+        std::cout << "  Layer arrays:   " << layer_array_count << "\n";
+        std::cout << "  Layer metadata: " << layer_meta_count << "\n";
+    }
+}
+
 // ISDS conversion: reorganize STAR file by putting large arrays in array storage
 // and small data in metadata storage
 void isds_to_star(const std::string& input_file, const std::string& output_file,
@@ -1509,6 +1712,9 @@ int main(int argc, char* argv[]) {
         if (input_format == "isds" && output_format == "star") {
             // ISDS to optimized STAR: reorganize by array size
             isds_to_star(input_file, output_file, compression, block_size, threshold);
+        } else if (input_format == "star" && output_format == "star") {
+            // STAR to STAR: lossless re-encode with new compression / block size
+            star_to_star(input_file, output_file, compression, block_size);
         } else if (input_format == "star" && output_format == "json") {
             star_to_json(input_file, output_file);
         } else if (input_format == "json" && output_format == "star") {

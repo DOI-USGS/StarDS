@@ -15,10 +15,10 @@ bindings. All of these are built from source with CMake.
 
 **Optional native dependencies** (enable extra features):
 
-- **zlib** — GZIP compression (build flag `STAR_ENABLE_ZLIB`)
-- **LZ4** — fast compression codec (build flag `STAR_ENABLE_LZ4`)
-- **libcurl** — HTTP remote access (build flag `STAR_ENABLE_CURL`)
-- **OpenSSL** — S3 request signing (build flag `STAR_ENABLE_S3`)
+- **zlib** — GZIP compression (build flag `STARDS_ENABLE_ZLIB`)
+- **LZ4** — fast compression codec (build flag `STARDS_ENABLE_LZ4`)
+- **libcurl** — HTTP remote access (build flag `STARDS_ENABLE_CURL`)
+- **OpenSSL** — S3 request signing (build flag `STARDS_ENABLE_S3`)
 
 ## Clone the repository
 
@@ -33,17 +33,17 @@ git submodule update --init --recursive
 ```bash
 mkdir build && cd build
 cmake .. \
-  -DSTAR_BUILD_TOOLS=ON \
-  -DSTAR_ENABLE_ZLIB=ON \
-  -DSTAR_ENABLE_LZ4=ON \
-  -DSTAR_ENABLE_CURL=ON \
-  -DSTAR_ENABLE_S3=ON
+  -DSTARDS_BUILD_TOOLS=ON \
+  -DSTARDS_ENABLE_ZLIB=ON \
+  -DSTARDS_ENABLE_LZ4=ON \
+  -DSTARDS_ENABLE_CURL=ON \
+  -DSTARDS_ENABLE_S3=ON
 
 make -j$(nproc)
 ```
 
-This builds [`starls`](../cli/starls.md) and
-[`star_translate`](../cli/star-translate.md).
+This builds [`stardsls`](../cli/stardsls.md) and
+[`stards_translate`](../cli/stards-translate.md).
 
 ### CMake options
 
@@ -53,25 +53,25 @@ feature enabled. Pass `-D<OPTION>=OFF` to turn a feature off.
 
 | Option | Default | Effect |
 |--------|---------|--------|
-| `STAR_BUILD_LIB=ON` | ON | Build the header-only library target |
-| `STAR_BUILD_TOOLS=ON` | ON | Build the CLI tools (`starls`, `star_translate`) |
-| `STAR_BUILD_TESTS=ON` | ON | Build the unit tests |
-| `STAR_BUILD_PYTHON_BINDINGS=ON` | ON | Build the Python bindings |
-| `STAR_ENABLE_ZLIB=ON` | ON | Enable GZIP compression |
-| `STAR_ENABLE_LZ4=ON` | ON | Enable LZ4 compression |
-| `STAR_ENABLE_CURL=ON` | ON | Enable HTTP remote access |
-| `STAR_ENABLE_S3=ON` | ON | Enable S3 cloud storage (requires CURL) |
+| `STARDS_BUILD_LIB=ON` | ON | Build the header-only library target |
+| `STARDS_BUILD_TOOLS=ON` | ON | Build the CLI tools (`stardsls`, `stards_translate`) |
+| `STARDS_BUILD_TESTS=ON` | ON | Build the unit tests |
+| `STARDS_BUILD_PYTHON_BINDINGS=ON` | ON | Build the Python bindings |
+| `STARDS_ENABLE_ZLIB=ON` | ON | Enable GZIP compression |
+| `STARDS_ENABLE_LZ4=ON` | ON | Enable LZ4 compression |
+| `STARDS_ENABLE_CURL=ON` | ON | Enable HTTP remote access |
+| `STARDS_ENABLE_S3=ON` | ON | Enable S3 cloud storage (requires CURL) |
 
 ## Build the Python bindings
 
 ```bash
 mkdir build && cd build
 cmake .. \
-  -DSTAR_BUILD_PYTHON_BINDINGS=ON \
-  -DSTAR_ENABLE_ZLIB=ON \
-  -DSTAR_ENABLE_LZ4=ON \
-  -DSTAR_ENABLE_CURL=ON \
-  -DSTAR_ENABLE_S3=ON
+  -DSTARDS_BUILD_PYTHON_BINDINGS=ON \
+  -DSTARDS_ENABLE_ZLIB=ON \
+  -DSTARDS_ENABLE_LZ4=ON \
+  -DSTARDS_ENABLE_CURL=ON \
+  -DSTARDS_ENABLE_S3=ON
 
 make -j$(nproc)
 sudo make install
@@ -85,12 +85,12 @@ StarDS is header-only, so you only need the include path plus any optional
 libraries you want to link. Each optional feature is gated by a **compile
 definition** (`ENABLE_ZLIB`, `ENABLE_LZ4`, `ENABLE_CURL`, `ENABLE_S3`) — these are
 the `-D` preprocessor macros the header checks, and are distinct from the
-`STAR_ENABLE_*` **CMake build options** used when building this repo's own targets:
+`STARDS_ENABLE_*` **CMake build options** used when building this repo's own targets:
 
 ```cmake
 # CMakeLists.txt
 # In-tree checkout: StarDS/include. Installed: the header is at
-# $PREFIX/include/stards/stards.h (use $PREFIX/include/stards, or find_package(STAR)).
+# $PREFIX/include/stards/stards.h (use $PREFIX/include/stards, or find_package(STARDS)).
 include_directories(/path/to/stards/StarDS/include)
 
 find_package(ZLIB)
