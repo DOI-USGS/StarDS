@@ -2,7 +2,7 @@
     {
       "name": "StarDS",
       "organization": "U.S. Geological Survey",
-      "description": "GitLab repository for library that interacts with NAIF's SPICE kernels",
+      "description": "GitLab repository for the StarDS project, which is a cloud-native data format for storing and processing large remote sensing datasets.",
       "version": "main",
       "status": "Development",
   
@@ -27,7 +27,8 @@
         "Data Processing",
         "Spatial",
         "Cloud Optimized",
-        "Cloud Native"
+        "Cloud Native",
+        "data format"
     ],
   
       "languages": [
