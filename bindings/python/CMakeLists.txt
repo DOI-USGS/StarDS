@@ -48,24 +48,32 @@ endif()
 # Pin the interpreter to the active conda/virtual env FIRST. Without this,
 # CMake's FindPython prefers a "newest version" heuristic and can pick the system
 # Python (e.g. /usr/bin/python3) over the env's — which then lacks numpy and the
-# bindings' runtime deps. CONDA_PREFIX (set inside an activated conda env) points
-# CMake at the right interpreter; if it's unset we fall back to CMake's default
-# search. Set Python3_FIND_STRATEGY=LOCATION so the ROOT_DIR hint wins over the
-# version heuristic.
+# bindings' runtime deps. We set Python3_EXECUTABLE DIRECTLY from CONDA_PREFIX
+# (rather than via ROOT_DIR + a search strategy): the location-based search still
+# runs CMake's virtual-env ABI cross-check, which spuriously rejects conda
+# interpreters ("Wrong ABI for the interpreter") on some runners. Setting the
+# executable outright skips that filtered search. If CONDA_PREFIX is unset we
+# fall back to CMake's default discovery.
 if(NOT DEFINED Python3_EXECUTABLE AND DEFINED ENV{CONDA_PREFIX})
-    set(Python3_ROOT_DIR "$ENV{CONDA_PREFIX}")
-    set(Python3_FIND_STRATEGY LOCATION)
-    # Prefer the env's unversioned python over any system one.
-    set(Python3_FIND_VIRTUALENV ONLY)
+    if(EXISTS "$ENV{CONDA_PREFIX}/bin/python")
+        set(Python3_EXECUTABLE "$ENV{CONDA_PREFIX}/bin/python")
+    elseif(EXISTS "$ENV{CONDA_PREFIX}/python.exe")   # Windows conda layout
+        set(Python3_EXECUTABLE "$ENV{CONDA_PREFIX}/python.exe")
+    endif()
 endif()
 
+# We build a Python EXTENSION MODULE (loaded by the interpreter at import time),
+# not an embedded interpreter, so we only need Development.Module — NOT the full
+# Development component (which also requires libpython / Development.Embed and
+# triggers the libpython ABI check that fails on some conda/CI setups).
+#
 # NumPy is requested as an OPTIONAL component rather than REQUIRED: CMake's
 # FindPython NumPy probe is fragile across CMake/NumPy versions (e.g. it fails on
 # some CI runners with NumPy 2.x even though numpy is installed and importable),
 # and a hard REQUIRED there aborts configure. We instead fall back to asking the
 # found interpreter for its header dir via `numpy.get_include()`, which is what
 # NumPy itself documents as the source of truth.
-find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
+find_package(Python3 REQUIRED COMPONENTS Interpreter Development.Module)
 find_package(Python3 QUIET COMPONENTS NumPy)
 
 # Resolve the NumPy include directory: prefer CMake's, else query the interpreter.
