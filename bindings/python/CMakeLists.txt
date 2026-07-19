@@ -45,6 +45,20 @@ endif()
 
 # Setup for Python linking.
 #
+# Pin the interpreter to the active conda/virtual env FIRST. Without this,
+# CMake's FindPython prefers a "newest version" heuristic and can pick the system
+# Python (e.g. /usr/bin/python3) over the env's — which then lacks numpy and the
+# bindings' runtime deps. CONDA_PREFIX (set inside an activated conda env) points
+# CMake at the right interpreter; if it's unset we fall back to CMake's default
+# search. Set Python3_FIND_STRATEGY=LOCATION so the ROOT_DIR hint wins over the
+# version heuristic.
+if(NOT DEFINED Python3_EXECUTABLE AND DEFINED ENV{CONDA_PREFIX})
+    set(Python3_ROOT_DIR "$ENV{CONDA_PREFIX}")
+    set(Python3_FIND_STRATEGY LOCATION)
+    # Prefer the env's unversioned python over any system one.
+    set(Python3_FIND_VIRTUALENV ONLY)
+endif()
+
 # NumPy is requested as an OPTIONAL component rather than REQUIRED: CMake's
 # FindPython NumPy probe is fragile across CMake/NumPy versions (e.g. it fails on
 # some CI runners with NumPy 2.x even though numpy is installed and importable),
