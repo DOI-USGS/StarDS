@@ -69,7 +69,7 @@ key name — all layers shared the same storage.
 Each layer now has **isolated storage** with **opt-in inheritance** from the base
 layer. Layers can hold their own version of the same logical key without
 interfering with other layers. Inheritance is **off by default**; enable it via
-`OpenOptions` at open time or `set_layer_inheritance(True)` / `setLayerInheritance(true)`
+`OpenOptions` at open time or `set_layer_inheritance(True)` / `set_layer_inheritance(true)`
 afterward.
 
 === "Python"
@@ -117,7 +117,7 @@ afterward.
 
     // Inheritance is off by default; opt in at open time or afterward
     auto store2 = StarDataset::open("data.stards");
-    store2->setLayerInheritance(true);
+    store2->set_layer_inheritance(true);
     ```
 
 ### Key features

@@ -131,7 +131,7 @@ TEST_F(LayerTest, LayerInheritsBaseKeys) {
     std::string filename = createTempFile("inherit_keys");
 
     auto store = StarDataset::create(filename);
-    store->setLayerInheritance(true);  // this test exercises base-layer inheritance
+    store->set_layer_inheritance(true);  // this test exercises base-layer inheritance
 
     // Add base metadata
     store->meta.put("instrument", NDArray<std::string>({}, "AVIRIS"));
@@ -160,7 +160,7 @@ TEST_F(LayerTest, LayerContainsBaseKeys) {
     std::string filename = createTempFile("contains_base");
 
     auto store = StarDataset::create(filename);
-    store->setLayerInheritance(true);  // this test exercises base-layer inheritance
+    store->set_layer_inheritance(true);  // this test exercises base-layer inheritance
 
     // Add base key
     store->meta.put("base_key", NDArray<int64_t>({}, 42));
@@ -177,7 +177,7 @@ TEST_F(LayerTest, BitMaskPresenceCheck) {
     std::string filename = createTempFile("bitmask");
 
     auto store = StarDataset::create(filename);
-    store->setLayerInheritance(true);  // this test exercises base-layer inheritance
+    store->set_layer_inheritance(true);  // this test exercises base-layer inheritance
 
     // Add multiple keys to base
     for (int i = 0; i < 100; ++i) {
@@ -251,7 +251,7 @@ TEST_F(LayerTest, LayerInfoInFileHeader) {
     // Reopen and check header
     {
         auto store = StarDataset::open(filename, "r");
-        const FileHeader& header = store->getFileHeader();
+        const FileHeader& header = store->get_file_header();
 
         // Format version should be 1 (v1 format with per-layer metadata blocks)
         EXPECT_EQ(header.format_version, 1);
@@ -292,7 +292,7 @@ TEST_F(LayerTest, ManyLayersWithInheritance) {
     std::string filename = createTempFile("many_inherit");
 
     auto store = StarDataset::create(filename);
-    store->setLayerInheritance(true);  // this test exercises base-layer inheritance
+    store->set_layer_inheritance(true);  // this test exercises base-layer inheritance
 
     // Add base metadata
     store->meta.put("instrument", NDArray<std::string>({}, "AVIRIS"));
@@ -322,7 +322,7 @@ TEST_F(LayerTest, ManyLayersWithInheritance) {
     store = StarDataset::open(filename, "r", reopen_opts);
 
     // Debug: Check file header
-    const FileHeader& header = store->getFileHeader();
+    const FileHeader& header = store->get_file_header();
     std::cout << "File header after reopen:" << std::endl;
     std::cout << "  format_version: " << static_cast<int>(header.format_version) << std::endl;
     std::cout << "  layer_count: " << header.layer_count << std::endl;
@@ -416,7 +416,7 @@ TEST_F(LayerTest, FileHeaderLayerCountZero) {
     // Check header
     {
         auto store = StarDataset::open(filename, "r");
-        const FileHeader& header = store->getFileHeader();
+        const FileHeader& header = store->get_file_header();
         EXPECT_EQ(header.layer_count, 0);
     }
 }
@@ -436,7 +436,7 @@ TEST_F(LayerTest, FileHeaderLayerCountMultiple) {
     // Check header
     {
         auto store = StarDataset::open(filename, "r");
-        const FileHeader& header = store->getFileHeader();
+        const FileHeader& header = store->get_file_header();
         EXPECT_EQ(header.layer_count, 5);
     }
 }
@@ -455,7 +455,7 @@ TEST_F(LayerTest, HeaderSizeGrowsWithLayers) {
     }
     {
         auto store = StarDataset::open(filename1, "r");
-        header_size1 = store->getFileHeader().header_size;
+        header_size1 = store->get_file_header().header_size;
     }
 
     // File with 10 layers
@@ -469,7 +469,7 @@ TEST_F(LayerTest, HeaderSizeGrowsWithLayers) {
     }
     {
         auto store = StarDataset::open(filename2, "r");
-        header_size2 = store->getFileHeader().header_size;
+        header_size2 = store->get_file_header().header_size;
     }
 
     // Header with layers should be larger
@@ -617,7 +617,7 @@ TEST_F(LayerTest, InheritanceOffByDefault) {
     write_base_and_layer(filename);
 
     auto store = StarDataset::open(filename, "r");
-    EXPECT_FALSE(store->layerInheritance());  // default
+    EXPECT_FALSE(store->layer_inheritance());  // default
 
     auto layer = store->get_layer("L");
     // Layer's own key resolves regardless of inheritance.
@@ -639,7 +639,7 @@ TEST_F(LayerTest, InheritanceOptInViaOpenOptions) {
     OpenOptions opts;
     opts.layer_inheritance = true;
     auto store = StarDataset::open(filename, "r", opts);
-    EXPECT_TRUE(store->layerInheritance());
+    EXPECT_TRUE(store->layer_inheritance());
 
     auto layer = store->get_layer("L");
     EXPECT_TRUE(layer->contains("A"));  // inherited from base
@@ -662,14 +662,14 @@ TEST_F(LayerTest, InheritancePostOpenToggle) {
     EXPECT_FALSE(layer->contains("A"));
 
     // Turn inheritance ON — the same layer view now sees the base key.
-    store->setLayerInheritance(true);
-    EXPECT_TRUE(store->layerInheritance());
+    store->set_layer_inheritance(true);
+    EXPECT_TRUE(store->layer_inheritance());
     EXPECT_TRUE(layer->contains("A"));
     EXPECT_DOUBLE_EQ(layer->get<double>("A")(0), 1.0);
 
     // Turn it back OFF — the base key disappears again.
-    store->setLayerInheritance(false);
-    EXPECT_FALSE(store->layerInheritance());
+    store->set_layer_inheritance(false);
+    EXPECT_FALSE(store->layer_inheritance());
     EXPECT_FALSE(layer->contains("A"));
     EXPECT_THROW(layer->get<double>("A"), std::runtime_error);
 }

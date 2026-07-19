@@ -224,8 +224,8 @@ TEST_F(S3Test, ReadOnlyMode) {
     // Verify cannot flush
     EXPECT_THROW(store->flush(), std::runtime_error);
 
-    // Verify isReadOnly()
-    EXPECT_TRUE(store->isReadOnly());
+    // Verify is_read_only()
+    EXPECT_TRUE(store->is_read_only());
 }
 
 TEST_F(S3Test, ReadWriteModeDefault) {
@@ -233,7 +233,7 @@ TEST_F(S3Test, ReadWriteModeDefault) {
 
     // Default should be read-write
     auto store = StarDataset::create(testFile);
-    EXPECT_FALSE(store->isReadOnly());
+    EXPECT_FALSE(store->is_read_only());
 
     store->meta.put("data", NDArray<int64_t>({}, 123));
     EXPECT_NO_THROW(store->flush());
@@ -257,7 +257,7 @@ TEST_F(S3Test, SaveToLocal) {
     // Open, modify, and save to different file
     auto store = StarDataset::open(sourceFile);
     store->meta.put("modified", NDArray<int64_t>({}, 2));
-    store->saveTo(targetFile);
+    store->save_to(targetFile);
 
     // Verify both files exist
     EXPECT_TRUE(fs::exists(sourceFile));
@@ -295,10 +295,10 @@ TEST_F(S3Test, ReadOnlySaveToAnotherFile) {
     store->meta.put("modified", NDArray<int64_t>({}, 88));
 
     // Cannot save to source
-    EXPECT_THROW(store->saveTo(sourceFile), std::runtime_error);
+    EXPECT_THROW(store->save_to(sourceFile), std::runtime_error);
 
     // Can save to different file
-    EXPECT_NO_THROW(store->saveTo(targetFile));
+    EXPECT_NO_THROW(store->save_to(targetFile));
 
     // Verify source unchanged
     auto source_check = StarDataset::open(sourceFile);
@@ -315,13 +315,13 @@ TEST_F(S3Test, GetFilename) {
     std::string testFile = createTempFile("filename_test");
 
     auto store = StarDataset::create(testFile);
-    EXPECT_EQ(store->getFilename(), testFile);
+    EXPECT_EQ(store->get_filename(), testFile);
 
     store->meta.put("data", NDArray<int64_t>({}, 42));
     store->flush();
 
     // Filename should not change after flush
-    EXPECT_EQ(store->getFilename(), testFile);
+    EXPECT_EQ(store->get_filename(), testFile);
 }
 
 

@@ -1,8 +1,8 @@
 /**
  * @file UnitTestBytesAPI.cpp
- * @brief Unit tests for the in-memory byte APIs: openBytes() and writeBytes().
+ * @brief Unit tests for the in-memory byte APIs: open_bytes() and write_bytes().
  *
- * These mirror the file-based open()/saveTo() path but source/sink a complete
+ * These mirror the file-based open()/save_to() path but source/sink a complete
  * .stards image as a std::vector<char>, so a dataset can be built or read without
  * ever touching the filesystem.
  */
@@ -16,9 +16,9 @@
 
 using namespace star;
 
-// writeBytes() works entirely in memory, so no temp dir is strictly needed; we
+// write_bytes() works entirely in memory, so no temp dir is strictly needed; we
 // still derive from TempDirTest for the couple of tests that cross-check against
-// a real file written by saveTo().
+// a real file written by save_to().
 class BytesApiTest : public star_test::TempDirTest {
 protected:
     // Build a dataset in a temp file, populate it, and return the file path.
@@ -46,11 +46,11 @@ TEST_F(BytesApiTest, WriteBytesThenOpenBytesRoundTrip) {
     std::vector<char> bytes;
     {
         auto ds = StarDataset::open(path, FileMode::READ_ONLY);
-        bytes = ds->writeBytes();
+        bytes = ds->write_bytes();
     }
     ASSERT_FALSE(bytes.empty());
 
-    auto ds = StarDataset::openBytes(bytes);
+    auto ds = StarDataset::open_bytes(bytes);
 
     auto sig = ds->get<double>("signal");
     ASSERT_EQ(sig.size(), 256u);
@@ -76,25 +76,25 @@ TEST_F(BytesApiTest, OpenBytesIsReadOnly) {
     std::vector<char> bytes;
     {
         auto ds = StarDataset::open(path, FileMode::READ_ONLY);
-        bytes = ds->writeBytes();
+        bytes = ds->write_bytes();
     }
 
-    auto ds = StarDataset::openBytes(bytes);
-    EXPECT_TRUE(ds->isReadOnly());
+    auto ds = StarDataset::open_bytes(bytes);
+    EXPECT_TRUE(ds->is_read_only());
     // In-memory dataset has no backing file; an explicit flush must fail.
     ds->put("added", NDArray<int64_t>({}, 1));
     EXPECT_THROW(ds->flush(), std::runtime_error);
 }
 
 TEST_F(BytesApiTest, WriteBytesEqualsSaveToImage) {
-    // writeBytes() should produce exactly the bytes saveTo() would write to disk.
+    // write_bytes() should produce exactly the bytes save_to() would write to disk.
     std::string path = make_populated();
     auto ds = StarDataset::open(path, FileMode::READ_ONLY);
 
-    std::vector<char> bytes = ds->writeBytes();
+    std::vector<char> bytes = ds->write_bytes();
 
     std::string out_path = tempFilePath("bytes_saveto.stards");
-    ds->saveTo(out_path);
+    ds->save_to(out_path);
     std::vector<char> file_bytes = read_all(out_path);
 
     EXPECT_EQ(bytes.size(), file_bytes.size());
@@ -106,11 +106,11 @@ TEST_F(BytesApiTest, PointerOverloadRoundTrip) {
     std::vector<char> bytes;
     {
         auto ds = StarDataset::open(path, FileMode::READ_ONLY);
-        bytes = ds->writeBytes();
+        bytes = ds->write_bytes();
     }
 
     // Open via the raw pointer + length overload (e.g. a C buffer / Python bytes).
-    auto ds = StarDataset::openBytes(bytes.data(), bytes.size());
+    auto ds = StarDataset::open_bytes(bytes.data(), bytes.size());
     auto sig = ds->get<double>("signal");
     ASSERT_EQ(sig.size(), 256u);
     EXPECT_DOUBLE_EQ(sig(100), 1.5);
@@ -129,10 +129,10 @@ TEST_F(BytesApiTest, LayersSurviveByteRoundTrip) {
     std::vector<char> bytes;
     {
         auto ds = StarDataset::open(path, FileMode::READ_ONLY);
-        bytes = ds->writeBytes();
+        bytes = ds->write_bytes();
     }
 
-    auto ds = StarDataset::openBytes(bytes);
+    auto ds = StarDataset::open_bytes(bytes);
     EXPECT_TRUE(ds->has_layer("proc"));
     auto layer = ds->get_layer("proc");
     EXPECT_DOUBLE_EQ(layer->get<double>("base")(0), 9.0);
@@ -141,10 +141,10 @@ TEST_F(BytesApiTest, LayersSurviveByteRoundTrip) {
 
 TEST_F(BytesApiTest, OpenBytesRejectsGarbage) {
     std::vector<char> junk(64, '\x00');
-    EXPECT_THROW(StarDataset::openBytes(junk), std::runtime_error);
+    EXPECT_THROW(StarDataset::open_bytes(junk), std::runtime_error);
 
     std::vector<char> empty;
-    EXPECT_THROW(StarDataset::openBytes(empty), std::runtime_error);
+    EXPECT_THROW(StarDataset::open_bytes(empty), std::runtime_error);
 }
 
 TEST_F(BytesApiTest, ModifyInMemoryThenReserialize) {
@@ -154,17 +154,17 @@ TEST_F(BytesApiTest, ModifyInMemoryThenReserialize) {
     std::vector<char> bytes;
     {
         auto ds = StarDataset::open(path, FileMode::READ_ONLY);
-        bytes = ds->writeBytes();
+        bytes = ds->write_bytes();
     }
 
     std::vector<char> bytes2;
     {
-        auto ds = StarDataset::openBytes(bytes);
+        auto ds = StarDataset::open_bytes(bytes);
         ds->put("extra", NDArray<double>::full({128}, 42.0));
-        bytes2 = ds->writeBytes();
+        bytes2 = ds->write_bytes();
     }
 
-    auto ds = StarDataset::openBytes(bytes2);
+    auto ds = StarDataset::open_bytes(bytes2);
     auto extra = ds->get<double>("extra");
     ASSERT_EQ(extra.size(), 128u);
     EXPECT_DOUBLE_EQ(extra(0), 42.0);

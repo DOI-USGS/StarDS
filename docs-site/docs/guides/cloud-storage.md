@@ -48,10 +48,10 @@ output->flush();
 
 // Read from HTTP (read-only), then save a local copy
 auto http = StarDataset::open("/vsicurl/https://example.com/data.stards", "r");
-http->saveTo("/tmp/local-copy.stards");
+http->save_to("/tmp/local-copy.stards");
 ```
 
-`saveTo()` writes a local copy of a remote (or read-only) dataset — useful when
+`save_to()` writes a local copy of a remote (or read-only) dataset — useful when
 you've opened an HTTP source you can't write back to.
 
 ## S3 authentication
@@ -106,6 +106,6 @@ none of these set, behavior is identical to standard AWS S3.
 
 ## Notes
 
-- HTTP sources are **read-only**. Use `saveTo()` (C++) to persist a local copy.
+- HTTP sources are **read-only**. Use `save_to()` (C++) to persist a local copy.
 - A full runnable example (with graceful fallback to a local file when no AWS
   credentials are present) ships at `bindings/python/examples/s3_example.py`.

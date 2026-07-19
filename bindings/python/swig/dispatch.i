@@ -198,7 +198,7 @@ static PyObject* star_get_dispatch(Target& target, const std::string& key, star:
     void star_layer_put_meta(star::LayerMetadataAccessor& meta, const std::string& key, PyObject* numpy_array) {
         star_put_dispatch(meta, key, numpy_array);
     }
-    // --- In-memory byte APIs (openBytes / writeBytes) ----------------------
+    // --- In-memory byte APIs (open_bytes / write_bytes) ----------------------
     // Build a dataset from a Python bytes-like object holding a whole .stards
     // image. Returns a shared_ptr<StarDataset> (SWIG-wrapped like open()).
     std::shared_ptr<star::StarDataset> star_open_bytes(PyObject* data,
@@ -207,25 +207,25 @@ static PyObject* star_get_dispatch(Target& target, const std::string& key, star:
         Py_ssize_t len = 0;
         if (PyBytes_Check(data)) {
             if (PyBytes_AsStringAndSize(data, &buf, &len) != 0) {
-                throw std::runtime_error("openBytes: could not read bytes object");
+                throw std::runtime_error("open_bytes: could not read bytes object");
             }
         } else {
             // Accept any buffer-protocol object (bytearray, memoryview, numpy uint8, ...).
             Py_buffer view;
             if (PyObject_GetBuffer(data, &view, PyBUF_SIMPLE) != 0) {
-                throw std::runtime_error("openBytes: expected a bytes-like object");
+                throw std::runtime_error("open_bytes: expected a bytes-like object");
             }
             std::vector<char> bytes(static_cast<const char*>(view.buf),
                                     static_cast<const char*>(view.buf) + view.len);
             PyBuffer_Release(&view);
-            return star::StarDataset::openBytes(std::move(bytes), opts);
+            return star::StarDataset::open_bytes(std::move(bytes), opts);
         }
-        return star::StarDataset::openBytes(std::vector<char>(buf, buf + len), opts);
+        return star::StarDataset::open_bytes(std::vector<char>(buf, buf + len), opts);
     }
 
     // Serialize a dataset to a Python bytes object (a complete .stards image).
     PyObject* star_write_bytes(star::StarDataset& ds) {
-        std::vector<char> image = ds.writeBytes();
+        std::vector<char> image = ds.write_bytes();
         return PyBytes_FromStringAndSize(image.data(),
                                          static_cast<Py_ssize_t>(image.size()));
     }

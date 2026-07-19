@@ -5,7 +5,7 @@
  * Each test runs the same code shown in the README so the documentation cannot
  * silently drift from the actual API. S3 (/vsis3) and HTTP (/vsicurl) examples
  * are excluded because they require remote access; their non-remote structure
- * (open modes, saveTo to a local path) is still covered where possible.
+ * (open modes, save_to to a local path) is still covered where possible.
  */
 
 #include <gtest/gtest.h>
@@ -121,7 +121,7 @@ TEST_F(ReadmeExamplesTest, LayersInCpp) {
     // Read back. Layer inheritance is off by default; opt in so layers see
     // keys that live only on the base layer.
     auto store2 = StarDataset::open(path);
-    store2->setLayerInheritance(true);
+    store2->set_layer_inheritance(true);
 
     // Get base data
     auto base_img = store2->get<double>("image");
@@ -159,17 +159,17 @@ TEST_F(ReadmeExamplesTest, FileOpenModes) {
 
     // String modes
     auto store1 = StarDataset::open(path, "r");   // Read-only
-    EXPECT_TRUE(store1->isReadOnly());
+    EXPECT_TRUE(store1->is_read_only());
     auto store2 = StarDataset::open(path, "w");   // Read-write (create if missing)
-    EXPECT_FALSE(store2->isReadOnly());
+    EXPECT_FALSE(store2->is_read_only());
     auto store3 = StarDataset::open(path, "rw");  // Read-write (explicit)
-    EXPECT_FALSE(store3->isReadOnly());
+    EXPECT_FALSE(store3->is_read_only());
 
     // Enum modes (explicit, type-safe)
     auto store5 = StarDataset::open(path, FileMode::READ_ONLY);
-    EXPECT_TRUE(store5->isReadOnly());
+    EXPECT_TRUE(store5->is_read_only());
     auto store6 = StarDataset::open(path, FileMode::READ_WRITE);
-    EXPECT_FALSE(store6->isReadOnly());
+    EXPECT_FALSE(store6->is_read_only());
 
     // Value survives a read-only reopen.
     EXPECT_EQ(store1->get<int64_t>("data")(0), 7);
@@ -177,7 +177,7 @@ TEST_F(ReadmeExamplesTest, FileOpenModes) {
 
 //==============================================================================
 // README: "HTTP Remote Access" — remote read is excluded (needs network), but
-// the local half of the example — saveTo() to a local path — is covered here
+// the local half of the example — save_to() to a local path — is covered here
 // using a local source instead of /vsicurl.
 //==============================================================================
 TEST_F(ReadmeExamplesTest, SaveToLocalCopy) {
@@ -190,11 +190,11 @@ TEST_F(ReadmeExamplesTest, SaveToLocalCopy) {
         store->flush();
     }
 
-    // Open read-only and save a copy elsewhere (README: store->saveTo(...)).
+    // Open read-only and save a copy elsewhere (README: store->save_to(...)).
     auto store = StarDataset::open(src, "r");
     auto data = store->get<double>("sensor_data");
     EXPECT_EQ(data.shape(0), 4u);
-    store->saveTo(dst);
+    store->save_to(dst);
 
     // The saved copy is a complete, readable dataset.
     auto copy = StarDataset::open(dst, FileMode::READ_ONLY);

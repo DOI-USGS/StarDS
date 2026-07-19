@@ -361,10 +361,10 @@ TEST_F(IntegrationTest, NamespaceSeparation) {
     }
 }
 
-// Regression: saveTo() must rewrite BOTH array-namespace and metadata-namespace
+// Regression: save_to() must rewrite BOTH array-namespace and metadata-namespace
 // data to the target. Previously only metadata entries were re-flushed, so array
 // keys existed in the target index but their block data was never written
-// (unreadable after saveTo, especially when the source is opened read-only).
+// (unreadable after save_to, especially when the source is opened read-only).
 TEST_F(IntegrationTest, SaveToRewritesArrayAndMetadata) {
     std::string src = createTempFile("saveto_src");
     std::string dst = createTempFile("saveto_dst");
@@ -381,7 +381,7 @@ TEST_F(IntegrationTest, SaveToRewritesArrayAndMetadata) {
     // Open read-only (the case that previously lost array data) and save elsewhere.
     {
         auto store = StarDataset::open(src, FileMode::READ_ONLY);
-        store->saveTo(dst);
+        store->save_to(dst);
     }
 
     // The destination must have BOTH keys fully readable.

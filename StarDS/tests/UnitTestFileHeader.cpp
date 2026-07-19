@@ -196,7 +196,7 @@ TEST_F(FileHeaderTest, DatasetReadsHeaderCorrectly) {
     // Open and verify header can be read
     {
         auto store = StarDataset::open(filename, "r");
-        const FileHeader& header = store->getFileHeader();
+        const FileHeader& header = store->get_file_header();
 
         // Check header fields
         EXPECT_EQ(std::string(header.magic, 6), "STARDS");
@@ -225,10 +225,10 @@ TEST_F(FileHeaderTest, GetFileHeaderAccessor) {
         store->flush();
     }
 
-    // Open and use getFileHeader() accessor
+    // Open and use get_file_header() accessor
     {
         auto store = StarDataset::open(filename, "r");
-        const FileHeader& header = store->getFileHeader();
+        const FileHeader& header = store->get_file_header();
 
         // Verify we can access all header fields
         EXPECT_TRUE(header.isValid());
@@ -269,7 +269,7 @@ TEST_F(FileHeaderTest, VersionConsistencyAcrossWrites) {
     uint8_t format_version1;
     {
         auto store = StarDataset::open(filename, "r");
-        format_version1 = store->getFileHeader().format_version;
+        format_version1 = store->get_file_header().format_version;
         EXPECT_EQ(format_version1, 1);
     }
 
@@ -283,7 +283,7 @@ TEST_F(FileHeaderTest, VersionConsistencyAcrossWrites) {
     // Read again and verify format version is consistent
     {
         auto store = StarDataset::open(filename, "r");
-        uint8_t format_version2 = store->getFileHeader().format_version;
+        uint8_t format_version2 = store->get_file_header().format_version;
         EXPECT_EQ(format_version1, format_version2);
         EXPECT_EQ(format_version2, 1);
     }
@@ -320,7 +320,7 @@ TEST_F(FileHeaderTest, MultipleEntriesHeaderCount) {
     // Verify header entry count
     {
         auto store = StarDataset::open(filename, "r");
-        const FileHeader& header = store->getFileHeader();
+        const FileHeader& header = store->get_file_header();
 
         // Should have entries (including metadata block)
         EXPECT_GT(header.entry_count, 0);
@@ -363,7 +363,7 @@ TEST_F(FileHeaderTest, HeaderSizeReflectsContent) {
     }
     {
         auto store = StarDataset::open(filename1, "r");
-        header_size1 = store->getFileHeader().header_size;
+        header_size1 = store->get_file_header().header_size;
     }
 
     // Create larger dataset with more entries
@@ -377,7 +377,7 @@ TEST_F(FileHeaderTest, HeaderSizeReflectsContent) {
     }
     {
         auto store = StarDataset::open(filename2, "r");
-        header_size2 = store->getFileHeader().header_size;
+        header_size2 = store->get_file_header().header_size;
     }
 
     // Header size grows with number of entries (each entry has an index entry in the header)

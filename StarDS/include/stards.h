@@ -1172,7 +1172,7 @@ inline FileMode parseModeString(const std::string& mode_str) {
 // File path information after parsing
 struct FilePathInfo {
     // MEMORY is an in-process source/sink (no path): the whole .stards image
-    // lives in a byte buffer. Used by StarDataset::openBytes()/writeBytes().
+    // lives in a byte buffer. Used by StarDataset::open_bytes()/write_bytes().
     enum Type { LOCAL, HTTP, S3, MEMORY };
     Type type;
     std::string path;      // For LOCAL/HTTP
@@ -2712,7 +2712,7 @@ private:
 };
 
 // MEMORY: the entire .stards image is held in a byte buffer (no file, no
-// network). Serves every read from that buffer — this backs openBytes().
+// network). Serves every read from that buffer — this backs open_bytes().
 class MemoryRangeReader : public RangeReader {
 public:
     explicit MemoryRangeReader(std::vector<char> bytes) : m_bytes(std::move(bytes)) {}
@@ -4172,7 +4172,7 @@ struct StarConfig {
  * create() (compression, block sizes). OpenOptions only affects how an existing
  * dataset is *read*; nothing here is persisted to the .stards file, so it is a
  * per-open setting (and can also be changed after open — see
- * StarDataset::setLayerInheritance / setOpenOptions).
+ * StarDataset::set_layer_inheritance / set_open_options).
  */
 struct OpenOptions {
     // When false (the default), LayerView lookups do NOT fall back to the base
@@ -4220,7 +4220,7 @@ struct HotStorage {
     std::vector<DataType> dtypes;               // Data types
     std::vector<StorageLocation> locations;     // PENDING/PERSISTED/CACHED
     std::vector<bool> dirty_flags;              // Needs flush
-    std::vector<bool> loaded_flags;             // Track if loaded in memory (for efficient saveTo)
+    std::vector<bool> loaded_flags;             // Track if loaded in memory (for efficient save_to)
     std::vector<size_t> data_indices;           // Index into data_storage (SIZE_MAX if not loaded)
 };
 
@@ -4522,12 +4522,12 @@ public:
     // blocks) go through this so remote reads reuse the connection and never HEAD.
     std::unique_ptr<RangeReader> m_reader;
 
-    // In-memory source for openBytes(): the whole .stards image as bytes. When
+    // In-memory source for open_bytes(): the whole .stards image as bytes. When
     // set (MEMORY path type), reader() serves from a MemoryRangeReader over this.
     std::vector<char> m_memory_source;
 
     // When non-null, flush_internal() writes the assembled file image here
-    // instead of to disk/S3 — this backs writeBytes(). Cleared after capture.
+    // instead of to disk/S3 — this backs write_bytes(). Cleared after capture.
     std::vector<char>* m_capture_image = nullptr;
 
     /**
@@ -4559,7 +4559,7 @@ public:
 
         switch (m_path_info.type) {
             case FilePathInfo::MEMORY:
-                // Serve reads from the in-memory image supplied to openBytes().
+                // Serve reads from the in-memory image supplied to open_bytes().
                 m_reader = std::make_unique<MemoryRangeReader>(m_memory_source);
                 break;
             case FilePathInfo::LOCAL:
@@ -5017,7 +5017,7 @@ public:
         // Other layers are lazy-loaded via ensure_layer_metadata_loaded()
         if (total_layers > 0) {
             load_layer_metadata("__base__");
-            m_metadata_loaded = true;  // Mark as loaded to prevent redundant loads in saveTo()
+            m_metadata_loaded = true;  // Mark as loaded to prevent redundant loads in save_to()
         }
     }
 
@@ -5662,7 +5662,7 @@ public:
         return false;
     }
 
-    void printHeader() const {
+    void print_header() const {
         std::shared_lock<std::shared_mutex> lock(m_mutex);
 
         std::cout << "==== STAR File Header ====" << std::endl;
@@ -5690,7 +5690,7 @@ public:
         if (m_file_mode == FileMode::READ_ONLY) {
             throw std::runtime_error(
                 "Cannot flush a dataset opened in read-only mode. "
-                "Use saveTo() with a different path to persist changes.");
+                "Use save_to() with a different path to persist changes.");
         }
         flush_internal();
     }
@@ -6022,7 +6022,7 @@ private:
         if (m_path_info.type == FilePathInfo::HTTP) {
             throw std::runtime_error(
                 "Cannot write to an HTTP (/vsicurl) source: HTTP is read-only. "
-                "Write to a local path or an S3 (/vsis3) URL, or use saveTo().");
+                "Write to a local path or an S3 (/vsis3) URL, or use save_to().");
         }
 
         // Phase 3a: compress every dirty array to get ACTUAL block infos + bytes.
@@ -6206,7 +6206,7 @@ private:
 
         // Phase 3f: sink the image to the destination.
         if (m_capture_image != nullptr) {
-            // In-memory sink (writeBytes): hand the assembled image to the caller
+            // In-memory sink (write_bytes): hand the assembled image to the caller
             // instead of writing to disk/S3.
             *m_capture_image = std::move(image);
         } else if (m_path_info.type == FilePathInfo::S3) {
@@ -6293,7 +6293,7 @@ private:
     // Load every entry (array namespace + metadata block) into memory and mark
     // it dirty so a subsequent flush() rewrites all data to the target file.
     // Without this, flush() skips clean entries and the target's index would
-    // reference block data that was never written (unreadable keys after saveTo).
+    // reference block data that was never written (unreadable keys after save_to).
     void stage_all_entries_for_resave() {
         for (size_t i = 0; i < m_hot.keys.size(); i++) {
             if (m_hot.data_indices[i] == SIZE_MAX) {
@@ -6307,12 +6307,12 @@ private:
     }
 
 public:
-    void saveTo(const std::string& target_path) {
+    void save_to(const std::string& target_path) {
 #ifdef ENABLE_S3
         // Check if trying to save to source in read-only mode
         if (target_path == m_filename && m_file_mode == FileMode::READ_ONLY) {
             throw std::runtime_error(
-                "Cannot save to source file in read-only mode. Use saveTo() with different path.");
+                "Cannot save to source file in read-only mode. Use save_to() with different path.");
         }
 
         // Load and dirty every entry (array + metadata) while still pointing at
@@ -6330,7 +6330,7 @@ public:
 
         try {
             m_filename = target_path;
-            m_file_mode = FileMode::READ_WRITE;  // Allow write for saveTo
+            m_file_mode = FileMode::READ_WRITE;  // Allow write for save_to
 
             // Parse target path and resolve credentials (cached)
             m_path_info = parseFilePath(target_path);
@@ -6387,17 +6387,17 @@ public:
     /**
      * @brief Serialize the dataset to an in-memory byte buffer.
      *
-     * The byte-array counterpart of saveTo(): returns a complete .stards image
+     * The byte-array counterpart of save_to(): returns a complete .stards image
      * (the exact bytes that would be written to a file) instead of writing to a
      * path. Works on any dataset — including read-only ones and datasets opened
-     * with openBytes() — since it never touches the source file. Round-trips with
-     * openBytes(): `openBytes(ds->writeBytes())` reconstructs the dataset.
+     * with open_bytes() — since it never touches the source file. Round-trips
+     * with open_bytes(): `open_bytes(ds->write_bytes())` reconstructs the dataset.
      *
      * @return A complete .stards image as a byte array.
      */
-    std::vector<char> writeBytes() {
+    std::vector<char> write_bytes() {
         // Load + dirty every entry so flush_internal() rewrites all data into the
-        // captured image (clean entries are otherwise skipped — see saveTo()).
+        // captured image (clean entries are otherwise skipped — see save_to()).
         stage_all_entries_for_resave();
 
         std::vector<char> image;
@@ -6419,7 +6419,7 @@ public:
         m_capture_image = prev_capture;
         m_file_mode = original_mode;
         // Restore the flushed flag: capturing to memory did not persist the
-        // source file, so a later real flush()/saveTo() must still run.
+        // source file, so a later real flush()/save_to() must still run.
         m_flushed = original_flushed;
         return image;
     }
@@ -6428,7 +6428,7 @@ public:
      * @brief Check if file is in read-only mode
      * @return True if read-only
      */
-    bool isReadOnly() const {
+    bool is_read_only() const {
 #ifdef ENABLE_S3
         return m_file_mode == FileMode::READ_ONLY;
 #else
@@ -6440,7 +6440,7 @@ public:
      * @brief Get current filename
      * @return Filename
      */
-    std::string getFilename() const {
+    std::string get_filename() const {
         return m_filename;
     }
 
@@ -6448,7 +6448,7 @@ public:
      * @brief Get file header with version information
      * @return Reference to FileHeader
      */
-    const FileHeader& getFileHeader() const {
+    const FileHeader& get_file_header() const {
         return m_file_header;
     }
 
@@ -6459,12 +6459,12 @@ public:
      * persisted. They are safe to change at any time, including on a read-only
      * dataset, and take effect immediately for existing and future LayerViews.
      */
-    const OpenOptions& openOptions() const { return m_open_options; }
-    void setOpenOptions(const OpenOptions& opts) { m_open_options = opts; }
+    const OpenOptions& open_options() const { return m_open_options; }
+    void set_open_options(const OpenOptions& opts) { m_open_options = opts; }
 
     // Whether LayerView lookups fall back to the base layer. Off by default.
-    bool layerInheritance() const { return m_open_options.layer_inheritance; }
-    void setLayerInheritance(bool on) { m_open_options.layer_inheritance = on; }
+    bool layer_inheritance() const { return m_open_options.layer_inheritance; }
+    void set_layer_inheritance(bool on) { m_open_options.layer_inheritance = on; }
 
 
     /**
@@ -6580,24 +6580,24 @@ public:
      * Mirrors open(), but the source is a byte array holding a complete .stards
      * image (e.g. bytes received over a socket or pulled from a database) instead
      * of a path. The dataset is READ_ONLY — there is no backing file to flush to;
-     * use writeBytes() to serialize modifications back out to a new byte array.
+     * use write_bytes() to serialize modifications back out to a new byte array.
      *
      * @param bytes A complete .stards image.
      * @param opts  Read-time options (e.g. layer_inheritance).
      * @return Opened StarDataset backed by the provided bytes.
      * @throws std::runtime_error if the bytes are not a valid STAR image.
      */
-    static std::shared_ptr<StarDataset> openBytes(std::vector<char> bytes,
-                                                  const OpenOptions& opts = {}) {
+    static std::shared_ptr<StarDataset> open_bytes(std::vector<char> bytes,
+                                                   const OpenOptions& opts = {}) {
         if (bytes.empty()) {
-            throw std::runtime_error("openBytes: empty byte buffer is not a valid STAR image.");
+            throw std::runtime_error("open_bytes: empty byte buffer is not a valid STAR image.");
         }
         // The in-memory source is READ_ONLY: there is no path to flush back to.
         auto store = std::make_shared<StarDataset>("<memory>", FileMode::READ_ONLY,
                                                    nullptr, opts, &bytes);
         if (store->m_header_size == 0) {
             throw std::runtime_error(
-                "openBytes: byte buffer is not a valid STAR image (bad or missing header).");
+                "open_bytes: byte buffer is not a valid STAR image (bad or missing header).");
         }
         return store;
     }
@@ -6606,10 +6606,10 @@ public:
      * @brief Convenience overload taking a raw pointer + length (e.g. from a
      *        C buffer, Python bytes, or a mapped region).
      */
-    static std::shared_ptr<StarDataset> openBytes(const void* data, size_t size,
-                                                  const OpenOptions& opts = {}) {
+    static std::shared_ptr<StarDataset> open_bytes(const void* data, size_t size,
+                                                   const OpenOptions& opts = {}) {
         const char* p = static_cast<const char*>(data);
-        return openBytes(std::vector<char>(p, p + size), opts);
+        return open_bytes(std::vector<char>(p, p + size), opts);
     }
 
     /**
@@ -6631,7 +6631,7 @@ public:
         , m_file_mode(mode)
 #endif
     {
-        // In-memory dataset (openBytes / a fresh writeBytes target): take the
+        // In-memory dataset (open_bytes / a fresh write_bytes target): take the
         // bytes as the read source and skip all path parsing / credential setup.
         if (memory_source != nullptr) {
             m_memory_source = std::move(*memory_source);
@@ -8126,7 +8126,7 @@ NDArray<T> LayerView::get(const std::string& key) {
     } catch (const std::runtime_error&) {
         // Not found in this layer. Fall back to the base layer only if inheritance
         // is enabled (OpenOptions.layer_inheritance); it is off by default.
-        if (m_layer_name != "__base__" && m_base->layerInheritance()) {
+        if (m_layer_name != "__base__" && m_base->layer_inheritance()) {
             try {
                 return m_base->get<T>(key);  // Base uses unprefixed key
             } catch (const std::runtime_error&) {
@@ -8490,7 +8490,7 @@ inline std::shared_ptr<MetadataValue> LayerMetadataAccessor::get(const std::stri
 
     // Fall back to base layer only if inheritance is enabled (off by default).
     // For a non-base layer with inheritance disabled, a miss stays a miss.
-    if (m_layer_name != "__base__" && !m_store->layerInheritance()) {
+    if (m_layer_name != "__base__" && !m_store->layer_inheritance()) {
         return nullptr;
     }
 
@@ -8575,7 +8575,7 @@ inline std::vector<std::string> LayerMetadataAccessor::keys() const {
 
     // Add base keys that aren't overridden — only when inheritance is enabled
     // (off by default).
-    if (m_layer_name != "__base__" && m_store->layerInheritance()) {
+    if (m_layer_name != "__base__" && m_store->layer_inheritance()) {
         const auto& base_key_indices = m_store->m_layer_metadata_registry.key_indices[base_layer_idx];
         for (uint16_t key_idx : base_key_indices) {
             const std::string& key_name = m_store->m_key_registry.names[key_idx];
@@ -8595,7 +8595,7 @@ inline std::vector<std::string> LayerMetadataAccessor::keys() const {
 inline bool LayerView::contains(const std::string& key) const {
     if (m_base->key_in_layer(key, m_layer_name)) return true;
     // Consult the base layer only if inheritance is enabled (off by default).
-    if (m_layer_name != "__base__" && !m_base->layerInheritance()) return false;
+    if (m_layer_name != "__base__" && !m_base->layer_inheritance()) return false;
     return m_base->key_in_layer(key, "__base__");
 }
 
@@ -8627,7 +8627,7 @@ inline std::vector<std::string> LayerView::keys() const {
 
     // Add base metadata keys — only when inheritance is enabled (off by default)
     // and this isn't already the base layer.
-    if (m_layer_name == "__base__" || m_base->layerInheritance()) {
+    if (m_layer_name == "__base__" || m_base->layer_inheritance()) {
         for (uint16_t key_idx : m_base->m_layer_metadata_registry.key_indices[base_idx]) {
             const std::string& key = m_base->m_key_registry.names[key_idx];
             if (seen.find(key) == seen.end()) {

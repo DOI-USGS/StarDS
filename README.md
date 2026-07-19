@@ -247,7 +247,7 @@ OpenOptions opts;
 opts.layer_inheritance = true;
 auto store2 = StarDataset::open("data.stards", FileMode::READ_ONLY, opts);
 // ...or after opening with the post-open setter on any already-open dataset:
-store2->setLayerInheritance(true);
+store2->set_layer_inheritance(true);
 
 // Get base data
 auto base_img = store2->get<double>("image");
@@ -293,16 +293,16 @@ Read and write a complete `.stards` image as a byte array — no filesystem need
 (e.g. data received over a socket or stored in a database):
 
 ```cpp
-// Serialize a dataset to bytes (the same image saveTo() would write to disk).
+// Serialize a dataset to bytes (the same image save_to() would write to disk).
 auto store = StarDataset::open("data.stards", "r");
-std::vector<char> bytes = store->writeBytes();
+std::vector<char> bytes = store->write_bytes();
 
-// Open a dataset directly from bytes (read-only; use writeBytes() to persist edits).
-auto in_mem = StarDataset::openBytes(bytes);
+// Open a dataset directly from bytes (read-only; use write_bytes() to persist edits).
+auto in_mem = StarDataset::open_bytes(bytes);
 auto data = in_mem->get<double>("sensor_data");
 
 // Also accepts a raw pointer + length.
-auto in_mem2 = StarDataset::openBytes(bytes.data(), bytes.size());
+auto in_mem2 = StarDataset::open_bytes(bytes.data(), bytes.size());
 ```
 
 In Python:
@@ -320,7 +320,7 @@ auto store = StarDataset::open("/vsicurl/https://example.com/data.stards", "r");
 auto data = store->get<double>("sensor_data");
 
 // Cannot write to HTTP source, but can save locally
-store->saveTo("/tmp/local-copy.stards");
+store->save_to("/tmp/local-copy.stards");
 ```
 
 ### S3 Cloud Storage
@@ -337,7 +337,7 @@ output->put("results", NDArray<double>::zeros({256, 256}));
 output->flush();
 
 // Save S3 file locally
-store->saveTo("/tmp/local-copy.stards");
+store->save_to("/tmp/local-copy.stards");
 ```
 
 **S3 URL Format:** `/vsis3/bucket-name/path/to/file.stards`

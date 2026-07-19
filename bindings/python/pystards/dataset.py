@@ -349,7 +349,7 @@ class StarDataset:
     @property
     def filename(self) -> str:
         """Path this dataset was opened from."""
-        return self._store.getFilename()
+        return self._store.get_filename()
 
     def is_metadata_loaded(self) -> bool:
         """Return True if the metadata block has been read into memory."""
@@ -357,14 +357,14 @@ class StarDataset:
 
     def is_read_only(self) -> bool:
         """Return True if the dataset was opened read-only."""
-        return self._store.isReadOnly()
+        return self._store.is_read_only()
 
     def save_to(self, target_path: str):
         """Save the dataset to a different file (e.g. read-only -> writable, or local <-> S3)."""
-        self._store.saveTo(target_path)
+        self._store.save_to(target_path)
 
     def get_file_header(self):
-        return self._store.getFileHeader()
+        return self._store.get_file_header()
 
     # --- Metadata queries ----------------------------------------------------
     def get_metadata_keys(self) -> List[str]:
@@ -414,11 +414,11 @@ class StarDataset:
         setting (it changes in-memory behavior only, never the file) and can be
         toggled at any time after opening.
         """
-        self._store.setLayerInheritance(on)
+        self._store.set_layer_inheritance(on)
 
     def layer_inheritance(self) -> bool:
         """Return whether base-layer inheritance is currently enabled."""
-        return self._store.layerInheritance()
+        return self._store.layer_inheritance()
 
 
 __all__ = ["StarDataset", "LayerView"]

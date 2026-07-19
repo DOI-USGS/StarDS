@@ -171,7 +171,7 @@ TEST_F(VsiCurlTest, ReadOnlyCannotFlush) {
     srv.addObject("/ro.stards", star_test::read_file_bytes(local));
 
     auto store = StarDataset::open(vsicurlUrl(srv, "/ro.stards"), "r");
-    EXPECT_TRUE(store->isReadOnly());
+    EXPECT_TRUE(store->is_read_only());
     store->meta.put("added", NDArray<int64_t>({}, 1));  // in-memory only
     EXPECT_THROW(store->flush(), std::runtime_error);
 }
@@ -186,7 +186,7 @@ TEST_F(VsiCurlTest, SaveToLocalFromHttp) {
     std::string dst = tempFile("dst");
     {
         auto store = StarDataset::open(vsicurlUrl(srv, "/copy.stards"), "r");
-        store->saveTo(dst);
+        store->save_to(dst);
     }
 
     // The saved local copy is complete and readable.

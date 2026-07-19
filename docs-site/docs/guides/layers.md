@@ -51,8 +51,8 @@ You can enable it two ways:
 
     // ...or after opening
     auto ds2 = StarDataset::open("data.stards");
-    ds2->setLayerInheritance(true);
-    bool on = ds2->layerInheritance();  // true
+    ds2->set_layer_inheritance(true);
+    bool on = ds2->layer_inheritance();  // true
     ```
 
 With inheritance **off** (the default), a layer lookup for a base-only key raises
@@ -135,7 +135,7 @@ store->flush();
 
 // Read back — enable inheritance so layers fall back to base keys
 auto store2 = StarDataset::open("data.stards");
-store2->setLayerInheritance(true);
+store2->set_layer_inheritance(true);
 auto base_img = store2->get<double>("image");
 auto proc_img = store2->get_layer("processed")->get<double>("image");
 auto cal_img  = store2->get_layer("calibrated")->get<double>("image");

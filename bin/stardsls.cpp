@@ -594,7 +594,7 @@ int main(int argc, char* argv[]) {
         size_t metadata_key_count = store->get_metadata_count();
 
         // Display file header information
-        const auto& header = store->getFileHeader();
+        const auto& header = store->get_file_header();
         std::cout << "Format Version: " << (int)header.format_version << "\n";
         std::cout << "Library Version: " << header.getVersionString() << "\n";
         std::cout << "Magic: " << std::string(header.magic, 6) << "\n";

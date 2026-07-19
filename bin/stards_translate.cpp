@@ -1343,7 +1343,7 @@ void star_to_star(const std::string& input_file, const std::string& output_file,
     // Layer keys inherit from base by default-off; enable inheritance so we can
     // read base-only values through a layer if ever needed. Copies below only
     // touch layer-OWNED keys, so this is belt-and-suspenders.
-    in->setLayerInheritance(true);
+    in->set_layer_inheritance(true);
 
     StarConfig config;
     config.compression = compression;

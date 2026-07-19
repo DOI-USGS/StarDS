@@ -296,7 +296,7 @@ TEST_F(MetadataBlockTest, VersionCheck) {
     // Verify the file has format version 1
     {
         auto store_read = StarDataset::open(testFile);
-        const auto& header = store_read->getFileHeader();
+        const auto& header = store_read->get_file_header();
         EXPECT_EQ(header.format_version, 1);
     }
 
@@ -318,7 +318,7 @@ TEST_F(MetadataBlockTest, VersionCheck) {
     // (Our current implementation doesn't validate format version beyond checking magic)
     // This test just verifies the format version field works
     auto store_read = StarDataset::open(testFile);
-    EXPECT_EQ(store_read->getFileHeader().format_version, 99);
+    EXPECT_EQ(store_read->get_file_header().format_version, 99);
 }
 
 //==============================================================================
