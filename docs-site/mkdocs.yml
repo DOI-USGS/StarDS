@@ -1,6 +1,6 @@
 site_name: "StarDS Manual"
 site_description: "STAR (Simple Tensors Arrays and Rasters) — persistent N-dimensional arrays with compression and cloud storage."
-repo_url: https://code.usgs.gov/astrogeology/stards
+repo_url: https://github.com/DOI-USGS/StarDS
 edit_uri: ""
 
 theme:
