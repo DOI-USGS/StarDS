@@ -43,13 +43,37 @@ else()
   message(STATUS "size_t and uint64_t are distinct types; instantiating both SWIG vectors")
 endif()
 
-# Setup for Python linking
-find_package(Python3 REQUIRED COMPONENTS Interpreter Development NumPy)
+# Setup for Python linking.
+#
+# NumPy is requested as an OPTIONAL component rather than REQUIRED: CMake's
+# FindPython NumPy probe is fragile across CMake/NumPy versions (e.g. it fails on
+# some CI runners with NumPy 2.x even though numpy is installed and importable),
+# and a hard REQUIRED there aborts configure. We instead fall back to asking the
+# found interpreter for its header dir via `numpy.get_include()`, which is what
+# NumPy itself documents as the source of truth.
+find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
+find_package(Python3 QUIET COMPONENTS NumPy)
+
+# Resolve the NumPy include directory: prefer CMake's, else query the interpreter.
+set(STARDS_NUMPY_INCLUDE_DIR "${Python3_NumPy_INCLUDE_DIRS}")
+if(NOT STARDS_NUMPY_INCLUDE_DIR)
+    execute_process(
+        COMMAND "${Python3_EXECUTABLE}" -c "import numpy; print(numpy.get_include())"
+        OUTPUT_VARIABLE STARDS_NUMPY_INCLUDE_DIR
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        RESULT_VARIABLE _numpy_rc)
+    if(NOT _numpy_rc EQUAL 0 OR NOT STARDS_NUMPY_INCLUDE_DIR)
+        message(FATAL_ERROR
+            "NumPy headers not found. Install numpy in the build environment "
+            "(the Python bindings need numpy.get_include()).")
+    endif()
+    message(STATUS "NumPy include resolved via numpy.get_include()")
+endif()
 
 message(STATUS "Found SWIG: ${SWIG_VERSION}")
 message(STATUS "Found Python: ${Python3_VERSION}")
 message(STATUS "Python include: ${Python3_INCLUDE_DIRS}")
-message(STATUS "NumPy include: ${Python3_NumPy_INCLUDE_DIRS}")
+message(STATUS "NumPy include: ${STARDS_NUMPY_INCLUDE_DIR}")
 
 # Setup for wrapper library
 set(PYSTARDS_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/pystards")
@@ -72,7 +96,7 @@ set_target_properties(pystards PROPERTIES
 target_include_directories(pystards PRIVATE
     ${CMAKE_SOURCE_DIR}/StarDS/include
     ${Python3_INCLUDE_DIRS}
-    ${Python3_NumPy_INCLUDE_DIRS}
+    ${STARDS_NUMPY_INCLUDE_DIR}
 )
 
 # Optional dependencies
