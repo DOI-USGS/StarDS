@@ -1,0 +1,1880 @@
+# StarDS — Full Documentation (llms.txt)
+
+> This file is the entire StarDS manual concatenated into one Markdown document, generated automatically from the MkDocs navigation. It is meant for LLMs and offline reading. Sections appear in site-navigation order.
+
+
+
+---
+
+<!-- source: docs/index.md -->
+
+# Home
+
+## What is StarDS?
+
+**StarDS** — *Simple Tensors, Arrays & Rasters* — is a header-only C++ library
+(with Python bindings via SWIG) for **persistent N-dimensional arrays**. It gives
+you a single `.stards` file that stores typed arrays and metadata together, with
+optional compression, cloud storage, layered versioning, and efficient partial
+reads.
+
+<div class="grid cards" markdown>
+
+-   :material-cube-outline: **N-dimensional arrays**
+
+    Store `int8`–`int64`, `uint8`–`uint64`, `float32/64`, and string arrays of
+    any shape, round-tripping cleanly with NumPy.
+
+-   :material-zip-box-outline: **Built-in compression**
+
+    Choose GZIP, LZ4, or none — block-based so you can seek into large
+    arrays without decompressing everything.
+
+-   :material-cloud-outline: **Cloud storage**
+
+    Read and write directly over S3 (`/vsis3/`) and HTTP (`/vsicurl/`) paths.
+
+-   :material-layers-outline: **Layers with optional inheritance**
+
+    Keep multiple versions of the same data — layers override only what changes
+    and can inherit the rest from the base (opt-in).
+
+-   :material-file-document-outline: **Specification**
+
+    The complete `.stards` binary format — header, key registry, layer metadata,
+    index entries, and data blocks.
+
+    [:octicons-arrow-right-24: Format Specification](reference/format-spec.md)
+
+</div>
+
+## Quick Example
+
+=== "Python"
+
+    ```python
+    import numpy as np
+    from pystards import StarDataset
+
+    # Create a dataset and store arrays + metadata
+    with StarDataset.create("data.stards") as ds:
+        ds["matrix"] = np.random.rand(100, 100)   # array namespace
+        ds["vector"] = np.arange(1000)
+        ds.meta["sensor_id"] = 12345              # metadata namespace
+        ds.meta["timestamp"] = "2024-04-21"
+
+    # Read it back
+    with StarDataset.open("data.stards", mode="r") as ds:
+        matrix = ds["matrix"]
+        sensor = ds.meta["sensor_id"]
+        for key in ds:
+            print(f"{key}: {ds[key].shape}")
+    ```
+
+=== "C++"
+
+    ```cpp
+    #include "stards.h"
+    using namespace star;
+
+    // Create a dataset and store an array + metadata
+    auto store = StarDataset::create("data.stards");
+    store->put("matrix", NDArray<double>::zeros({100, 100}));
+    store->meta.put("timestamp", NDArray<int64_t>({}, {1234567890}));
+    store->flush();
+
+    // Read it back
+    auto store2 = StarDataset::open("data.stards");
+    auto matrix = store2->get<double>("matrix");
+    auto ts = store2->meta.get("timestamp")->as<int64_t>();
+    ```
+
+## Where to Next
+
+- **[Installation](getting-started/installation.md)** — build from source with CMake.
+- **[Quick Start](getting-started/quickstart.md)** — a 5-minute tour in Python.
+- **[Concepts](getting-started/concepts.md)** — arrays vs. metadata, namespaces, layers, and the `.stards` model.
+- **[Guides](guides/layers.md)** — layers, compression, cloud storage, slicing, and threading.
+- **[Python API](python-api/index.md)** / **[C++ API](cpp-api/index.md)** — full reference.
+
+!!! note "Project status"
+    StarDS is developed by the [USGS Astrogeology Science Center](https://astrogeology.usgs.gov/)
+    and is released into the public domain (CC0 1.0).
+
+
+---
+
+<!-- source: docs/getting-started/installation.md -->
+
+# Getting Started / Installation
+
+# Installation
+
+StarDS is a **header-only C++ library** with optional CLI tools and Python
+bindings. All of these are built from source with CMake.
+
+## Requirements
+
+| Component | Requirement |
+|-----------|-------------|
+| C++ compiler | C++20 (or newer) |
+| CMake | 3.10+ (3.14+ for Python bindings) |
+| Python (bindings) | 3.8+ |
+| NumPy (bindings) | 1.20.0+ |
+| SWIG (bindings) | 4.0+ |
+
+**Optional native dependencies** (enable extra features):
+
+- **zlib** — GZIP compression (build flag `STARDS_ENABLE_ZLIB`)
+- **LZ4** — fast compression codec (build flag `STARDS_ENABLE_LZ4`)
+- **libcurl** — HTTP remote access (build flag `STARDS_ENABLE_CURL`)
+- **OpenSSL** — S3 request signing (build flag `STARDS_ENABLE_S3`)
+
+## Clone the repository
+
+```bash
+git clone https://code.usgs.gov/astrogeology/stards.git
+cd stards
+git submodule update --init --recursive
+```
+
+## Build the CLI tools
+
+```bash
+mkdir build && cd build
+cmake .. \
+  -DSTARDS_BUILD_TOOLS=ON \
+  -DSTARDS_ENABLE_ZLIB=ON \
+  -DSTARDS_ENABLE_LZ4=ON \
+  -DSTARDS_ENABLE_CURL=ON \
+  -DSTARDS_ENABLE_S3=ON
+
+make -j$(nproc)
+```
+
+This builds [`stardsls`](../cli/stardsls.md) and
+[`stards_translate`](../cli/stards-translate.md).
+
+### CMake options
+
+All options default to `ON`, so a plain `cmake ..` already builds the library,
+tools, and (where SWIG/Python are available) the bindings with every optional
+feature enabled. Pass `-D<OPTION>=OFF` to turn a feature off.
+
+| Option | Default | Effect |
+|--------|---------|--------|
+| `STARDS_BUILD_LIB=ON` | ON | Build the header-only library target |
+| `STARDS_BUILD_TOOLS=ON` | ON | Build the CLI tools (`stardsls`, `stards_translate`) |
+| `STARDS_BUILD_TESTS=ON` | ON | Build the unit tests |
+| `STARDS_BUILD_PYTHON_BINDINGS=ON` | ON | Build the Python bindings |
+| `STARDS_ENABLE_ZLIB=ON` | ON | Enable GZIP compression |
+| `STARDS_ENABLE_LZ4=ON` | ON | Enable LZ4 compression |
+| `STARDS_ENABLE_CURL=ON` | ON | Enable HTTP remote access |
+| `STARDS_ENABLE_S3=ON` | ON | Enable S3 cloud storage (requires CURL) |
+
+## Build the Python bindings
+
+```bash
+mkdir build && cd build
+cmake .. \
+  -DSTARDS_BUILD_PYTHON_BINDINGS=ON \
+  -DSTARDS_ENABLE_ZLIB=ON \
+  -DSTARDS_ENABLE_LZ4=ON \
+  -DSTARDS_ENABLE_CURL=ON \
+  -DSTARDS_ENABLE_S3=ON
+
+make -j$(nproc)
+sudo make install
+```
+
+The bindings are importable as the `pystards` package once built and installed.
+
+## Use the header in your own C++ project
+
+StarDS is header-only, so you only need the include path plus any optional
+libraries you want to link. Each optional feature is gated by a **compile
+definition** (`ENABLE_ZLIB`, `ENABLE_LZ4`, `ENABLE_CURL`, `ENABLE_S3`) — these are
+the `-D` preprocessor macros the header checks, and are distinct from the
+`STARDS_ENABLE_*` **CMake build options** used when building this repo's own targets:
+
+```cmake
+# CMakeLists.txt
+# In-tree checkout: StarDS/include. Installed: the header is at
+# $PREFIX/include/stards/stards.h (use $PREFIX/include/stards, or find_package(STARDS)).
+include_directories(/path/to/stards/StarDS/include)
+
+find_package(ZLIB)
+find_package(CURL)
+find_package(OpenSSL)
+
+if(ZLIB_FOUND)
+    target_link_libraries(your_target PRIVATE ZLIB::ZLIB)
+    target_compile_definitions(your_target PRIVATE ENABLE_ZLIB)
+endif()
+
+if(CURL_FOUND)
+    target_link_libraries(your_target PRIVATE CURL::libcurl)
+    target_compile_definitions(your_target PRIVATE ENABLE_CURL)
+endif()
+
+if(OPENSSL_FOUND)
+    target_link_libraries(your_target PRIVATE OpenSSL::SSL OpenSSL::Crypto)
+    target_compile_definitions(your_target PRIVATE ENABLE_S3)
+endif()
+```
+
+Then include the single header:
+
+```cpp
+#include "stards.h"
+using namespace star;
+
+int main() {
+    auto store = StarDataset::create("data.stards");
+    store->put("matrix", NDArray<double>::zeros({100, 100}));
+    store->flush();
+    return 0;
+}
+```
+
+## Next steps
+
+- [Quick Start](quickstart.md) — a 5-minute Python tour.
+- [Concepts](concepts.md) — the data model behind `.stards` files.
+
+
+---
+
+<!-- source: docs/getting-started/quickstart.md -->
+
+# Getting Started / Quick Start
+
+# Quick Start
+
+Get started with StarDS in 5 minutes. This guide uses the Python bindings; see
+[Installation](installation.md) to build them.
+
+## Your first dataset
+
+```python
+import numpy as np
+from pystards import StarDataset
+
+# 1. Create dataset
+ds = StarDataset.create("mydata.stards")
+
+# 2. Store arrays
+ds["temperatures"] = np.array([20.5, 21.3, 19.8, 22.1])
+ds["measurements"] = np.random.rand(100, 50)
+
+# 3. Add metadata
+ds.meta["sensor_id"] = "TEMP-001"
+ds.meta["location"] = "Lab A"
+ds.meta["date"] = "2024-04-21"
+
+# 4. Save
+ds.flush()
+ds.close()
+
+print("✓ Dataset created!")
+```
+
+## Reading data
+
+```python
+# Open for reading
+ds = StarDataset.open("mydata.stards", mode="r")
+
+# Access arrays
+temps = ds["temperatures"]
+print(f"Temperatures: {temps}")
+
+# Access metadata
+sensor = ds.meta["sensor_id"]
+print(f"Sensor: {sensor}")
+
+# List all arrays
+for key in ds:
+    print(f"  - {key}: shape {ds[key].shape}")
+
+ds.close()
+```
+
+## Common patterns
+
+### Context manager (recommended)
+
+```python
+with StarDataset.create("data.stards") as ds:
+    ds["data"] = np.arange(1000)
+    ds.meta["note"] = "Auto-flushed on exit"
+# File automatically closed and flushed
+```
+
+### Array slicing
+
+```python
+# Store large array
+with StarDataset.create("large.stards") as ds:
+    ds["big_matrix"] = np.random.rand(10000, 10000)
+
+# Read only a slice (efficient!)
+with StarDataset.open("large.stards", mode="r") as ds:
+    subset = ds.get_slice("big_matrix", [(0, 100), (0, 100)])
+    print(subset.shape)  # (100, 100)
+```
+
+See the [Slicing guide](../guides/slicing.md) for more.
+
+### Cloud storage (S3)
+
+```python
+import os
+os.environ["AWS_PROFILE"] = "my-profile"
+
+# Read from S3
+with StarDataset.open("/vsis3/my-bucket/data.stards", mode="r") as ds:
+    data = ds["array_name"]
+
+# Write to S3
+with StarDataset.create("/vsis3/my-bucket/output.stards") as ds:
+    ds["results"] = processed_data
+```
+
+See the [Cloud Storage guide](../guides/cloud-storage.md) for authentication details.
+
+## Array vs. metadata: when to use which?
+
+| Storage | Use for | Example |
+|---------|---------|---------|
+| `ds["key"]` | Large arrays, numerical data, anything you'll slice | Image data, sensor readings, matrices |
+| `ds.meta["key"]` | Small data, scalars, strings, configuration | IDs, dates, labels, parameters |
+
+Arrays and metadata use **separate namespaces**, so the same key can live in
+both:
+
+```python
+ds["matrix"] = np.random.rand(100, 100)   # store array
+ds.meta["matrix"] = "Covariance matrix"   # store metadata about it
+
+print(ds["matrix"].shape)  # (100, 100)
+print(ds.meta["matrix"])   # "Covariance matrix"
+```
+
+See [Concepts](concepts.md) for the full model.
+
+## Layers — multiple versions of data
+
+Store multiple versions of the same data in separate layers, with **opt-in
+inheritance** from the base:
+
+```python
+ds = StarDataset.create("data.stards")
+ds["image"] = raw_image
+ds["metadata"] = calibration_data
+ds["wavelengths"] = [400, 500, 600]
+
+# Processed version in a layer
+processed = ds.create_layer("processed")
+processed["image"] = filtered_image  # override: different data, same key!
+# "metadata" and "wavelengths" NOT set → inherited from base if inheritance is on
+
+ds.flush()
+
+# Inheritance is OFF by default — enable it to fall back to base keys
+ds2 = StarDataset.open("data.stards")
+ds2.set_layer_inheritance(True)
+proc = ds2.get_layer("processed")
+proc_img = proc["image"]          # processed (overridden)
+proc_meta = proc["metadata"]      # inherited from base!
+proc_waves = proc["wavelengths"]  # inherited from base!
+```
+
+See the [Layers guide](../guides/layers.md) for a full walkthrough.
+
+## Error handling
+
+Raw scalars and strings must go in metadata; the array namespace requires arrays:
+
+```python
+ds["count"] = 5           # ✗ Error: raw scalar
+ds.meta["count"] = 5      # ✓ OK
+ds["count"] = [5]         # ✓ OK (wrapped in array)
+ds["count"] = np.array(5) # ✓ OK (0-d array)
+```
+
+## Next steps
+
+- Read the [Python API reference](../python-api/index.md).
+- Explore the [Guides](../guides/layers.md) for compression, cloud storage, slicing, and threading.
+- Browse the [CLI tools](../cli/stardsls.md) for inspecting and converting files.
+
+
+---
+
+<!-- source: docs/getting-started/concepts.md -->
+
+# Getting Started / Concepts
+
+# Concepts
+
+This page explains the data model behind a `.stards` file so the rest of the API
+makes sense.
+
+## The `.stards` file
+
+A StarDS dataset is a single `.stards` file that contains:
+
+- a **header** with a magic string, format version, and an index of every entry;
+- an **array section** holding (optionally compressed) N-dimensional array data;
+- a **metadata block** holding small scalars and strings for fast access;
+- optional **per-layer metadata blocks** for layered datasets.
+
+For the exact byte layout, see the [Format Specification](../reference/format-spec.md).
+
+## Arrays
+
+Arrays are typed, N-dimensional, and stored under the **array namespace** via
+`ds["key"]` (Python) or `store.put(key, ndarray)` (C++). Supported element types:
+
+- signed integers: `int8`, `int16`, `int32`, `int64`
+- unsigned integers: `uint8`, `uint16`, `uint32`, `uint64`
+- floating point: `float32`, `float64`
+- `string`
+
+Arrays are the right home for anything large or anything you want to
+[slice](../guides/slicing.md). In Python they round-trip with NumPy; the array
+namespace requires an actual array (a raw Python scalar raises an error — wrap it
+as `np.array(5)` or `[5]`).
+
+## Metadata
+
+Metadata lives in a separate **metadata namespace** via `ds.meta["key"]` (Python)
+or `store.meta.put(key, value)` (C++). It's intended for scalars, short strings,
+and configuration — small values grouped into a compressed metadata block for
+quick access. Unlike the array namespace, metadata accepts raw Python scalars and
+strings directly.
+
+## Namespace separation
+
+Arrays and metadata are **independent namespaces**, so the same key can exist in
+both without conflict:
+
+=== "Python"
+
+    ```python
+    ds["matrix"] = np.random.rand(100, 100)   # array namespace
+    ds.meta["matrix"] = "Covariance matrix"   # metadata namespace
+
+    ds["matrix"].shape   # (100, 100)
+    ds.meta["matrix"]    # "Covariance matrix"
+    ```
+
+=== "C++"
+
+    ```cpp
+    store->put("matrix", NDArray<double>::zeros({100, 100}));
+    store->meta.put("matrix", NDArray<std::string>({}, {"Covariance matrix"}));
+
+    auto arr  = store2->get<double>("matrix");
+    auto note = store2->meta.get("matrix")->as<std::string>();
+    ```
+
+| Namespace | Python | C++ | Best for |
+|-----------|--------|-----|----------|
+| Array | `ds["key"]` | `store.put(key, arr)` | Large / numeric / sliceable data |
+| Metadata | `ds.meta["key"]` | `store.meta.put(key, v)` | Scalars, strings, config |
+
+## Layers
+
+**Layers** store multiple versions of the same logical data in one file. Each
+layer has **isolated storage** and **opt-in inheritance** from the base:
+
+- Setting a key in a layer overrides it **for that layer only** — it never
+  overwrites the base or other layers.
+- Accessing a key that a layer did *not* set **falls back to the base layer**
+  only when inheritance is enabled. Inheritance is **off by default**; without
+  it, a missing key raises. Enable it with `ds.set_layer_inheritance(True)` (or
+  at open time via `OpenOptions`).
+
+With inheritance on you only store what changes in each layer; everything else
+is inherited. Layers apply to both arrays and metadata.
+
+```python
+ds["cube"] = raw_cube
+ds["wavelengths"] = np.linspace(400, 2500, 300)
+
+processed = ds.create_layer("processed")
+processed["cube"] = corrected_cube   # override
+# "wavelengths" not set → inherited from base when inheritance is on
+
+ds.set_layer_inheritance(True)       # off by default
+layer = ds.get_layer("processed")
+layer["cube"]         # processed data
+layer["wavelengths"]  # inherited base wavelengths
+```
+
+Common uses: hyperspectral pipelines (raw → corrected → subset), multi-temporal
+datasets, A/B experiments, and dataset version control. See the
+[Layers guide](../guides/layers.md).
+
+## Compression
+
+Array and metadata blocks can be compressed independently with **GZIP**,
+**LZ4**, or **none**. Compression is block-based, so large arrays can be seeked
+into without decompressing the whole thing. Configure it through `StarConfig`;
+see the [Compression guide](../guides/compression.md).
+
+## Cloud storage
+
+A `.stards` file can live locally or in the cloud. Prefix a path with `/vsis3/` for
+S3 or `/vsicurl/` for HTTP, and the same API reads and (for S3) writes remotely.
+See the [Cloud Storage guide](../guides/cloud-storage.md).
+
+
+---
+
+<!-- source: docs/guides/layers.md -->
+
+# Guides / Layers
+
+# Layers
+
+Layers let you store **multiple versions of the same data** in one `.stards` file.
+Each layer has isolated storage and can optionally inherit anything it doesn't
+override from the base layer.
+
+## Key ideas
+
+- **Isolation** — setting a key in a layer never overwrites the base or other
+  layers. Each layer keeps its own copy of the keys it defines.
+- **Opt-in inheritance** — inheritance is **off by default**. A key a layer did
+  not set is reported as missing. Turn inheritance on (see below) to make a
+  layer fall back to the base for keys it didn't override.
+- **Selective override** — with inheritance on, override just the keys that
+  differ; the rest are inherited.
+- **Works for metadata too** — layer metadata inherits from base metadata the
+  same way when inheritance is enabled.
+
+## Enabling inheritance
+
+Inheritance is a **read-time** setting, controlled by `OpenOptions` (distinct
+from `StarConfig`, which configures how a new file is written). Nothing about it
+is persisted to the file — it only affects how an open dataset resolves keys.
+
+You can enable it two ways:
+
+=== "Python"
+
+    ```python
+    import pystards
+    from pystards import StarDataset
+
+    # At open time
+    opts = pystards.OpenOptions()
+    opts.layer_inheritance = True
+    ds = StarDataset.open("data.stards", mode="r", options=opts)
+
+    # ...or after opening (works on any already-open dataset)
+    ds = StarDataset.open("data.stards")
+    ds.set_layer_inheritance(True)
+    print(ds.layer_inheritance())  # True
+    ```
+
+=== "C++"
+
+    ```cpp
+    // At open time
+    OpenOptions opts;
+    opts.layer_inheritance = true;
+    auto ds = StarDataset::open("data.stards", FileMode::READ_ONLY, opts);
+
+    // ...or after opening
+    auto ds2 = StarDataset::open("data.stards");
+    ds2->set_layer_inheritance(true);
+    bool on = ds2->layer_inheritance();  // true
+    ```
+
+With inheritance **off** (the default), a layer lookup for a base-only key raises
+(Python `KeyError` / C++ `std::runtime_error`) instead of returning the base
+value. The examples below assume inheritance has been enabled.
+
+## Python
+
+```python
+import numpy as np
+from pystards import StarDataset
+
+# Base data
+ds = StarDataset.create("data.stards")
+ds["image"] = raw_image
+ds["metadata"] = calibration_data
+ds["wavelengths"] = [400, 500, 600]
+
+# Processed version in a layer
+processed = ds.create_layer("processed")
+processed["image"] = filtered_image  # override: different data, same key!
+# "metadata" and "wavelengths" NOT set → inherited from base
+
+# Another version
+enhanced = ds.create_layer("enhanced")
+enhanced["image"] = enhanced_image
+enhanced["wavelengths"] = [450, 550, 650]  # override wavelengths
+# "metadata" inherited from base
+
+ds.flush()
+
+# Read back — enable inheritance so layers fall back to base keys
+ds2 = StarDataset.open("data.stards")
+ds2.set_layer_inheritance(True)
+base_img = ds2["image"]                     # raw
+
+proc = ds2.get_layer("processed")
+proc_img = proc["image"]                    # processed (overridden)
+proc_meta = proc["metadata"]                # inherited from base!
+proc_waves = proc["wavelengths"]            # inherited from base!
+
+enh = ds2.get_layer("enhanced")
+enh_img = enh["image"]                      # enhanced (overridden)
+enh_waves = enh["wavelengths"]              # overridden
+enh_meta = enh["metadata"]                  # inherited from base!
+```
+
+Layers also carry metadata with inheritance:
+
+```python
+ds.meta["config"] = "default config"
+
+layer = ds.create_layer("experiment")
+layer.meta["experiment_id"] = "exp_001"     # layer-specific
+config = layer.meta["config"]               # inherited: "default config"
+```
+
+## C++
+
+```cpp
+#include "stards.h"
+using namespace star;
+
+// Create dataset with base data
+auto store = StarDataset::create("data.stards");
+store->put("image", base_image);
+store->put("wavelengths", wavelengths);
+
+// Create a layer with a different version
+auto layer1 = store->create_layer("processed");
+layer1->put("image", processed_image);   // different data
+// wavelengths inherited from base
+
+// Another layer
+auto layer2 = store->create_layer("calibrated");
+layer2->put("image", calibrated_image);
+layer2->put("wavelengths", adjusted_wavelengths);  // override
+
+store->flush();
+
+// Read back — enable inheritance so layers fall back to base keys
+auto store2 = StarDataset::open("data.stards");
+store2->set_layer_inheritance(true);
+auto base_img = store2->get<double>("image");
+auto proc_img = store2->get_layer("processed")->get<double>("image");
+auto cal_img  = store2->get_layer("calibrated")->get<double>("image");
+
+// Layers have metadata with inheritance too
+layer1->meta.put("description", NDArray<std::string>({}, {"Processed version"}));
+```
+
+## Worked example: hyperspectral pipeline
+
+A full runnable example ships in the repository at
+`bindings/python/examples/layers_example.py`. It builds a raw hyperspectral cube,
+then adds two layers:
+
+```python
+import numpy as np
+from pystards import StarDataset
+
+ds = StarDataset.create("hyperspectral.stards")
+
+# Base: raw data
+raw_cube = np.random.rand(512, 512, 300).astype(np.float32)
+wavelengths = np.linspace(400, 2500, 300)
+ds["cube"] = raw_cube
+ds["wavelengths"] = wavelengths
+ds.meta["description"] = "Raw hyperspectral cube"
+ds.meta["instrument"] = "AVIRIS-NG"
+
+# Layer 1: atmospherically corrected (wavelengths inherited)
+atm = ds.create_layer("atm_corrected")
+atm["cube"] = raw_cube + 0.05
+atm.meta["description"] = "Atmospherically corrected"
+
+# Layer 2: VNIR spectral subset (wavelengths overridden)
+vnir_mask = wavelengths < 1000
+vnir = ds.create_layer("vnir_only")
+vnir["cube"] = raw_cube[:, :, vnir_mask]
+vnir["wavelengths"] = wavelengths[vnir_mask]
+
+ds.flush()
+```
+
+On read-back (with inheritance enabled via `set_layer_inheritance(True)` or
+`OpenOptions`), `atm_corrected["wavelengths"]` returns the full 300-band base
+wavelengths (inherited), while `vnir_only["wavelengths"]` returns the overridden
+subset. Without inheritance, `atm_corrected["wavelengths"]` would raise, since
+that layer never set its own `wavelengths`.
+
+## When to use layers
+
+- **Hyperspectral imaging** — raw, atmospherically corrected, and subset versions
+- **Multi-temporal datasets** — different time slices
+- **A/B testing** — variant versions for experiments
+- **Version control** — track dataset evolution
+- **Processing pipelines** — raw → intermediate → final
+
+## Implementation note
+
+Internally, layers use prefixed keys so each layer's storage is independent while
+the user-facing API keeps the same logical key names:
+
+- Base layer: `"data"` → stored as `"data"`
+- Layer `processed`: `"data"` → stored as `"__layer_processed__:data"`
+- Layer `calibrated`: `"data"` → stored as `"__layer_calibrated__:data"`
+
+
+---
+
+<!-- source: docs/guides/compression.md -->
+
+# Guides / Compression
+
+# Compression
+
+StarDS compresses array and metadata blocks independently. Compression is
+**block-based**, so large arrays can be seeked into (and
+[sliced](slicing.md)) without decompressing the whole array.
+
+## Algorithms
+
+| Algorithm | Speed | Ratio | Notes |
+|-----------|-------|-------|-------|
+| `CompressionAlgorithm.NONE` | Fastest | — | Largest files; best for temporary or pre-compressed data |
+| `CompressionAlgorithm.LZ4` | Very fast | Modest | ~3× faster than GZIP; great for fast writes |
+| `CompressionAlgorithm.GZIP` | Balanced | Good | Default; widely compatible (zlib / RFC 1952) |
+| `CompressionAlgorithm.GZIP_SHUFFLE` | Balanced | Better on numeric | GZIP with a byte-shuffle prefilter; improves numeric-array ratios |
+| `CompressionAlgorithm.LZ4_SHUFFLE` | Very fast | Better on numeric | LZ4 with a byte-shuffle prefilter |
+
+The native codec must be enabled at build time (`STARDS_ENABLE_ZLIB` for GZIP,
+`STARDS_ENABLE_LZ4` for LZ4) — both on by default; see
+[Installation](../getting-started/installation.md).
+
+The `*_SHUFFLE` variants apply a byte-shuffle prefilter (grouping the same byte
+position across elements) before compressing, which markedly improves the
+compression of fixed-width numeric arrays such as float64. Shuffled arrays are
+read as whole blocks rather than sliced.
+
+!!! note "ZSTD is reserved but not implemented"
+    `CompressionAlgorithm.ZSTD` exists in the enum for forward compatibility, but
+    the current reference library reads and writes `NONE`, `GZIP`, `LZ4`, and the
+    two shuffle variants. Selecting `ZSTD` raises an "unsupported compression
+    algorithm" error.
+
+## Configuring compression (`StarConfig`)
+
+Pass a `StarConfig` to `StarDataset.create()` to control the codec and block
+size:
+
+```python
+from pystards import StarDataset, StarConfig, CompressionAlgorithm
+import numpy as np
+
+# High compression for archival storage
+config = StarConfig()
+config.compression = CompressionAlgorithm.GZIP
+config.block_size = 512 * 1024               # 512 KB blocks
+config.metadata_compression = CompressionAlgorithm.GZIP
+
+store = StarDataset.create("/tmp/archive.stards", config)
+store["data"] = np.random.rand(1000, 1000)
+store.flush()
+```
+
+```python
+# Fast writes with LZ4
+config = StarConfig()
+config.compression = CompressionAlgorithm.LZ4
+config.block_size = 2 * 1024 * 1024          # 2 MB blocks
+
+store = StarDataset.create("/tmp/fast.stards", config)
+store["data"] = np.random.rand(1000, 1000)
+store.flush()
+```
+
+```python
+# No compression (maximum speed)
+config = StarConfig()
+config.compression = CompressionAlgorithm.NONE
+config.block_size = 4 * 1024 * 1024          # 4 MB blocks
+
+store = StarDataset.create("/tmp/uncompressed.stards", config)
+store["data"] = np.random.rand(1000, 1000)
+store.flush()
+```
+
+### `StarConfig` parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `compression` | `CompressionAlgorithm` | `GZIP` | Main data compression algorithm |
+| `block_size` | int (bytes) | `1048576` (1 MB) | Compression block size |
+| `metadata_max_block_size` | int (bytes) | `65536` (64 KB) | Maximum size of a layer's metadata block |
+| `metadata_compression` | `CompressionAlgorithm` | `GZIP` | Metadata block compression |
+| `arena_chunk_size` | int (bytes) | `1048576` (1 MB) | Memory arena allocation size |
+
+## Choosing a block size
+
+- **256 KB – 512 KB** — better compression ratio, slower random access
+- **1 MB – 2 MB** — balanced (recommended)
+- **4 MB – 8 MB** — faster sequential I/O, slightly less compression
+
+## The metadata block
+
+StarDS keeps two distinct namespaces (see [Concepts](../getting-started/concepts.md)):
+
+- **Arrays** — everything written via `store["key"] = …` / `store.put(...)` is
+  **always stored as its own separately-compressed array**, regardless of size.
+  These arrays support [slicing](slicing.md).
+- **Metadata** — everything written via `store.meta["key"] = …` is packed into a
+  single compressed **metadata block** per layer. Metadata values are read as a
+  unit (the whole block is decompressed) and **cannot be sliced**.
+
+So the choice of where a value lives is made by *which namespace you use*, not by
+its size. Put large or sliceable data in the array namespace; put scalars, short
+strings, and config in the metadata namespace.
+
+`metadata_compression` sets the codec for the metadata block, and
+`metadata_max_block_size` caps its total size:
+
+```python
+# Larger metadata block for datasets with many metadata entries
+config = StarConfig()
+config.metadata_max_block_size = 256 * 1024   # 256 KB (default is 64 KB)
+config.metadata_compression = CompressionAlgorithm.GZIP
+
+store = StarDataset.create("/tmp/rich_metadata.stards", config)
+for i in range(100):
+    store.meta[f"note_{i}"] = f"observation {i}"
+store.flush()
+```
+
+## Choosing the codec in code
+
+Compression for a `.stards` file is set through `StarConfig` when the dataset is
+created (see the examples above). To re-encode an existing file with a different
+codec or block size, open it with the desired `StarConfig` and copy its contents
+into a newly created dataset.
+
+For command-line conversion, [`stards_translate`](../cli/stards-translate.md) applies
+its `-c`/`--compression` and `-b`/`--block-size` flags to the STAR output (the
+codecs are `none`, `gzip`, `lz4`, `gzip-shuffle`, `lz4-shuffle`).
+
+## Tips
+
+- Flush after **batches** of writes, not after every `put()`.
+- Use **LZ4** for fast, write-heavy workflows and **GZIP** for the best ratio.
+- Use **NONE** for temporary files or data that is already compressed.
+- Prefer the **smallest dtype** that fits your data before compressing.
+
+
+---
+
+<!-- source: docs/guides/cloud-storage.md -->
+
+# Guides / Cloud Storage
+
+# Cloud Storage
+
+A `.stards` file can live locally or in the cloud. Prefix a path with a VSI-style
+scheme and the same API reads (and, for S3, writes) remotely:
+
+- **S3** — `/vsis3/bucket-name/path/to/file.stards` (read and write)
+- **HTTP** — `/vsicurl/https://example.com/path/data.stards` (read-only)
+
+These require the library to be built with `STARDS_ENABLE_CURL` (HTTP) and
+`STARDS_ENABLE_S3` (S3) — both on by default; see
+[Installation](../getting-started/installation.md).
+
+## Python
+
+```python
+import os
+from pystards import StarDataset
+
+os.environ["AWS_PROFILE"] = "my-profile"
+
+# Read from S3
+with StarDataset.open("/vsis3/my-bucket/data.stards", mode="r") as ds:
+    data = ds["array_name"]
+
+# Write to S3
+with StarDataset.create("/vsis3/my-bucket/output.stards") as ds:
+    ds["results"] = processed_data
+
+# Read from HTTP (read-only)
+with StarDataset.open("/vsicurl/https://example.com/data.stards", mode="r") as ds:
+    data = ds["array_name"]
+```
+
+## C++
+
+```cpp
+#include "stards.h"
+using namespace star;
+
+// Read from S3
+auto store = StarDataset::open("/vsis3/my-bucket/data.stards", "r");
+auto data = store->get<double>("sensor_data");
+
+// Write to S3
+auto output = StarDataset::create("/vsis3/output-bucket/results.stards");
+output->put("results", std::move(processed_data));
+output->flush();
+
+// Read from HTTP (read-only), then save a local copy
+auto http = StarDataset::open("/vsicurl/https://example.com/data.stards", "r");
+http->save_to("/tmp/local-copy.stards");
+```
+
+`save_to()` writes a local copy of a remote (or read-only) dataset — useful when
+you've opened an HTTP source you can't write back to.
+
+## S3 authentication
+
+The S3 URL format is `/vsis3/bucket-name/path/to/file.stards`. Credentials are
+resolved from the standard AWS sources — choose whichever fits your environment:
+
+**Environment variables**
+
+```bash
+export AWS_ACCESS_KEY_ID=KEY
+export AWS_SECRET_ACCESS_KEY=SECRET
+export AWS_DEFAULT_REGION=us-east-1
+```
+
+**AWS SSO**
+
+```bash
+aws sso login --profile my-profile
+export AWS_PROFILE=my-profile
+```
+
+**Credentials file** (`~/.aws/credentials`)
+
+```ini
+[default]
+aws_access_key_id = KEY
+aws_secret_access_key = SECRET
+```
+
+## Custom S3 endpoints (MinIO, S3-compatible services, testing)
+
+By default `/vsis3/` targets AWS at `https://<bucket>.s3.<region>.amazonaws.com`.
+To use an S3-compatible service (e.g. MinIO) or a local test server, set these
+environment variables (GDAL-compatible names):
+
+```bash
+export AWS_S3_ENDPOINT=minio.example.com:9000  # host[:port] to use instead of AWS
+export AWS_VIRTUAL_HOSTING=FALSE               # path-style URLs (endpoint/bucket/key)
+export AWS_HTTPS=NO                            # use http:// instead of https://
+```
+
+- `AWS_S3_ENDPOINT` — replaces the AWS host. Setting it defaults to **path-style**
+  addressing (`endpoint/bucket/key`), which most self-hosted servers expect.
+- `AWS_VIRTUAL_HOSTING` — `FALSE`/`NO` forces path-style; `TRUE`/`YES` forces
+  virtual-hosted (`bucket.endpoint/key`).
+- `AWS_HTTPS` — `NO`/`FALSE` selects `http://` (useful for local/plaintext endpoints).
+
+Requests are still signed with AWS Signature V4; the signed host header and
+canonical path are derived from the same settings so signatures stay valid. With
+none of these set, behavior is identical to standard AWS S3.
+
+## Notes
+
+- HTTP sources are **read-only**. Use `save_to()` (C++) to persist a local copy.
+- A full runnable example (with graceful fallback to a local file when no AWS
+  credentials are present) ships at `bindings/python/examples/s3_example.py`.
+
+
+---
+
+<!-- source: docs/guides/slicing.md -->
+
+# Guides / Slicing
+
+# Slicing
+
+Slicing loads only the portion of an array you ask for, so you can work with
+arrays far larger than memory without reading the whole file. Because
+compression is [block-based](compression.md), StarDS decompresses only the
+blocks a slice touches.
+
+## Reading a slice
+
+Pass a list of `(start, stop)` or `(start, stop, step)` tuples — one per
+dimension:
+
+```python
+import numpy as np
+from pystards import StarDataset
+
+# Store a large array
+with StarDataset.create("large.stards") as ds:
+    ds["big_matrix"] = np.random.rand(10000, 10000)
+
+# Read only a 100×100 corner (efficient!)
+with StarDataset.open("large.stards", mode="r") as ds:
+    subset = ds.get_slice("big_matrix", [(0, 100), (0, 100)])
+    print(subset.shape)  # (100, 100)
+```
+
+### 1D, 2D, and 3D examples
+
+```python
+# 1D slice [1000:2000]
+subset = store.get_slice("large_array", [(1000, 2000)])
+print(subset.shape)  # (1000,)
+
+# 2D slice [10:20, 30:40]
+subset_2d = store.get_slice("big_matrix", [(10, 20), (30, 40)])
+print(subset_2d.shape)  # (10, 10)
+
+# 3D slice with a step in the first dimension
+subset_3d = store.get_slice("3d_data", [(0, 20, 2), (5, 15), (0, 20)])
+```
+
+## Checking whether an array is sliceable
+
+Every value in the **array namespace** (`ds["key"] = …` / `store.put(...)`) is
+stored as its own array and is sliceable regardless of size. Only values written
+to the **metadata namespace** (`ds.meta["key"] = …`) live in the shared
+[metadata block](compression.md#the-metadata-block) and **cannot** be sliced.
+
+`is_sliceable()` reports this — check first if you're unsure which namespace a key
+came from:
+
+```python
+if store.is_sliceable("large_array"):
+    subset = store.get_slice("large_array", [(1000, 2000)])
+```
+
+So to keep something sliceable, simply store it as an array (the default) rather
+than as metadata.
+
+## C++
+
+```cpp
+#include "stards.h"
+using namespace star;
+
+auto store = StarDataset::open("large.stards", "r");
+// Slice specs are per-dimension {start, stop[, step]}
+auto subset = store->get_slice<double>("big_matrix", {{0, 100}, {0, 100}});
+```
+
+## Notes and limits
+
+- Slicing currently supports **1D, 2D, and 3D** arrays.
+- Arrays are stored in **row-major (C-style)** order.
+- A full runnable example ships at `bindings/python/examples/numpy_interop.py`.
+
+
+---
+
+<!-- source: docs/guides/threading.md -->
+
+# Guides / Threading
+
+# Threading
+
+StarDS can compress and decompress array blocks in parallel using an internal
+thread pool. Threading is configured **globally** and applies to all datasets in
+the process.
+
+## Configuration (C++)
+
+The controls live in the `star` namespace:
+
+```cpp
+#include "stards.h"
+using namespace star;
+
+// Set the worker count:
+//   0 = auto-detect (hardware concurrency), 1 = single-threaded
+setNumThreads(0);
+
+// Only parallelize when the workload is large enough to be worth it:
+setMinBlocksForThreading(4);            // need >= 4 blocks (default: 4)
+setMinBytesForThreading(256 * 1024);    // need >= 256 KB (default: 256 KB)
+
+// Inspect the current setting
+size_t n = getNumThreads();
+```
+
+| Function | Default | Purpose |
+|----------|---------|---------|
+| `setNumThreads(n)` | `0` (auto) | Worker count; `0` auto-detects, `1` forces single-threaded |
+| `setMinBlocksForThreading(n)` | `4` | Minimum block count before threading engages |
+| `setMinBytesForThreading(n)` | `262144` | Minimum data size (bytes) before threading engages |
+| `getNumThreads()` | — | Returns the current thread-count setting |
+
+## How the thresholds work
+
+Parallelizing tiny arrays costs more in coordination than it saves. StarDS only
+spins up workers when **both** thresholds are met — the data has at least
+`MinBlocksForThreading` blocks **and** at least `MinBytesForThreading` bytes.
+Below that, it processes the array on a single thread.
+
+When `setNumThreads(0)` is in effect, the pool sizes itself to the machine's
+hardware concurrency; a value of `1` disables parallelism entirely.
+
+## Guidance
+
+- Leave `setNumThreads(0)` (auto) unless you're coordinating with other
+  thread pools in your application.
+- Raise the byte/block thresholds if you work with many small arrays and want to
+  avoid threading overhead; lower them if you have a few very large arrays.
+- Per the Python bindings, treat a dataset as **not thread-safe**: use a separate
+  dataset instance per thread rather than sharing one across threads.
+
+
+---
+
+<!-- source: docs/python-api/index.md -->
+
+# Python API
+
+# Python API
+
+The `pystards` package provides a Pythonic, NumPy-friendly interface to StarDS.
+This page is generated from the package docstrings.
+
+!!! note
+    The API reference below is rendered by
+    [mkdocstrings](https://mkdocstrings.github.io/). Because `pystards` loads a
+    compiled SWIG extension at import time, the built `_pystards` module must be
+    importable when the docs are built (see
+    [Building the docs](#building-this-page)).
+
+## Quick reference
+
+| Class / function | Purpose |
+|------------------|---------|
+| `StarDataset` | Create, open, read, and write `.stards` files |
+| `NDArray` | NumPy-compatible array wrapper |
+| `MetadataValue` | Type-erased metadata container |
+| `zeros`, `ones`, `arange`, `full` | Array creation helpers |
+| `DataType`, `CompressionAlgorithm`, `FileMode` | Enumerations |
+| `set_log_level`, `get_log_level`, `LogLevel` | Runtime logging control |
+
+## StarDataset
+
+::: pystards.dataset.StarDataset
+    options:
+      heading_level: 3
+
+## NDArray
+
+::: pystards.ndarray.NDArray
+    options:
+      heading_level: 3
+
+### Array creation helpers
+
+::: pystards.ndarray.zeros
+    options:
+      heading_level: 4
+::: pystards.ndarray.ones
+    options:
+      heading_level: 4
+::: pystards.ndarray.arange
+    options:
+      heading_level: 4
+::: pystards.ndarray.full
+    options:
+      heading_level: 4
+
+## MetadataValue
+
+::: pystards.metadata.MetadataValue
+    options:
+      heading_level: 3
+
+## Logging
+
+::: pystards.logger
+    options:
+      heading_level: 3
+
+## Building this page
+
+`pystards` imports the compiled SWIG extension (`_pystards`) at import time, so the
+extension must be built and importable before the documentation is built:
+
+```bash
+# Build the Python bindings first (see the Installation guide), then serve the
+# docs (config lives under docs-site/):
+export PYTHONPATH="$PWD/build/bindings/python"
+mkdocs serve -f docs-site/mkdocs.yml
+```
+
+If the extension is not importable, mkdocstrings cannot introspect the package
+and this page will fail to render.
+
+
+---
+
+<!-- source: docs/cpp-api/index.md -->
+
+# [ C++ API ] / Overview
+
+# C++ API
+
+StarDS is a header-only C++ library. Everything lives in `stards.h` under the
+`star` namespace. This reference is generated from the in-source Doxygen
+comments by [mkdoxy](https://github.com/JakubAndrysek/mkdoxy).
+
+## Browse the reference
+
+- **[Classes](../StarCPPAPI/classes.md)** — alphabetical class index
+- **[Class List](../StarCPPAPI/annotated.md)** — annotated class list
+- **[Namespaces](../StarCPPAPI/namespaces.md)** — namespace members
+- **[Files](../StarCPPAPI/files.md)** — file-level documentation
+
+## Core public types
+
+| Type | Role |
+|------|------|
+| `StarDataset` | Main persistent store — `create`/`open`, `put`/`get`, `flush`, layers, slicing |
+| `NDArray<T>` | Template N-dimensional array with factory helpers (`zeros`, `ones`, `full`, `arange`) |
+| `LayerView` | Per-layer access with opt-in inheritance from the base layer |
+| `MetadataAccessor` | Metadata namespace operations (`store.meta`) |
+| `LayerMetadataAccessor` | Per-layer metadata operations (`layer->meta`) |
+| `MetadataValue` | Type-erased metadata value (`as<T>()`, `is_scalar()`, …) |
+| `StarConfig` | Compression, block size, and metadata-block configuration (write-time) |
+| `OpenOptions` | Read-time open options — e.g. `layer_inheritance` (off by default) |
+| `FileHeader` | Parsed file header (magic, version, entry count) |
+| `DataType`, `CompressionAlgorithm`, `FileMode` | Enumerations |
+
+Global threading controls (`setNumThreads`, `setMinBlocksForThreading`,
+`setMinBytesForThreading`, `getNumThreads`) are documented in the
+[Threading guide](../guides/threading.md).
+
+## Minimal example
+
+```cpp
+#include "stards.h"
+using namespace star;
+
+int main() {
+    // Create and store an array + metadata
+    auto store = StarDataset::create("data.stards");
+    store->put("matrix", NDArray<double>::zeros({100, 100}));
+    store->meta.put("timestamp", NDArray<int64_t>({}, {1234567890}));
+    store->flush();
+
+    // Read it back
+    auto store2 = StarDataset::open("data.stards");
+    auto matrix = store2->get<double>("matrix");
+    auto ts = store2->meta.get("timestamp")->as<int64_t>();
+    return 0;
+}
+```
+
+!!! note
+    The generated pages only include members carrying Doxygen documentation
+    comments (`HIDE_UNDOC_MEMBERS`), which keeps internal helpers (S3/HTTP
+    streams, the thread pool, key registry) out of the public reference.
+
+
+---
+
+<!-- source: docs/cli/stardsls.md -->
+
+# CLI Tools / stardsls
+
+# stardsls
+
+`stardsls` inspects and lists the contents of a `.stards` file — keys, metadata, and
+optionally the array data itself.
+
+Built when `STARDS_BUILD_TOOLS=ON` (the default); see
+[Installation](../getting-started/installation.md).
+
+## Usage
+
+```bash
+stardsls [OPTIONS] <file.stards>
+
+# List all keys (default)
+stardsls data.stards
+
+# Verbose output with metadata
+stardsls -v data.stards
+
+# Show a key's metadata without loading its data
+stardsls -m array_name data.stards
+
+# Print a specific key's data
+stardsls -d array_name data.stards
+
+# Force-load a large array that the safety check would block
+stardsls -d array_name -f data.stards
+
+# Print all data (may be large)
+stardsls -a data.stards
+```
+
+## Options
+
+| Flag | Long form | Description |
+|------|-----------|-------------|
+| `-h` | `--help` | Show the help message |
+| `-k` | `--keys` | List keys only (default) |
+| `-d <key>` | `--data <key>` | Print the data for a specific array |
+| `-m <key>` | `--metadata <key>` | Show a key's metadata without loading its data |
+| `-a` | `--all` | Print the data for all arrays (**warning:** may be large) |
+| `-v` | `--verbose` | Verbose output including detailed per-array metadata |
+| `-f` | `--force` | Force loading large arrays (bypass the safety check) |
+
+## See also
+
+- [stards_translate](stards-translate.md) — convert between formats.
+- [Format Specification](../reference/format-spec.md) — the on-disk layout `stardsls` reads.
+
+
+---
+
+<!-- source: docs/cli/stards-translate.md -->
+
+# CLI Tools / stards_translate
+
+# stards_translate
+
+`stards_translate` converts between `.stards` files and other formats (JSON,
+MessagePack, CSV), and can reorganize a file for ISDS (ISIS Dataset)
+optimization.
+
+Built when `STARDS_BUILD_TRANSLATE=ON` (the default); see
+[Installation](../getting-started/installation.md).
+
+## Usage
+
+```bash
+stards_translate [OPTIONS] <input_file> <output_file>
+
+# STAR ↔ JSON (format auto-detected from the file extensions)
+stards_translate data.stards data.json
+stards_translate data.json data.stards
+
+# CSV to STAR (2D arrays only)
+stards_translate data.csv data.stards
+
+# Force the output format explicitly
+stards_translate -f json data.stards out.json
+
+# MessagePack (if built with msgpack support)
+stards_translate data.stards data.msgpack
+```
+
+The output format is auto-detected from the output file's extension
+(`.stards`, `.json`, `.csv`, `.msgpack`/`.mp`), or you can force it with
+`-f`.
+
+## Options
+
+| Flag | Long form | Description |
+|------|-----------|-------------|
+| `-h` | `--help` | Show the help message |
+| `-f <fmt>` | `--format <fmt>` | Output format: `json`, `msgpack`, or `isds` (otherwise auto-detected from the extension) |
+| `-c <alg>` | `--compression <alg>` | Compression for STAR output: `none`, `gzip`, `lz4`, `gzip-shuffle`, `lz4-shuffle`. Default: `lz4`. |
+| `-b <bytes>` | `--block-size <bytes>` | Block size for STAR compression. Default: `1048576` (1 MB). |
+| `-t <n>` | `--threshold <n>` | ISDS element threshold (default: `100`) |
+
+The `*-shuffle` codecs add a byte-shuffle prefilter that greatly improves
+compression of numeric arrays (e.g. float64); shuffled arrays are read whole
+rather than sliced.
+
+## JSON format
+
+```json
+{
+  "arrays": {
+    "my_array": {
+      "dtype": "float64",
+      "shape": [10, 20],
+      "data": [0.0, 1.0, "..."]
+    }
+  }
+}
+```
+
+## ISDS optimization
+
+The ISDS (ISIS Dataset) mode reorganizes a `.stards` file by size: large arrays go
+to efficient block storage, while small values are kept in the metadata block for
+quick access. This suits ISIS camera-state files that mix large arrays
+(quaternions, ephemeris) with small scalars (focal length, detector center).
+
+- Arrays with **more** elements than the threshold → array storage (compressed blocks)
+- Arrays with the threshold count **or fewer** → metadata storage
+- Default threshold: **100 elements**
+- All data is preserved — only its storage location changes
+
+```bash
+# Reorganize by array size (default threshold of 100 elements)
+stards_translate -f isds input.stards output.stards
+
+# Custom threshold
+stards_translate -f isds -t 50 input.stards output.stards
+```
+
+## Batch conversion
+
+```bash
+# STAR → JSON for every file in a directory
+for file in *.stards; do
+    stards_translate "$file" "${file%.stards}.json"
+done
+
+# JSON → STAR
+for file in *.json; do
+    stards_translate "$file" "${file%.json}.stards"
+done
+```
+
+## See also
+
+- [stardsls](stardsls.md) — inspect file contents.
+- [Compression guide](../guides/compression.md) — codecs and block sizes.
+
+
+---
+
+<!-- source: docs/reference/format-spec.md -->
+
+# Reference / Format Spec
+
+# Binary Format Specification
+
+This document describes the on-disk binary structure of StarDS (Simple Tensors
+Arrays and Rasters) files, as written and read by the reference implementation in
+`StarDS/include/stards.h`.
+
+!!! tip "Machine-readable spec"
+    A [Kaitai Struct](https://kaitai.io) description of this format lives at
+    [`stards.ksy`](stards.ksy). It is pinned to **format version 1** (it asserts
+    `format_version == 1`), so it doubles as the single, versioned source of truth
+    for the v1 binary layout — feed it to `kaitai-struct-compiler` to generate a
+    parser/validator in any supported language, or open it in the
+    [Kaitai Web IDE](https://ide.kaitai.io) to inspect a `.stards` file. When the
+    format changes incompatibly, a new `stards_v2.ksy` is added rather than
+    editing the v1 spec, so each version's structure is described in exactly one
+    place.
+
+## File extension
+
+`.stards`
+
+## Format version
+
+The current on-disk format is **version 1** (`format_version = 1`), which stores a
+global key registry, per-layer metadata blocks, and per-layer presence bitmaps.
+The **software/library version is not stored in the file** — only the one-byte
+format version is persisted. (The library version, currently `1.0.0`, is available
+at runtime via `getLibraryVersion()`.)
+
+## Binary structure
+
+A `.stards` file is a **header section** followed by a **data section**:
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│ HEADER SECTION                                                 │
+├──────────────────────────────────────────────────────────────┤
+│ 1. Fixed file header (31 bytes)                                │
+│ 2. Global key registry        (all unique key names + hashes)  │
+│ 3. Layer metadata registry    (__base__ + each named layer)    │
+│ 4. Layer presence bitmaps      (which arrays exist per layer)   │
+│ 5. Index entries              (one per stored array)           │
+├──────────────────────────────────────────────────────────────┤
+│ DATA SECTION                                                   │
+├──────────────────────────────────────────────────────────────┤
+│ Array data blocks (compressed or raw), and per-layer           │
+│ metadata blocks referenced by the layer metadata registry.     │
+└──────────────────────────────────────────────────────────────┘
+```
+
+The fixed header records `header_size`, so a reader loads the whole header
+section in one read, then parses sections 2–5 from it.
+
+## Header section
+
+All multi-byte integers are little-endian.
+
+### 1. Fixed file header (31 bytes)
+
+| Field | Type | Size | Offset | Description |
+|-------|------|------|--------|-------------|
+| Magic String | char[6] | 6 | 0 | File identifier: `"STARDS"` |
+| Format Version | uint8 | 1 | 6 | On-disk format version: `1` |
+| Header Size | uint64 | 8 | 7 | Total size of the header section in bytes |
+| Entry Count | uint64 | 8 | 15 | Number of stored data arrays (index entries) |
+| Layer Count | uint32 | 4 | 23 | Number of **named** layers (excludes `__base__`) |
+| Key Registry Count | uint32 | 4 | 27 | Number of unique keys in the global registry |
+
+**Total:** 31 bytes.
+
+### 2. Global key registry
+
+All unique key names are stored once, in a central registry; everywhere else keys
+are referenced by their `uint16` index into this registry. The registry holds
+`Key Registry Count` entries, each:
+
+| Field | Type | Size | Description |
+|-------|------|------|-------------|
+| Key Length | uint16 | 2 | Length of the key string in bytes |
+| Key String | UTF-8 | variable | The key name |
+| Hash | uint64 | 8 | Precomputed `std::hash` of the key (for O(1) lookup) |
+
+### 3. Layer metadata registry
+
+Contains `Layer Count + 1` entries — one for the implicit base layer (`__base__`)
+plus one per named layer. Each entry describes that layer's metadata block and
+which metadata keys it holds:
+
+| Field | Type | Size | Description |
+|-------|------|------|-------------|
+| Layer Name Length | uint16 | 2 | Length of the layer name |
+| Layer Name | UTF-8 | variable | Layer name (`__base__` for the base layer) |
+| Metadata Block Position | uint64 | 8 | Byte offset of this layer's metadata block in the data section |
+| Metadata Block Size | uint32 | 4 | Size of the metadata block in bytes |
+| Compression | uint8 | 1 | Compression algorithm of the metadata block (see enum) |
+| Metadata Key Count | uint16 | 2 | Number of metadata keys in this layer |
+| Key Indices | uint16[] | 2 × count | Registry indices of this layer's metadata keys |
+
+### 4. Layer presence bitmaps
+
+For each layer (again `Layer Count + 1`, base first), a bitmap marks which of the
+data arrays are present in that layer. Each bitmap is
+`ceil(Entry Count / 64)` words:
+
+| Field | Type | Size | Description |
+|-------|------|------|-------------|
+| Bitmap | uint64[] | 8 × ⌈entry_count/64⌉ | One bit per index entry; set = array present in this layer |
+
+### 5. Index entries
+
+One entry per stored data array (`Entry Count` total). Metadata values are **not**
+listed here — they live in the per-layer metadata blocks (section 3). Each index
+entry is a `uint16` key index followed by the serialized array descriptor:
+
+| Field | Type | Size | Description |
+|-------|------|------|-------------|
+| Key Index | uint16 | 2 | Index into the global key registry |
+| File Position | uint64 | 8 | Byte offset to this array's data in the data section |
+| Total Bytes | uint64 | 8 | Total stored size of the array data (all blocks) |
+| Data Type | uint8 | 1 | Element type enum (see Data Types) |
+| Num Dimensions | uint64 | 8 | Number of dimensions (`0` = scalar) |
+| Shape | uint64[] | 8 × ndim | Size of each dimension |
+| Compression | uint8 | 1 | Compression algorithm enum |
+| Block Size | uint64 | 8 | Uncompressed block size (`0` = not blocked) |
+| Num Blocks | uint64 | 8 | Number of data blocks |
+| Block Metadata | BlockInfo[] | 24 × num_blocks | Per-block metadata (below) |
+| Stored-in-metadata flag | uint8 | 1 | Always `0` for index entries in v1 |
+
+### Block metadata (`BlockInfo`, per block)
+
+| Field | Type | Size | Description |
+|-------|------|------|-------------|
+| Offset | uint64 | 8 | Byte offset of the block within this array's data section |
+| Compressed Size | uint64 | 8 | Size of the stored (compressed) block |
+| Uncompressed Size | uint64 | 8 | Size of the block when decompressed |
+
+## Data types
+
+Element type is stored as a single-byte enum:
+
+| Value | Type | Size per Element | Description |
+|-------|------|------------------|-------------|
+| 0 | INT8 | 1 byte | Signed 8-bit integer |
+| 1 | INT16 | 2 bytes | Signed 16-bit integer |
+| 2 | INT32 | 4 bytes | Signed 32-bit integer |
+| 3 | INT64 | 8 bytes | Signed 64-bit integer |
+| 4 | UINT8 | 1 byte | Unsigned 8-bit integer |
+| 5 | UINT16 | 2 bytes | Unsigned 16-bit integer |
+| 6 | UINT32 | 4 bytes | Unsigned 32-bit integer |
+| 7 | UINT64 | 8 bytes | Unsigned 64-bit integer |
+| 8 | FLOAT32 | 4 bytes | 32-bit floating point (IEEE 754) |
+| 9 | FLOAT64 | 8 bytes | 64-bit floating point (IEEE 754) |
+| 10 | STRING | variable | UTF-8 string |
+
+## Compression types
+
+Compression is stored as a single-byte enum:
+
+| Value | Type | Description |
+|-------|------|-------------|
+| 0 | NONE | No compression |
+| 1 | GZIP | GZIP/zlib compression (RFC 1952) |
+| 2 | ZSTD | Zstandard — reserved; not implemented by the reference library |
+| 3 | LZ4 | LZ4 compression |
+| 4 | GZIP_SHUFFLE | Byte-shuffle prefilter, then GZIP |
+| 5 | LZ4_SHUFFLE | Byte-shuffle prefilter, then LZ4 |
+
+!!! note
+    The `ZSTD` value is reserved in the enum but the reference implementation
+    currently reads and writes only `NONE`, `GZIP`, and `LZ4` (and their
+    `*_SHUFFLE` variants). See the [Compression guide](../guides/compression.md).
+
+### Byte-shuffle prefilter (`*_SHUFFLE`)
+
+The shuffle variants apply a reversible **byte-shuffle** to a fixed-width numeric
+array before the base codec: for elements of `N` bytes, all byte-0s are written
+contiguously, then all byte-1s, and so on. This groups the slowly-varying
+high-order bytes of numeric data (e.g. `float64` coordinates), which GZIP/LZ4
+then compress far more effectively. The shuffle is applied to the whole array's
+serialized bytes prior to block splitting and reversed on read using the element
+width from the array's data type.
+
+- Applied only to **fixed-width numeric** arrays stored separately; `string`
+  arrays and the metadata block always use the base codec.
+- Because the shuffle spans the entire array, shuffled arrays are **not
+  sliceable** (`get_slice()` throws; `is_sliceable()` returns false) — read them
+  in full with `get<T>()`.
+
+## Data section
+
+The data section holds the actual array data and the per-layer metadata blocks.
+
+### Uncompressed data
+
+When `Compression = NONE`:
+
+- Data is stored in row-major (C-style) order.
+- Total size = product of shape dimensions × element size.
+- Can be read directly from `File Position` for `Total Bytes`.
+
+### Compressed data (block-based)
+
+When compressed:
+
+- Data is divided into fixed-size blocks (`Block Size` uncompressed each).
+- Each block is compressed independently.
+- The per-block metadata in the index entry enables random access to specific
+  blocks without decompressing the whole array.
+- Block size is configurable (default: 1 MB uncompressed).
+
+**Advantages:**
+
+- **Efficient seeking** — jump to specific blocks without full decompression.
+- **Streaming** — decompress only the needed portions.
+- **Parallel I/O** — process blocks independently.
+
+## Endianness and encoding
+
+- All multi-byte integers are stored in **little-endian** format.
+- All strings (key names, string data) are encoded in **UTF-8**.
+- Multi-dimensional arrays are stored in **row-major (C-style)** order — the last
+  dimension varies fastest. A 3D array `[z, y, x]` is stored as
+  `arr[0,0,0], arr[0,0,1], …, arr[0,1,0], …`.
+
+## Validation
+
+A valid `.stards` file must:
+
+1. Start with the magic string `"STARDS"`.
+2. Use a recognized format version.
+3. Have a header size that matches the actual header content.
+4. Have an entry count that matches the number of index entries.
+5. Keep all file positions within file bounds.
+6. Reference only valid key-registry indices.
+7. Use valid data-type and compression-type enum values.
+
+## Compatibility
+
+- **Forward compatibility** — readers should ignore unknown data types or
+  compression types they do not support.
+- **Cross-platform** — all numeric fields use fixed-width types (an `int32` is
+  always 4 bytes) and little-endian byte order.
+
+
+---
+
+<!-- source: docs/reference/api-updates.md -->
+
+# Reference / API Updates
+
+# API Updates — Namespace Separation & Layer Isolation
+
+This page documents two features that shape the StarDS data model: **namespace
+separation** (arrays vs. metadata) and **layer isolation** (multi-version data
+storage). For the conceptual overview see [Concepts](../getting-started/concepts.md);
+for a full layers walkthrough see the [Layers guide](../guides/layers.md).
+
+## 1. Namespace separation (arrays vs. metadata)
+
+### Problem solved
+
+Previously, arrays and metadata shared the same key namespace, making it
+impossible to store both an array and metadata about that array using the same
+key name.
+
+### Solution
+
+Arrays and metadata now have **separate namespaces**. You can use the same key in
+both without conflicts.
+
+=== "Python"
+
+    ```python
+    import numpy as np
+    from pystards import StarDataset
+
+    ds = StarDataset.create("data.stards")
+    ds["matrix"] = np.random.rand(100, 100)             # array
+    ds.meta["matrix"] = "Covariance matrix from sensor A"  # metadata, same key
+    ds.flush()
+
+    ds2 = StarDataset.open("data.stards")
+    array_data = ds2["matrix"]        # the 100×100 array
+    metadata = ds2.meta["matrix"]     # "Covariance matrix from sensor A"
+    ```
+
+=== "C++"
+
+    ```cpp
+    #include "stards.h"
+    using namespace star;
+
+    auto store = StarDataset::create("data.stards");
+    NDArray<double> matrix = NDArray<double>::zeros({100, 100});
+    store->put("matrix", std::move(matrix));
+    store->meta.put("matrix", NDArray<std::string>({}, {"Covariance matrix"}));
+    store->flush();
+
+    auto store2 = StarDataset::open("data.stards");
+    auto array_data = store2->get<double>("matrix");
+    auto metadata = store2->meta.get("matrix")->as<std::string>();
+    ```
+
+**Key points**
+
+- Arrays: `ds["key"]` / `store->put(key, data)`
+- Metadata: `ds.meta["key"]` / `store->meta.put(key, data)`
+- Same keys allowed in both namespaces.
+
+## 2. Layer isolation (multi-version data storage)
+
+### Problem solved
+
+Previously, storing data in a layer would overwrite base data when using the same
+key name — all layers shared the same storage.
+
+### Solution
+
+Each layer now has **isolated storage** with **opt-in inheritance** from the base
+layer. Layers can hold their own version of the same logical key without
+interfering with other layers. Inheritance is **off by default**; enable it via
+`OpenOptions` at open time or `set_layer_inheritance(True)` / `set_layer_inheritance(true)`
+afterward.
+
+=== "Python"
+
+    ```python
+    ds = StarDataset.create("hyperspectral.stards")
+    ds["cube"] = raw_cube
+    ds["wavelengths"] = np.linspace(400, 2500, 300)
+
+    processed = ds.create_layer("processed")
+    processed["cube"] = processed_cube      # different data, same key
+    # wavelengths inherited from base
+
+    calibrated = ds.create_layer("calibrated")
+    calibrated["cube"] = calibrated_cube
+    calibrated["wavelengths"] = adjusted    # override
+
+    ds.flush()
+
+    # Enable inheritance (off by default) so layers fall back to base keys
+    ds2 = StarDataset.open("hyperspectral.stards")
+    ds2.set_layer_inheritance(True)
+    base_cube = ds2["cube"]
+    proc_cube = ds2.get_layer("processed")["cube"]     # different!
+    proc_waves = ds2.get_layer("processed")["wavelengths"]  # inherited
+    cal_waves = ds2.get_layer("calibrated")["wavelengths"]  # overridden
+    ```
+
+=== "C++"
+
+    ```cpp
+    auto store = StarDataset::create("data.stards");
+    store->put("image", base_image);
+    store->put("wavelengths", wavelengths);
+
+    auto layer1 = store->create_layer("processed");
+    layer1->put("image", processed_image);      // different data
+    // wavelengths inherited from base (when inheritance is enabled)
+
+    auto layer2 = store->create_layer("calibrated");
+    layer2->put("image", calibrated_image);
+    layer2->put("wavelengths", adjusted_wavelengths);  // override
+
+    store->flush();
+
+    // Inheritance is off by default; opt in at open time or afterward
+    auto store2 = StarDataset::open("data.stards");
+    store2->set_layer_inheritance(true);
+    ```
+
+### Key features
+
+1. **Isolation** — each layer's data is independent; `layer1["data"] = x` does not
+   overwrite `base["data"]`.
+2. **Opt-in inheritance** — off by default; when enabled, accessing a key not set
+   in a layer falls back to the base layer transparently.
+3. **Selective override** — set only the keys that differ; the rest are inherited
+   (with inheritance on).
+4. **Metadata support** — inheritance applies to metadata as well as arrays.
+
+### Implementation
+
+Layers use prefixed internal keys for storage while keeping the same user-facing
+key names. Array keys use a colon separator:
+
+- Base layer: `"data"` → stored as `"data"`
+- Layer `processed`: `"data"` → stored as `"__layer_processed__:data"`
+- Layer `calibrated`: `"data"` → stored as `"__layer_calibrated__:data"`
+
+Layer *metadata* keys use the same `__layer_<name>__` prefix but without the
+colon (e.g. `"__layer_processed__note"`); metadata is additionally tracked
+per-layer in the metadata registry. The exact internal key scheme is an
+implementation detail — user-facing key names are unchanged.
+
+## Examples
+
+- [`bindings/python/examples/basic_usage.py`](https://code.usgs.gov/astrogeology/stards/-/blob/main/bindings/python/examples/basic_usage.py) — namespace separation demo
+- [`bindings/python/examples/layers_example.py`](https://code.usgs.gov/astrogeology/stards/-/blob/main/bindings/python/examples/layers_example.py) — complete layers tutorial
+
+
+---
+
+
+# Generated / external references
+
+These pages are generated at build time (C++ API via mkdoxy, Python API via mkdocstrings) or link off-site, so they are referenced rather than inlined:
+
+- [ C++ API ] / Classes — `StarCPPAPI/classes.md` (https://code.usgs.gov/astrogeology/stards/-/blob/main/docs-site/docs/StarCPPAPI/classes.md)
+- [ C++ API ] / Class List — `StarCPPAPI/annotated.md` (https://code.usgs.gov/astrogeology/stards/-/blob/main/docs-site/docs/StarCPPAPI/annotated.md)
+- [ C++ API ] / Namespaces — `StarCPPAPI/namespaces.md` (https://code.usgs.gov/astrogeology/stards/-/blob/main/docs-site/docs/StarCPPAPI/namespaces.md)
+- [ C++ API ] / Files — `StarCPPAPI/files.md` (https://code.usgs.gov/astrogeology/stards/-/blob/main/docs-site/docs/StarCPPAPI/files.md)
+- [[ USGS Astrogeology Docs ]](https://astrogeology.usgs.gov/docs/)

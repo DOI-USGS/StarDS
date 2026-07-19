@@ -1,0 +1,395 @@
+/* ==========================================================================
+   StarDS documentation — theme customizations
+   Mirrors the SpiceQL Material palette and adds a parallax hero homepage.
+   ========================================================================== */
+
+:root > * {
+  --md-primary-fg-color:        #282828;
+  --md-primary-fg-color--light: #ECB7B7;
+  /* Fallback accent; overridden per theme (viridis green dark / purple light). */
+  --md-primary-fg-color--dark:  #7ad151;
+  --md-accent-fg-color:         #7ad151;   /* interactive accent (link hover, etc.) */
+}
+
+/* Darken the whole slate site: override Material's slate background surfaces
+   with a deeper charcoal-navy. #1c1e26 is the slate hue at ~13% lightness
+   (vs. the 21% default). Also darkens the header/footer, which inherit the
+   primary colour in this build. */
+[data-md-color-scheme="slate"] {
+  --md-default-bg-color:         #1c1e26;
+  --md-default-bg-color--light:  rgba(255, 255, 255, 0.07);
+  --md-default-bg-color--lighter: rgba(255, 255, 255, 0.03);
+  --md-default-bg-color--lightest: rgba(255, 255, 255, 0.01);
+  --md-primary-fg-color:         #1c1e26;
+  --md-footer-bg-color:          #14151b;
+  --md-footer-bg-color--dark:    #0f1015;
+
+  /* Accent = viridis light green in dark mode (reads on the dark banner). */
+  --md-accent-fg-color:        #21918c;
+  --md-primary-fg-color--dark: #21918c;
+  --hero-btn-primary-bg:       #21918c;   /* filled "Get Started" background */
+  --hero-btn-primary-fg:       #14151b;   /* dark text on the light-green button */
+  --hero-btn-primary-bg-hover: #21918c;
+
+  /* Dark mode banner: dimmer squares on the dark page background, so the title
+     reads with more contrast against the field. */
+  --hero-banner-bg:    #1c1e26;   /* banner field = page background */
+  --hero-square-color: #6b7280;   /* squares: muted grey (dimmer than before) */
+  --hero-square-hi:    #8a92a0;   /* front-layer sparkle */
+  --hero-title-ink:    #ffffff;   /* title + tagline colour (white on the dark banner) */
+  /* Brand word "StarDS": theme ink (white in dark mode). */
+  --hero-title-color-brand: var(--hero-title-ink);
+  /* Contrast scrim behind the hero text: DARK in dark mode so the white title
+     and tagline stay legible over the busy starfield. */
+  --hero-scrim-color: #000000;
+  --hero-scrim-opacity: 0.1;
+  /* Optional: tint just the front layer (layers 0..3). Uncomment to override. */
+  --hero-square-color-0: #7ad151;
+  /* Colour ramp the squares are painted along; its offset and direction drift
+     slowly over time (see RAMP_SPEED / ROTATE_SPEED in hero-banner.js). Needs
+     2+ comma-separated colours to animate; remove to fall back to flat colour.
+     Dark mode: starts on the viridis BLUE, then brightens through teal/green to
+     yellow — all light enough to read against the dark banner. */
+  --hero-square-ramp: #243358, #174450, #1a585f, #276a3c;
+
+  /* Title-text gradient (rendered in Three.js, NOT the circles). Dark mode uses
+     the LIGHT end of viridis — teal→green→yellow — bright against the dark banner
+     and deliberately lighter than the (darkened) circle ramp above. */
+  --hero-title-ramp: #21918c, #35b779, #8fd744, #fde725;
+
+  /* Header blocks match the banner background so they mask the dots behind the
+     text for clean contrast; the text uses the theme ink. */
+  --hero-title-box-bg:   var(--hero-banner-bg);       /* block = banner bg */
+  --hero-title-box-fg:   var(--hero-title-ink);       /* header text colour */
+  --hero-actions-box-bg: #14151b;                     /* dark box behind the CTAs */
+}
+
+/* Light mode banner: dark squares on a white banner, black title (inverse). */
+[data-md-color-scheme="default"] {
+  --hero-banner-bg:    #ffffff;
+  --hero-square-color: #1c1e26;   /* non-accent stars = dark-mode bg (near-black) on white */
+  --hero-square-hi:    #b3b3b3;
+  --hero-title-ink:    #000000;   /* title + tagline colour (black on the white banner) */
+  /* Brand word "StarDS": theme ink (black in light mode). */
+  --hero-title-color-brand: var(--hero-title-ink);
+  /* Contrast scrim behind the hero text: LIGHT in light mode so the black title
+     and tagline stay legible over the busy starfield. */
+  --hero-scrim-color: #ffffff;
+  --hero-scrim-opacity: 0.7;
+  /* Optional: tint just the front layer (layers 0..3). Uncomment to override. */
+  /* --hero-square-color-0: #440154; */
+  /* Colour ramp the squares are painted along (light-mode variant).
+     Light mode: starts on the viridis BLUE, then deepens through indigo to
+     purple — all dark enough to read against the white banner. */
+  --hero-square-ramp: #cad0e4, #b0b3c9, #d2cede;
+
+  /* Title-text gradient (rendered in Three.js). Light mode uses the DARK end of
+     viridis — deep purple→blue→teal — dark enough to read on the white banner and
+     distinct from the (pale) circle ramp above. */
+  --hero-title-ramp: #440154, #414487, #2a788e, #22a884;
+
+  /* Accent = viridis dark purple in light mode (reads on the white banner). */
+  --md-accent-fg-color:        #440154;
+  --md-primary-fg-color--dark: #440154;
+  --hero-btn-primary-bg:       #440154;   /* filled "Get Started" background */
+  --hero-btn-primary-fg:       #ffffff;   /* white text on the purple button */
+  --hero-btn-primary-bg-hover: #5c1f6e;
+  /* Outlined "API Reference" button uses the dark-mode bg colour (near-black). */
+  --hero-btn-outline-fg:       #1c1e26;
+  --hero-btn-outline-fg-hover: #440154;
+
+  /* Light top bar (header/nav) with dark text, instead of the dark gray it
+     otherwise inherits from :root. */
+  --md-primary-fg-color:    #ffffff;   /* header/nav bar background */
+  --md-primary-bg-color:    #14151b;   /* text/icons on the header */
+  --md-primary-bg-color--light: rgba(0, 0, 0, 0.54);
+
+  /* Content links: Material defaults --md-typeset-a-color to --md-primary-fg-color,
+     which we just set to white — so pin it to a readable blue in light mode,
+     otherwise every body link (e.g. the "Where to Next" list) is white-on-white. */
+  --md-typeset-a-color:     #3b5bdb;
+
+  /* Header blocks match the banner background so they mask the dots behind the
+     text; the text uses the theme ink. CTA box stays dark for contrast on white. */
+  --hero-title-box-bg:   var(--hero-banner-bg);       /* block = banner bg */
+  --hero-title-box-fg:   var(--hero-title-ink);       /* header text colour */
+  --hero-actions-box-bg: #1c1e26;                     /* dark box behind the CTAs */
+}
+
+/* --------------------------------------------------------------------------
+   Hero title parameters — tweak these to reposition / resize the "StarDS"
+   title (Bebas Neue). All hero title styles below read from these vars.
+   -------------------------------------------------------------------------- */
+:root {
+  --hero-title-font: "Bebas Neue", "Oswald", "Inter", sans-serif;
+  --hero-title-size: clamp(2rem, 22vw, 7rem);  /* big: dominates the hero, scales with viewport */
+  --hero-title-weight: 700;         /* bold */
+  --hero-title-tracking: 0.02em;    /* letter-spacing */
+  --hero-title-line: 0.95;          /* line-height */
+  --hero-title-box-gap: 0.0em;     /* vertical gap between the per-line boxes */
+  --hero-title-box-pad: 0.18em;    /* uniform padding on all sides of each title block */
+  --hero-title-color: var(--hero-title-ink, #ffffff);  /* inverts with theme */
+  --hero-title-ramp: #21918c, #35b779, #8fd744, #fde725;  /* fallback title gradient (light viridis) */
+  --hero-title-color-brand: var(--hero-title-ink);  /* fallback "StarDS" brand colour (theme ink) */
+  --hero-scrim-color: #000000;   /* fallback contrast scrim (dark) */
+  --hero-scrim-opacity: 0.55;
+
+  /* Banner colour fallbacks (theme blocks above override per light/dark). */
+  --hero-banner-bg:    #1c1e26;
+  --hero-square-color: #e8ebf5;
+  --hero-square-hi:    #ffffff;
+  --hero-title-ink:    #ffffff;
+
+  /* Subtitle (H2) — defaults mirror the title but can be tweaked independently. */
+  --hero-subtitle-font: var(--hero-title-font);
+  --hero-subtitle-size: clamp(1.5rem, 5vw, 8rem);  /* smaller than the title */
+  --hero-subtitle-weight: 700;
+  --hero-subtitle-tracking: 0.02em;
+  --hero-subtitle-line: 1;
+  --hero-subtitle-color: #8498E0;
+  --hero-subtitle-margin: 0.5rem 0 0;  /* gap above the subtitle */
+
+  /* Position of the hero content block within the banner. */
+  --hero-align: flex-start;             /* horizontal: flex-start | center | flex-end */
+  --hero-justify: center;           /* vertical:   flex-start | center | flex-end */
+  --hero-text-align: left;        /* text alignment: left | center | right */
+  --hero-offset-x: 0px;             /* nudge content horizontally */
+  --hero-offset-y: 0px;             /* nudge content vertically */
+  --hero-max-width: min(80rem, 60vw);  /* content block max width */
+  /* Width of the site's centered content column (Material's .md-grid = 61rem).
+     The full-bleed hero pads its content in to this column so the title/buttons
+     line up with the page body instead of running to the viewport edge. The
+     min gutter keeps a margin on narrow screens. */
+  --hero-content-max: 61rem;
+  --hero-content-gutter: 1.5rem;
+
+  /* Hero button fallbacks; each theme block overrides the accent (viridis green
+     in dark mode, dark purple in light mode). */
+  --hero-btn-primary-bg:       #7ad151;   /* filled "Get Started" background */
+  --hero-btn-primary-fg:       #14151b;   /* filled button text */
+  --hero-btn-primary-bg-hover: #addc30;
+  --hero-btn-outline-fg:       var(--hero-title-ink, #ffffff);  /* outlined text/border */
+  --hero-btn-outline-fg-hover: var(--hero-btn-primary-bg);
+}
+
+/* --------------------------------------------------------------------------
+   Homepage: hide the auto-generated H1 (the hero supplies the title) and the
+   edit button. Scoped to the home template so other pages are unaffected.
+   -------------------------------------------------------------------------- */
+.star-home-content .md-typeset h1,
+.md-content__button {
+  display: none;
+}
+
+/* Every H1/H2 in the Markdown content gets a filled accent box with hard edges.
+   `display: table` shrink-wraps the box to the heading text (not full width).
+   The hero title/subtitle are excluded so the banner heading stays plain. */
+.md-content .md-typeset h1:not(.star-hero__title),
+.md-content .md-typeset h2:not(.star-hero__subtitle) {
+  display: table;
+  color: #ffffff;
+  background-color: var(--md-accent-fg-color);
+  padding: 0.2em 0.4em;
+  border-radius: 0;                 /* hard edges */
+}
+
+/* --------------------------------------------------------------------------
+   Parallax hero
+   -------------------------------------------------------------------------- */
+.star-hero {
+  position: relative;
+  /* Own stacking context BELOW Material's sticky header (.md-header z-index:4),
+     so the inner content's z-index (6) stays LOCAL to the hero and can't paint
+     over the header / mobile hamburger. Without this, `position:relative` with
+     no z-index leaves .star-hero__inner competing in the root context, where
+     6 > 4 covered the header and blocked its clicks. */
+  z-index: 0;
+  min-height: 90vh;
+  display: flex;
+  align-items: var(--hero-justify);      /* vertical placement of content */
+  justify-content: var(--hero-align);    /* horizontal placement of content */
+  overflow: hidden;
+  /* Full-bleed: break out of Material's centered, max-width content container
+     so the banner spans the entire window width. */
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+  margin-top: 0;
+  /* Pad the CONTENT in to the site's centered column so the title/buttons align
+     with the page body (no drift to the far-left viewport edge). The background
+     (.star-hero__bg, position:absolute inset:0) ignores padding and still fills
+     the full 100vw. On narrow screens this collapses to the min gutter. */
+  padding-left: max(var(--hero-content-gutter), calc((100vw - var(--hero-content-max)) / 2));
+  padding-right: max(var(--hero-content-gutter), calc((100vw - var(--hero-content-max)) / 2));
+  box-sizing: border-box;
+}
+
+/* Stacked depth layers: a 3D field of squares drawn client-side by
+   hero-banner.js into <canvas> elements (no image files). Each is translated at
+   a different speed on scroll, so the planes drift apart and read as receding
+   into the distance. The extra top/bottom inset means a layer never reveals an
+   edge as it moves. */
+.star-hero__bg {
+  position: absolute;
+  inset: 0;
+  background-color: var(--hero-banner-bg);   /* banner field; inverts with theme */
+  z-index: 0;
+}
+
+.star-hero__layer {
+  position: absolute;
+  inset: -30% 0 -30% 0;
+  width: 100%;
+  height: 160%;                 /* matches the -30% top/bottom inset */
+  display: block;
+  will-change: transform;
+}
+
+/* Back (3) -> front (0). Deeper layers sit lower in the stack. */
+.star-hero__layer--3 { z-index: 1; }
+.star-hero__layer--2 { z-index: 2; }
+.star-hero__layer--1 { z-index: 3; }
+.star-hero__layer--0 { z-index: 4; }
+
+.star-hero__inner {
+  position: relative;
+  z-index: 6;
+  text-align: var(--hero-text-align);
+  color: var(--hero-title-ink);
+  padding: 2rem 1.5rem;
+  max-width: var(--hero-max-width);
+  transform: translate(var(--hero-offset-x), var(--hero-offset-y));
+}
+
+/* Contrast scrim: a soft gradient behind the hero text that darkens (dark mode)
+   or lightens (light mode) the busy starfield right under the title/tagline, so
+   they stay legible. It sits BEHIND the text (z-index:-1 within the inner block)
+   and fades to transparent at the edges so it blends into the banner rather than
+   showing a hard box. Set --hero-scrim-opacity: 0 to disable. */
+.star-hero__inner::before {
+  content: "";
+  position: absolute;
+  inset: -1% -4%;                 /* extend past the text so the fade is gentle */
+  z-index: -1;
+  pointer-events: none;
+  opacity: var(--hero-scrim-opacity, 0.8);
+  background: radial-gradient(
+    ellipse at center,
+    var(--hero-scrim-color, #0000007e) 0%,
+    var(--hero-scrim-color, #00000077) 35%,
+    transparent 80%
+  );
+}
+
+/* NOTE: the hero renders inside Material's `.md-typeset` article, whose
+   `.md-typeset h1/p` rules (specificity 0,1,1) would otherwise override these.
+   The `.star-hero` prefix raises specificity to 0,2,0 so our sizes win. */
+.star-hero .star-hero__title {
+  font-family: var(--hero-title-font);
+  font-size: var(--hero-title-size);
+  font-weight: var(--hero-title-weight);
+  line-height: var(--hero-title-line);
+  letter-spacing: var(--hero-title-tracking);
+  margin: 0;
+  /* Each line is its own box. A flex column sizes every line-box to its own
+     text width and spaces them with a real gap, so the accent boxes never
+     overlap (unlike vertical padding on inline text at a tight line-height). */
+  display: flex;
+  flex-direction: column;
+  align-items: var(--hero-align);   /* boxes hug their text, aligned to the hero */
+  gap: var(--hero-title-box-gap, 0.12em);
+}
+
+.star-hero .star-hero__title span {
+  display: inline-block;
+  /* "StarDS" brand word: lightest viridis blue (light mode) / darkest (dark). */
+  color: var(--hero-title-color-brand, var(--hero-title-ink));
+}
+
+/* Subtitle (H2): same high-specificity treatment so it beats `.md-typeset h2`.
+   Reads its own --hero-subtitle-* vars, which default to the title's values. */
+.star-hero .star-hero__subtitle {
+  font-family: var(--hero-subtitle-font);
+  font-size: var(--hero-subtitle-size);
+  font-weight: var(--hero-subtitle-weight);
+  line-height: var(--hero-subtitle-line);
+  letter-spacing: var(--hero-subtitle-tracking);
+  color: var(--hero-subtitle-color);
+  margin: var(--hero-subtitle-margin);
+}
+
+.star-hero .star-hero__tagline {
+  font-size: 1.25rem;
+  line-height: 1.6;
+  font-weight: 700;         /* bold summary sub-header */
+  color: var(--hero-title-ink);
+  opacity: 0.92;
+  margin: 1.25rem 0 0;      /* left-aligned under the title (no auto-centering) */
+  max-width: 40rem;         /* Zarr-style short summary line length */
+}
+
+.star-hero__actions {
+  margin-top: 2rem;
+  display: flex;
+  gap: 1rem;
+  justify-content: var(--hero-align);   /* match the hero content alignment */
+  flex-wrap: wrap;
+}
+
+/* Hero CTAs. The `.star-hero` prefix outranks Material's `.md-typeset .md-button`
+   so these colours (not the near-black theme primary) apply. */
+.star-hero .md-button {
+  border-color: var(--hero-btn-outline-fg);
+  color: var(--hero-btn-outline-fg);
+}
+.star-hero .md-button:hover,
+.star-hero .md-button:focus {
+  background-color: transparent;
+  border-color: var(--hero-btn-outline-fg-hover);
+  color: var(--hero-btn-outline-fg-hover);
+}
+
+.star-hero .md-button--primary {
+  background-color: var(--hero-btn-primary-bg);
+  border-color: var(--hero-btn-primary-bg);
+  color: var(--hero-btn-primary-fg);
+}
+.star-hero .md-button--primary:hover,
+.star-hero .md-button--primary:focus {
+  background-color: var(--hero-btn-primary-bg-hover);
+  border-color: var(--hero-btn-primary-bg-hover);
+  color: var(--hero-btn-primary-fg);
+}
+
+/* Ensure the homepage body sits above the hero and reads as normal content. */
+.star-home-content {
+  position: relative;
+  z-index: 3;
+  background: var(--md-default-bg-color);
+}
+
+/* --------------------------------------------------------------------------
+   Footer (light mode fix)
+   In this Material build the prev/next footer bar inherits --md-primary-fg-color
+   as its background, which light mode sets to white — so its white link text
+   is invisible. Recolour the footer nav links blue in light mode only.
+   -------------------------------------------------------------------------- */
+[data-md-color-scheme="default"] .md-footer__link,
+[data-md-color-scheme="default"] .md-footer__link:hover,
+[data-md-color-scheme="default"] .md-footer__link:focus,
+[data-md-color-scheme="default"] .md-footer__title,
+[data-md-color-scheme="default"] .md-footer__direction {
+  color: #3b5bdb;   /* readable blue on the white footer bar */
+}
+
+@media screen and (max-width: 45rem) {
+  :root { --hero-title-size: 5rem; }
+  .star-hero__tagline { font-size: 1.05rem; }
+}
+
+/* Respect users who prefer reduced motion: disable the parallax translate. */
+@media (prefers-reduced-motion: reduce) {
+  .star-hero__layer {
+    transform: none !important;
+  }
+}

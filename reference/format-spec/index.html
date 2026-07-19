@@ -1,0 +1,2507 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="STAR (Simple Tensors Arrays and Rasters) — persistent N-dimensional arrays with compression and cloud storage.">
+      
+      
+      
+      
+        <link rel="prev" href="../../cli/stards-translate/">
+      
+      
+        <link rel="next" href="../api-updates/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Format Spec - StarDS Manual</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+  
+  
+  
+  
+  <style>:root{--md-annotation-icon:url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cpath%20d%3D%22M22%2012a10%2010%200%200%201-10%2010A10%2010%200%200%201%202%2012%2010%2010%200%200%201%2012%202a10%2010%200%200%201%2010%2010m-12%206%206-6-6-6-1.4%201.4%204.6%204.6-4.6%204.6z%22/%3E%3C/svg%3E');}</style>
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#binary-format-specification" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="StarDS Manual" class="md-header__button md-logo" aria-label="StarDS Manual" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            StarDS Manual
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Format Spec
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/DOI-USGS/StarDS" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../getting-started/installation/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Getting Started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../guides/layers/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Guides
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../python-api/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Python API
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../cpp-api/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  [ C++ API ]
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../cli/stardsls/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  CLI Tools
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="./" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="https://astrogeology.usgs.gov/docs/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  [ USGS Astrogeology Docs ]
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="StarDS Manual" class="md-nav__button md-logo" aria-label="StarDS Manual" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    StarDS Manual
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/DOI-USGS/StarDS" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting Started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quick Start
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/concepts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Concepts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/layers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Layers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/compression/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Compression
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/cloud-storage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cloud Storage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/slicing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Slicing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/threading/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Threading
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../python-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../cpp-api/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    [ C++ API ]
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    [ C++ API ]
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../StarCPPAPI/classes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Classes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../StarCPPAPI/annotated/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Class List
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../StarCPPAPI/namespaces/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Namespaces
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../StarCPPAPI/files/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Files
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI Tools
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    CLI Tools
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cli/stardsls/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    stardsls
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cli/stards-translate/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    stards_translate
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Format Spec
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Format Spec
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#file-extension" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        File extension
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#format-version" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Format version
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#binary-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Binary structure
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#header-section" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Header section
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Header section">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-fixed-file-header-31-bytes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Fixed file header (31 bytes)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-global-key-registry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Global key registry
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-layer-metadata-registry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Layer metadata registry
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-layer-presence-bitmaps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Layer presence bitmaps
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-index-entries" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Index entries
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#block-metadata-blockinfo-per-block" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Block metadata (BlockInfo, per block)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#data-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Data types
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#compression-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Compression types
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Compression types">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#byte-shuffle-prefilter-_shuffle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Byte-shuffle prefilter (*_SHUFFLE)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#data-section" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Data section
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Data section">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#uncompressed-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Uncompressed data
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#compressed-data-block-based" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Compressed data (block-based)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#endianness-and-encoding" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Endianness and encoding
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Validation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#compatibility" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Compatibility
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-updates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Updates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://astrogeology.usgs.gov/docs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    [ USGS Astrogeology Docs ]
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#file-extension" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        File extension
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#format-version" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Format version
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#binary-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Binary structure
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#header-section" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Header section
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Header section">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-fixed-file-header-31-bytes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Fixed file header (31 bytes)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-global-key-registry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Global key registry
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-layer-metadata-registry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Layer metadata registry
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-layer-presence-bitmaps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Layer presence bitmaps
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-index-entries" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Index entries
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#block-metadata-blockinfo-per-block" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Block metadata (BlockInfo, per block)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#data-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Data types
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#compression-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Compression types
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Compression types">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#byte-shuffle-prefilter-_shuffle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Byte-shuffle prefilter (*_SHUFFLE)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#data-section" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Data section
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Data section">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#uncompressed-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Uncompressed data
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#compressed-data-block-based" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Compressed data (block-based)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#endianness-and-encoding" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Endianness and encoding
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Validation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#compatibility" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Compatibility
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+                
+
+
+
+  
+
+
+  <nav class="md-path" aria-label="Navigation" >
+    <ol class="md-path__list">
+      
+        
+  
+  
+    <li class="md-path__item">
+      <a href="../.." class="md-path__link">
+        
+  <span class="md-ellipsis">
+    Home
+  </span>
+
+      </a>
+    </li>
+  
+
+      
+      
+        
+  
+  
+    
+    
+      <li class="md-path__item">
+        <a href="./" class="md-path__link">
+          
+  <span class="md-ellipsis">
+    Reference
+  </span>
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ol>
+  </nav>
+
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="binary-format-specification">Binary Format Specification</h1>
+<p>This document describes the on-disk binary structure of StarDS (Simple Tensors
+Arrays and Rasters) files, as written and read by the reference implementation in
+<code>StarDS/include/stards.h</code>.</p>
+<div class="admonition tip">
+<p class="admonition-title">Machine-readable spec</p>
+<p>A <a href="https://kaitai.io">Kaitai Struct</a> description of this format lives at
+<a href="../stards.ksy"><code>stards.ksy</code></a>. It is pinned to <strong>format version 1</strong> (it asserts
+<code>format_version == 1</code>), so it doubles as the single, versioned source of truth
+for the v1 binary layout — feed it to <code>kaitai-struct-compiler</code> to generate a
+parser/validator in any supported language, or open it in the
+<a href="https://ide.kaitai.io">Kaitai Web IDE</a> to inspect a <code>.stards</code> file. When the
+format changes incompatibly, a new <code>stards_v2.ksy</code> is added rather than
+editing the v1 spec, so each version's structure is described in exactly one
+place.</p>
+</div>
+<h2 id="file-extension">File extension</h2>
+<p><code>.stards</code></p>
+<h2 id="format-version">Format version</h2>
+<p>The current on-disk format is <strong>version 1</strong> (<code>format_version = 1</code>), which stores a
+global key registry, per-layer metadata blocks, and per-layer presence bitmaps.
+The <strong>software/library version is not stored in the file</strong> — only the one-byte
+format version is persisted. (The library version, currently <code>1.0.0</code>, is available
+at runtime via <code>getLibraryVersion()</code>.)</p>
+<h2 id="binary-structure">Binary structure</h2>
+<p>A <code>.stards</code> file is a <strong>header section</strong> followed by a <strong>data section</strong>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>┌──────────────────────────────────────────────────────────────┐
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>│ HEADER SECTION                                                 │
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>├──────────────────────────────────────────────────────────────┤
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>│ 1. Fixed file header (31 bytes)                                │
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>│ 2. Global key registry        (all unique key names + hashes)  │
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>│ 3. Layer metadata registry    (__base__ + each named layer)    │
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>│ 4. Layer presence bitmaps      (which arrays exist per layer)   │
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>│ 5. Index entries              (one per stored array)           │
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>├──────────────────────────────────────────────────────────────┤
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>│ DATA SECTION                                                   │
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>├──────────────────────────────────────────────────────────────┤
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>│ Array data blocks (compressed or raw), and per-layer           │
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>│ metadata blocks referenced by the layer metadata registry.     │
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>└──────────────────────────────────────────────────────────────┘
+</code></pre></div>
+<p>The fixed header records <code>header_size</code>, so a reader loads the whole header
+section in one read, then parses sections 2–5 from it.</p>
+<h2 id="header-section">Header section</h2>
+<p>All multi-byte integers are little-endian.</p>
+<h3 id="1-fixed-file-header-31-bytes">1. Fixed file header (31 bytes)</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Size</th>
+<th>Offset</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Magic String</td>
+<td>char[6]</td>
+<td>6</td>
+<td>0</td>
+<td>File identifier: <code>"STARDS"</code></td>
+</tr>
+<tr>
+<td>Format Version</td>
+<td>uint8</td>
+<td>1</td>
+<td>6</td>
+<td>On-disk format version: <code>1</code></td>
+</tr>
+<tr>
+<td>Header Size</td>
+<td>uint64</td>
+<td>8</td>
+<td>7</td>
+<td>Total size of the header section in bytes</td>
+</tr>
+<tr>
+<td>Entry Count</td>
+<td>uint64</td>
+<td>8</td>
+<td>15</td>
+<td>Number of stored data arrays (index entries)</td>
+</tr>
+<tr>
+<td>Layer Count</td>
+<td>uint32</td>
+<td>4</td>
+<td>23</td>
+<td>Number of <strong>named</strong> layers (excludes <code>__base__</code>)</td>
+</tr>
+<tr>
+<td>Key Registry Count</td>
+<td>uint32</td>
+<td>4</td>
+<td>27</td>
+<td>Number of unique keys in the global registry</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Total:</strong> 31 bytes.</p>
+<h3 id="2-global-key-registry">2. Global key registry</h3>
+<p>All unique key names are stored once, in a central registry; everywhere else keys
+are referenced by their <code>uint16</code> index into this registry. The registry holds
+<code>Key Registry Count</code> entries, each:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Size</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Key Length</td>
+<td>uint16</td>
+<td>2</td>
+<td>Length of the key string in bytes</td>
+</tr>
+<tr>
+<td>Key String</td>
+<td>UTF-8</td>
+<td>variable</td>
+<td>The key name</td>
+</tr>
+<tr>
+<td>Hash</td>
+<td>uint64</td>
+<td>8</td>
+<td>Precomputed <code>std::hash</code> of the key (for O(1) lookup)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="3-layer-metadata-registry">3. Layer metadata registry</h3>
+<p>Contains <code>Layer Count + 1</code> entries — one for the implicit base layer (<code>__base__</code>)
+plus one per named layer. Each entry describes that layer's metadata block and
+which metadata keys it holds:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Size</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Layer Name Length</td>
+<td>uint16</td>
+<td>2</td>
+<td>Length of the layer name</td>
+</tr>
+<tr>
+<td>Layer Name</td>
+<td>UTF-8</td>
+<td>variable</td>
+<td>Layer name (<code>__base__</code> for the base layer)</td>
+</tr>
+<tr>
+<td>Metadata Block Position</td>
+<td>uint64</td>
+<td>8</td>
+<td>Byte offset of this layer's metadata block in the data section</td>
+</tr>
+<tr>
+<td>Metadata Block Size</td>
+<td>uint32</td>
+<td>4</td>
+<td>Size of the metadata block in bytes</td>
+</tr>
+<tr>
+<td>Compression</td>
+<td>uint8</td>
+<td>1</td>
+<td>Compression algorithm of the metadata block (see enum)</td>
+</tr>
+<tr>
+<td>Metadata Key Count</td>
+<td>uint16</td>
+<td>2</td>
+<td>Number of metadata keys in this layer</td>
+</tr>
+<tr>
+<td>Key Indices</td>
+<td>uint16[]</td>
+<td>2 × count</td>
+<td>Registry indices of this layer's metadata keys</td>
+</tr>
+</tbody>
+</table>
+<h3 id="4-layer-presence-bitmaps">4. Layer presence bitmaps</h3>
+<p>For each layer (again <code>Layer Count + 1</code>, base first), a bitmap marks which of the
+data arrays are present in that layer. Each bitmap is
+<code>ceil(Entry Count / 64)</code> words:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Size</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Bitmap</td>
+<td>uint64[]</td>
+<td>8 × ⌈entry_count/64⌉</td>
+<td>One bit per index entry; set = array present in this layer</td>
+</tr>
+</tbody>
+</table>
+<h3 id="5-index-entries">5. Index entries</h3>
+<p>One entry per stored data array (<code>Entry Count</code> total). Metadata values are <strong>not</strong>
+listed here — they live in the per-layer metadata blocks (section 3). Each index
+entry is a <code>uint16</code> key index followed by the serialized array descriptor:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Size</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Key Index</td>
+<td>uint16</td>
+<td>2</td>
+<td>Index into the global key registry</td>
+</tr>
+<tr>
+<td>File Position</td>
+<td>uint64</td>
+<td>8</td>
+<td>Byte offset to this array's data in the data section</td>
+</tr>
+<tr>
+<td>Total Bytes</td>
+<td>uint64</td>
+<td>8</td>
+<td>Total stored size of the array data (all blocks)</td>
+</tr>
+<tr>
+<td>Data Type</td>
+<td>uint8</td>
+<td>1</td>
+<td>Element type enum (see Data Types)</td>
+</tr>
+<tr>
+<td>Num Dimensions</td>
+<td>uint64</td>
+<td>8</td>
+<td>Number of dimensions (<code>0</code> = scalar)</td>
+</tr>
+<tr>
+<td>Shape</td>
+<td>uint64[]</td>
+<td>8 × ndim</td>
+<td>Size of each dimension</td>
+</tr>
+<tr>
+<td>Compression</td>
+<td>uint8</td>
+<td>1</td>
+<td>Compression algorithm enum</td>
+</tr>
+<tr>
+<td>Block Size</td>
+<td>uint64</td>
+<td>8</td>
+<td>Uncompressed block size (<code>0</code> = not blocked)</td>
+</tr>
+<tr>
+<td>Num Blocks</td>
+<td>uint64</td>
+<td>8</td>
+<td>Number of data blocks</td>
+</tr>
+<tr>
+<td>Block Metadata</td>
+<td>BlockInfo[]</td>
+<td>24 × num_blocks</td>
+<td>Per-block metadata (below)</td>
+</tr>
+<tr>
+<td>Stored-in-metadata flag</td>
+<td>uint8</td>
+<td>1</td>
+<td>Always <code>0</code> for index entries in v1</td>
+</tr>
+</tbody>
+</table>
+<h3 id="block-metadata-blockinfo-per-block">Block metadata (<code>BlockInfo</code>, per block)</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Size</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Offset</td>
+<td>uint64</td>
+<td>8</td>
+<td>Byte offset of the block within this array's data section</td>
+</tr>
+<tr>
+<td>Compressed Size</td>
+<td>uint64</td>
+<td>8</td>
+<td>Size of the stored (compressed) block</td>
+</tr>
+<tr>
+<td>Uncompressed Size</td>
+<td>uint64</td>
+<td>8</td>
+<td>Size of the block when decompressed</td>
+</tr>
+</tbody>
+</table>
+<h2 id="data-types">Data types</h2>
+<p>Element type is stored as a single-byte enum:</p>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Type</th>
+<th>Size per Element</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>INT8</td>
+<td>1 byte</td>
+<td>Signed 8-bit integer</td>
+</tr>
+<tr>
+<td>1</td>
+<td>INT16</td>
+<td>2 bytes</td>
+<td>Signed 16-bit integer</td>
+</tr>
+<tr>
+<td>2</td>
+<td>INT32</td>
+<td>4 bytes</td>
+<td>Signed 32-bit integer</td>
+</tr>
+<tr>
+<td>3</td>
+<td>INT64</td>
+<td>8 bytes</td>
+<td>Signed 64-bit integer</td>
+</tr>
+<tr>
+<td>4</td>
+<td>UINT8</td>
+<td>1 byte</td>
+<td>Unsigned 8-bit integer</td>
+</tr>
+<tr>
+<td>5</td>
+<td>UINT16</td>
+<td>2 bytes</td>
+<td>Unsigned 16-bit integer</td>
+</tr>
+<tr>
+<td>6</td>
+<td>UINT32</td>
+<td>4 bytes</td>
+<td>Unsigned 32-bit integer</td>
+</tr>
+<tr>
+<td>7</td>
+<td>UINT64</td>
+<td>8 bytes</td>
+<td>Unsigned 64-bit integer</td>
+</tr>
+<tr>
+<td>8</td>
+<td>FLOAT32</td>
+<td>4 bytes</td>
+<td>32-bit floating point (IEEE 754)</td>
+</tr>
+<tr>
+<td>9</td>
+<td>FLOAT64</td>
+<td>8 bytes</td>
+<td>64-bit floating point (IEEE 754)</td>
+</tr>
+<tr>
+<td>10</td>
+<td>STRING</td>
+<td>variable</td>
+<td>UTF-8 string</td>
+</tr>
+</tbody>
+</table>
+<h2 id="compression-types">Compression types</h2>
+<p>Compression is stored as a single-byte enum:</p>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>NONE</td>
+<td>No compression</td>
+</tr>
+<tr>
+<td>1</td>
+<td>GZIP</td>
+<td>GZIP/zlib compression (RFC 1952)</td>
+</tr>
+<tr>
+<td>2</td>
+<td>ZSTD</td>
+<td>Zstandard — reserved; not implemented by the reference library</td>
+</tr>
+<tr>
+<td>3</td>
+<td>LZ4</td>
+<td>LZ4 compression</td>
+</tr>
+<tr>
+<td>4</td>
+<td>GZIP_SHUFFLE</td>
+<td>Byte-shuffle prefilter, then GZIP</td>
+</tr>
+<tr>
+<td>5</td>
+<td>LZ4_SHUFFLE</td>
+<td>Byte-shuffle prefilter, then LZ4</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The <code>ZSTD</code> value is reserved in the enum but the reference implementation
+currently reads and writes only <code>NONE</code>, <code>GZIP</code>, and <code>LZ4</code> (and their
+<code>*_SHUFFLE</code> variants). See the <a href="../../guides/compression/">Compression guide</a>.</p>
+</div>
+<h3 id="byte-shuffle-prefilter-_shuffle">Byte-shuffle prefilter (<code>*_SHUFFLE</code>)</h3>
+<p>The shuffle variants apply a reversible <strong>byte-shuffle</strong> to a fixed-width numeric
+array before the base codec: for elements of <code>N</code> bytes, all byte-0s are written
+contiguously, then all byte-1s, and so on. This groups the slowly-varying
+high-order bytes of numeric data (e.g. <code>float64</code> coordinates), which GZIP/LZ4
+then compress far more effectively. The shuffle is applied to the whole array's
+serialized bytes prior to block splitting and reversed on read using the element
+width from the array's data type.</p>
+<ul>
+<li>Applied only to <strong>fixed-width numeric</strong> arrays stored separately; <code>string</code>
+  arrays and the metadata block always use the base codec.</li>
+<li>Because the shuffle spans the entire array, shuffled arrays are <strong>not
+  sliceable</strong> (<code>get_slice()</code> throws; <code>is_sliceable()</code> returns false) — read them
+  in full with <code>get&lt;T&gt;()</code>.</li>
+</ul>
+<h2 id="data-section">Data section</h2>
+<p>The data section holds the actual array data and the per-layer metadata blocks.</p>
+<h3 id="uncompressed-data">Uncompressed data</h3>
+<p>When <code>Compression = NONE</code>:</p>
+<ul>
+<li>Data is stored in row-major (C-style) order.</li>
+<li>Total size = product of shape dimensions × element size.</li>
+<li>Can be read directly from <code>File Position</code> for <code>Total Bytes</code>.</li>
+</ul>
+<h3 id="compressed-data-block-based">Compressed data (block-based)</h3>
+<p>When compressed:</p>
+<ul>
+<li>Data is divided into fixed-size blocks (<code>Block Size</code> uncompressed each).</li>
+<li>Each block is compressed independently.</li>
+<li>The per-block metadata in the index entry enables random access to specific
+  blocks without decompressing the whole array.</li>
+<li>Block size is configurable (default: 1 MB uncompressed).</li>
+</ul>
+<p><strong>Advantages:</strong></p>
+<ul>
+<li><strong>Efficient seeking</strong> — jump to specific blocks without full decompression.</li>
+<li><strong>Streaming</strong> — decompress only the needed portions.</li>
+<li><strong>Parallel I/O</strong> — process blocks independently.</li>
+</ul>
+<h2 id="endianness-and-encoding">Endianness and encoding</h2>
+<ul>
+<li>All multi-byte integers are stored in <strong>little-endian</strong> format.</li>
+<li>All strings (key names, string data) are encoded in <strong>UTF-8</strong>.</li>
+<li>Multi-dimensional arrays are stored in <strong>row-major (C-style)</strong> order — the last
+  dimension varies fastest. A 3D array <code>[z, y, x]</code> is stored as
+  <code>arr[0,0,0], arr[0,0,1], …, arr[0,1,0], …</code>.</li>
+</ul>
+<h2 id="validation">Validation</h2>
+<p>A valid <code>.stards</code> file must:</p>
+<ol>
+<li>Start with the magic string <code>"STARDS"</code>.</li>
+<li>Use a recognized format version.</li>
+<li>Have a header size that matches the actual header content.</li>
+<li>Have an entry count that matches the number of index entries.</li>
+<li>Keep all file positions within file bounds.</li>
+<li>Reference only valid key-registry indices.</li>
+<li>Use valid data-type and compression-type enum values.</li>
+</ol>
+<h2 id="compatibility">Compatibility</h2>
+<ul>
+<li><strong>Forward compatibility</strong> — readers should ignore unknown data types or
+  compression types they do not support.</li>
+<li><strong>Cross-platform</strong> — all numeric fields use fixed-width types (an <code>int32</code> is
+  always 4 bytes) and little-endian byte order.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.path", "navigation.indexes", "navigation.sections", "navigation.top", "search.suggest", "content.tabs.link", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>
