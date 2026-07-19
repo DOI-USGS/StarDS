@@ -112,16 +112,6 @@ jobs:
           environment-name: stards
           cache-environment: true
 
-      - name: Build Python bindings (SWIG _pystards extension)
-        run: |
-          mkdir build && cd build
-          cmake -S .. -G Ninja \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DSTARDS_BUILD_PYTHON_BINDINGS=ON \
-            -DSTARDS_BUILD_TESTS=OFF \
-            -DSTARDS_BUILD_TOOLS=OFF
-          cmake --build . -j 2
-
       - name: Install docs-only extras
         run: pip install "mkdocstrings[python]" "mkdocstrings-python" "pygments==2.18.0"
 

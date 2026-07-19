@@ -1,0 +1,103 @@
+# =============================================================================
+# GitHub Actions — run the StarDS test suites (C++ gtest + Python pytest).
+#
+# Two independent jobs, both built in the repo's conda env (environment.yml):
+#   1. cpp-tests    — configure with tests + tools ON, build the gtest binary,
+#                     run it via ctest. Tools are ON so the conversion-parity
+#                     test (which shells out to `stards_translate`) actually runs.
+#   2. python-tests — build the SWIG `_pystards` extension, then run pytest over
+#                     bindings/python/tests with the built module on PYTHONPATH.
+#
+# Runs on every push and pull request. No network/credentials are required: the
+# S3 tests use an in-process mock server / signing fixtures, and the real-S3
+# tests self-skip when AWS credentials are absent.
+# =============================================================================
+
+name: Tests
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # C++ TESTS — gtest suite via ctest.
+  # ---------------------------------------------------------------------------
+  cpp-tests:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -el {0}   # login shell so the conda env is activated
+    steps:
+      - name: Checkout (with submodules)
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive   # googletest + json are submodules the build needs
+
+      - name: Set up conda environment (environment.yml)
+        uses: mamba-org/setup-micromamba@v2
+        with:
+          environment-file: environment.yml
+          environment-name: stards
+          cache-environment: true
+
+      - name: Configure (tests + tools ON, bindings OFF)
+        run: |
+          mkdir build && cd build
+          cmake -S .. -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DSTARDS_BUILD_TESTS=ON \
+            -DSTARDS_BUILD_TOOLS=ON \
+            -DSTARDS_BUILD_PYTHON_BINDINGS=OFF
+
+      - name: Build tests
+        run: cmake --build build -j 2
+
+      - name: Run C++ tests (ctest)
+        working-directory: build
+        run: ctest --output-on-failure --no-tests=error
+
+  # ---------------------------------------------------------------------------
+  # PYTHON TESTS — pytest over the SWIG bindings.
+  # ---------------------------------------------------------------------------
+  python-tests:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -el {0}
+    steps:
+      - name: Checkout (with submodules)
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up conda environment (environment.yml)
+        uses: mamba-org/setup-micromamba@v2
+        with:
+          environment-file: environment.yml
+          environment-name: stards
+          cache-environment: true
+
+      - name: Install pytest extras
+        run: pip install pytest
+
+      - name: Build Python bindings (SWIG _pystards extension)
+        run: |
+          mkdir build && cd build
+          cmake -S .. -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DSTARDS_BUILD_PYTHON_BINDINGS=ON \
+            -DSTARDS_BUILD_TESTS=OFF \
+            -DSTARDS_BUILD_TOOLS=OFF
+          cmake --build . -j 2
+
+      - name: Run Python tests (pytest)
+        # conftest.py picks up the built extension from PYSTARDS_BUILD_DIR.
+        env:
+          PYSTARDS_BUILD_DIR: ${{ github.workspace }}/build/bindings/python
+        run: pytest bindings/python/tests -v
