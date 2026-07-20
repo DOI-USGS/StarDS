@@ -81,7 +81,11 @@ plugins:
   - mkdocstrings:
       handlers:
         python:
-          paths: [../bindings/python]
+          # Source tree (pure-Python wrappers) + the CMake build tree, which holds
+          # the compiled `_pystards` extension the wrappers import at load time.
+          # Listing the build dir here means a local `mkdocs serve` needs no
+          # PYTHONPATH export — just build the bindings into ./build first.
+          paths: [../bindings/python, ../build/bindings/python]
           options:
             docstring_style: google
             show_source: false

@@ -324,102 +324,102 @@
         {
           "name": "Slice_DefaultStep",
           "file": "\/Users\/krodriguez\/repos\/stards\/StarDS\/tests\/UnitTestSlicing.cpp",
-          "line": 46
+          "line": 56
         },
         {
           "name": "Slice_ExplicitStep",
           "file": "\/Users\/krodriguez\/repos\/stards\/StarDS\/tests\/UnitTestSlicing.cpp",
-          "line": 55
+          "line": 65
         },
         {
           "name": "Slice_HelperFunctions",
           "file": "\/Users\/krodriguez\/repos\/stards\/StarDS\/tests\/UnitTestSlicing.cpp",
-          "line": 64
+          "line": 74
         },
         {
           "name": "Slice1D_MiddleRange",
           "file": "\/Users\/krodriguez\/repos\/stards\/StarDS\/tests\/UnitTestSlicing.cpp",
-          "line": 91
+          "line": 101
         },
         {
           "name": "Slice1D_StartRange",
           "file": "\/Users\/krodriguez\/repos\/stards\/StarDS\/tests\/UnitTestSlicing.cpp",
-          "line": 131
+          "line": 141
         },
         {
           "name": "Slice1D_EndRange",
           "file": "\/Users\/krodriguez\/repos\/stards\/StarDS\/tests\/UnitTestSlicing.cpp",
-          "line": 154
+          "line": 164
         },
         {
           "name": "Slice2D_FullRows",
           "file": "\/Users\/krodriguez\/repos\/stards\/StarDS\/tests\/UnitTestSlicing.cpp",
-          "line": 181
+          "line": 191
         },
         {
           "name": "Slice2D_Submatrix",
           "file": "\/Users\/krodriguez\/repos\/stards\/StarDS\/tests\/UnitTestSlicing.cpp",
-          "line": 216
+          "line": 226
         },
         {
           "name": "Slice2D_HelperFunctions",
           "file": "\/Users\/krodriguez\/repos\/stards\/StarDS\/tests\/UnitTestSlicing.cpp",
-          "line": 248
+          "line": 258
         },
         {
           "name": "Slice3D_Hyperslab",
           "file": "\/Users\/krodriguez\/repos\/stards\/StarDS\/tests\/UnitTestSlicing.cpp",
-          "line": 282
+          "line": 292
         },
         {
           "name": "ErrorHandling_HighDimensionalArrays",
           "file": "\/Users\/krodriguez\/repos\/stards\/StarDS\/tests\/UnitTestSlicing.cpp",
-          "line": 316
+          "line": 326
         },
         {
           "name": "DefaultStep_SimpleSyntax",
           "file": "\/Users\/krodriguez\/repos\/stards\/StarDS\/tests\/UnitTestSlicing.cpp",
-          "line": 344
+          "line": 354
         },
         {
           "name": "DesignConstraint_MetadataBlockNotSliceable",
           "file": "\/Users\/krodriguez\/repos\/stards\/StarDS\/tests\/UnitTestSlicing.cpp",
-          "line": 384
+          "line": 394
         },
         {
           "name": "HelperFunction_IsSliceable",
           "file": "\/Users\/krodriguez\/repos\/stards\/StarDS\/tests\/UnitTestSlicing.cpp",
-          "line": 417
+          "line": 427
         },
         {
           "name": "ErrorHandling_KeyNotFound",
           "file": "\/Users\/krodriguez\/repos\/stards\/StarDS\/tests\/UnitTestSlicing.cpp",
-          "line": 444
+          "line": 454
         },
         {
           "name": "ErrorHandling_OutOfBounds",
           "file": "\/Users\/krodriguez\/repos\/stards\/StarDS\/tests\/UnitTestSlicing.cpp",
-          "line": 455
+          "line": 465
         },
         {
           "name": "ErrorHandling_InvalidSlice",
           "file": "\/Users\/krodriguez\/repos\/stards\/StarDS\/tests\/UnitTestSlicing.cpp",
-          "line": 473
+          "line": 483
         },
         {
           "name": "Performance_PartialLoad",
           "file": "\/Users\/krodriguez\/repos\/stards\/StarDS\/tests\/UnitTestSlicing.cpp",
-          "line": 495
+          "line": 505
         },
         {
           "name": "EdgeCase_SingleElement",
           "file": "\/Users\/krodriguez\/repos\/stards\/StarDS\/tests\/UnitTestSlicing.cpp",
-          "line": 524
+          "line": 534
         },
         {
           "name": "EdgeCase_FullArray",
           "file": "\/Users\/krodriguez\/repos\/stards\/StarDS\/tests\/UnitTestSlicing.cpp",
-          "line": 543
+          "line": 553
         }
       ]
     },

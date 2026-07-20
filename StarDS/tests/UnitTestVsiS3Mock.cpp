@@ -100,6 +100,35 @@ TEST_F(VsiS3MockTest, ReadRoundTrip) {
     EXPECT_TRUE(saw_range) << "expected a ranged GET for the array block";
 }
 
+TEST_F(VsiS3MockTest, ReadRoundTripS3Uri) {
+    // An "s3://bucket/key" URI must resolve identically to "/vsis3/bucket/key"
+    // — GDAL-compatibility shorthand.
+    MockHttpServer srv;
+    if (!srv.ok()) GTEST_SKIP() << "could not bind a local port for the mock server";
+    S3MockEnv env(srv.port());
+
+    std::string local = tempFile("src");
+    {
+        auto store = StarDataset::create(local);
+        store->meta.put("label", NDArray<std::string>({}, "s3-uri"));
+        NDArray<int64_t> arr({6});
+        for (size_t i = 0; i < 6; ++i) arr.flat(i) = static_cast<int64_t>(i * 3);
+        store->put("data", std::move(arr));
+        store->flush();
+    }
+    srv.addObject("/test-bucket/uri.stards", star_test::read_file_bytes(local));
+
+    auto store = StarDataset::open("s3://test-bucket/uri.stards", FileMode::READ_ONLY);
+    EXPECT_EQ(store->meta.get("label")->as<std::string>()(0), "s3-uri");
+    auto arr = store->get<int64_t>("data");
+    ASSERT_EQ(arr.size(), 6u);
+    for (size_t i = 0; i < 6; ++i) EXPECT_EQ(arr.flat(i), static_cast<int64_t>(i * 3));
+
+    bool saw_auth = false;
+    for (const auto& r : srv.requests()) if (r.had_authorization) saw_auth = true;
+    EXPECT_TRUE(saw_auth) << "expected a signed Authorization header via s3:// path";
+}
+
 TEST_F(VsiS3MockTest, WriteRoundTrip) {
     MockHttpServer srv;
     if (!srv.ok()) GTEST_SKIP() << "could not bind a local port for the mock server";

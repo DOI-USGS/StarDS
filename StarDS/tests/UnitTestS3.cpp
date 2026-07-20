@@ -99,6 +99,36 @@ TEST_F(S3Test, PathParsingInvalidS3) {
     EXPECT_THROW(parseFilePath("/vsis3/bucket-only"), std::runtime_error);
 }
 
+// --- GDAL-compatibility: plain s3:// URI and http(s):// URL forms ------------
+
+TEST_F(S3Test, PathParsingS3Uri) {
+    // "s3://bucket/key" is equivalent to "/vsis3/bucket/key".
+    auto info = parseFilePath("s3://my-bucket/path/to/object.stards");
+    EXPECT_EQ(info.type, FilePathInfo::S3);
+    EXPECT_EQ(info.bucket, "my-bucket");
+    EXPECT_EQ(info.key, "path/to/object.stards");
+    EXPECT_FALSE(info.region.empty());
+}
+
+TEST_F(S3Test, PathParsingHttpsUrl) {
+    // A plain https:// URL maps to HTTP (no /vsicurl/ prefix needed); the whole
+    // string including the scheme is the URL passed to curl.
+    auto info = parseFilePath("https://example.com/file.stards");
+    EXPECT_EQ(info.type, FilePathInfo::HTTP);
+    EXPECT_EQ(info.path, "https://example.com/file.stards");
+}
+
+TEST_F(S3Test, PathParsingHttpUrl) {
+    auto info = parseFilePath("http://example.com/file.stards");
+    EXPECT_EQ(info.type, FilePathInfo::HTTP);
+    EXPECT_EQ(info.path, "http://example.com/file.stards");
+}
+
+TEST_F(S3Test, PathParsingInvalidS3Uri) {
+    // s3:// with a bucket but no key is malformed, same as the /vsis3/ form.
+    EXPECT_THROW(parseFilePath("s3://bucket-only"), std::runtime_error);
+}
+
 //==============================================================================
 // FileMode Tests
 //==============================================================================

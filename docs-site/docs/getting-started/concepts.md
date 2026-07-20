@@ -109,6 +109,7 @@ see the [Compression guide](../guides/compression.md).
 
 ## Cloud storage
 
-A `.stards` file can live locally or in the cloud. Prefix a path with `/vsis3/` for
-S3 or `/vsicurl/` for HTTP, and the same API reads and (for S3) writes remotely.
+A `.stards` file can live locally or in the cloud. Use an `s3://` URI (or the
+`/vsis3/` prefix) for S3, or an `https://` URL (or `/vsicurl/`) for HTTP, and the
+same API reads and (for S3) writes remotely.
 See the [Cloud Storage guide](../guides/cloud-storage.md).

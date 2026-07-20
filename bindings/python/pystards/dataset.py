@@ -168,13 +168,17 @@ class LayerView:
 class StarDataset:
     """Persistent storage for N-dimensional arrays.
 
-    Supports local files, HTTP (``/vsicurl/``), and S3 (``/vsis3/``).
+    Supports local files, HTTP, and S3. Remote paths may be given either as a
+    plain URL/URI or with the GDAL virtual-filesystem prefix — both are accepted:
+
+    * S3:   ``s3://bucket/key``      or  ``/vsis3/bucket/key``
+    * HTTP: ``https://host/path``    or  ``/vsicurl/https://host/path``
 
     Examples:
         >>> with StarDataset.create("data.stards") as store:
         ...     store["matrix"] = np.random.rand(100, 100)
         ...     store.meta["units"] = "meters"
-        >>> store = StarDataset.open("/vsis3/bucket/data.stards", mode="r")
+        >>> store = StarDataset.open("s3://bucket/data.stards", mode="r")
         >>> keys = store.keys()
     """
 

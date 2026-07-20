@@ -28,7 +28,8 @@ reads.
 
 -   :material-cloud-outline: **Cloud storage**
 
-    Read and write directly over S3 (`/vsis3/`) and HTTP (`/vsicurl/`) paths.
+    Read and write directly over S3 (`s3://` or `/vsis3/`) and HTTP (`https://`
+    or `/vsicurl/`) paths.
 
 -   :material-layers-outline: **Layers with optional inheritance**
 

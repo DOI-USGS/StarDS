@@ -48,6 +48,11 @@ protected:
     std::string vsicurlUrl(const MockHttpServer& srv, const std::string& objpath) {
         return "/vsicurl/http://127.0.0.1:" + std::to_string(srv.port()) + objpath;
     }
+
+    // Plain URL form (no /vsicurl/ prefix) — GDAL-compatibility shorthand.
+    std::string plainUrl(const MockHttpServer& srv, const std::string& objpath) {
+        return "http://127.0.0.1:" + std::to_string(srv.port()) + objpath;
+    }
 };
 
 TEST_F(VsiCurlTest, ReadRoundTrip) {
@@ -82,6 +87,26 @@ TEST_F(VsiCurlTest, ReadRoundTrip) {
     }
     EXPECT_EQ(heads, 0) << "read path must not issue any HEAD requests";
     EXPECT_GT(gets, 0) << "expected at least one ranged GET";
+}
+
+TEST_F(VsiCurlTest, ReadRoundTripPlainUrl) {
+    // A plain "http://..." URL (no /vsicurl/ prefix) must open exactly like the
+    // /vsicurl/ form — GDAL-compatibility shorthand.
+    MockHttpServer srv;
+    if (!srv.ok()) GTEST_SKIP() << "could not bind a local port for the mock server";
+
+    std::string local = makeDataset(5);
+    srv.addObject("/plain.stards", star_test::read_file_bytes(local));
+
+    auto store = StarDataset::open(plainUrl(srv, "/plain.stards"), FileMode::READ_ONLY);
+
+    auto label = store->meta.get("label");
+    ASSERT_NE(label, nullptr);
+    EXPECT_EQ(label->as<std::string>()(0), "vsicurl-test");
+
+    auto arr = store->get<int64_t>("data");
+    ASSERT_EQ(arr.size(), 5u);
+    for (size_t i = 0; i < 5; ++i) EXPECT_EQ(arr.flat(i), static_cast<int64_t>(i));
 }
 
 TEST_F(VsiCurlTest, WholeFilePrefetchServesFromCache) {

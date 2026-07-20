@@ -81,12 +81,12 @@ See the [Slicing guide](../guides/slicing.md) for more.
 import os
 os.environ["AWS_PROFILE"] = "my-profile"
 
-# Read from S3
-with StarDataset.open("/vsis3/my-bucket/data.stards", mode="r") as ds:
+# Read from S3 (s3:// URI or the /vsis3/ prefix)
+with StarDataset.open("s3://my-bucket/data.stards", mode="r") as ds:
     data = ds["array_name"]
 
 # Write to S3
-with StarDataset.create("/vsis3/my-bucket/output.stards") as ds:
+with StarDataset.create("s3://my-bucket/output.stards") as ds:
     ds["results"] = processed_data
 ```
 

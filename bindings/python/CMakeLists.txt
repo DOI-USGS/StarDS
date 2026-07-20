@@ -1,16 +1,23 @@
 cmake_minimum_required(VERSION 3.14)
 
-# The Python bindings wrap the full StarDataset API, including compression and
-# cloud (HTTP/S3) storage. Those features are therefore REQUIRED here (not
-# optional): the built extension always exposes the same, complete surface, and
-# the ENABLE_* macros are guaranteed defined so the wrapper is deterministic.
-# Fail fast with a clear message rather than silently shipping a crippled module.
+# Feature policy for the bindings.
+#
+# By default the bindings wrap the FULL API (compression + cloud HTTP/S3), so a
+# native build with the default options gets every feature. But the features are
+# no longer force-forced: a caller may disable CURL/S3 (e.g. a build for a
+# sandboxed environment with no sockets) and still get a working extension — the
+# SWIG interface %ignore's the HTTP/S3 classes, so the wrapper compiles the same
+# with those off; only the runtime remote paths become throws.
+#
+# ZLIB and LZ4 are the compression codecs. They stay ON by default so the wrapper
+# can read/write GZIP and LZ4 files, but a build MAY turn them off (StarConfig's
+# default codec is chosen from whatever is compiled in — see stards.h). We only
+# warn on a disabled feature; nothing is forced.
 foreach(_feat ZLIB LZ4 CURL S3)
     if(NOT STARDS_ENABLE_${_feat})
         message(STATUS
-            "STARDS_ENABLE_${_feat}=OFF, but the Python bindings require it. "
-            "Forcing it on.")
-        set(STARDS_ENABLE_${_feat} ON)
+            "pystards: building without STARDS_ENABLE_${_feat}. The extension "
+            "will still import; the corresponding runtime paths are unavailable.")
     endif()
 endforeach()
 

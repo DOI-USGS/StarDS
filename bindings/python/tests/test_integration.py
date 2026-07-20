@@ -41,8 +41,11 @@ def test_overwrite_key(store):
     assert np.array_equal(result, np.array([4, 5, 6]))
 
 
-def test_large_and_small_arrays(store):
+def test_large_and_small_arrays(sliceable_store):
     """Test mixing large and small arrays"""
+    # Use a sliceable (non-shuffle) codec: the large array is asserted to be
+    # sliceable below, which the default byte-shuffle codec does not support.
+    store = sliceable_store
     # Small array (stored in metadata)
     small = np.arange(100)
     store.put("small", small)

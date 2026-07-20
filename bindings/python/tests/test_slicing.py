@@ -3,8 +3,9 @@ import numpy as np
 from pystards import StarDataset
 
 
-def test_1d_slicing(store):
+def test_1d_slicing(sliceable_store):
     """Test slicing 1D array"""
+    store = sliceable_store
     arr = np.arange(10000, dtype=np.int64)
     store.put("large_1d", arr)
     store.flush()
@@ -17,8 +18,9 @@ def test_1d_slicing(store):
     assert np.array_equal(subset, np.arange(100, 200))
 
 
-def test_2d_slicing(store):
+def test_2d_slicing(sliceable_store):
     """Test slicing 2D array"""
+    store = sliceable_store
     arr = np.arange(10000, dtype=np.float64).reshape(100, 100)
     store.put("large_2d", arr)
     store.flush()
@@ -31,8 +33,9 @@ def test_2d_slicing(store):
     assert np.allclose(subset, arr[10:20, 30:40])
 
 
-def test_3d_slicing(store):
+def test_3d_slicing(sliceable_store):
     """Test slicing 3D array"""
+    store = sliceable_store
     arr = np.arange(8000, dtype=np.int32).reshape(20, 20, 20)
     store.put("large_3d", arr)
     store.flush()
@@ -45,8 +48,9 @@ def test_3d_slicing(store):
     assert np.array_equal(subset, arr[5:10, 5:15, 5:10])
 
 
-def test_slicing_with_step(store):
+def test_slicing_with_step(sliceable_store):
     """Test slicing with step parameter"""
+    store = sliceable_store
     arr = np.arange(10000, dtype=np.int64)
     store.put("large", arr)
     store.flush()
@@ -57,8 +61,9 @@ def test_slicing_with_step(store):
     assert np.array_equal(subset, np.arange(0, 100, 2))
 
 
-def test_full_dimension_slice(store):
+def test_full_dimension_slice(sliceable_store):
     """Test slicing entire dimension"""
+    store = sliceable_store
     arr = np.arange(10000, dtype=np.float32).reshape(100, 100)
     store.put("matrix", arr)
     store.flush()
@@ -81,8 +86,9 @@ def test_small_array_not_sliceable(store):
     pass
 
 
-def test_slice_different_dtypes(store):
+def test_slice_different_dtypes(sliceable_store):
     """Test slicing with different data types"""
+    store = sliceable_store
     # Use appropriate ranges for each dtype to avoid overflow
     dtype_configs = [
         (np.int8, 256, 100, 150),      # Small range for int8 (-128 to 127)

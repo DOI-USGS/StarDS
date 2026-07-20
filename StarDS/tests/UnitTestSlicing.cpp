@@ -37,6 +37,16 @@ protected:
     std::string createTempFile(const std::string& prefix = "test_slicing") {
         return tempStardsFile(prefix);
     }
+
+    // Create a dataset with a sliceable (non-shuffle) codec. The library default
+    // codec is a byte-shuffle codec (LZ4_SHUFFLE), which trades slice-ability for
+    // a better compression ratio, so arrays written with the default config are
+    // deliberately not sliceable. Slicing tests opt into a plain codec.
+    std::shared_ptr<StarDataset> createSliceable(const std::string& test_file) {
+        StarConfig config;
+        config.compression = CompressionAlgorithm::NONE;
+        return StarDataset::create(test_file, config);
+    }
 };
 
 // ============================================================================
@@ -91,7 +101,7 @@ TEST_F(SlicingTest, Slice_HelperFunctions) {
 TEST_F(SlicingTest, Slice1D_MiddleRange) {
     // Create 1D array with known pattern
     std::string test_file = createTempFile();
-    auto store = StarDataset::create(test_file);
+    auto store = createSliceable(test_file);
 
     // Create very large array to force separate storage with blocks
     // Arrays larger than max_metadata_block_size (64KB) are stored separately
@@ -131,7 +141,7 @@ TEST_F(SlicingTest, Slice1D_MiddleRange) {
 TEST_F(SlicingTest, Slice1D_StartRange) {
     // Test slicing from start
     std::string test_file = createTempFile();
-    auto store = StarDataset::create(test_file);
+    auto store = createSliceable(test_file);
 
     NDArray<int64_t> data({10000});
     for (size_t i = 0; i < 10000; ++i) {
@@ -154,7 +164,7 @@ TEST_F(SlicingTest, Slice1D_StartRange) {
 TEST_F(SlicingTest, Slice1D_EndRange) {
     // Test slicing to end
     std::string test_file = createTempFile();
-    auto store = StarDataset::create(test_file);
+    auto store = createSliceable(test_file);
 
     NDArray<int64_t> data({10000});
     for (size_t i = 0; i < 10000; ++i) {
@@ -181,7 +191,7 @@ TEST_F(SlicingTest, Slice1D_EndRange) {
 TEST_F(SlicingTest, Slice2D_FullRows) {
     // Test 2D array: taking full rows (optimized path)
     std::string test_file = createTempFile();
-    auto store = StarDataset::create(test_file);
+    auto store = createSliceable(test_file);
 
     // Create 100x50 array
     size_t rows = 100;
@@ -216,7 +226,7 @@ TEST_F(SlicingTest, Slice2D_FullRows) {
 TEST_F(SlicingTest, Slice2D_Submatrix) {
     // Test 2D array: taking submatrix (rows and columns)
     std::string test_file = createTempFile();
-    auto store = StarDataset::create(test_file);
+    auto store = createSliceable(test_file);
 
     // Create 100x100 array
     NDArray<float> matrix({100, 100});
@@ -248,7 +258,7 @@ TEST_F(SlicingTest, Slice2D_Submatrix) {
 TEST_F(SlicingTest, Slice2D_HelperFunctions) {
     // Test using helper functions
     std::string test_file = createTempFile();
-    auto store = StarDataset::create(test_file);
+    auto store = createSliceable(test_file);
 
     NDArray<float> matrix({50, 40});
     for (size_t r = 0; r < 50; ++r) {
@@ -282,7 +292,7 @@ TEST_F(SlicingTest, Slice2D_HelperFunctions) {
 TEST_F(SlicingTest, Slice3D_Hyperslab) {
     // Test 3D array slicing
     std::string test_file = createTempFile();
-    auto store = StarDataset::create(test_file);
+    auto store = createSliceable(test_file);
 
     // Create 20x15x10 array
     NDArray<uint16_t> volume({20, 15, 10});
@@ -316,7 +326,7 @@ TEST_F(SlicingTest, Slice3D_Hyperslab) {
 TEST_F(SlicingTest, ErrorHandling_HighDimensionalArrays) {
     // Slicing should only work for 1D, 2D, and 3D arrays
     std::string test_file = createTempFile();
-    auto store = StarDataset::create(test_file);
+    auto store = createSliceable(test_file);
 
     // Create 4D array (not supported for slicing)
     std::vector<size_t> shape = {10, 10, 10, 10};
@@ -344,7 +354,7 @@ TEST_F(SlicingTest, ErrorHandling_HighDimensionalArrays) {
 TEST_F(SlicingTest, DefaultStep_SimpleSyntax) {
     // Test that step=1 is default, cleaner syntax
     std::string test_file = createTempFile();
-    auto store = StarDataset::create(test_file);
+    auto store = createSliceable(test_file);
 
     // Create 3D array [20, 15, 10]
     NDArray<float> data({20, 15, 10});
@@ -384,7 +394,7 @@ TEST_F(SlicingTest, DefaultStep_SimpleSyntax) {
 TEST_F(SlicingTest, DesignConstraint_MetadataBlockNotSliceable) {
     // Test that metadata block items correctly reject slicing
     std::string test_file = createTempFile();
-    auto store = StarDataset::create(test_file);
+    auto store = createSliceable(test_file);
 
     // Create small array that will be stored in metadata block
     NDArray<int> small_data({100});  // Small enough for metadata block
@@ -417,7 +427,7 @@ TEST_F(SlicingTest, DesignConstraint_MetadataBlockNotSliceable) {
 TEST_F(SlicingTest, HelperFunction_IsSliceable) {
     // Test is_sliceable() helper function
     std::string test_file = createTempFile();
-    auto store = StarDataset::create(test_file);
+    auto store = createSliceable(test_file);
 
     // Non-existent key
     EXPECT_FALSE(store->is_sliceable("nonexistent"));
@@ -443,7 +453,7 @@ TEST_F(SlicingTest, HelperFunction_IsSliceable) {
 
 TEST_F(SlicingTest, ErrorHandling_KeyNotFound) {
     std::string test_file = createTempFile();
-    auto store = StarDataset::create(test_file);
+    auto store = createSliceable(test_file);
 
     // Try to slice non-existent key
     EXPECT_THROW(
@@ -454,7 +464,7 @@ TEST_F(SlicingTest, ErrorHandling_KeyNotFound) {
 
 TEST_F(SlicingTest, ErrorHandling_OutOfBounds) {
     std::string test_file = createTempFile();
-    auto store = StarDataset::create(test_file);
+    auto store = createSliceable(test_file);
 
     NDArray<int> data({100});
     for (size_t i = 0; i < 100; ++i) {
@@ -472,7 +482,7 @@ TEST_F(SlicingTest, ErrorHandling_OutOfBounds) {
 
 TEST_F(SlicingTest, ErrorHandling_InvalidSlice) {
     std::string test_file = createTempFile();
-    auto store = StarDataset::create(test_file);
+    auto store = createSliceable(test_file);
 
     NDArray<int> data({100});
     for (size_t i = 0; i < 100; ++i) {
@@ -495,7 +505,7 @@ TEST_F(SlicingTest, ErrorHandling_InvalidSlice) {
 TEST_F(SlicingTest, Performance_PartialLoad) {
     // Create larger array to test performance benefit
     std::string test_file = createTempFile();
-    auto store = StarDataset::create(test_file);
+    auto store = createSliceable(test_file);
 
     // Create 10000 element array (large enough to span multiple blocks)
     NDArray<double> data({10000});
@@ -523,7 +533,7 @@ TEST_F(SlicingTest, Performance_PartialLoad) {
 
 TEST_F(SlicingTest, EdgeCase_SingleElement) {
     std::string test_file = createTempFile();
-    auto store = StarDataset::create(test_file);
+    auto store = createSliceable(test_file);
 
     // Create array large enough to be stored separately (not in metadata block)
     NDArray<int> data({2000});
@@ -542,7 +552,7 @@ TEST_F(SlicingTest, EdgeCase_SingleElement) {
 
 TEST_F(SlicingTest, EdgeCase_FullArray) {
     std::string test_file = createTempFile();
-    auto store = StarDataset::create(test_file);
+    auto store = createSliceable(test_file);
 
     NDArray<double> data({100, 50});
     for (size_t i = 0; i < data.size(); ++i) {

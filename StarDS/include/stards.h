@@ -669,12 +669,13 @@ template<> struct TypeToDataType<std::string> {
  * @brief Metadata for a single compressed block
  */
 struct BlockInfo {
-    size_t offset;              // Offset within this key's data section
-    size_t compressed_size;     // Compressed size (may equal uncompressed if not compressed)
-    size_t uncompressed_size;   // Original block size
+    uint64_t offset;              // Offset within this key's data section
+    uint64_t compressed_size;     // Compressed size (may equal uncompressed if not compressed)
+    uint64_t uncompressed_size;   // Original block size
 
-    // On-disk each field is a fixed 64-bit little-endian integer (not a raw
-    // size_t, whose width is platform-dependent) so files are portable.
+    // Fixed 64-bit fields so the in-memory width matches the on-disk width on
+    // every platform (including 32-bit wasm32, where size_t is 4 bytes and would
+    // otherwise truncate these values).
     void write(std::ostream& os) const {
         write_u64(os, offset);
         write_u64(os, compressed_size);
@@ -682,9 +683,9 @@ struct BlockInfo {
     }
 
     void read(std::istream& is) {
-        offset = static_cast<size_t>(read_u64(is));
-        compressed_size = static_cast<size_t>(read_u64(is));
-        uncompressed_size = static_cast<size_t>(read_u64(is));
+        offset = read_u64(is);
+        compressed_size = read_u64(is);
+        uncompressed_size = read_u64(is);
     }
 };
 
@@ -765,22 +766,23 @@ struct ExtractionPlan {
  * @brief Index entry with block compression support and shape information
  *
  * @note On-disk portability: this descriptor and its BlockInfo entries serialize
- * their size_t fields in the host's native width and byte order (reinterpret_cast
- * + sizeof). On the canonical target (64-bit little-endian) that exactly matches
- * the documented format-v1 layout (little-endian uint64 fields), so .stards files
- * interchange freely across 64-bit little-endian platforms. It is NOT portable to
- * 32-bit builds (size_t == 4 bytes) or big-endian hosts. Moving to explicit
- * fixed-width / byte-swapped I/O would change the emitted bytes on those hosts and
- * break round-tripping of existing files, so it is deferred to a future
- * format_version bump rather than changed silently.
+ * their size_t fields as fixed-width little-endian uint64 values via write_u64 /
+ * read_u64 (which use the shift-based write_le/read_le, independent of host width
+ * and byte order). So .stards files interchange freely across platforms of any
+ * pointer width or endianness, including 32-bit wasm32 (size_t == 4 bytes) — the
+ * fields are narrowed to/from size_t with explicit static_casts on read. This
+ * matches the documented format-v1 layout.
  */
 struct IndexEntry {
-    size_t position;                    // Position in file where data starts
-    size_t total_bytes;                 // Total bytes (all blocks + metadata)
+    uint64_t position;                  // Position in file where data starts
+    uint64_t total_bytes;               // Total bytes (all blocks + metadata)
     DataType datatype;                  // Base element type
-    std::vector<size_t> shape;          // Array dimensions (empty = scalar)
+    std::vector<size_t> shape;          // Array dimensions (empty = scalar); size_t
+                                        // to interoperate with NDArray::shape() and
+                                        // the in-memory slicing machinery. Each dim
+                                        // is serialized as a fixed-width u64.
     CompressionAlgorithm compression;   // Compression algorithm
-    size_t block_size;                  // Uncompressed block size (0 = no blocking)
+    uint64_t block_size;                // Uncompressed block size (0 = no blocking)
     std::vector<BlockInfo> blocks;      // Per-block metadata
     bool dirty;                         // In-memory changes not yet flushed
     // NOTE: is_metadata_block is not serialized and is never set true in the v1
@@ -833,8 +835,8 @@ struct IndexEntry {
     }
 
     void read(std::istream& is) {
-        position = static_cast<size_t>(read_u64(is));
-        total_bytes = static_cast<size_t>(read_u64(is));
+        position = read_u64(is);
+        total_bytes = read_u64(is);
         datatype = static_cast<DataType>(read_u8(is));
         LOG_TRACE("IndexEntry::read - position=", position, ", total_bytes=", total_bytes, ", datatype=", (int)datatype);
 
@@ -848,14 +850,14 @@ struct IndexEntry {
             }
             shape.resize(static_cast<size_t>(ndim));
             for (auto& dim : shape) {
-                dim = static_cast<size_t>(read_u64(is));
+                dim = read_u64(is);
             }
         } else {
             shape.clear(); // Explicitly make empty for scalar
         }
 
         compression = static_cast<CompressionAlgorithm>(read_u8(is));
-        block_size = static_cast<size_t>(read_u64(is));
+        block_size = read_u64(is);
         LOG_TRACE("IndexEntry::read - compression=", (int)compression, ", block_size=", block_size);
 
         // Read number of blocks
@@ -2543,21 +2545,39 @@ public:
 /**
  * @brief Parse a file path and determine its type (local, HTTP, or S3)
  *
+ * Recognizes both the GDAL virtual-filesystem prefixes and the equivalent plain
+ * URL/URI forms, so either works interchangeably:
+ *   - S3:   "/vsis3/bucket/key"   OR  "s3://bucket/key"
+ *   - HTTP: "/vsicurl/https://host/path"  OR  "https://host/path" / "http://..."
+ *   - anything else -> a local filesystem path.
+ * The `/vsi*` prefixes stay supported for GDAL compatibility; the plain forms are
+ * the natural way to name a remote object and map to the same handling.
+ *
  * Defined unconditionally: StarDataset::open()/ctor call it for every path, and
- * the LOCAL branch (the common case) has no S3/curl dependency. Only the
- * `/vsis3/` region-resolution needs AWSConfigParser, so that part is gated on
- * ENABLE_S3; without S3 support an S3 path is rejected with a clear error.
+ * the LOCAL branch (the common case) has no S3/curl dependency. Only the S3
+ * region-resolution needs AWSConfigParser, so that part is gated on ENABLE_S3;
+ * without S3 support an S3 path is rejected with a clear error.
  */
 inline FilePathInfo parseFilePath(const std::string& filename) {
     FilePathInfo info;
 
-    if (filename.substr(0, 7) == "/vsis3/") {
-        // S3 path: /vsis3/bucket/path/to/key
+    auto starts_with = [&filename](const char* prefix) {
+        const size_t n = std::strlen(prefix);
+        return filename.size() >= n && filename.compare(0, n, prefix) == 0;
+    };
+
+    // --- S3: GDAL "/vsis3/" prefix OR an "s3://" URI (both -> bucket + key) ---
+    const bool is_vsis3 = starts_with("/vsis3/");
+    const bool is_s3_uri = starts_with("s3://");
+    if (is_vsis3 || is_s3_uri) {
         info.type = FilePathInfo::S3;
-        std::string remainder = filename.substr(7);
+        // Strip the recognized prefix ("/vsis3/" = 7 chars, "s3://" = 5), leaving
+        // "bucket/key".
+        std::string remainder = filename.substr(is_vsis3 ? 7 : 5);
         size_t slash = remainder.find('/');
         if (slash == std::string::npos) {
-            throw std::runtime_error("Invalid S3 path format. Expected: /vsis3/bucket/key");
+            throw std::runtime_error(
+                "Invalid S3 path format. Expected: /vsis3/bucket/key or s3://bucket/key");
         }
         info.bucket = remainder.substr(0, slash);
         info.key = remainder.substr(slash + 1);
@@ -2596,10 +2616,15 @@ inline FilePathInfo parseFilePath(const std::string& filename) {
             "S3 path '" + filename + "' requires S3 support, but this build was "
             "compiled without ENABLE_S3.");
 #endif
-    } else if (filename.substr(0, 9) == "/vsicurl/") {
-        // HTTP path
+    } else if (starts_with("/vsicurl/")) {
+        // HTTP behind the GDAL "/vsicurl/" prefix: the remainder is the full URL.
         info.type = FilePathInfo::HTTP;
         info.path = filename.substr(9);
+        return info;
+    } else if (starts_with("http://") || starts_with("https://")) {
+        // Plain URL: treat as HTTP; the whole string (scheme included) is the URL.
+        info.type = FilePathInfo::HTTP;
+        info.path = filename;
         return info;
     } else {
         // Local file path
@@ -4148,14 +4173,34 @@ inline std::vector<char> decompressBlocks(
  * compressed block to reduce overhead and cloud access requests.
  */
 struct StarConfig {
-    // Main data compression settings
-    CompressionAlgorithm compression = CompressionAlgorithm::GZIP;
+    // Main data compression settings.
+    //
+    // Default: LZ4_SHUFFLE (fast, strong on numeric arrays) when LZ4 is compiled
+    // in, else NONE. The default is chosen at compile time from the enabled
+    // codecs so a build never defaults to a codec it cannot actually run — e.g. a
+    // browser/WASM build without LZ4 falls back to NONE rather than producing
+    // files it can't read back. NOTE: shuffle codecs are not sliceable
+    // (get_slice()/is_sliceable() require a non-shuffle codec) — pass an explicit
+    // NONE/GZIP/LZ4 StarConfig when you need partial reads.
+    CompressionAlgorithm compression =
+#ifdef ENABLE_LZ4
+        CompressionAlgorithm::LZ4_SHUFFLE;
+#else
+        CompressionAlgorithm::NONE;
+#endif
     size_t block_size = 1024 * 1024;  // 1MB default
 
-    // Metadata block settings
+    // Metadata block settings. The metadata block holds mixed-type, variably
+    // sized values read as a unit, so the byte-shuffle prefilter does not apply —
+    // use the base LZ4 codec (else NONE when LZ4 is unavailable).
     bool metadata_block_enabled = true;
     size_t metadata_max_block_size = 64 * 1024;    // 64KB max total metadata block
-    CompressionAlgorithm metadata_compression = CompressionAlgorithm::GZIP;
+    CompressionAlgorithm metadata_compression =
+#ifdef ENABLE_LZ4
+        CompressionAlgorithm::LZ4;
+#else
+        CompressionAlgorithm::NONE;
+#endif
     std::set<std::string> metadata_force_separate_keys;  // Keys to never store in metadata
 
     // Buffer management (memory optimization)
@@ -4782,7 +4827,10 @@ public:
         // (e.g. a remote path opened READ_WRITE that doesn't exist yet). Leave
         // m_header_size == 0 so open() treats it as a new file, rather than
         // throwing a spurious "magic mismatch".
-        if (bytes_read < MAGIC_STRING_LENGTH + sizeof(uint8_t) + sizeof(m_header_size)) {
+        // The on-disk header_size field is a fixed uint64_t (see FileHeader::write /
+        // write_u64), NOT sizeof(size_t) — those differ on 32-bit builds (wasm32),
+        // so use the fixed width here and below.
+        if (bytes_read < MAGIC_STRING_LENGTH + sizeof(uint8_t) + sizeof(uint64_t)) {
             LOG_TRACE("Initial read too short (", bytes_read, " bytes); treating as empty/new file");
             return;
         }
@@ -4808,7 +4856,9 @@ public:
         LOG_TRACE("Found format version: ", (int)format_version);
         m_file_header.format_version = format_version;
 
-        initial_stream.read(reinterpret_cast<char*>(&m_header_size), sizeof(m_header_size));
+        // header_size is a fixed uint64_t on disk; read it as such (sizeof(size_t)
+        // would read only 4 bytes on wasm32 and desync the stream).
+        m_header_size = static_cast<size_t>(read_u64(initial_stream));
         if (m_header_size == 0) {
             LOG_ERROR("Header size is 0, file is empty");
             throw std::runtime_error("Header size is 0, file is empty");
@@ -4830,10 +4880,12 @@ public:
             header_stream.write(initial_buffer, m_header_size);
         }
 
-        // Reset stream position to after header size
-        header_stream.seekg(MAGIC_STRING_LENGTH+sizeof(format_version)+sizeof(m_header_size), std::ios::beg);
-        size_t count;
-        header_stream.read(reinterpret_cast<char*>(&count), sizeof(count));
+        // Reset stream position to after magic + format_version + header_size. The
+        // on-disk header_size is a fixed uint64_t, so advance by sizeof(uint64_t)
+        // (not sizeof(size_t), which is 4 on wasm32), then read entry_count as the
+        // fixed uint64_t the writer emitted.
+        header_stream.seekg(MAGIC_STRING_LENGTH + sizeof(format_version) + sizeof(uint64_t), std::ios::beg);
+        size_t count = static_cast<size_t>(read_u64(header_stream));
 
         LOG_TRACE("Found ", count, " entries in index");
         m_file_header.entry_count = count;
@@ -6287,7 +6339,7 @@ public:
      *
      * Streams unloaded data directly from source without loading into memory.
      *
-     * @param target_path Path to save to (can be local or /vsis3/...)
+     * @param target_path Path to save to (local, s3://... / /vsis3/...)
      */
 private:
     // Load every entry (array namespace + metadata block) into memory and mark
@@ -6429,11 +6481,9 @@ public:
      * @return True if read-only
      */
     bool is_read_only() const {
-#ifdef ENABLE_S3
+        // Read-only mode is independent of cloud support: a local or in-memory
+        // (open_bytes) dataset opened READ_ONLY must report and enforce it too.
         return m_file_mode == FileMode::READ_ONLY;
-#else
-        return false;  // Read-only mode not available without S3 support
-#endif
     }
 
     /**
@@ -6474,7 +6524,7 @@ public:
      * it will be overwritten. The file will be created on the first flush() or when
      * the object is destroyed.
      *
-     * @param filename Path to create (local or /vsis3/...)
+     * @param filename Path to create (local, s3://... / /vsis3/...)
      * @param config Configuration for compression, block sizes, metadata
      * @return New StarDataset instance
      */
@@ -6500,7 +6550,7 @@ public:
      * If mode is READ_WRITE and file doesn't exist, it will be created.
      * If mode is READ_ONLY and file doesn't exist, an error is thrown.
      *
-     * @param filename Path to open (local or /vsis3/...)
+     * @param filename Path to open (local, s3:// or /vsis3/, https:// or /vsicurl/)
      * @param mode FileMode enum (READ_WRITE/READ_ONLY)
      * @return Opened StarDataset instance
      * @throws std::runtime_error if file doesn't exist in READ_ONLY mode or is corrupt
@@ -6564,7 +6614,7 @@ public:
     /**
      * @brief Open an existing Star dataset file (string mode overload)
      *
-     * @param filename Path to open (local or /vsis3/...)
+     * @param filename Path to open (local, s3:// or /vsis3/, https:// or /vsicurl/)
      * @param mode_str String mode ("r", "w", "rw", "a")
      * @return Opened StarDataset instance
      * @throws std::runtime_error if file doesn't exist or is invalid
@@ -6625,11 +6675,9 @@ public:
                 const OpenOptions& open_options = {},
                 std::vector<char>* memory_source = nullptr)
         : m_filename(fname), m_header_dirty(true), meta(this),
+          m_file_mode(mode),
           m_config(config ? *config : StarConfig()),
           m_open_options(open_options)
-#ifdef ENABLE_S3
-        , m_file_mode(mode)
-#endif
     {
         // In-memory dataset (open_bytes / a fresh write_bytes target): take the
         // bytes as the read source and skip all path parsing / credential setup.

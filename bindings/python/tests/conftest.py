@@ -17,7 +17,7 @@ if importlib.util.find_spec("pystards") is None:
             sys.path.insert(0, _candidate)
             break
 
-from pystards import StarDataset
+from pystards import StarDataset, StarConfig, CompressionAlgorithm
 
 
 @pytest.fixture
@@ -37,3 +37,17 @@ def temp_star_file():
 def store(temp_star_file):
     """Create StarDataset instance"""
     return StarDataset(temp_star_file)
+
+
+@pytest.fixture
+def sliceable_store(temp_star_file):
+    """StarDataset using a sliceable (non-shuffle) codec.
+
+    The default codec is a byte-shuffle codec (LZ4_SHUFFLE), which trades
+    slice-ability for a better compression ratio on numeric arrays, so arrays
+    written with the default config cannot be read back in slices. Tests that
+    exercise slicing opt into a plain codec explicitly.
+    """
+    config = StarConfig()
+    config.compression = CompressionAlgorithm.NONE
+    return StarDataset.create(temp_star_file, config)
