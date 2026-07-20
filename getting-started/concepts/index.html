@@ -1729,8 +1729,9 @@ datasets, A/B experiments, and dataset version control. See the
 into without decompressing the whole thing. Configure it through <code>StarConfig</code>;
 see the <a href="../../guides/compression/">Compression guide</a>.</p>
 <h2 id="cloud-storage">Cloud storage</h2>
-<p>A <code>.stards</code> file can live locally or in the cloud. Prefix a path with <code>/vsis3/</code> for
-S3 or <code>/vsicurl/</code> for HTTP, and the same API reads and (for S3) writes remotely.
+<p>A <code>.stards</code> file can live locally or in the cloud. Use an <code>s3://</code> URI (or the
+<code>/vsis3/</code> prefix) for S3, or an <code>https://</code> URL (or <code>/vsicurl/</code>) for HTTP, and the
+same API reads and (for S3) writes remotely.
 See the <a href="../../guides/cloud-storage/">Cloud Storage guide</a>.</p>
 
 

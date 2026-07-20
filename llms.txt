@@ -32,7 +32,8 @@ reads.
 
 -   :material-cloud-outline: **Cloud storage**
 
-    Read and write directly over S3 (`/vsis3/`) and HTTP (`/vsicurl/`) paths.
+    Read and write directly over S3 (`s3://` or `/vsis3/`) and HTTP (`https://`
+    or `/vsicurl/`) paths.
 
 -   :material-layers-outline: **Layers with optional inheritance**
 
@@ -332,12 +333,12 @@ See the [Slicing guide](../guides/slicing.md) for more.
 import os
 os.environ["AWS_PROFILE"] = "my-profile"
 
-# Read from S3
-with StarDataset.open("/vsis3/my-bucket/data.stards", mode="r") as ds:
+# Read from S3 (s3:// URI or the /vsis3/ prefix)
+with StarDataset.open("s3://my-bucket/data.stards", mode="r") as ds:
     data = ds["array_name"]
 
 # Write to S3
-with StarDataset.create("/vsis3/my-bucket/output.stards") as ds:
+with StarDataset.create("s3://my-bucket/output.stards") as ds:
     ds["results"] = processed_data
 ```
 
@@ -527,8 +528,9 @@ see the [Compression guide](../guides/compression.md).
 
 ## Cloud storage
 
-A `.stards` file can live locally or in the cloud. Prefix a path with `/vsis3/` for
-S3 or `/vsicurl/` for HTTP, and the same API reads and (for S3) writes remotely.
+A `.stards` file can live locally or in the cloud. Use an `s3://` URI (or the
+`/vsis3/` prefix) for S3, or an `https://` URL (or `/vsicurl/`) for HTTP, and the
+same API reads and (for S3) writes remotely.
 See the [Cloud Storage guide](../guides/cloud-storage.md).
 
 
@@ -894,11 +896,19 @@ codecs are `none`, `gzip`, `lz4`, `gzip-shuffle`, `lz4-shuffle`).
 
 # Cloud Storage
 
-A `.stards` file can live locally or in the cloud. Prefix a path with a VSI-style
-scheme and the same API reads (and, for S3, writes) remotely:
+A `.stards` file can live locally or in the cloud. Point the same API at a remote
+path and it reads (and, for S3, writes) remotely. Each remote scheme accepts two
+equivalent forms — a plain URL/URI, or the GDAL virtual-filesystem prefix:
 
-- **S3** — `/vsis3/bucket-name/path/to/file.stards` (read and write)
-- **HTTP** — `/vsicurl/https://example.com/path/data.stards` (read-only)
+- **S3** — `s3://bucket-name/path/to/file.stards` or
+  `/vsis3/bucket-name/path/to/file.stards` (read and write)
+- **HTTP** — `https://example.com/path/data.stards` or
+  `/vsicurl/https://example.com/path/data.stards` (read-only)
+
+The plain `s3://` / `https://` forms and the `/vsis3/` / `/vsicurl/` prefixes are
+interchangeable; use whichever your tooling already speaks. Detection is by path
+format: an `s3://` URI is treated as S3, an `http(s)://` URL as HTTP, and anything
+else as a local file.
 
 These require the library to be built with `STARDS_ENABLE_CURL` (HTTP) and
 `STARDS_ENABLE_S3` (S3) — both on by default; see
@@ -912,16 +922,16 @@ from pystards import StarDataset
 
 os.environ["AWS_PROFILE"] = "my-profile"
 
-# Read from S3
-with StarDataset.open("/vsis3/my-bucket/data.stards", mode="r") as ds:
+# Read from S3 (s3:// URI or the /vsis3/ prefix — both work)
+with StarDataset.open("s3://my-bucket/data.stards", mode="r") as ds:
     data = ds["array_name"]
 
 # Write to S3
-with StarDataset.create("/vsis3/my-bucket/output.stards") as ds:
+with StarDataset.create("s3://my-bucket/output.stards") as ds:
     ds["results"] = processed_data
 
-# Read from HTTP (read-only)
-with StarDataset.open("/vsicurl/https://example.com/data.stards", mode="r") as ds:
+# Read from HTTP (read-only) — plain URL or the /vsicurl/ prefix
+with StarDataset.open("https://example.com/data.stards", mode="r") as ds:
     data = ds["array_name"]
 ```
 
@@ -931,17 +941,17 @@ with StarDataset.open("/vsicurl/https://example.com/data.stards", mode="r") as d
 #include "stards.h"
 using namespace star;
 
-// Read from S3
-auto store = StarDataset::open("/vsis3/my-bucket/data.stards", "r");
+// Read from S3 (s3:// URI or the /vsis3/ prefix — both work)
+auto store = StarDataset::open("s3://my-bucket/data.stards", "r");
 auto data = store->get<double>("sensor_data");
 
 // Write to S3
-auto output = StarDataset::create("/vsis3/output-bucket/results.stards");
+auto output = StarDataset::create("s3://output-bucket/results.stards");
 output->put("results", std::move(processed_data));
 output->flush();
 
 // Read from HTTP (read-only), then save a local copy
-auto http = StarDataset::open("/vsicurl/https://example.com/data.stards", "r");
+auto http = StarDataset::open("https://example.com/data.stards", "r");
 http->save_to("/tmp/local-copy.stards");
 ```
 
@@ -950,8 +960,9 @@ you've opened an HTTP source you can't write back to.
 
 ## S3 authentication
 
-The S3 URL format is `/vsis3/bucket-name/path/to/file.stards`. Credentials are
-resolved from the standard AWS sources — choose whichever fits your environment:
+Address an S3 object as either `s3://bucket-name/path/to/file.stards` or
+`/vsis3/bucket-name/path/to/file.stards`. Credentials are resolved from the
+standard AWS sources — choose whichever fits your environment:
 
 **Environment variables**
 
@@ -978,7 +989,7 @@ aws_secret_access_key = SECRET
 
 ## Custom S3 endpoints (MinIO, S3-compatible services, testing)
 
-By default `/vsis3/` targets AWS at `https://<bucket>.s3.<region>.amazonaws.com`.
+By default an S3 path targets AWS at `https://<bucket>.s3.<region>.amazonaws.com`.
 To use an S3-compatible service (e.g. MinIO) or a local test server, set these
 environment variables (GDAL-compatible names):
 
