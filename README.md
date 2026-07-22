@@ -378,7 +378,7 @@ aws sso login --profile my-profile
 export AWS_PROFILE=my-profile
 ```
 
-**Credentials File (~/.aws/credentials):**
+**Credentials File (~/.aws/credentials or %USERPROFILE%\.aws\credentials on Windows):**
 ```ini
 [default]
 aws_access_key_id = KEY

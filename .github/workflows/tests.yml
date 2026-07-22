@@ -8,9 +8,10 @@
 #   2. python-tests — build the SWIG `_pystards` extension, then run pytest over
 #                     bindings/python/tests with the built module on PYTHONPATH.
 #
-# Runs on every push and pull request. No network/credentials are required: the
-# S3 tests use an in-process mock server / signing fixtures, and the real-S3
-# tests self-skip when AWS credentials are absent.
+# Runs on every push (incl. merges) and pull request, across Linux, macOS, and
+# Windows (matrix). No network/credentials are required: the S3 tests use an
+# in-process mock server / signing fixtures, and the real-S3 tests self-skip when
+# AWS credentials are absent.
 # =============================================================================
 
 name: Tests
@@ -26,13 +27,19 @@ concurrency:
 
 jobs:
   # ---------------------------------------------------------------------------
-  # C++ TESTS — gtest suite via ctest.
+  # C++ TESTS — gtest suite via ctest. Runs on Linux, macOS, and Windows (same
+  # steps); the conda env (incl. the compiler) is provided by setup-micromamba on
+  # all three.
   # ---------------------------------------------------------------------------
   cpp-tests:
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false   # one OS failing must not mask the others' results
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     defaults:
       run:
-        shell: bash -el {0}   # login shell so the conda env is activated
+        shell: bash -el {0}   # login shell so the conda env is activated (works on windows-latest via Git bash)
     steps:
       - name: Checkout (with submodules)
         uses: actions/checkout@v4
@@ -46,6 +53,12 @@ jobs:
           environment-name: stards
           cache-environment: true
 
+      # On Windows the compiler comes from conda-forge's cxx-compiler (vs2022_win-64
+      # activation), placed on PATH by the login-shell env activation above. If a
+      # future runner ever fails to find `cl` for the Ninja generator, add this
+      # Windows-only step before Configure as a fallback:
+      #   - uses: ilammy/msvc-dev-cmd@v1
+      #     if: runner.os == 'Windows'
       - name: Configure (tests + tools ON, bindings OFF)
         run: |
           mkdir build && cd build
@@ -63,10 +76,16 @@ jobs:
         run: ctest --output-on-failure --no-tests=error
 
   # ---------------------------------------------------------------------------
-  # PYTHON TESTS — pytest over the SWIG bindings.
+  # PYTHON TESTS — pytest over the SWIG bindings. Runs on Linux, macOS, and
+  # Windows; the SWIG build produces _pystards.so / .pyd and conftest.py locates
+  # either via PYSTARDS_BUILD_DIR.
   # ---------------------------------------------------------------------------
   python-tests:
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     defaults:
       run:
         shell: bash -el {0}
