@@ -28,6 +28,9 @@
 #include <functional>
 #include <condition_variable>
 #include <future>
+#include <optional>
+#include <ctime>
+#include <tuple>
 #ifndef _WIN32
 // POSIX-only headers, needed solely for the guarded fsync() durability block in
 // flush() (see the #ifndef _WIN32 block later in this file). MSVC has no
@@ -43,6 +46,38 @@
 
 #ifdef ENABLE_LZ4
 #include <lz4.h>
+#endif
+
+// System headers for the optional CURL (HTTP) and S3 (OpenSSL) features. These
+// MUST be included at file scope — NOT inside `namespace star` further down —
+// because on Windows <curl/curl.h> transitively pulls in <winsock2.h> -> <windows.h>,
+// which drags in the SSE intrinsic headers (<xmmintrin.h> etc.). If that happens
+// inside a namespace, types like __m128d become star::__m128d and later break
+// libstdc++'s <random> SSE path ("__m128i does not name a type"). Hoisting them
+// here keeps every third-party declaration at global scope.
+//
+// On Windows <windef.h> also #defines function-like min/max macros that clash with
+// the many std::min/std::max calls in this header; NOMINMAX suppresses them and
+// WIN32_LEAN_AND_MEAN trims the rest of the rarely-used surface. (The wingdi.h
+// `ERROR` macro is avoided separately by prefixing the logger enum — STARDS_ERROR.)
+#ifdef ENABLE_CURL
+#ifdef _WIN32
+#  ifndef WIN32_LEAN_AND_MEAN
+#    define WIN32_LEAN_AND_MEAN
+#  endif
+#  ifndef NOMINMAX
+#    define NOMINMAX
+#  endif
+#endif
+#include <curl/curl.h>
+#endif
+
+#ifdef ENABLE_S3
+#include <openssl/sha.h>
+#include <openssl/hmac.h>
+#ifndef _WIN32
+#include <dirent.h>
+#endif
 #endif
 
 // Library version constants.
@@ -931,21 +966,11 @@ struct IndexEntry {
 
 
 #ifdef ENABLE_CURL
-// On Windows, <curl/curl.h> transitively pulls in <winsock2.h> -> <windows.h>,
-// whose <windef.h> #defines function-like `min`/`max` macros that break the many
-// std::min/std::max calls in this header. NOMINMAX suppresses them (WIN32_LEAN_AND_MEAN
-// trims the rest of the rarely-used surface). The `ERROR` collision from wingdi.h is
-// avoided instead by prefixing the logger enum (STARDS_ERROR, etc.), so no NOGDI /
-// #undef gymnastics are needed. No effect off Windows.
-#ifdef _WIN32
-#  ifndef WIN32_LEAN_AND_MEAN
-#    define WIN32_LEAN_AND_MEAN
-#  endif
-#  ifndef NOMINMAX
-#    define NOMINMAX
-#  endif
-#endif
-#include <curl/curl.h>
+// NOTE: <curl/curl.h> is included at FILE SCOPE near the top of this header, not
+// here — including it inside `namespace star` namespaces the SSE intrinsic types
+// it transitively pulls in on Windows. These std headers are already included at
+// the top too; kept here only for standalone clarity (include guards make them
+// no-ops).
 #include <string>
 #include <vector>
 #include <streambuf>
@@ -1288,8 +1313,10 @@ struct S3EndpointConfig {
 //==============================================================================
 
 #ifdef ENABLE_S3
-#include <openssl/sha.h>
-#include <openssl/hmac.h>
+// NOTE: the third-party <openssl/*> and POSIX <dirent.h> headers are included at
+// FILE SCOPE near the top of this header, not here — see the hoisting note there
+// (same Windows SSE-in-namespace hazard as curl). The std headers below are also
+// already included at the top; kept for standalone clarity (include-guarded no-ops).
 #include <optional>
 #include <chrono>
 #include <iomanip>
@@ -1297,9 +1324,6 @@ struct S3EndpointConfig {
 #include <fstream>
 #include <ctime>
 #include <tuple>
-#ifndef _WIN32
-#include <dirent.h>
-#endif
 
 /**
  * @brief AWS Signature Version 4 signer
