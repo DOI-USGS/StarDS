@@ -21,7 +21,16 @@
 
 #ifdef _WIN32
 // winsock2.h MUST precede windows.h; these tests include this header before
-// stards.h/<curl/curl.h>, so the ordering is satisfied.
+// stards.h/<curl/curl.h>, so the ordering is satisfied. winsock2.h transitively
+// includes windows.h, whose <windef.h> #defines min/max macros that break the
+// std::min/std::max calls in stards.h — NOMINMAX suppresses them. (The ERROR
+// collision is handled by stards.h's STARDS_-prefixed logger enum, so no NOGDI.)
+#  ifndef WIN32_LEAN_AND_MEAN
+#    define WIN32_LEAN_AND_MEAN
+#  endif
+#  ifndef NOMINMAX
+#    define NOMINMAX
+#  endif
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #pragma comment(lib, "ws2_32.lib")

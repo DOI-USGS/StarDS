@@ -515,7 +515,7 @@ void print_key_data(StarDataset* store, const std::string& key, bool verbose) {
 
 int main(int argc, char* argv[]) {
     // Disable trace logging by default
-    logger::set_log_level(logger::ERROR);
+    logger::set_log_level(logger::STARDS_ERROR);
 
     bool verbose = false;
     bool print_all_data = false;

@@ -221,7 +221,7 @@ To add a new format (e.g., HDF5):
 ### Debugging
 
 The tools set the library log level to `ERROR` by default. To see more detail,
-lower the level in code with `logger::set_log_level(logger::DEBUG)` (C++) or
+lower the level in code with `logger::set_log_level(logger::STARDS_DEBUG)` (C++) or
 `set_log_level` (Python) before running the conversion.
 
 Check conversion output:

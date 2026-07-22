@@ -1588,7 +1588,7 @@ void isds_to_star(const std::string& input_file, const std::string& output_file,
 
 int main(int argc, char* argv[]) {
     // Disable trace logging by default
-    logger::set_log_level(logger::ERROR);
+    logger::set_log_level(logger::STARDS_ERROR);
 
     std::string input_file;
     std::string output_file;

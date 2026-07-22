@@ -287,8 +287,13 @@ inline std::string getLibraryVersion() {
 //==============================================================================
 
 namespace logger {
-    enum LogLevel { TRACE=0, DEBUG, INFO, WARN, ERROR };
-    static inline LogLevel current_log_level = ERROR;
+    // Enumerators are STARDS_-prefixed to avoid collisions with preprocessor macros
+    // from platform headers — most importantly Windows <wingdi.h>, which does
+    // `#define ERROR 0` (pulled in transitively via <curl/curl.h> -> <windows.h>),
+    // and `DEBUG`. The numeric values (0..4) are unchanged, so the Python LogLevel
+    // shim (which passes raw ints) and any persisted level are unaffected.
+    enum LogLevel { STARDS_TRACE=0, STARDS_DEBUG, STARDS_INFO, STARDS_WARN, STARDS_ERROR };
+    static inline LogLevel current_log_level = STARDS_ERROR;
     
     static constexpr const char* LOG_LEVEL_STRINGS[] = {"TRACE", "DEBUG", "INFO", "WARN", "ERROR"};
     
@@ -363,15 +368,15 @@ namespace logger {
   
   // Logging macros for different severity levels that avoid code generation if level is too low
   #define LOG_TRACE(...) \
-      do { if (logger::TRACE >= logger::current_log_level) logger::log_internal(logger::TRACE, __LINE__, __func__, __VA_ARGS__); } while(0)
+      do { if (logger::STARDS_TRACE >= logger::current_log_level) logger::log_internal(logger::STARDS_TRACE, __LINE__, __func__, __VA_ARGS__); } while(0)
   #define LOG_DEBUG(...) \
-      do { if (logger::DEBUG >= logger::current_log_level) logger::log_internal(logger::DEBUG, __LINE__, __func__, __VA_ARGS__); } while(0)
+      do { if (logger::STARDS_DEBUG >= logger::current_log_level) logger::log_internal(logger::STARDS_DEBUG, __LINE__, __func__, __VA_ARGS__); } while(0)
   #define LOG_INFO(...) \
-      do { if (logger::INFO >= logger::current_log_level) logger::log_internal(logger::INFO, __LINE__, __func__, __VA_ARGS__); } while(0)
+      do { if (logger::STARDS_INFO >= logger::current_log_level) logger::log_internal(logger::STARDS_INFO, __LINE__, __func__, __VA_ARGS__); } while(0)
   #define LOG_WARN(...) \
-      do { if (logger::WARN >= logger::current_log_level) logger::log_internal(logger::WARN, __LINE__, __func__, __VA_ARGS__); } while(0)
+      do { if (logger::STARDS_WARN >= logger::current_log_level) logger::log_internal(logger::STARDS_WARN, __LINE__, __func__, __VA_ARGS__); } while(0)
   #define LOG_ERROR(...) \
-      do { if (logger::ERROR >= logger::current_log_level) logger::log_internal(logger::ERROR, __LINE__, __func__, __VA_ARGS__); } while(0)
+      do { if (logger::STARDS_ERROR >= logger::current_log_level) logger::log_internal(logger::STARDS_ERROR, __LINE__, __func__, __VA_ARGS__); } while(0)
 
 
 
@@ -926,6 +931,20 @@ struct IndexEntry {
 
 
 #ifdef ENABLE_CURL
+// On Windows, <curl/curl.h> transitively pulls in <winsock2.h> -> <windows.h>,
+// whose <windef.h> #defines function-like `min`/`max` macros that break the many
+// std::min/std::max calls in this header. NOMINMAX suppresses them (WIN32_LEAN_AND_MEAN
+// trims the rest of the rarely-used surface). The `ERROR` collision from wingdi.h is
+// avoided instead by prefixing the logger enum (STARDS_ERROR, etc.), so no NOGDI /
+// #undef gymnastics are needed. No effect off Windows.
+#ifdef _WIN32
+#  ifndef WIN32_LEAN_AND_MEAN
+#    define WIN32_LEAN_AND_MEAN
+#  endif
+#  ifndef NOMINMAX
+#    define NOMINMAX
+#  endif
+#endif
 #include <curl/curl.h>
 #include <string>
 #include <vector>
