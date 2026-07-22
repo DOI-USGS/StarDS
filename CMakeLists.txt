@@ -32,6 +32,13 @@ if(EXISTS $ENV{CONDA_PREFIX})
   message("CONDA PREFIX: $ENV{CONDA_PREFIX}")
   list(APPEND CMAKE_FIND_ROOT_PATH $ENV{CONDA_PREFIX}
                                    $ENV{CONDA_PREFIX}/lib/cmake/Qt5)
+  # On Windows conda, headers/libs live under $CONDA_PREFIX/Library/{include,lib,bin},
+  # not directly under $CONDA_PREFIX. Append that prefix so find_package(CURL/ZLIB/
+  # OpenSSL) and the LZ4 find_library resolve there too. Purely additive — these
+  # paths don't exist on Linux/macOS and are simply ignored, so no behavior change
+  # off Windows.
+  list(APPEND CMAKE_PREFIX_PATH    $ENV{CONDA_PREFIX} $ENV{CONDA_PREFIX}/Library)
+  list(APPEND CMAKE_FIND_ROOT_PATH $ENV{CONDA_PREFIX}/Library)
 endif()
 
 list(APPEND CMAKE_FIND_ROOT_PATH /var/lang/)
@@ -122,10 +129,12 @@ if(STARDS_ENABLE_LZ4)
     pkg_check_modules(LZ4 QUIET liblz4)
   endif()
 
-  # Fallback to manual search if pkg-config didn't find it
+  # Fallback to manual search if pkg-config didn't find it. NAMES is a superset of
+  # the historical list — it can only find MORE than before (adds the conda-forge /
+  # MSVC import- and static-lib spellings so Windows resolves lz4-c reliably).
   if(NOT LZ4_FOUND)
     find_path(LZ4_INCLUDE_DIR lz4.h)
-    find_library(LZ4_LIBRARY NAMES lz4 liblz4)
+    find_library(LZ4_LIBRARY NAMES lz4 liblz4 lz4_static liblz4_static)
 
     if(LZ4_INCLUDE_DIR AND LZ4_LIBRARY)
       set(LZ4_FOUND TRUE)

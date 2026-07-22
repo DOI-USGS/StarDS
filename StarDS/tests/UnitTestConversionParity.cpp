@@ -113,8 +113,14 @@ std::map<std::string, ValueSnapshot> snapshot_file(const std::string& path) {
 // Convert STARDS_EXAMPLE_JSON to `out_path` with the given codec via stards_translate.
 // Returns the process exit code.
 int run_translate(const std::string& codec, const std::string& out_path) {
+    // Null device differs by platform: NUL on Windows (cmd.exe), /dev/null on POSIX.
+#ifdef _WIN32
+    const char* devnull = "> NUL 2>&1";
+#else
+    const char* devnull = "> /dev/null 2>&1";
+#endif
     std::string cmd = std::string("\"") + STARDS_TRANSLATE_EXE + "\" -c " + codec +
-                      " \"" + STARDS_EXAMPLE_JSON + "\" \"" + out_path + "\" > /dev/null 2>&1";
+                      " \"" + STARDS_EXAMPLE_JSON + "\" \"" + out_path + "\" " + devnull;
     return std::system(cmd.c_str());
 }
 

@@ -12,7 +12,14 @@
 #include <string>
 #include <system_error>
 #include <thread>
-#include <unistd.h>
+#ifdef _WIN32
+#include <process.h>   // _getpid
+#include <cstdlib>     // _putenv_s
+#define STARDS_GETPID _getpid
+#else
+#include <unistd.h>    // getpid
+#define STARDS_GETPID getpid
+#endif
 
 
 using namespace std;
@@ -47,6 +54,26 @@ class TempTestingFiles : public ::testing::Environment {
  */
 namespace star_test {
 
+// Cross-platform environment-variable helpers. On POSIX these expand to exactly
+// setenv(name,value,1) / unsetenv(name) (unchanged behavior); on Windows they use
+// _putenv_s (MSVC has no setenv/unsetenv). Note: on Windows unsetEnvVar leaves the
+// name defined-but-empty (getenv -> ""), which the AWS code treats as "absent".
+inline int setEnvVar(const char* name, const std::string& value) {
+#ifdef _WIN32
+    return _putenv_s(name, value.c_str());
+#else
+    return ::setenv(name, value.c_str(), 1);
+#endif
+}
+
+inline int unsetEnvVar(const char* name) {
+#ifdef _WIN32
+    return _putenv_s(name, "");
+#else
+    return ::unsetenv(name);
+#endif
+}
+
 class TempDirTest : public ::testing::Test {
   protected:
     void SetUp() override {
@@ -63,7 +90,7 @@ class TempDirTest : public ::testing::Test {
 
         std::stringstream ss;
         ss << "stards_test_" << std::hex
-           << static_cast<uint64_t>(::getpid()) << "_" << seq << "_" << now << "_" << rnd;
+           << static_cast<uint64_t>(STARDS_GETPID()) << "_" << seq << "_" << now << "_" << rnd;
         m_tempDir = fs::temp_directory_path() / ss.str();
         fs::create_directories(m_tempDir);
     }

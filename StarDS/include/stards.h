@@ -27,8 +27,13 @@
 #include <functional>
 #include <condition_variable>
 #include <future>
+#ifndef _WIN32
+// POSIX-only headers, needed solely for the guarded fsync() durability block in
+// flush() (see the #ifndef _WIN32 block later in this file). MSVC has no
+// <unistd.h>, so keep these out of the Windows translation unit entirely.
 #include <fcntl.h>
 #include <unistd.h>
+#endif
 
 
 #ifdef ENABLE_ZLIB
@@ -1569,8 +1574,13 @@ private:
             struct tm tm = {};
             std::istringstream ss(expires_at);
             ss >> std::get_time(&tm, "%Y-%m-%dT%H:%M:%S");
-            // expires_at is UTC; timegm interprets tm as UTC (mktime would use local time)
+            // expires_at is UTC; timegm interprets tm as UTC (mktime would use local
+            // time). MSVC has no timegm — its UTC equivalent is _mkgmtime.
+            #ifdef _WIN32
+            std::time_t expires_time = _mkgmtime(&tm);
+            #else
             std::time_t expires_time = timegm(&tm);
+            #endif
 
             return now_time >= expires_time;
         }
@@ -1588,6 +1598,36 @@ private:
         std::string home = getHomeDir();
         if (home.empty()) return "";
         return home + "/.aws/sso/cache";
+    }
+
+    // Lowercase-hex SHA1 of `input`, matching AWS CLI / GDAL cache-key hashing.
+    // The AWS CLI names each SSO token cache file sha1hex(key).json, where key is
+    // the sso-session name (if the profile uses an sso-session block) else the
+    // sso_start_url. Reused here so we can open the exact file directly (works on
+    // every platform, no directory scan needed). See GDAL port/cpl_aws.cpp.
+    static std::string sha1LowerHex(const std::string& input) {
+        unsigned char digest[SHA_DIGEST_LENGTH];
+        SHA1(reinterpret_cast<const unsigned char*>(input.data()), input.size(), digest);
+        return AWSV4Signer::hexEncode(digest, SHA_DIGEST_LENGTH);
+    }
+
+    // Parse a cached token JSON blob and return it if it matches `start_url` and is
+    // unexpired. Shared by both the direct-filename and directory-scan paths.
+    static std::optional<SSOToken> parseTokenJson(const std::string& json_content,
+                                                  const std::string& start_url) {
+        std::string cached_start_url = extractJsonValue(json_content, "startUrl");
+        if (cached_start_url != start_url) {
+            return std::nullopt;
+        }
+        SSOToken token;
+        token.access_token = extractJsonValue(json_content, "accessToken");
+        token.expires_at = extractJsonValue(json_content, "expiresAt");
+        token.region = extractJsonValue(json_content, "region");
+        token.start_url = cached_start_url;
+        if (!token.access_token.empty() && !token.isExpired()) {
+            return token;
+        }
+        return std::nullopt;  // Found but expired/invalid
     }
 
     // Simple JSON value extractor (for known structure)
@@ -1613,21 +1653,44 @@ public:
     /**
      * @brief Find and read SSO token for a given start URL
      *
-     * @param start_url The SSO start URL from AWS config
+     * @param start_url   The SSO start URL from AWS config
+     * @param sso_session The sso-session name (if the profile uses one). When
+     *                    non-empty it is the cache-key the AWS CLI hashes; otherwise
+     *                    the start_url is used. Defaults to "" for compatibility.
      * @return SSOToken if found and valid, empty optional otherwise
      */
-    static std::optional<SSOToken> readToken(const std::string& start_url) {
+    static std::optional<SSOToken> readToken(const std::string& start_url,
+                                             const std::string& sso_session = "") {
         std::string cache_dir = getSSOCacheDir();
         if (cache_dir.empty()) {
             return std::nullopt;
         }
 
-        // List all .json files in cache directory
-        #ifdef _WIN32
-        // not impemented 
-        return std::nullopt;
-        #else
-        // Unix-like systems
+        // Primary path (all platforms, incl. Windows): the AWS CLI names each token
+        // file sha1hex(key).json, where key is the sso-session name if present else
+        // the start_url (matches GDAL). Open that exact file directly — no directory
+        // iteration, so this is fully portable and is what enables SSO on Windows.
+        {
+            std::string key = sso_session.empty() ? start_url : sso_session;
+            std::string filepath = cache_dir + "/" + sha1LowerHex(key) + ".json";
+            std::ifstream file(filepath);
+            if (file.is_open()) {
+                std::stringstream buffer;
+                buffer << file.rdbuf();
+                auto token = parseTokenJson(buffer.str(), start_url);
+                if (token) {
+                    return token;
+                }
+                // File exists but didn't match/was expired: fall through to the scan
+                // below (Unix) as a safety net for non-standard cache layouts.
+            }
+        }
+
+        // Fallback path (Unix only, UNCHANGED behavior): scan every *.json in the
+        // cache dir and match by startUrl. Kept as a safety net so no token the
+        // legacy scan would have found is lost. On Windows there is no <dirent.h>,
+        // so this compiles away and the primary path above is authoritative.
+        #ifndef _WIN32
         DIR* dir = opendir(cache_dir.c_str());
         if (!dir) {
             return std::nullopt;
@@ -1840,8 +1903,9 @@ private:
             return std::nullopt;  // Incomplete SSO configuration
         }
 
-        // Read cached SSO token
-        auto token = AWSTokenCache::readToken(sso_start_url);
+        // Read cached SSO token. Pass the sso-session name too: the AWS CLI hashes
+        // it (not the start_url) to name the cache file when an sso-session is used.
+        auto token = AWSTokenCache::readToken(sso_start_url, sso_session);
         if (!token) {
             return std::nullopt;  // No valid token found
         }

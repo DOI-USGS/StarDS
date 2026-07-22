@@ -2,11 +2,16 @@
 import pystards
 import numpy as np
 import os
+import tempfile
+
+# OS-appropriate temp dir (/tmp on Unix, %TEMP% on Windows) so these examples run
+# cross-platform. The tests do their own create/remove cleanup below.
+_TMP = tempfile.gettempdir()
 
 
 def test_basic_create_and_open():
     """Basic example of create and open"""
-    filepath = "/tmp/demo_factory.stards"
+    filepath = os.path.join(_TMP, "demo_factory.stards")
 
     # Clean up if exists
     if os.path.exists(filepath):
@@ -41,7 +46,7 @@ def test_basic_create_and_open():
 
 def test_no_empty_file_error():
     """Demonstrates that create() works even if file doesn't exist"""
-    filepath = "/tmp/demo_new_file.stards"
+    filepath = os.path.join(_TMP, "demo_new_file.stards")
 
     # Ensure file doesn't exist
     if os.path.exists(filepath):
@@ -70,8 +75,8 @@ def test_no_empty_file_error():
 
 def test_factory_vs_constructor():
     """Show that factory methods work the same as constructor"""
-    filepath1 = "/tmp/via_factory.stards"
-    filepath2 = "/tmp/via_constructor.stards"
+    filepath1 = os.path.join(_TMP, "via_factory.stards")
+    filepath2 = os.path.join(_TMP, "via_constructor.stards")
 
     for fp in [filepath1, filepath2]:
         if os.path.exists(fp):

@@ -36,11 +36,11 @@ struct EnvGuard {
         const char* cur = std::getenv(n.c_str());
         had_value = cur != nullptr;
         if (had_value) old_value = cur;
-        setenv(n.c_str(), v.c_str(), 1);
+        star_test::setEnvVar(n.c_str(), v);
     }
     ~EnvGuard() {
-        if (had_value) setenv(name.c_str(), old_value.c_str(), 1);
-        else unsetenv(name.c_str());
+        if (had_value) star_test::setEnvVar(name.c_str(), old_value);
+        else star_test::unsetEnvVar(name.c_str());
     }
 };
 }  // namespace

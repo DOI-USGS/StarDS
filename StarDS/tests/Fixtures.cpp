@@ -36,8 +36,11 @@ void TempTestingFiles::SetUp() {
 
   tempDir = tpath;
 
-  setenv("SPICEROOT", tempDir.c_str(), true);
-  setenv("SPICEQL_CACHE_DIR", tempDir.c_str(), true);
+  // Route through the cross-platform helper (MSVC has no setenv). Use .string()
+  // rather than .c_str() so this compiles on Windows, where fs::path::c_str()
+  // returns wchar_t*.
+  star_test::setEnvVar("SPICEROOT", tempDir.string());
+  star_test::setEnvVar("SPICEQL_CACHE_DIR", tempDir.string());
 }
 
 

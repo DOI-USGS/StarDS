@@ -27,7 +27,11 @@ static std::string generateTempFilename(const std::string& prefix) {
     uint64_t timestamp = std::chrono::duration_cast<std::chrono::nanoseconds>(now.time_since_epoch()).count();
     uint64_t random_val = dis(gen);
 
-    return "/tmp/" + prefix + "_" + std::to_string(timestamp) + "_" + std::to_string(random_val) + ".stards";
+    // Use the OS temp dir (Fixtures.h pulls in ghc::filesystem as `fs`). On Linux
+    // this resolves to /tmp (honoring TMPDIR); on Windows to %TEMP%.
+    std::string name = prefix + "_" + std::to_string(timestamp) + "_" +
+                       std::to_string(random_val) + ".stards";
+    return (fs::temp_directory_path() / name).string();
 }
 
 

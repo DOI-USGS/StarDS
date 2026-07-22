@@ -39,9 +39,9 @@ protected:
 
     void setEnv(const char* name, const std::string& value) {
         if (value.empty()) {
-            unsetenv(name);
+            star_test::unsetEnvVar(name);
         } else {
-            setenv(name, value.c_str(), 1);
+            star_test::setEnvVar(name, value);
         }
     }
 
@@ -62,9 +62,9 @@ protected:
 
         ~EnvGuard() {
             if (had_value) {
-                setenv(name.c_str(), old_value.c_str(), 1);
+                star_test::setEnvVar(name.c_str(), old_value);
             } else {
-                unsetenv(name.c_str());
+                star_test::unsetEnvVar(name.c_str());
             }
         }
     };

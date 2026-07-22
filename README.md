@@ -14,9 +14,18 @@ See also: [DISCLAIMER.MD](./DISCLAIMER.md)
 
 ### Requirements
 
-- C++17 compiler
-- CMake 3.10+
+- C++20 compiler (GCC, Clang, or MSVC)
+- CMake 3.10+ (3.14+ for the Python bindings)
 - Optional: zlib (compression), libcurl (HTTP/S3), OpenSSL (S3)
+
+Builds on **Linux, macOS, and Windows**. The simplest cross-platform path is the
+bundled conda environment, which provides the compiler and every native dependency
+on all three platforms:
+
+```bash
+conda env create -f environment.yml   # or: micromamba create -f environment.yml
+conda activate stards
+```
 
 ### Build Tools with CMake
 
@@ -43,6 +52,18 @@ make -j$(nproc)
 - `STARDS_ENABLE_LZ4=ON` - Enable LZ4 compression
 - `STARDS_ENABLE_CURL=ON` - Enable HTTP remote access
 - `STARDS_ENABLE_S3=ON` - Enable S3 cloud storage
+
+### Windows
+
+
+```bash
+conda activate stards
+cmake -S . -B build -G Ninja ^
+  -DCMAKE_BUILD_TYPE=Release ^
+  -DSTARDS_BUILD_TOOLS=ON -DSTARDS_BUILD_TESTS=ON
+cmake --build build -j          # cross-platform; use in place of `make`
+ctest --test-dir build --output-on-failure
+```
 
 ### Build Python Bindings with CMake
 

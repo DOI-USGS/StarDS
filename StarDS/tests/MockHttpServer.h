@@ -13,16 +13,25 @@
  * one-shot 301 redirect with an x-amz-bucket-region header (for S3 region-redirect
  * tests).
  *
- * Portable POSIX sockets (macOS + Linux). Header-only; requires <thread> (tests
- * already link Threads::Threads).
+ * POSIX sockets + Winsock2 (macOS, Linux, Windows). Header-only; requires <thread>
+ * (tests already link Threads::Threads). On Windows link ws2_32 (done in the test
+ * CMake, and via #pragma comment below for MSVC).
  */
 #pragma once
 
+#ifdef _WIN32
+// winsock2.h MUST precede windows.h; these tests include this header before
+// stards.h/<curl/curl.h>, so the ordering is satisfied.
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#pragma comment(lib, "ws2_32.lib")
+#else
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
+#endif
 
 #include <atomic>
 #include <cctype>
@@ -38,6 +47,36 @@
 
 namespace star_test {
 
+// --- Cross-platform socket compat shim ------------------------------------
+// Keeps the server body identical across platforms: the POSIX path is exactly as
+// before; Windows maps the same calls onto Winsock (SOCKET handle, closesocket,
+// SD_BOTH, int-length recv/send).
+#ifdef _WIN32
+using socket_t = SOCKET;
+static const socket_t kInvalidSocket = INVALID_SOCKET;
+inline int  closesock(socket_t s) { return ::closesocket(s); }
+inline int  recvbuf(socket_t s, char* b, size_t n) {
+    return ::recv(s, b, static_cast<int>(n), 0);
+}
+inline int  sendbuf(socket_t s, const char* b, size_t n) {
+    return ::send(s, b, static_cast<int>(n), 0);
+}
+#define STARDS_SHUT_BOTH SD_BOTH
+// One-time Winsock init/teardown, ref-counted by the OS so multiple servers are
+// safe. Tied to server lifetime via a member declared before the socket.
+struct WsaInit {
+    WsaInit()  { WSADATA w; WSAStartup(MAKEWORD(2, 2), &w); }
+    ~WsaInit() { WSACleanup(); }
+};
+#else
+using socket_t = int;
+static const socket_t kInvalidSocket = -1;
+inline int     closesock(socket_t s) { return ::close(s); }
+inline ssize_t recvbuf(socket_t s, char* b, size_t n) { return ::recv(s, b, n, 0); }
+inline ssize_t sendbuf(socket_t s, const char* b, size_t n) { return ::send(s, b, n, 0); }
+#define STARDS_SHUT_BOTH SHUT_RDWR
+#endif
+
 class MockHttpServer {
 public:
     struct RequestLog {
@@ -51,12 +90,14 @@ public:
 
     MockHttpServer() {
         m_listen_fd = ::socket(AF_INET, SOCK_STREAM, 0);
-        if (m_listen_fd < 0) return;
+        if (m_listen_fd == kInvalidSocket) return;
 
         int one = 1;
-        ::setsockopt(m_listen_fd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one));
+        ::setsockopt(m_listen_fd, SOL_SOCKET, SO_REUSEADDR,
+                     reinterpret_cast<const char*>(&one), sizeof(one));
 #ifdef SO_NOSIGPIPE
-        ::setsockopt(m_listen_fd, SOL_SOCKET, SO_NOSIGPIPE, &one, sizeof(one));
+        ::setsockopt(m_listen_fd, SOL_SOCKET, SO_NOSIGPIPE,
+                     reinterpret_cast<const char*>(&one), sizeof(one));
 #endif
 
         sockaddr_in addr{};
@@ -64,13 +105,13 @@ public:
         addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
         addr.sin_port = 0;  // ephemeral port
         if (::bind(m_listen_fd, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) != 0) {
-            ::close(m_listen_fd);
-            m_listen_fd = -1;
+            closesock(m_listen_fd);
+            m_listen_fd = kInvalidSocket;
             return;
         }
         if (::listen(m_listen_fd, 16) != 0) {
-            ::close(m_listen_fd);
-            m_listen_fd = -1;
+            closesock(m_listen_fd);
+            m_listen_fd = kInvalidSocket;
             return;
         }
         socklen_t len = sizeof(addr);
@@ -86,7 +127,7 @@ public:
     MockHttpServer(const MockHttpServer&) = delete;
     MockHttpServer& operator=(const MockHttpServer&) = delete;
 
-    bool ok() const { return m_listen_fd >= 0 && m_port != 0; }
+    bool ok() const { return m_listen_fd != kInvalidSocket && m_port != 0; }
     int port() const { return m_port; }
 
     // Register the bytes served for an exact request path (e.g. "/data.stards"
@@ -126,13 +167,13 @@ public:
 
     void stop() {
         if (!m_running.exchange(false)) {
-            if (m_listen_fd >= 0) { ::close(m_listen_fd); m_listen_fd = -1; }
+            if (m_listen_fd != kInvalidSocket) { closesock(m_listen_fd); m_listen_fd = kInvalidSocket; }
             return;
         }
-        if (m_listen_fd >= 0) {
-            ::shutdown(m_listen_fd, SHUT_RDWR);
-            ::close(m_listen_fd);
-            m_listen_fd = -1;
+        if (m_listen_fd != kInvalidSocket) {
+            ::shutdown(m_listen_fd, STARDS_SHUT_BOTH);
+            closesock(m_listen_fd);
+            m_listen_fd = kInvalidSocket;
         }
         if (m_thread.joinable()) m_thread.join();
     }
@@ -140,23 +181,23 @@ public:
 private:
     void runLoop() {
         while (m_running) {
-            int client = ::accept(m_listen_fd, nullptr, nullptr);
-            if (client < 0) {
+            socket_t client = ::accept(m_listen_fd, nullptr, nullptr);
+            if (client == kInvalidSocket) {
                 if (!m_running) break;
                 continue;
             }
             handleClient(client);
-            ::close(client);
+            closesock(client);
         }
     }
 
-    static std::string recvHeaders(int fd, std::string& leftover) {
+    static std::string recvHeaders(socket_t fd, std::string& leftover) {
         std::string data = leftover;
         char buf[4096];
         while (data.find("\r\n\r\n") == std::string::npos) {
-            ssize_t n = ::recv(fd, buf, sizeof(buf), 0);
+            auto n = recvbuf(fd, buf, sizeof(buf));
             if (n <= 0) break;
-            data.append(buf, n);
+            data.append(buf, static_cast<size_t>(n));
         }
         size_t hdr_end = data.find("\r\n\r\n");
         if (hdr_end == std::string::npos) { leftover.clear(); return data; }
@@ -187,16 +228,16 @@ private:
         return "";
     }
 
-    static void sendAll(int fd, const std::string& s) {
+    static void sendAll(socket_t fd, const std::string& s) {
         size_t off = 0;
         while (off < s.size()) {
-            ssize_t n = ::send(fd, s.data() + off, s.size() - off, 0);
+            auto n = sendbuf(fd, s.data() + off, s.size() - off);
             if (n <= 0) break;
             off += (size_t)n;
         }
     }
 
-    void handleClient(int fd) {
+    void handleClient(socket_t fd) {
         std::string leftover;
         std::string headers = recvHeaders(fd, leftover);
         if (headers.empty()) return;
@@ -222,9 +263,9 @@ private:
             std::string body = leftover;
             char buf[4096];
             while (body.size() < want) {
-                ssize_t n = ::recv(fd, buf, sizeof(buf), 0);
+                auto n = recvbuf(fd, buf, sizeof(buf));
                 if (n <= 0) break;
-                body.append(buf, n);
+                body.append(buf, static_cast<size_t>(n));
             }
             log.body.assign(body.begin(), body.end());
         }
@@ -237,7 +278,7 @@ private:
         respond(fd, log);
     }
 
-    void respond(int fd, const RequestLog& log) {
+    void respond(socket_t fd, const RequestLog& log) {
         // One-shot region redirect?
         {
             std::lock_guard<std::mutex> lk(m_mu);
@@ -334,7 +375,12 @@ private:
         sendAll(fd, resp.str());
     }
 
-    int m_listen_fd = -1;
+#ifdef _WIN32
+    // Declared FIRST so Winsock is initialized (WSAStartup) before the ctor body
+    // creates m_listen_fd, and torn down (WSACleanup) after the socket is closed.
+    WsaInit m_wsa;
+#endif
+    socket_t m_listen_fd = kInvalidSocket;
     int m_port = 0;
     std::atomic<bool> m_running{false};
     std::thread m_thread;

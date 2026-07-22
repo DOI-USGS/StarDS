@@ -70,6 +70,13 @@ target_link_libraries(runStarDSTests
                       Threads::Threads
                       )
 
+# MockHttpServer.h uses Winsock2 on Windows; link the Winsock library so its
+# symbols resolve (the header also has a #pragma comment(lib, "ws2_32") for MSVC,
+# this covers the general case). No-op on Linux/macOS.
+if(WIN32)
+    target_link_libraries(runStarDSTests PRIVATE ws2_32)
+endif()
+
 # Note: ghc::filesystem (<ghc/fs_std.hpp>) is provided by the toolchain/conda
 # include path (the cpp-filesystem package), not a vendored submodule.
 
