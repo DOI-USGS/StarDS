@@ -121,6 +121,10 @@ int run_translate(const std::string& codec, const std::string& out_path) {
 #endif
     std::string cmd = std::string("\"") + STARDS_TRANSLATE_EXE + "\" -c " + codec +
                       " \"" + STARDS_EXAMPLE_JSON + "\" \"" + out_path + "\" " + devnull;
+#ifdef _WIN32
+    // cmd.exe support.
+    cmd = "\"" + cmd + "\"";
+#endif
     return std::system(cmd.c_str());
 }
 
