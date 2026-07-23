@@ -27,6 +27,26 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # (only affects libc++; harmless elsewhere)
 add_compile_definitions(_LIBCPP_DISABLE_AVAILABILITY)
 
+# On Windows with a MinGW/GCC toolchain, statically link the GCC runtime into every
+# target defined below (tools, tests, Python extension). Otherwise the produced
+# .exe/.pyd depend on libstdc++-6.dll / libgcc_s_seh-1.dll / libwinpthread-1.dll at
+# load time, and windows-latest has several conflicting copies of those on PATH
+# (Strawberry Perl, Rtools, git, mingw) — loading a mismatched one yields
+# STATUS_ENTRYPOINT_NOT_FOUND (0xc0000139) when the exe runs (e.g. during
+# gtest_discover_tests, which executes the freshly built test binary). Static
+# linking makes the binaries self-contained.
+#
+# -static (in addition to the explicit -static-libgcc/-static-libstdc++) also pulls
+# libwinpthread in statically, so none of the three GCC-runtime DLLs is a load-time
+# dependency. This is safe for the third-party deps: find_package(CURL/ZLIB/OpenSSL)
+# and the LZ4 find_library give CMake FULL library paths (not -lNAME), and -static
+# only affects -lNAME resolution — the only such libs here (ws2_32, and the
+# built-from-source gtest/gmock) have static archives available in MinGW.
+# Directory-scoped and guarded to MinGW only: no effect on MSVC, Linux, or macOS.
+if(MINGW)
+  add_link_options(-static-libgcc -static-libstdc++ -static)
+endif()
+
 # Set up Anaconda prefix in the case with a non-default conda env is activated
 if(EXISTS $ENV{CONDA_PREFIX})
   message("CONDA PREFIX: $ENV{CONDA_PREFIX}")
