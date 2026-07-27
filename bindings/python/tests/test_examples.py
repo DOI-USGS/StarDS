@@ -44,6 +44,11 @@ def test_example_runs(example, tmp_path):
     env["PYTHONPATH"] = os.pathsep.join(
         p for p in [os.pathsep.join(sys.path), env.get("PYTHONPATH", "")] if p
     )
+    # Force UTF-8 stdout/stderr in the child. Several examples print a "✓" (U+2713);
+    # on Windows the default console encoding is cp1252, which can't encode it and
+    # raises UnicodeEncodeError. This makes the examples' output encoding-agnostic
+    # across platforms without editing the example scripts.
+    env["PYTHONIOENCODING"] = "utf-8"
 
     result = subprocess.run(
         [sys.executable, script],

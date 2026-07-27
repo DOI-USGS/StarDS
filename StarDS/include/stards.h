@@ -6928,14 +6928,27 @@ public:
 
         LOG_DEBUG("set_layer_presence: layer=", layer_name, " key=", key, " present=", present);
 
-        // Get key index from KEY REGISTRY (not m_key_to_index which is m_hot.keys index)
-        // This is critical for v1 format where bitmaps are indexed by registry key indices
-        uint16_t key_idx = m_key_registry.get_or_create(key);
+        // The presence bitmap is indexed by DATA ORDINAL (a key's position among
+        // data arrays == its m_hot index), the same quantity flush()/loadIndex()
+        // size the bitmap by. key_in_layer() only ever consults the bitmap for
+        // keys that are base data arrays (present in m_key_to_index); a logical key
+        // that has no base data array (e.g. a layer-only override) is resolved
+        // through the metadata path instead and its bit is never read. So resolve
+        // the ordinal from m_key_to_index and skip keys that aren't data arrays —
+        // setting a bit at a made-up index (e.g. the global registry index, which
+        // also advances for metadata/layer keys) is both unread and liable to push
+        // the bitmap past the size the header reserved for it.
+        auto ord_it = m_key_to_index.find(key);
+        if (ord_it == m_key_to_index.end()) {
+            LOG_DEBUG("  key '", key, "' is not a data array; presence bit not tracked");
+            return;
+        }
+        size_t data_ordinal = ord_it->second;
 
         // Get or create layer presence bitmap
         auto& bitmap = m_layer_presence[layer_name];
-        size_t word_idx = key_idx / 64;
-        size_t bit_idx = key_idx % 64;
+        size_t word_idx = data_ordinal / 64;
+        size_t bit_idx = data_ordinal % 64;
 
         // Resize bitmap if needed
         if (word_idx >= bitmap.size()) {
@@ -6945,7 +6958,7 @@ public:
         // Set or clear bit
         if (present) {
             bitmap[word_idx] |= (uint64_t(1) << bit_idx);
-            LOG_DEBUG("  Set bit ", bit_idx, " (key_idx=", key_idx, ") in word ", word_idx, " for layer ", layer_name);
+            LOG_DEBUG("  Set bit ", bit_idx, " (data_ordinal=", data_ordinal, ") in word ", word_idx, " for layer ", layer_name);
         } else {
             bitmap[word_idx] &= ~(uint64_t(1) << bit_idx);
         }
@@ -7057,9 +7070,11 @@ public:
                 return has_metadata_key_in_layer(key, layer_name);
             }
 
-            // Data array - check layer-specific bitmap using KEY REGISTRY index
-            // Get key index from registry (v1 format uses registry indices for bitmaps)
-            uint16_t key_idx = m_key_registry.get_index(key);
+            // Data array - check layer-specific bitmap using the DATA ORDINAL
+            // (the key's position among data arrays == its m_hot index `idx`),
+            // matching how put()/set_layer_presence() set the bit and how
+            // flush()/loadIndex() size the bitmap.
+            size_t key_idx = idx;
 
             auto layer_it = m_layer_presence.find(layer_name);
             if (layer_it == m_layer_presence.end()) {
@@ -7177,21 +7192,31 @@ public:
             m_data_storage.emplace_back(std::forward<NDArray<T>>(value));
             m_key_to_index[key] = idx;
 
-            // Add to key registry for v1 format and get its index
-            uint16_t key_idx = m_key_registry.get_or_create(key);
+            // Register the key so the v1 array index can reference it by index
+            // (index entries store the registry key index; see flush()).
+            m_key_registry.get_or_create(key);
 
-            // Grow layer presence bitmaps for all layers based on KEY REGISTRY index
-            size_t new_bitmap_words = (key_idx + 64) / 64;  // Round up to nearest 64-bit word
+            // Grow layer presence bitmaps for all layers. The bitmap is indexed by
+            // DATA ORDINAL (a key's position among data arrays, which for v1 is
+            // exactly its m_hot index `idx`), NOT the global key-registry index.
+            // calculateHeaderSize(), flush(), and loadIndex() all size the bitmap
+            // by the data-entry count, so a bit position must stay below that count.
+            // The registry index also advances for metadata and layer keys, so
+            // using it here could set a bit in a word the reserved header never
+            // budgeted for -> "serialized header exceeds reserved header size". The
+            // data ordinal is always < data-entry count, so it cannot overflow.
+            size_t data_ordinal = idx;
+            size_t new_bitmap_words = (data_ordinal + 64) / 64;  // round up to whole words
             for (auto& [layer_name, bitmap] : m_layer_presence) {
                 if (bitmap.size() < new_bitmap_words) {
                     bitmap.resize(new_bitmap_words, 0);
                 }
             }
 
-            // Set bit for this array in base layer bitmap by default using KEY REGISTRY index
+            // Set bit for this array in base layer bitmap by default.
             // (LayerView::put will clear this and set the layer-specific bit instead)
-            size_t word_idx = key_idx / 64;
-            size_t bit_idx = key_idx % 64;
+            size_t word_idx = data_ordinal / 64;
+            size_t bit_idx = data_ordinal % 64;
             m_layer_presence["__base__"][word_idx] |= (uint64_t(1) << bit_idx);
         }
 
@@ -7369,7 +7394,14 @@ public:
         // element extraction (what get_slice does) can't reconstruct individual
         // elements without the full array. Slicing is therefore unsupported for
         // *_SHUFFLE codecs; read the whole array with get<T>() instead.
-        if (uses_shuffle(m_cold.compressions[idx])) {
+        //
+        // String columns are exempt: shuffle is a fixed-width numeric prefilter
+        // that serialize_array_data() never applies to strings (see the string
+        // specialization), so a string column recorded under a *_SHUFFLE codec
+        // still holds an un-shuffled length-prefix stream on disk. The dedicated
+        // string path below decompresses (base codec) and decodes it directly,
+        // exactly as get<T>() does for the full-array read.
+        if (uses_shuffle(m_cold.compressions[idx]) && m_hot.dtypes[idx] != DataType::STRING) {
             throw std::runtime_error(
                 "Array '" + key + "' uses a byte-shuffle compression codec and cannot be "
                 "sliced. Use get<T>(\"" + key + "\") to read the full array.");
@@ -7395,6 +7427,88 @@ public:
         entry.blocks = m_cold.block_infos[idx];
         entry.block_size = m_config.block_size;
         entry.stored_in_metadata = m_cold.stored_in_metadata_flags[idx];
+
+        if constexpr (std::is_same_v<T, std::string>) {
+            // Variable-width string path.
+            //
+            // String columns are stored as a length-prefixed stream
+            //   [u32 total_len][ (u32 str_len)(str_bytes) ]*
+            // (see serialize_metadata_value() / the STRING case of
+            // deserialize_typed_value()). Elements are NOT addressable by
+            // index*width, and blocks split the stream at arbitrary byte
+            // offsets, so a length prefix or body can straddle a block
+            // boundary. The fixed-width slice machinery below therefore cannot
+            // locate string element boundaries — it would return an NDArray of
+            // the right length filled with empty strings. Instead, read and
+            // decompress the whole column (as load_entry() does), then walk the
+            // stream to materialize just the requested window.
+            if (entry.shape.size() != 1) {
+                throw std::runtime_error(
+                    "Slicing string arrays is only supported for 1-D arrays. Array '" +
+                    key + "' has " + std::to_string(entry.shape.size()) +
+                    " dimensions; use get<std::string>(\"" + key + "\") to read it in full.");
+            }
+            if (slices.size() > 1) {
+                throw std::runtime_error("Too many slice dimensions for 1-D string array '" + key + "'");
+            }
+
+            const size_t n = entry.shape[0];
+            Slice s = slices.empty() ? Slice{0, n, 1} : slices[0];
+            // Match createSliceSpec()'s bounds validation for consistency.
+            if (s.step == 0) {
+                throw std::runtime_error("Slice step must be non-zero for string array '" + key + "'");
+            }
+            if (s.start >= n || s.stop > n || s.start >= s.stop) {
+                throw std::runtime_error("Slice out of bounds for dimension 0");
+            }
+
+            // Read the entire column in one ranged request and decompress every
+            // block. entry.blocks offsets are relative to the column start
+            // (entry.position), exactly like load_entry(). decompressBlocks()
+            // strips any *_SHUFFLE labeling to the base codec; strings are never
+            // shuffled on write, so nothing to unshuffle afterward.
+            std::vector<char> compressed = read_range(entry.position, entry.total_bytes);
+            if (compressed.size() != entry.total_bytes) {
+                throw std::runtime_error("Short read of string column '" + key + "' (expected " +
+                    std::to_string(entry.total_bytes) + ", got " +
+                    std::to_string(compressed.size()) + ")");
+            }
+            std::vector<char> decompressed = decompressBlocks(
+                compressed, entry.blocks, entry.compression, {}, m_thread_pool.get());
+
+            const char* buf = decompressed.data();
+            const size_t avail = decompressed.size();
+            auto read_len_at = [&](size_t off) -> uint32_t {
+                if (off + 4 > avail) {
+                    throw std::runtime_error("Corrupt string column '" + key +
+                        "': truncated length prefix while slicing");
+                }
+                uint32_t v;
+                std::memcpy(&v, buf + off, 4);
+                return v;
+            };
+
+            NDArray<std::string> result(std::vector<size_t>{ s.length() });
+            auto& out = result.data();
+
+            // Skip the leading total-length field (present when any bytes were
+            // written; a zero-length column would still carry the 4-byte field).
+            size_t p = (avail >= 4) ? 4 : 0;
+            size_t out_idx = 0;
+            for (size_t i = 0; i < s.stop; ++i) {
+                uint32_t str_len = read_len_at(p);
+                p += 4;
+                if (p + str_len > avail) {
+                    throw std::runtime_error("Corrupt string column '" + key +
+                        "': truncated string body while slicing");
+                }
+                if (i >= s.start && ((i - s.start) % s.step) == 0) {
+                    out[out_idx++] = std::string(buf + p, buf + p + str_len);
+                }
+                p += str_len;
+            }
+            return result;
+        }
 
         // Create slice specification (pure)
         SliceSpec spec = createSliceSpec(entry.shape, slices, sizeof(T));
@@ -7532,11 +7646,22 @@ public:
         }
         size_t idx = it->second;
 
-        // Sliceable if stored separately with block structure, and not byte-shuffled
-        // (shuffle precludes per-block element extraction — see get_slice()).
-        return !m_cold.stored_in_metadata_flags[idx]
-               && !m_cold.block_infos[idx].empty()
-               && !uses_shuffle(m_cold.compressions[idx]);
+        // Must be stored separately with block structure (not inlined in the
+        // metadata block).
+        if (m_cold.stored_in_metadata_flags[idx] || m_cold.block_infos[idx].empty()) {
+            return false;
+        }
+
+        // String columns are always sliceable: they are variable-width and are
+        // never byte-shuffled on write, so get_slice() decodes them directly
+        // even when the recorded codec is a *_SHUFFLE variant (the default).
+        if (m_hot.dtypes[idx] == DataType::STRING) {
+            return true;
+        }
+
+        // Numeric arrays: not sliceable when byte-shuffled (shuffle precludes
+        // per-block element extraction — see get_slice()).
+        return !uses_shuffle(m_cold.compressions[idx]);
     }
 
     /**

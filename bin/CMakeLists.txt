@@ -21,6 +21,26 @@ install(TARGETS stardsls
 message(STATUS "Building stardsls tool")
 
 ###########################
+# stards_config tool       #
+###########################
+
+# Reports this build's version, enabled features, and default StarConfig — built
+# from the same header + feature macros as the other tools, so it reflects them.
+add_executable(stards_config ${CMAKE_CURRENT_SOURCE_DIR}/stards_config.cpp)
+
+target_link_libraries(stards_config
+                      PRIVATE
+                      StarDS
+                      )
+
+target_include_directories(stards_config PRIVATE ${CMAKE_SOURCE_DIR}/StarDS/include/)
+
+install(TARGETS stards_config
+        RUNTIME DESTINATION bin)
+
+message(STATUS "Building stards_config tool")
+
+###########################
 # stards_translate tool    #
 ###########################
 

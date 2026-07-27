@@ -142,6 +142,24 @@ int main() {
 
 ## Command-Line Tools
 
+### stards_config - Build Information
+
+Reports how this build was compiled: the StarDS version, which optional features
+are enabled (zlib/lz4/curl/S3), the on-disk format version, and the default
+settings applied when creating/opening a dataset. Because it is built from the
+same header and feature flags as the other tools, its output reflects them exactly.
+
+```bash
+# Human-readable report
+stards_config
+
+# Machine-readable JSON (for scripts / CI)
+stards_config --json
+
+# Just the version string
+stards_config --version
+```
+
 ### stardsls - Inspect Files
 
 ```bash
