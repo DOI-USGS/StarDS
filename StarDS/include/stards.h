@@ -7738,6 +7738,29 @@ public:
     }
 
     /**
+     * @brief Length of a stored array's first (outermost) dimension.
+     *
+     * Read from the index that open() loads up front (m_cold.shapes) — NO block
+     * data is fetched, so this is cheap even for a multi-GB array or a remote
+     * (/vsicurl, /vsis3) source, and lets a caller size a streaming read
+     * (get_slice windows) before pulling any values. For a 1-D column this is the
+     * element count; for N-D it is shape[0] (the row count). Scalars report 1.
+     *
+     * @param key Array key (must be a separately-stored data array, not metadata)
+     * @return Length of dimension 0
+     * @throws std::runtime_error if the key is not a stored data array
+     */
+    size_t array_length(const std::string& key) const {
+        std::shared_lock<std::shared_mutex> lock(m_mutex);
+        auto it = m_key_to_index.find(key);
+        if (it == m_key_to_index.end()) {
+            throw std::runtime_error("array_length: key is not a stored data array: " + key);
+        }
+        const auto& shp = m_cold.shapes[it->second];
+        return shp.empty() ? 1 : shp[0];
+    }
+
+    /**
      * @brief Check whether a key exists in the dataset.
      *
      * Returns true if `key` names either a stored array (array namespace) or a
