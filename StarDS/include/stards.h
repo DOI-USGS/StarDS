@@ -7766,6 +7766,27 @@ public:
     }
 
     /**
+     * @brief Full shape (all dimensions) of a stored data array.
+     *
+     * Metadata-only: the shape is read from the index loaded at open() time, so
+     * this issues NO data read (no decompression, no extra network request for
+     * remote datasets). Complements dtype_of()/array_length(); use get<T>() only
+     * when the element data itself is needed.
+     *
+     * @param key Array key in store
+     * @return Dimension sizes (empty for a scalar)
+     * @throws std::runtime_error if the key is not a stored data array
+     */
+    std::vector<size_t> shape_of(const std::string& key) const {
+        std::shared_lock<std::shared_mutex> lock(m_mutex);
+        auto it = m_key_to_index.find(key);
+        if (it == m_key_to_index.end()) {
+            throw std::runtime_error("shape_of: key is not a stored data array: " + key);
+        }
+        return m_cold.shapes[it->second];
+    }
+
+    /**
      * @brief Check whether a key exists in the dataset.
      *
      * Returns true if `key` names either a stored array (array namespace) or a
