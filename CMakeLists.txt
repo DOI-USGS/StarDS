@@ -119,8 +119,90 @@ target_include_directories(StarDS
                           $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/stards>)
 
 
-# Option to enable curl support
+# Feature options (shared by the native and WebAssembly branches below).
 option (STARDS_ENABLE_CURL "Enable curl support for HTTP streaming" ON)
+option (STARDS_ENABLE_ZLIB "Enable zlib support for compression" ON)
+option(STARDS_ENABLE_LZ4 "Enable LZ4 support for fast compression" ON)
+option(STARDS_ENABLE_S3 "Enable S3 support for cloud storage" ON)
+
+if(EMSCRIPTEN)
+  # ===========================================================================
+  # WebAssembly (emscripten) build.
+  #
+  # The emscripten sysroot ships none of the native network/crypto deps — no
+  # libcurl, no OpenSSL, no LZ4 — so the feature wiring differs from native:
+  #   * HTTP (/vsicurl) + S3 (/vsis3) stay ENABLED (ENABLE_CURL/ENABLE_S3), but
+  #     the header uses the JS global fetch() (via EM_ASYNC_JS) instead of
+  #     libcurl (guarded on __EMSCRIPTEN__). read_at() stays blocking, so the
+  #     build needs -sASYNCIFY to suspend/rewind the Wasm stack across the
+  #     awaited fetch Promise. (We do NOT use -sFETCH/emscripten_fetch: its
+  #     synchronous mode returns NULL off a Web Worker — i.e. on the browser
+  #     main thread and under node — which is exactly the case we need.)
+  #     Callers must supply S3 credentials explicitly (the SSO / ~/.aws
+  #     discovery paths are compiled out under __EMSCRIPTEN__).
+  #   * S3 SigV4 signing needs SHA-256; with no OpenSSL we compile just that one
+  #     primitive from vendored mbedTLS (cmake/stards_mbedtls_config.h trims it
+  #     to SHA-256 only; HMAC-SHA256 is hand-rolled over it in the header).
+  #   * zlib comes from emscripten's own port (-sUSE_ZLIB=1).
+  #   * LZ4 has no emscripten port, so it is left off; the header's compression
+  #     path degrades exactly as in any no-LZ4 native build.
+  # ===========================================================================
+  message(STATUS "Configuring StarDS for WebAssembly (emscripten)")
+
+  if(STARDS_ENABLE_CURL)
+    add_definitions(-DENABLE_CURL)
+    # The header's WASM network backend is EM_ASYNC_JS + await fetch() (the JS
+    # global fetch() needs no extra port). -sASYNCIFY lets those awaited fetches
+    # look blocking to read_at() by suspending/rewinding the Wasm stack; it is a
+    # link-time flag. No -sFETCH: emscripten_fetch's synchronous mode is unusable
+    # off a Web Worker (see the header note near <emscripten/em_js.h>).
+    target_link_options(StarDS INTERFACE "-sASYNCIFY")
+  endif()
+
+  if(STARDS_ENABLE_ZLIB)
+    add_definitions(-DENABLE_ZLIB)
+    target_compile_options(StarDS INTERFACE "-sUSE_ZLIB=1")
+    target_link_options(StarDS INTERFACE "-sUSE_ZLIB=1")
+  endif()
+
+  if(STARDS_ENABLE_LZ4)
+    message(STATUS "LZ4 has no emscripten port; building WASM without LZ4.")
+    # Intentionally do NOT define ENABLE_LZ4 — the header falls back to zlib/none.
+  endif()
+
+  if(STARDS_ENABLE_S3)
+    if(NOT STARDS_ENABLE_CURL)
+      message(FATAL_ERROR "S3 support requires CURL. Enable STARDS_ENABLE_CURL.")
+    endif()
+    add_definitions(-DENABLE_S3)
+
+    # SHA-256 for SigV4, from vendored mbedTLS (no OpenSSL in the sysroot). Only
+    # two self-contained source files are needed.
+    set(STARDS_MBEDTLS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/submodules/mbedtls")
+    if(NOT EXISTS "${STARDS_MBEDTLS_DIR}/library/sha256.c")
+      message(FATAL_ERROR
+        "mbedTLS submodule not found at ${STARDS_MBEDTLS_DIR}. "
+        "Run: git submodule update --init submodules/mbedtls")
+    endif()
+    add_library(stards_mbedtls STATIC
+      "${STARDS_MBEDTLS_DIR}/library/sha256.c"
+      "${STARDS_MBEDTLS_DIR}/library/platform_util.c")
+    # PUBLIC so linking StarDS propagates the mbedtls include dir + config to the
+    # header's <mbedtls/sha256.h> include and to all downstream consumers.
+    target_include_directories(stards_mbedtls PUBLIC
+      "${STARDS_MBEDTLS_DIR}/include"
+      "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+    target_compile_definitions(stards_mbedtls PUBLIC
+      MBEDTLS_CONFIG_FILE="stards_mbedtls_config.h")
+
+    target_link_libraries(StarDS INTERFACE stards_mbedtls)
+    message(STATUS "S3 support: enabled (fetch() via EM_ASYNC_JS + vendored mbedTLS SHA-256)")
+  else()
+    message(STATUS "S3 support: disabled")
+  endif()
+
+else()  # ---- native (non-emscripten) build ----
+
 if(STARDS_ENABLE_CURL)
   add_definitions(-DENABLE_CURL)
   # Find curl package if needed
@@ -130,7 +212,6 @@ if(STARDS_ENABLE_CURL)
 endif()
 
 # Option to enable zlib support
-option (STARDS_ENABLE_ZLIB "Enable zlib support for compression" ON)
 if(STARDS_ENABLE_ZLIB)
   add_definitions(-DENABLE_ZLIB)
   find_package(ZLIB REQUIRED)
@@ -139,7 +220,6 @@ if(STARDS_ENABLE_ZLIB)
 endif()
 
 # Option to enable LZ4 support
-option(STARDS_ENABLE_LZ4 "Enable LZ4 support for fast compression" ON)
 if(STARDS_ENABLE_LZ4)
   add_definitions(-DENABLE_LZ4)
 
@@ -174,7 +254,6 @@ if(STARDS_ENABLE_LZ4)
 endif()
 
 # Option to enable S3 support
-option(STARDS_ENABLE_S3 "Enable S3 support for cloud storage" ON)
 if(STARDS_ENABLE_S3)
   # S3 requires CURL for HTTP and OpenSSL for signing
   if(NOT STARDS_ENABLE_CURL)
@@ -195,6 +274,8 @@ if(STARDS_ENABLE_S3)
 else()
   message(STATUS "S3 support: disabled")
 endif()
+
+endif()  # EMSCRIPTEN / native feature-detection branch
 
 
 # Install the (header-only INTERFACE) target as an export set so a matching

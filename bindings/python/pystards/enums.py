@@ -26,8 +26,13 @@ class CompressionAlgorithm:
     ZSTD = _star.CompressionAlgorithm_ZSTD
     LZ4 = _star.CompressionAlgorithm_LZ4
     # Byte-shuffle prefilter + base codec (better ratios on numeric arrays).
+    # The legacy global variants shuffle the whole array and are NOT sliceable.
     GZIP_SHUFFLE = _star.CompressionAlgorithm_GZIP_SHUFFLE
     LZ4_SHUFFLE = _star.CompressionAlgorithm_LZ4_SHUFFLE
+    # Per-block shuffle variants: same compression benefit but sliceable
+    # (get_slice works). LZ4_SHUFFLE_BLOCK is the default data codec.
+    GZIP_SHUFFLE_BLOCK = _star.CompressionAlgorithm_GZIP_SHUFFLE_BLOCK
+    LZ4_SHUFFLE_BLOCK = _star.CompressionAlgorithm_LZ4_SHUFFLE_BLOCK
 
 
 class FileMode:

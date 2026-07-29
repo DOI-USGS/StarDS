@@ -113,13 +113,8 @@ VectorUInt64 = VectorSize
 %warnfilter(509) star::StarDataset::put;
 %warnfilter(509) star::NDArray;
 
-// Ignore internal HTTP/S3 streaming classes. These derive from std::streambuf /
-// std::istream (which SWIG cannot wrap), are implementation details never used
-// from Python, and wrapping them produces broken proxies (missing delete_*).
-%ignore star::HttpStreamBuf;
-%ignore star::HttpStream;
-%ignore star::S3StreamBuf;
-%ignore star::S3Stream;
+// Ignore internal S3 helper classes. Implementation details never used from
+// Python; wrapping them produces broken proxies (missing delete_*).
 %ignore star::S3Writer;
 %ignore star::AWSV4Signer;
 %ignore star::AWSConfigParser;

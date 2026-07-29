@@ -572,3 +572,134 @@ TEST_F(SlicingTest, EdgeCase_FullArray) {
         EXPECT_EQ(slice.flat(i), data.flat(i));
     }
 }
+
+// ============================================================================
+// Regression: slicing across block boundaries with a NON-DEFAULT block_size.
+//
+// get_slice() must derive elements-per-block from the block size the array was
+// WRITTEN with (blocks[0].uncompressed_size), not from the currently-open
+// config. Reopening READ_ONLY resets the in-memory config to its 1 MB default;
+// if that default leaked into the block-mapping math it would disagree with the
+// extraction step, drop every block past the first, and silently return zeros
+// for the tail of a multi-block slice. Written with a small block_size so a
+// modest array spans many blocks and the slice straddles several boundaries.
+// ============================================================================
+TEST_F(SlicingTest, Regression_NonDefaultBlockSize_SpansBlocks) {
+    std::string test_file = createTempFile();
+    const size_t N = 4000;
+    {
+        StarConfig config;
+        config.compression = CompressionAlgorithm::NONE;
+        config.block_size = 1024;  // 128 doubles/block -> ~32 blocks
+        auto store = StarDataset::create(test_file, config);
+        NDArray<double> data({N});
+        for (size_t i = 0; i < N; ++i) data.flat(i) = static_cast<double>(i) * 1.5;
+        store->put("data", data);
+        store->close();
+    }
+
+    // Reopen READ_ONLY: the in-memory config is now the 1 MB default, which
+    // differs from the 1024-byte block size this array actually used.
+    auto store = StarDataset::open(test_file, FileMode::READ_ONLY);
+
+    // Slice straddles ~30 block boundaries.
+    auto slice = store->get_slice<double>("data", {{100, 3900}});
+    ASSERT_EQ(slice.size(), 3800u);
+    for (size_t i = 0; i < slice.size(); ++i) {
+        EXPECT_EQ(slice.flat(i), static_cast<double>(100 + i) * 1.5)
+            << "Mismatch at slice index " << i << " (array element " << (100 + i) << ")";
+    }
+}
+
+// ============================================================================
+// Per-block byte-shuffle codecs (GZIP_SHUFFLE_BLOCK / LZ4_SHUFFLE_BLOCK) apply
+// the shuffle prefilter independently within each block, keeping each block
+// self-contained so get_slice() can decode only the covering blocks. These
+// verify that block-shuffled arrays are sliceable and round-trip correctly,
+// including slices that cross block boundaries. (The legacy global-shuffle
+// variants shuffle the whole array at once and are intentionally NOT sliceable
+// — covered by HelperFunction_IsSliceable.)
+// ============================================================================
+class BlockShuffleSlicingTest
+    : public SlicingTest,
+      public ::testing::WithParamInterface<CompressionAlgorithm> {};
+
+TEST_P(BlockShuffleSlicingTest, SlicesAcrossBlocks_1D) {
+    const CompressionAlgorithm codec = GetParam();
+    std::string test_file = createTempFile();
+    const size_t N = 4000;
+    {
+        StarConfig config;
+        config.compression = codec;
+        config.block_size = 1024;  // force many blocks
+        auto store = StarDataset::create(test_file, config);
+        NDArray<double> data({N});
+        for (size_t i = 0; i < N; ++i) data.flat(i) = static_cast<double>(i) * 1.5;
+        store->put("data", data);
+        store->close();
+    }
+
+    auto store = StarDataset::open(test_file, FileMode::READ_ONLY);
+    EXPECT_TRUE(store->is_sliceable("data"));
+
+    // Full read round-trips.
+    auto full = store->get<double>("data");
+    ASSERT_EQ(full.size(), N);
+    for (size_t i = 0; i < N; ++i)
+        EXPECT_EQ(full.flat(i), static_cast<double>(i) * 1.5) << "full read mismatch @" << i;
+
+    // Multi-block slice.
+    auto slice = store->get_slice<double>("data", {{100, 3900}});
+    ASSERT_EQ(slice.size(), 3800u);
+    for (size_t i = 0; i < slice.size(); ++i)
+        EXPECT_EQ(slice.flat(i), static_cast<double>(100 + i) * 1.5) << "slice mismatch @" << i;
+
+    // Head, tail, single, stepped.
+    auto head = store->get_slice<double>("data", {{0, 1}});
+    ASSERT_EQ(head.size(), 1u);
+    EXPECT_EQ(head.flat(0), 0.0);
+    auto tail = store->get_slice<double>("data", {{N - 1, N}});
+    ASSERT_EQ(tail.size(), 1u);
+    EXPECT_EQ(tail.flat(0), static_cast<double>(N - 1) * 1.5);
+    auto step = store->get_slice<double>("data", {{10, 40, 5}});
+    ASSERT_EQ(step.size(), 6u);
+    for (size_t i = 0; i < step.size(); ++i)
+        EXPECT_EQ(step.flat(i), static_cast<double>(10 + 5 * i) * 1.5) << "step mismatch @" << i;
+}
+
+TEST_P(BlockShuffleSlicingTest, SlicesFullRows_2D) {
+    const CompressionAlgorithm codec = GetParam();
+    std::string test_file = createTempFile();
+    const int R = 500, C = 8;
+    {
+        StarConfig config;
+        config.compression = codec;
+        config.block_size = 1024;  // 256 int32/block
+        auto store = StarDataset::create(test_file, config);
+        NDArray<int32_t> data({(size_t)R, (size_t)C});
+        for (int r = 0; r < R; ++r)
+            for (int c = 0; c < C; ++c) data.flat(r * C + c) = r * 100 + c;
+        store->put("m", data);
+        store->close();
+    }
+
+    auto store = StarDataset::open(test_file, FileMode::READ_ONLY);
+    EXPECT_TRUE(store->is_sliceable("m"));
+
+    auto rows = store->get_slice<int32_t>("m", {{100, 105}, {0, (size_t)C}});
+    ASSERT_EQ(rows.size(), (size_t)(5 * C));
+    for (int r = 0; r < 5; ++r)
+        for (int c = 0; c < C; ++c)
+            EXPECT_EQ(rows.flat(r * C + c), (100 + r) * 100 + c)
+                << "row-slice mismatch @(" << r << "," << c << ")";
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    BlockShuffleCodecs, BlockShuffleSlicingTest,
+    ::testing::Values(CompressionAlgorithm::GZIP_SHUFFLE_BLOCK,
+                      CompressionAlgorithm::LZ4_SHUFFLE_BLOCK),
+    [](const ::testing::TestParamInfo<CompressionAlgorithm>& info) {
+        return info.param == CompressionAlgorithm::GZIP_SHUFFLE_BLOCK
+                   ? std::string("GZIP_SHUFFLE_BLOCK")
+                   : std::string("LZ4_SHUFFLE_BLOCK");
+    });

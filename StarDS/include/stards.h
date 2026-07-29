@@ -61,6 +61,21 @@
 // WIN32_LEAN_AND_MEAN trims the rest of the rarely-used surface. (The wingdi.h
 // `ERROR` macro is avoided separately by prefixing the logger enum — STARDS_ERROR.)
 #ifdef ENABLE_CURL
+#if defined(__EMSCRIPTEN__)
+// Under WebAssembly there is no libcurl in the emscripten sysroot. Every HTTP /
+// S3 ranged read (and the S3 upload) is instead performed against the JS global
+// fetch() via EM_ASYNC_JS — see the __EMSCRIPTEN__ branches of HttpRangeReader /
+// S3RangeReader / S3Writer below. read_at() stays blocking because the build
+// links with -sASYNCIFY (added by the emscripten branch in CMakeLists.txt),
+// which suspends/rewinds the Wasm stack across the awaited fetch Promise.
+//
+// NOTE: we deliberately do NOT use <emscripten/fetch.h> (emscripten_fetch). Its
+// EMSCRIPTEN_FETCH_SYNCHRONOUS path returns NULL on the main browser thread AND
+// under node (both are the "main browser thread"), so it only works inside a Web
+// Worker — useless for the common case. EM_ASYNC_JS + await fetch() works on the
+// browser main thread and under node (node >=18 ships a global fetch()).
+#include <emscripten/em_js.h>
+#else
 #ifdef _WIN32
 #  ifndef WIN32_LEAN_AND_MEAN
 #    define WIN32_LEAN_AND_MEAN
@@ -70,15 +85,26 @@
 #  endif
 #endif
 #include <curl/curl.h>
-#endif
+#endif  // __EMSCRIPTEN__
+#endif  // ENABLE_CURL
 
 #ifdef ENABLE_S3
+#if defined(__EMSCRIPTEN__)
+// No OpenSSL in the emscripten sysroot either. AWS SigV4 needs SHA-256; that
+// comes from the vendored mbedTLS (submodules/mbedtls, SHA-256 one-shot only).
+// HMAC-SHA256 is layered on top of it by hand in the crypto shim below, so the
+// generic mbedTLS message-digest layer (md.c + md5/sha1/sha512/sha3 + PSA) is
+// NOT needed. There is also no ~/.aws directory scan under WASM (credentials
+// must be supplied explicitly), so <dirent.h> is intentionally absent here.
+#include <mbedtls/sha256.h>
+#else
 #include <openssl/sha.h>
 #include <openssl/hmac.h>
 #ifndef _WIN32
 #include <dirent.h>
 #endif
-#endif
+#endif  // __EMSCRIPTEN__
+#endif  // ENABLE_S3
 
 // Library version constants.
 //
@@ -448,8 +474,22 @@ enum class CompressionAlgorithm : uint8_t {
     // This clusters the slowly-varying high-order bytes of numeric data (e.g.
     // float64 coordinates), which GZIP/LZ4 then compress far better. Applied only
     // to fixed-width numeric arrays; strings fall back to the base codec.
+    //
+    // GLOBAL-shuffle variants (legacy): the prefilter is applied across the WHOLE
+    // array before it is split into compression blocks, so a single element's
+    // bytes end up scattered across every block. These files read correctly but
+    // CANNOT be sliced (get_slice()/is_sliceable() reject them) — reconstructing
+    // any element requires the entire array.
     GZIP_SHUFFLE = 4,
     LZ4_SHUFFLE = 5,
+    // BLOCK-shuffle variants: the prefilter is applied independently within each
+    // compression block, so every block is self-contained and can be un-shuffled
+    // on its own. This keeps the compression benefit of shuffle while allowing
+    // slicing — get_slice() reads only the covering blocks and un-shuffles each.
+    // These are the default when LZ4 is available. On-disk layout differs from the
+    // global variants, hence distinct codec ids (readers dispatch by id).
+    GZIP_SHUFFLE_BLOCK = 6,
+    LZ4_SHUFFLE_BLOCK = 7,
 };
 
 /**
@@ -460,17 +500,37 @@ enum class CompressionAlgorithm : uint8_t {
  */
 inline CompressionAlgorithm base_compression(CompressionAlgorithm c) {
     switch (c) {
-        case CompressionAlgorithm::GZIP_SHUFFLE: return CompressionAlgorithm::GZIP;
-        case CompressionAlgorithm::LZ4_SHUFFLE:  return CompressionAlgorithm::LZ4;
+        case CompressionAlgorithm::GZIP_SHUFFLE:
+        case CompressionAlgorithm::GZIP_SHUFFLE_BLOCK: return CompressionAlgorithm::GZIP;
+        case CompressionAlgorithm::LZ4_SHUFFLE:
+        case CompressionAlgorithm::LZ4_SHUFFLE_BLOCK:  return CompressionAlgorithm::LZ4;
         default: return c;
     }
 }
 
 /**
- * @brief Whether a compression algorithm uses the byte-shuffle prefilter.
+ * @brief Whether a compression algorithm uses the byte-shuffle prefilter (either
+ *        the legacy global variant or the per-block variant).
  */
 inline bool uses_shuffle(CompressionAlgorithm c) {
+    return c == CompressionAlgorithm::GZIP_SHUFFLE || c == CompressionAlgorithm::LZ4_SHUFFLE ||
+           c == CompressionAlgorithm::GZIP_SHUFFLE_BLOCK || c == CompressionAlgorithm::LZ4_SHUFFLE_BLOCK;
+}
+
+/**
+ * @brief Whether the shuffle prefilter is applied across the WHOLE array (legacy
+ *        layout). Such arrays are not sliceable.
+ */
+inline bool uses_global_shuffle(CompressionAlgorithm c) {
     return c == CompressionAlgorithm::GZIP_SHUFFLE || c == CompressionAlgorithm::LZ4_SHUFFLE;
+}
+
+/**
+ * @brief Whether the shuffle prefilter is applied PER BLOCK (self-contained
+ *        blocks). Such arrays are sliceable.
+ */
+inline bool uses_block_shuffle(CompressionAlgorithm c) {
+    return c == CompressionAlgorithm::GZIP_SHUFFLE_BLOCK || c == CompressionAlgorithm::LZ4_SHUFFLE_BLOCK;
 }
 
 /**
@@ -499,6 +559,50 @@ inline void byte_unshuffle(const char* in, char* out, size_t count, size_t elem_
         const char* src = in + b * count;
         for (size_t i = 0; i < count; ++i) {
             out[i * elem_size + b] = src[i];
+        }
+    }
+}
+
+/**
+ * @brief Per-block byte-shuffle: apply byte_shuffle() independently within each
+ *        `block_size`-byte chunk of a `data_size`-byte buffer.
+ *
+ * This is the prefilter for the BLOCK-shuffle codecs. Because the buffer is later
+ * cut into blocks at the SAME `block_size` boundaries by compressBlocksBuffered(),
+ * each compression block ends up holding exactly one self-contained shuffled chunk,
+ * so it can be un-shuffled on its own (enabling slicing) — unlike the global
+ * variant, whose byte planes span the whole array.
+ *
+ * Each chunk is shuffled over its whole-element prefix (chunk_size / elem_size
+ * elements); any trailing bytes that don't form a complete element (only possible
+ * when block_size is not a multiple of elem_size) are copied through verbatim, and
+ * byte_unshuffle_blocked() reverses this exactly. `out` must hold `data_size` bytes.
+ */
+inline void byte_shuffle_blocked(const char* in, char* out, size_t data_size,
+                                 size_t elem_size, size_t block_size) {
+    if (elem_size <= 1 || block_size == 0) { std::memcpy(out, in, data_size); return; }
+    for (size_t off = 0; off < data_size; off += block_size) {
+        size_t chunk = std::min(block_size, data_size - off);
+        size_t whole = (chunk / elem_size) * elem_size;   // bytes forming full elements
+        byte_shuffle(in + off, out + off, whole / elem_size, elem_size);
+        if (whole < chunk) {
+            std::memcpy(out + off + whole, in + off + whole, chunk - whole);
+        }
+    }
+}
+
+/**
+ * @brief Inverse of byte_shuffle_blocked(): un-shuffle each `block_size` chunk.
+ */
+inline void byte_unshuffle_blocked(const char* in, char* out, size_t data_size,
+                                   size_t elem_size, size_t block_size) {
+    if (elem_size <= 1 || block_size == 0) { std::memcpy(out, in, data_size); return; }
+    for (size_t off = 0; off < data_size; off += block_size) {
+        size_t chunk = std::min(block_size, data_size - off);
+        size_t whole = (chunk / elem_size) * elem_size;
+        byte_unshuffle(in + off, out + off, whole / elem_size, elem_size);
+        if (whole < chunk) {
+            std::memcpy(out + off + whole, in + off + whole, chunk - whole);
         }
     }
 }
@@ -976,7 +1080,181 @@ struct IndexEntry {
 #include <streambuf>
 #include <iostream>
 #include <memory>
+#include <cstring>
+#include <utility>
 
+#if defined(__EMSCRIPTEN__)
+//------------------------------------------------------------------------------
+// WebAssembly network backend: the JS global fetch() via EM_ASYNC_JS.
+//
+// There is no libcurl under emscripten, so the ranged-GET reader classes below
+// (HttpRangeReader, S3RangeReader) and the S3 uploader route through these two
+// helpers instead of curl. They look blocking to their C++ callers, which is
+// legal because the build links with -sASYNCIFY (see CMakeLists.txt): EM_ASYNC_JS
+// suspends the Wasm stack, awaits the fetch() Promise, then rewinds — so read_at()
+// stays synchronous with zero caller API changes. Every request bumps
+// g_network_request_count, exactly as star_curl_perform() does natively, so
+// observability/tests stay consistent.
+//
+// Why fetch() and not emscripten_fetch(): the latter's synchronous mode returns
+// NULL off a Web Worker (main browser thread AND node), which is the case that
+// matters. See the include note near <emscripten/em_js.h> above.
+//------------------------------------------------------------------------------
+struct EmFetchResponse {
+    long status = 0;              // HTTP status (0 on transport failure)
+    size_t total_size = SIZE_MAX; // object total, parsed from Content-Range if present
+    std::string bucket_region;    // x-amz-bucket-region, for S3 301 region retries
+};
+
+// Case-insensitively find a header value in the plain-text header blob the JS
+// side builds ("Key: value\r\nKey: value\r\n..."). Returns "" if absent.
+inline std::string em_find_header(const std::string& headers, const std::string& name) {
+    std::string lower_all = headers, lower_name = name;
+    std::transform(lower_all.begin(), lower_all.end(), lower_all.begin(), ::tolower);
+    std::transform(lower_name.begin(), lower_name.end(), lower_name.begin(), ::tolower);
+    size_t pos = lower_all.find(lower_name + ":");
+    if (pos == std::string::npos) return "";
+    size_t val_start = pos + lower_name.size() + 1;
+    size_t line_end = headers.find('\n', val_start);
+    std::string v = headers.substr(val_start,
+        line_end == std::string::npos ? std::string::npos : line_end - val_start);
+    v.erase(0, v.find_first_not_of(" \t\r\n"));
+    size_t last = v.find_last_not_of(" \t\r\n");
+    if (last != std::string::npos) v.erase(last + 1);
+    return v;
+}
+
+// The JS glue for one GET/PUT. Both marshal:
+//   * request headers IN as a flat "Name:Value\n..." blob (parsed on the JS side),
+//   * the response body OUT via a returned _malloc'd pointer + *out_len (a double
+//     so object sizes above 2^31 are representable exactly),
+//   * status OUT via *out_status,
+//   * the response headers OUT via a second _malloc'd "Name: Value\r\n..." blob
+//     stored through *out_headers.
+// C++ owns and free()s both returned buffers. On any thrown error (network,
+// CORS, abort) status/len are set to 0 and the returned body pointer is 0.
+// TextEncoder + HEAPU8.set is used (not stringToUTF8/lengthBytesUTF8) so no extra
+// -sEXPORTED_RUNTIME_METHODS / library-symbol linker flags are required.
+EM_ASYNC_JS(char*, stards_em_fetch, (const char* method, const char* url,
+        const char* req_headers, const char* body, double body_len,
+        int* out_status, double* out_len, char** out_headers), {
+    var m = UTF8ToString(method);
+    var u = UTF8ToString(url);
+    var headers = {};
+    if (req_headers) {
+        UTF8ToString(req_headers).split('\n').forEach(function(line) {
+            if (!line) return;
+            var i = line.indexOf(':');
+            if (i > 0) headers[line.slice(0, i)] = line.slice(i + 1);
+        });
+    }
+    var init = { method: m, headers: headers };
+    if (body && body_len > 0) {
+        // Copy the request body out of the (movable) Wasm heap into its own buffer.
+        init.body = HEAPU8.slice(body, body + body_len);
+    }
+    try {
+        var resp = await fetch(u, init);
+        var buf = new Uint8Array(await resp.arrayBuffer());
+        var ptr = _malloc(buf.length || 1);
+        HEAPU8.set(buf, ptr);
+        HEAP32[out_status >> 2] = resp.status;
+        HEAPF64[out_len >> 3] = buf.length;
+        var hstr = "";
+        resp.headers.forEach(function(v, k) { hstr += k + ": " + v + "\r\n"; });
+        var hbytes = new TextEncoder().encode(hstr);
+        var hptr = _malloc(hbytes.length + 1);
+        HEAPU8.set(hbytes, hptr);
+        HEAPU8[hptr + hbytes.length] = 0;
+        HEAPU32[out_headers >> 2] = hptr;
+        return ptr;
+    } catch (e) {
+        HEAP32[out_status >> 2] = 0;
+        HEAPF64[out_len >> 3] = 0;
+        HEAPU32[out_headers >> 2] = 0;
+        return 0;
+    }
+});
+
+// Flatten (name,value) header pairs into the "Name:Value\n..." blob the JS glue
+// parses. Values may contain ':' (e.g. Range "bytes=0-15") — only the first ':'
+// on each line splits, so that is safe.
+inline std::string em_flatten_headers(
+        const std::vector<std::pair<std::string, std::string>>& headers) {
+    std::string blob;
+    for (const auto& kv : headers) {
+        blob += kv.first;
+        blob += ':';
+        blob += kv.second;
+        blob += '\n';
+    }
+    return blob;
+}
+
+// Parse status, Content-Range total, and x-amz-bucket-region out of a completed
+// fetch, filling EmFetchResponse. Frees the JS-allocated response-header buffer.
+inline void em_parse_response(int status, char* resp_headers, EmFetchResponse& resp) {
+    resp.status = status;
+    if (resp_headers) {
+        std::string hbuf(resp_headers);
+        std::string cr = em_find_header(hbuf, "content-range");  // "bytes a-b/TOTAL"
+        auto slash = cr.find('/');
+        if (slash != std::string::npos) {
+            try { resp.total_size = std::stoull(cr.substr(slash + 1)); } catch (...) {}
+        }
+        resp.bucket_region = em_find_header(hbuf, "x-amz-bucket-region");
+        free(resp_headers);
+    }
+}
+
+// One blocking GET (blocking via ASYNCIFY). `headers` is a list of (name, value)
+// pairs (e.g. Range, Authorization, x-amz-*). Fills `out` with the body; returns
+// status plus any Content-Range total and x-amz-bucket-region from the response.
+inline EmFetchResponse em_fetch_get(const std::string& url,
+        const std::vector<std::pair<std::string, std::string>>& headers,
+        std::vector<char>& out) {
+    g_network_request_count.fetch_add(1, std::memory_order_relaxed);
+    out.clear();
+
+    std::string req_headers = em_flatten_headers(headers);
+    int status = 0;
+    double body_len = 0;
+    char* resp_headers = nullptr;
+    char* body = stards_em_fetch("GET", url.c_str(),
+        req_headers.empty() ? nullptr : req_headers.c_str(),
+        nullptr, 0, &status, &body_len, &resp_headers);
+
+    EmFetchResponse resp;
+    if (body) {
+        size_t n = static_cast<size_t>(body_len);
+        if (n > 0) out.assign(body, body + n);
+        free(body);
+    }
+    em_parse_response(status, resp_headers, resp);
+    return resp;
+}
+
+// One blocking PUT with a request body (used by S3Writer). Same header/parse
+// contract as em_fetch_get; the body is uploaded from (data, size).
+inline EmFetchResponse em_fetch_put(const std::string& url,
+        const std::vector<std::pair<std::string, std::string>>& headers,
+        const char* data, size_t size) {
+    g_network_request_count.fetch_add(1, std::memory_order_relaxed);
+
+    std::string req_headers = em_flatten_headers(headers);
+    int status = 0;
+    double body_len = 0;
+    char* resp_headers = nullptr;
+    char* body = stards_em_fetch("PUT", url.c_str(),
+        req_headers.empty() ? nullptr : req_headers.c_str(),
+        data, static_cast<double>(size), &status, &body_len, &resp_headers);
+
+    EmFetchResponse resp;
+    if (body) free(body);   // PUT response body is discarded; only status/headers matter
+    em_parse_response(status, resp_headers, resp);
+    return resp;
+}
+#else
 // Perform a curl request and count it (see g_network_request_count above). Every
 // network round trip in this header MUST go through this wrapper so the counter
 // stays authoritative for observability/tests.
@@ -984,219 +1262,8 @@ inline CURLcode star_curl_perform(CURL* handle) {
     g_network_request_count.fetch_add(1, std::memory_order_relaxed);
     return curl_easy_perform(handle);
 }
+#endif  // __EMSCRIPTEN__
 
-/**
- * @brief Custom streambuf implementation for HTTP requests with range support
- */
-class HttpStreamBuf : public std::streambuf {
-private:
-    CURL* m_curl;
-    std::string m_url;
-    std::vector<char> m_buffer;
-    size_t m_position;
-    size_t m_content_length;
-    
-    static size_t WriteCallback(char* ptr, size_t size, size_t nmemb, void* userdata) {
-        std::vector<char>* buffer = static_cast<std::vector<char>*>(userdata);
-        size_t bytes = size * nmemb;
-        buffer->insert(buffer->end(), ptr, ptr + bytes);
-        return bytes;
-    }
-    
-    static size_t HeaderCallback(char* buffer, size_t size, size_t nitems, void* userdata) {
-        size_t bytes = size * nitems;
-        std::string header(buffer, bytes);
-        HttpStreamBuf* stream = static_cast<HttpStreamBuf*>(userdata);
-        
-        // Extract Content-Length if present
-        if (header.find("Content-Length:") == 0 || header.find("content-length:") == 0) {
-            std::string length = header.substr(header.find(":") + 1);
-            // std::stoul throws on malformed/overflowing input; a C++ exception
-            // must never propagate out of this libcurl C callback (UB). Parse
-            // defensively and leave m_content_length at 0 on error.
-            try {
-                stream->m_content_length = std::stoul(length);
-            } catch (const std::exception&) {
-                // malformed Content-Length header; leave m_content_length as-is
-            }
-        }
-        return bytes;
-    }
-    
-    bool fetchRange(size_t start, size_t end) {
-        // Discard any bytes from a previous range. WriteCallback appends to
-        // m_buffer, so without this a fetch after a seek would serve the old
-        // range's data (stale reads / corruption).
-        m_buffer.clear();
-
-        // Set range header
-        std::string range = "Range: bytes=" + std::to_string(start) + "-" + std::to_string(end);
-        LOG_TRACE("Fetching range: ", range);
-        struct curl_slist* headers = nullptr;
-        headers = curl_slist_append(headers, range.c_str());
-        curl_easy_setopt(m_curl, CURLOPT_HTTPHEADER, headers);
-        
-        // Perform request
-        CURLcode res = star_curl_perform(m_curl);
-        curl_slist_free_all(headers);
-        
-        if (res != CURLE_OK) {
-            return false;
-        }
-        
-        // Set buffer pointers
-        if (!m_buffer.empty()) {
-            setg(m_buffer.data(), m_buffer.data(), m_buffer.data() + m_buffer.size());
-            return true;
-        }
-        return false;
-    }
-    
-protected:
-    virtual int_type underflow() override {
-        LOG_TRACE("Calling Underflow");
-        if (gptr() < egptr()) {
-            return traits_type::to_int_type(*gptr());
-        }
-        
-        // Calculate next range to fetch
-        size_t start = m_position;
-        size_t end = m_content_length - 1;
-        
-        if (start >= m_content_length) {
-            return traits_type::eof();
-        }
-        
-        if (!fetchRange(start, end)) {
-            return traits_type::eof();
-        }
-        
-        m_position = end + 1;
-        return traits_type::to_int_type(*gptr());
-    }
-    
-    // Override seekpos to support seeking to absolute positions
-    virtual pos_type seekpos(pos_type pos, std::ios_base::openmode which = std::ios_base::in) override {
-        if (which & std::ios_base::in) {
-            // Check if position is valid (allow seeking to end)
-            if (pos >= 0 && pos <= static_cast<pos_type>(m_content_length)) {
-                // Clear current buffer
-                setg(nullptr, nullptr, nullptr);
-                m_position = static_cast<size_t>(pos);
-                LOG_TRACE("HTTP seek to position ", pos, " (content_length=", m_content_length, ")");
-                return pos;
-            } else {
-                LOG_ERROR("HTTP seek failed: pos=", pos, " content_length=", m_content_length);
-            }
-        }
-        return pos_type(off_type(-1));
-    }
-    
-    // Override seekoff to support seeking relative to current position or start/end
-    virtual pos_type seekoff(off_type off, std::ios_base::seekdir dir, 
-                            std::ios_base::openmode which = std::ios_base::in) override {
-        if (which & std::ios_base::in) {
-            pos_type new_pos;
-            
-            // Calculate new position based on direction
-            switch (dir) {
-                case std::ios_base::beg:
-                    new_pos = off;
-                    break;
-                case std::ios_base::cur:
-                    // If we have a buffer, adjust for current get position
-                    if (gptr() && egptr()) {
-                        new_pos = m_position - (egptr() - gptr()) + off;
-                    } else {
-                        new_pos = m_position + off;
-                    }
-                    break;
-                case std::ios_base::end:
-                    new_pos = m_content_length + off;
-                    break;
-                default:
-                    return pos_type(off_type(-1));
-            }
-            
-            // Check if new position is valid (allow seeking to end)
-            if (new_pos >= 0 && new_pos <= static_cast<pos_type>(m_content_length)) {
-                // Clear current buffer
-                setg(nullptr, nullptr, nullptr);
-                m_position = static_cast<size_t>(new_pos);
-                LOG_TRACE("HTTP seekoff to position ", new_pos, " (content_length=", m_content_length, ")");
-                return new_pos;
-            } else {
-                LOG_ERROR("HTTP seekoff failed: new_pos=", new_pos, " content_length=", m_content_length);
-            }
-        }
-        return pos_type(off_type(-1));
-    }
-    
-public:
-    HttpStreamBuf(const std::string& url) 
-        : m_url(url), m_position(0), m_content_length(0) {
-        m_buffer.reserve(8192);
-        
-        // Initialize curl
-        m_curl = curl_easy_init();
-        if (!m_curl) {
-            throw std::runtime_error("Failed to initialize curl");
-        }
-        
-        // Set basic options
-        curl_easy_setopt(m_curl, CURLOPT_URL, m_url.c_str());
-        curl_easy_setopt(m_curl, CURLOPT_WRITEFUNCTION, WriteCallback);
-        curl_easy_setopt(m_curl, CURLOPT_WRITEDATA, &m_buffer);
-        curl_easy_setopt(m_curl, CURLOPT_HEADERFUNCTION, HeaderCallback);
-        curl_easy_setopt(m_curl, CURLOPT_HEADERDATA, this);
-        curl_easy_setopt(m_curl, CURLOPT_FOLLOWLOCATION, 1L);
-        
-        // Make HEAD request to get content length
-        curl_easy_setopt(m_curl, CURLOPT_NOBODY, 1L);
-        CURLcode res = star_curl_perform(m_curl);
-        curl_easy_setopt(m_curl, CURLOPT_NOBODY, 0L);
-
-        if (res != CURLE_OK) {
-            LOG_ERROR("Failed to perform HEAD request: ", curl_easy_strerror(res));
-        } else {
-            LOG_TRACE("HTTP stream initialized, content_length=", m_content_length);
-        }
-
-        if (m_content_length == 0) {
-            LOG_WARN("Content length is 0 for URL: ", m_url);
-        }
-    }
-    
-    // Get the total size of the remote file
-    size_t size() const {
-        return m_content_length;
-    }
-    
-    ~HttpStreamBuf() {
-        if (m_curl) {
-            curl_easy_cleanup(m_curl);
-        }
-    }
-};
-
-/**
- * @brief Input stream for HTTP resources with range request support
- */
-class HttpStream : public std::istream {
-private:
-    HttpStreamBuf m_streambuf;
-    
-public:
-    HttpStream(const std::string& url) 
-        : std::istream(nullptr), m_streambuf(url) {
-        rdbuf(&m_streambuf);
-    }
-    
-    // Get the total size of the remote file
-    size_t size() const {
-        return m_streambuf.size();
-    }
-};
 #endif // ENABLE_CURL
 
 
@@ -1324,12 +1391,90 @@ struct S3EndpointConfig {
 #include <fstream>
 #include <ctime>
 #include <tuple>
+#include <array>
+#include <cstring>
+
+// Crypto primitives for AWS SigV4 (SHA-256 and HMAC-SHA256).
+//
+// Native builds use OpenSSL (libcrypto). WebAssembly builds have no OpenSSL in
+// the emscripten sysroot, so they use the vendored mbedTLS SHA-256 one-shot
+// (submodules/mbedtls) with HMAC layered on top by hand. This shim is the ONLY
+// place the backend differs — AWSV4Signer and S3Writer call through it, so the
+// signing logic itself is identical on both platforms.
+namespace s3crypto {
+
+// Raw 32-byte SHA-256 of a buffer.
+inline std::array<unsigned char, 32> sha256(const unsigned char* data, size_t len) {
+    std::array<unsigned char, 32> out{};
+#if defined(__EMSCRIPTEN__)
+    // mbedtls_sha256 returns 0 on success; the (data,len) one-shot is used for
+    // its side effect of filling `out`. `0` selects SHA-256 (not SHA-224).
+    mbedtls_sha256(data, len, out.data(), 0);
+#else
+    SHA256(data, len, out.data());
+#endif
+    return out;
+}
+
+inline std::array<unsigned char, 32> sha256(const std::string& data) {
+    return sha256(reinterpret_cast<const unsigned char*>(data.data()), data.size());
+}
+
+// HMAC-SHA256(key, msg) -> raw 32 bytes.
+//
+// Native: OpenSSL HMAC(). WASM: the standard ipad/opad construction (RFC 2104)
+// over the mbedTLS SHA-256 one-shot, which avoids pulling in mbedTLS's generic
+// message-digest layer just for HMAC.
+inline std::array<unsigned char, 32> hmacSha256(const unsigned char* key, size_t key_len,
+                                                const unsigned char* msg, size_t msg_len) {
+    std::array<unsigned char, 32> out{};
+#if defined(__EMSCRIPTEN__)
+    constexpr size_t BLOCK = 64;  // SHA-256 block size
+    unsigned char k[BLOCK] = {0};
+    if (key_len > BLOCK) {
+        auto kh = sha256(key, key_len);  // long keys are hashed down first
+        std::memcpy(k, kh.data(), kh.size());
+    } else {
+        std::memcpy(k, key, key_len);
+    }
+    unsigned char ipad[BLOCK], opad[BLOCK];
+    for (size_t i = 0; i < BLOCK; ++i) {
+        ipad[i] = static_cast<unsigned char>(k[i] ^ 0x36);
+        opad[i] = static_cast<unsigned char>(k[i] ^ 0x5c);
+    }
+    // inner = SHA256(ipad || msg)
+    std::vector<unsigned char> inner;
+    inner.reserve(BLOCK + msg_len);
+    inner.insert(inner.end(), ipad, ipad + BLOCK);
+    inner.insert(inner.end(), msg, msg + msg_len);
+    auto inner_hash = sha256(inner.data(), inner.size());
+    // out = SHA256(opad || inner_hash)
+    std::vector<unsigned char> outer;
+    outer.reserve(BLOCK + inner_hash.size());
+    outer.insert(outer.end(), opad, opad + BLOCK);
+    outer.insert(outer.end(), inner_hash.begin(), inner_hash.end());
+    out = sha256(outer.data(), outer.size());
+#else
+    unsigned int len = 32;
+    HMAC(EVP_sha256(), key, static_cast<int>(key_len), msg, msg_len, out.data(), &len);
+#endif
+    return out;
+}
+
+inline std::array<unsigned char, 32> hmacSha256(const std::string& key, const std::string& msg) {
+    return hmacSha256(reinterpret_cast<const unsigned char*>(key.data()), key.size(),
+                      reinterpret_cast<const unsigned char*>(msg.data()), msg.size());
+}
+
+}  // namespace s3crypto
 
 /**
  * @brief AWS Signature Version 4 signer
  *
- * Implements AWS SigV4 authentication for S3 requests using OpenSSL.
- * This provides authentication without requiring the full AWS SDK.
+ * Implements AWS SigV4 authentication for S3 requests. Uses OpenSSL for the
+ * SHA-256 / HMAC-SHA256 primitives on native builds and mbedTLS under WebAssembly
+ * (see the s3crypto shim above). This provides authentication without requiring
+ * the full AWS SDK.
  */
 class AWSV4Signer {
 private:
@@ -1340,24 +1485,16 @@ private:
 
     friend class S3Writer;  // Allow S3Writer to access m_session_token
 
-    // SHA256 hash using OpenSSL
+    // SHA256 hash (hex-encoded). Backend (OpenSSL / mbedTLS) chosen by s3crypto.
     static std::string sha256(const std::string& data) {
-        unsigned char hash[SHA256_DIGEST_LENGTH];
-        SHA256(reinterpret_cast<const unsigned char*>(data.c_str()), data.length(), hash);
-        return hexEncode(hash, SHA256_DIGEST_LENGTH);
+        auto hash = s3crypto::sha256(data);
+        return hexEncode(hash.data(), hash.size());
     }
 
-    // HMAC-SHA256 using OpenSSL
+    // HMAC-SHA256 (raw bytes). Backend (OpenSSL / mbedTLS) chosen by s3crypto.
     static std::string hmacSha256(const std::string& key, const std::string& data) {
-        unsigned char hash[SHA256_DIGEST_LENGTH];
-        unsigned int len = SHA256_DIGEST_LENGTH;
-
-        HMAC(EVP_sha256(),
-             key.c_str(), static_cast<int>(key.length()),
-             reinterpret_cast<const unsigned char*>(data.c_str()), data.length(),
-             hash, &len);
-
-        return std::string(reinterpret_cast<char*>(hash), len);
+        auto hash = s3crypto::hmacSha256(key, data);
+        return std::string(reinterpret_cast<char*>(hash.data()), hash.size());
     }
 
     // Create canonical headers string
@@ -1649,11 +1786,17 @@ private:
     // the sso-session name (if the profile uses an sso-session block) else the
     // sso_start_url. Reused here so we can open the exact file directly (works on
     // every platform, no directory scan needed). See GDAL port/cpl_aws.cpp.
+    //
+    // WASM: the SSO token-cache path is compiled out entirely (see readToken), so
+    // this OpenSSL SHA1 helper — which has no mbedTLS equivalent wired in here — is
+    // omitted rather than pulling in extra crypto for a code path that never runs.
+#if !defined(__EMSCRIPTEN__)
     static std::string sha1LowerHex(const std::string& input) {
         unsigned char digest[SHA_DIGEST_LENGTH];
         SHA1(reinterpret_cast<const unsigned char*>(input.data()), input.size(), digest);
         return AWSV4Signer::hexEncode(digest, SHA_DIGEST_LENGTH);
     }
+#endif
 
     // Parse a cached token JSON blob and return it if it matches `start_url` and is
     // unexpired. Shared by both the direct-filename and directory-scan paths.
@@ -1705,6 +1848,14 @@ public:
      */
     static std::optional<SSOToken> readToken(const std::string& start_url,
                                              const std::string& sso_session = "") {
+#if defined(__EMSCRIPTEN__)
+        // WASM: no local ~/.aws token cache to read (credentials must be supplied
+        // explicitly). Both the sha1-hashed filename lookup and the directory scan
+        // are compiled out; callers fall through to the explicit-creds path.
+        (void)start_url;
+        (void)sso_session;
+        return std::nullopt;
+#else
         std::string cache_dir = getSSOCacheDir();
         if (cache_dir.empty()) {
             return std::nullopt;
@@ -1781,6 +1932,7 @@ public:
         #endif
 
         return std::nullopt;
+#endif  // __EMSCRIPTEN__
     }
 
     /**
@@ -1799,7 +1951,7 @@ public:
                            const std::string& account_id,
                            const std::string& role_name,
                            const std::string& region) {
-        #ifdef ENABLE_CURL
+        #if defined(ENABLE_CURL) && !defined(__EMSCRIPTEN__)
         // Construct SSO endpoint URL
         std::string url = "https://portal.sso." + region + ".amazonaws.com/federation/credentials"
                         + "?account_id=" + account_id
@@ -2007,430 +2159,6 @@ inline std::string getS3Region() {
 }
 
 /**
- * @brief Custom streambuf for S3 reads with range request support
- *
- * Mirrors HttpStreamBuf but uses AWS Signature V4 authentication
- */
-class S3StreamBuf : public std::streambuf {
-private:
-    CURL* m_curl;
-    std::string m_bucket;
-    std::string m_key;
-    std::string m_region;
-    std::unique_ptr<AWSV4Signer> m_signer;
-    std::vector<char> m_buffer;  
-    size_t m_position;
-    size_t m_content_length;
-    bool m_valid;  // Track if stream is valid (HEAD succeeded)
-
-    static size_t WriteCallback(char* ptr, size_t size, size_t nmemb, void* userdata) {
-        std::vector<char>* buffer = static_cast<std::vector<char>*>(userdata);
-        size_t bytes = size * nmemb;
-        buffer->insert(buffer->end(), ptr, ptr + bytes);
-        return bytes;
-    }
-
-    struct HeaderData {
-        size_t content_length = 0;
-        std::string bucket_region;
-    };
-
-    static size_t HeaderCallback(char* buffer, size_t size, size_t nitems, void* userdata) {
-        size_t bytes = size * nitems;
-        std::string header(buffer, bytes);
-        HeaderData* data = static_cast<HeaderData*>(userdata);
-
-        // Extract Content-Length
-        if (header.find("Content-Length:") == 0 || header.find("content-length:") == 0) {
-            std::string length = header.substr(header.find(":") + 1);
-            // Trim whitespace
-            length.erase(0, length.find_first_not_of(" \t\r\n"));
-            length.erase(length.find_last_not_of(" \t\r\n") + 1);
-            if (!length.empty()) {
-                // Never let std::stoul throw out of this libcurl C callback (UB);
-                // leave content_length unchanged on malformed input.
-                try {
-                    data->content_length = std::stoul(length);
-                } catch (const std::exception&) {
-                }
-            }
-        }
-        // Extract bucket region from redirect
-        else if (header.find("x-amz-bucket-region:") == 0 || header.find("X-Amz-Bucket-Region:") == 0) {
-            std::string region = header.substr(header.find(":") + 1);
-            // Trim whitespace
-            region.erase(0, region.find_first_not_of(" \t\r\n"));
-            region.erase(region.find_last_not_of(" \t\r\n") + 1);
-            data->bucket_region = region;
-        }
-        return bytes;
-    }
-
-    std::string getS3Url() const {
-        // Encode the key the same way signRequest() encodes the canonical URI,
-        // or curl fetches a different path than what was signed. Honors the
-        // AWS_S3_ENDPOINT/AWS_VIRTUAL_HOSTING/AWS_HTTPS override.
-        return S3EndpointConfig::resolve().url(m_bucket, m_region,
-                                               AWSV4Signer::urlEncode(m_key));
-    }
-
-    std::string getS3Host() const {
-        return S3EndpointConfig::resolve().host(m_bucket, m_region);
-    }
-
-    std::string getCurrentTimestamp() const {
-        auto now = std::chrono::system_clock::now();
-        std::time_t now_time = std::chrono::system_clock::to_time_t(now);
-        std::tm tm{};
-        #ifdef _WIN32
-        gmtime_s(&tm, &now_time);
-        #else
-        gmtime_r(&now_time, &tm);
-        #endif
-
-        char buffer[17];
-        std::strftime(buffer, sizeof(buffer), "%Y%m%dT%H%M%SZ", &tm);
-        return std::string(buffer);
-    }
-
-    bool fetchRange(size_t start, size_t end) {
-        m_buffer.clear();
-
-        std::string url = getS3Url();
-        std::string timestamp = getCurrentTimestamp();
-        std::string host = getS3Host();
-
-        // Prepare headers for signing
-        std::map<std::string, std::string> sign_headers;
-        sign_headers["host"] = host;
-        sign_headers["x-amz-content-sha256"] = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";  // Empty body hash
-        sign_headers["x-amz-date"] = timestamp;
-
-        if (!m_signer->getSessionToken().empty()) {
-            sign_headers["x-amz-security-token"] = m_signer->getSessionToken();
-        }
-
-        // Sign the request
-        std::string authorization = m_signer->signRequest(
-            "GET", m_bucket, m_key,
-            "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-            sign_headers
-        );
-
-        // Set up CURL headers
-        struct curl_slist* headers = nullptr;
-        std::string range_header = "Range: bytes=" + std::to_string(start) + "-" + std::to_string(end);
-        headers = curl_slist_append(headers, range_header.c_str());
-        headers = curl_slist_append(headers, ("Host: " + host).c_str());
-        headers = curl_slist_append(headers, ("x-amz-date: " + timestamp).c_str());
-        headers = curl_slist_append(headers, "x-amz-content-sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855");
-        headers = curl_slist_append(headers, ("Authorization: " + authorization).c_str());
-
-        if (!m_signer->getSessionToken().empty()) {
-            headers = curl_slist_append(headers, ("x-amz-security-token: " + m_signer->getSessionToken()).c_str());
-        }
-
-        curl_easy_setopt(m_curl, CURLOPT_URL, url.c_str());
-        curl_easy_setopt(m_curl, CURLOPT_HTTPHEADER, headers);
-        // The constructor pointed CURLOPT_HEADERDATA at a stack-local HeaderData
-        // that is now out of scope; clear the header callback so curl does not
-        // write response headers into that dangling pointer (stack corruption).
-        curl_easy_setopt(m_curl, CURLOPT_HEADERFUNCTION, nullptr);
-        curl_easy_setopt(m_curl, CURLOPT_HEADERDATA, nullptr);
-
-        CURLcode res = star_curl_perform(m_curl);
-        curl_slist_free_all(headers);
-
-        if (res != CURLE_OK) {
-            LOG_ERROR("S3 range request failed: ", curl_easy_strerror(res));
-            return false;
-        }
-
-        // Check HTTP response code
-        long response_code;
-        curl_easy_getinfo(m_curl, CURLINFO_RESPONSE_CODE, &response_code);
-        if (response_code >= 400) {
-            LOG_ERROR("S3 returned error code: ", response_code);
-            return false;
-        }
-
-        if (!m_buffer.empty()) {
-            setg(m_buffer.data(), m_buffer.data(), m_buffer.data() + m_buffer.size());
-            return true;
-        }
-        return false;
-    }
-
-protected:
-    virtual int_type underflow() override {
-        // If stream is invalid, return EOF immediately
-        if (!m_valid) {
-            return traits_type::eof();
-        }
-
-        if (gptr() < egptr()) {
-            return traits_type::to_int_type(*gptr());
-        }
-
-        // Fetch next range
-        size_t start = m_position;
-        size_t end = std::min(m_position + 65536, m_content_length - 1);  // 64KB chunks
-
-        if (start >= m_content_length) {
-            return traits_type::eof();
-        }
-
-        if (!fetchRange(start, end)) {
-            return traits_type::eof();
-        }
-
-        m_position = end + 1;
-        return traits_type::to_int_type(*gptr());
-    }
-
-    virtual pos_type seekpos(pos_type pos, std::ios_base::openmode which = std::ios_base::in) override {
-        if (which & std::ios_base::in) {
-            if (pos >= 0 && pos <= static_cast<pos_type>(m_content_length)) {
-                setg(nullptr, nullptr, nullptr);
-                m_position = static_cast<size_t>(pos);
-                LOG_TRACE("S3 seek to position ", pos);
-                return pos;
-            }
-        }
-        return pos_type(off_type(-1));
-    }
-
-    virtual pos_type seekoff(off_type off, std::ios_base::seekdir dir,
-                            std::ios_base::openmode which = std::ios_base::in) override {
-        if (which & std::ios_base::in) {
-            pos_type new_pos;
-
-            switch (dir) {
-                case std::ios_base::beg:
-                    new_pos = off;
-                    break;
-                case std::ios_base::cur:
-                    if (gptr() && egptr()) {
-                        new_pos = m_position - (egptr() - gptr()) + off;
-                    } else {
-                        new_pos = m_position + off;
-                    }
-                    break;
-                case std::ios_base::end:
-                    new_pos = m_content_length + off;
-                    break;
-                default:
-                    return pos_type(off_type(-1));
-            }
-
-            if (new_pos >= 0 && new_pos <= static_cast<pos_type>(m_content_length)) {
-                setg(nullptr, nullptr, nullptr);
-                m_position = static_cast<size_t>(new_pos);
-                LOG_TRACE("S3 seekoff to position ", new_pos);
-                return new_pos;
-            }
-        }
-        return pos_type(off_type(-1));
-    }
-
-public:
-    S3StreamBuf(const std::string& bucket, const std::string& key,
-                const std::string& region, const S3Credentials& creds)
-        : m_bucket(bucket), m_key(key), m_region(region), m_position(0), m_content_length(0), m_valid(false) {
-
-        m_buffer.reserve(8192);  
-
-        // Initialize CURL
-        m_curl = curl_easy_init();
-        if (!m_curl) {
-            throw std::runtime_error("Failed to initialize CURL for S3");
-        }
-
-        // Set basic CURL options
-        curl_easy_setopt(m_curl, CURLOPT_WRITEFUNCTION, WriteCallback);
-        curl_easy_setopt(m_curl, CURLOPT_WRITEDATA, &m_buffer);
-        curl_easy_setopt(m_curl, CURLOPT_FOLLOWLOCATION, 0L);  // Don't follow redirects (breaks signature)
-
-        // Make HEAD request to detect bucket region (may get 301 redirect)
-        HeaderData header_data;
-        curl_easy_setopt(m_curl, CURLOPT_HEADERFUNCTION, HeaderCallback);
-        curl_easy_setopt(m_curl, CURLOPT_HEADERDATA, &header_data);
-
-        // Create initial signer with provided region
-        m_signer = std::make_unique<AWSV4Signer>(
-            creds.access_key, creds.secret_key, m_region, creds.session_token
-        );
-
-        std::string url = getS3Url();
-        std::string timestamp = getCurrentTimestamp();
-        std::string host = getS3Host();
-
-        std::map<std::string, std::string> sign_headers;
-        sign_headers["host"] = host;
-        sign_headers["x-amz-content-sha256"] = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
-        sign_headers["x-amz-date"] = timestamp;
-
-        if (!creds.session_token.empty()) {
-            sign_headers["x-amz-security-token"] = creds.session_token;
-        }
-
-        std::string authorization = m_signer->signRequest(
-            "HEAD", m_bucket, m_key,
-            "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-            sign_headers
-        );
-
-        struct curl_slist* headers = nullptr;
-        headers = curl_slist_append(headers, ("Host: " + host).c_str());
-        headers = curl_slist_append(headers, ("x-amz-date: " + timestamp).c_str());
-        headers = curl_slist_append(headers, "x-amz-content-sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855");
-        headers = curl_slist_append(headers, ("Authorization: " + authorization).c_str());
-
-        if (!creds.session_token.empty()) {
-            headers = curl_slist_append(headers, ("x-amz-security-token: " + creds.session_token).c_str());
-        }
-
-        curl_easy_setopt(m_curl, CURLOPT_URL, url.c_str());
-        curl_easy_setopt(m_curl, CURLOPT_HTTPHEADER, headers);
-        curl_easy_setopt(m_curl, CURLOPT_NOBODY, 1L);  // HEAD request
-
-        CURLcode res = star_curl_perform(m_curl);
-        curl_slist_free_all(headers);
-        curl_easy_setopt(m_curl, CURLOPT_NOBODY, 0L);
-
-        if (res != CURLE_OK) {
-            LOG_ERROR("S3 HEAD request failed: ", curl_easy_strerror(res));
-            throw std::runtime_error("S3 HEAD request failed: " + std::string(curl_easy_strerror(res)));
-        }
-
-        // Check HTTP response code
-        long response_code;
-        curl_easy_getinfo(m_curl, CURLINFO_RESPONSE_CODE, &response_code);
-
-        // If we got a 301 redirect, the bucket is in a different region
-        if (response_code == 301 && !header_data.bucket_region.empty()) {
-            LOG_TRACE("Bucket is in region ", header_data.bucket_region, ", retrying with correct region");
-            m_region = header_data.bucket_region;
-
-            // Re-create signer with correct region
-            m_signer = std::make_unique<AWSV4Signer>(
-                creds.access_key, creds.secret_key, m_region, creds.session_token
-            );
-
-            // Retry HEAD request with correct region
-            header_data.content_length = 0;
-            header_data.bucket_region.clear();
-
-            url = getS3Url();
-            timestamp = getCurrentTimestamp();
-            host = getS3Host();
-
-            sign_headers.clear();
-            sign_headers["host"] = host;
-            sign_headers["x-amz-content-sha256"] = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
-            sign_headers["x-amz-date"] = timestamp;
-
-            if (!creds.session_token.empty()) {
-                sign_headers["x-amz-security-token"] = creds.session_token;
-            }
-
-            authorization = m_signer->signRequest(
-                "HEAD", m_bucket, m_key,
-                "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-                sign_headers
-            );
-
-            headers = nullptr;
-            headers = curl_slist_append(headers, ("Host: " + host).c_str());
-            headers = curl_slist_append(headers, ("x-amz-date: " + timestamp).c_str());
-            headers = curl_slist_append(headers, "x-amz-content-sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855");
-            headers = curl_slist_append(headers, ("Authorization: " + authorization).c_str());
-
-            if (!creds.session_token.empty()) {
-                headers = curl_slist_append(headers, ("x-amz-security-token: " + creds.session_token).c_str());
-            }
-
-            curl_easy_setopt(m_curl, CURLOPT_URL, url.c_str());
-            curl_easy_setopt(m_curl, CURLOPT_HTTPHEADER, headers);
-            curl_easy_setopt(m_curl, CURLOPT_NOBODY, 1L);
-
-            res = star_curl_perform(m_curl);
-            curl_slist_free_all(headers);
-            curl_easy_setopt(m_curl, CURLOPT_NOBODY, 0L);
-
-            if (res != CURLE_OK) {
-                LOG_ERROR("S3 HEAD request (retry) failed: ", curl_easy_strerror(res));
-                throw std::runtime_error("S3 HEAD request failed: " + std::string(curl_easy_strerror(res)));
-            }
-
-            curl_easy_getinfo(m_curl, CURLINFO_RESPONSE_CODE, &response_code);
-        }
-
-        // A 3xx redirect we could not resolve (e.g. a 301 with no
-        // x-amz-bucket-region header, or a 301 that recurs on retry) is not a
-        // valid object stream and must not be read as if it were the object.
-        if (response_code >= 300 && response_code < 400) {
-            LOG_ERROR("S3 HEAD returned unresolved redirect code: ", response_code);
-            throw std::runtime_error("S3 HEAD request failed with redirect code " + std::to_string(response_code));
-        }
-
-        if (response_code >= 400) {
-            // For 404 (not found), don't throw - allow graceful handling for new files
-            if (response_code == 404) {
-                LOG_TRACE("S3 object not found (404) - stream will be invalid");
-                m_valid = false;
-                return;
-            }
-            // For other errors, throw
-            LOG_ERROR("S3 HEAD returned error code: ", response_code);
-            throw std::runtime_error("S3 HEAD request failed with code " + std::to_string(response_code));
-        }
-
-        m_content_length = header_data.content_length;
-        m_valid = true;
-        LOG_TRACE("S3 stream initialized for s3://", m_bucket, "/", m_key,
-                  ", content_length=", m_content_length);
-    }
-
-    ~S3StreamBuf() {
-        if (m_curl) {
-            curl_easy_cleanup(m_curl);
-        }
-    }
-
-    size_t size() const {
-        return m_content_length;
-    }
-
-    bool isValid() const {
-        return m_valid;
-    }
-};
-
-/**
- * @brief Input stream for S3 objects with range request support
- */
-class S3Stream : public std::istream {
-private:
-    S3StreamBuf m_streambuf;
-
-public:
-    S3Stream(const std::string& bucket, const std::string& key,
-             const std::string& region, const S3Credentials& creds)
-        : std::istream(nullptr), m_streambuf(bucket, key, region, creds) {
-        rdbuf(&m_streambuf);
-        // If streambuf is invalid (e.g., 404), set stream state to fail
-        if (!m_streambuf.isValid()) {
-            setstate(std::ios::failbit);
-        }
-    }
-
-    size_t size() const {
-        return m_streambuf.size();
-    }
-};
-
-/**
  * @brief S3 writer for uploading objects
  *
  * Handles uploading data to S3 using PUT requests with AWS Signature V4 authentication.
@@ -2438,7 +2166,9 @@ public:
  */
 class S3Writer {
 private:
+#if !defined(__EMSCRIPTEN__)
     CURL* m_curl;
+#endif
     std::string m_bucket;
     std::string m_key;
     std::string m_region;
@@ -2471,6 +2201,7 @@ private:
         return std::string(buffer);
     }
 
+#if !defined(__EMSCRIPTEN__)
     static size_t ReadCallback(char* ptr, size_t size, size_t nmemb, void* userdata) {
         struct UploadData {
             const char* data;
@@ -2488,32 +2219,40 @@ private:
 
         return bytes_to_copy;
     }
+#endif
 
 public:
     S3Writer(const std::string& bucket, const std::string& key,
              const std::string& region, const S3Credentials& creds)
         : m_bucket(bucket), m_key(key), m_region(region) {
 
+#if !defined(__EMSCRIPTEN__)
         m_curl = curl_easy_init();
         if (!m_curl) {
             throw std::runtime_error("Failed to initialize CURL for S3 writer");
         }
+#endif
 
         m_signer = std::make_unique<AWSV4Signer>(
             creds.access_key, creds.secret_key, region, creds.session_token
         );
     }
 
+#if !defined(__EMSCRIPTEN__)
     ~S3Writer() {
         if (m_curl) {
             curl_easy_cleanup(m_curl);
         }
     }
+#else
+    ~S3Writer() = default;
+#endif
 
     struct HeaderData {
         std::string bucket_region;
     };
 
+#if !defined(__EMSCRIPTEN__)
     static size_t HeaderCallback(char* buffer, size_t size, size_t nitems, void* userdata) {
         size_t bytes = size * nitems;
         std::string header(buffer, bytes);
@@ -2536,7 +2275,64 @@ public:
         response->append(ptr, bytes);
         return bytes;
     }
+#endif
 
+#if defined(__EMSCRIPTEN__)
+    /**
+     * @brief Upload object to S3 via browser fetch (WebAssembly build).
+     *
+     * Same SigV4 signing as the curl path (AWSV4Signer, crypto from mbedTLS),
+     * but the PUT is one fetch() (em_fetch_put, blocking via ASYNCIFY). Retries
+     * once against the bucket's real region on a 301, mirroring the native writer.
+     */
+    void putObject(const char* data, size_t size) {
+        for (int attempt = 0; attempt < 2; attempt++) {
+            std::string url = getS3Url();
+            std::string timestamp = getCurrentTimestamp();
+
+            auto hash = s3crypto::sha256(reinterpret_cast<const unsigned char*>(data), size);
+            std::string content_hash = AWSV4Signer::hexEncode(hash.data(), hash.size());
+
+            std::map<std::string, std::string> headers;
+            headers["host"] = getS3Host();
+            headers["x-amz-date"] = timestamp;
+            headers["x-amz-content-sha256"] = content_hash;
+            if (!m_signer->m_session_token.empty()) {
+                headers["x-amz-security-token"] = m_signer->m_session_token;
+            }
+            std::string auth_header = m_signer->signRequest("PUT", m_bucket, m_key, content_hash, headers);
+
+            // Host is set by the browser (forbidden request header); it stays in
+            // the signed canonical request above, which is what AWS validates.
+            std::vector<std::pair<std::string, std::string>> req_headers = {
+                {"x-amz-date", timestamp},
+                {"x-amz-content-sha256", content_hash},
+                {"Authorization", auth_header},
+            };
+            if (!m_signer->m_session_token.empty()) {
+                req_headers.push_back({"x-amz-security-token", m_signer->m_session_token});
+            }
+
+            auto resp = em_fetch_put(url, req_headers, data, size);
+
+            if (resp.status == 301 && !resp.bucket_region.empty() && attempt == 0) {
+                LOG_TRACE("S3 PUT got 301, retrying with region ", resp.bucket_region);
+                std::string access_key = m_signer->m_access_key;
+                std::string secret_key = m_signer->m_secret_key;
+                std::string session_token = m_signer->m_session_token;
+                m_region = resp.bucket_region;
+                m_signer = std::make_unique<AWSV4Signer>(
+                    access_key, secret_key, m_region, session_token);
+                continue;
+            }
+            if (resp.status >= 200 && resp.status < 300) {
+                return;  // Success
+            }
+            throw std::runtime_error("S3 PUT failed with HTTP " + std::to_string(resp.status));
+        }
+        throw std::runtime_error("S3 PUT failed after retries");
+    }
+#else
     /**
      * @brief Upload object to S3
      * @param data Pointer to data to upload
@@ -2556,10 +2352,9 @@ public:
             std::string url = getS3Url();
             std::string timestamp = getCurrentTimestamp();
 
-            // Calculate SHA256 of content
-            unsigned char hash[SHA256_DIGEST_LENGTH];
-            SHA256(reinterpret_cast<const unsigned char*>(data), size, hash);
-            std::string content_hash = AWSV4Signer::hexEncode(hash, SHA256_DIGEST_LENGTH);
+            // Calculate SHA256 of content (backend chosen by s3crypto shim).
+            auto hash = s3crypto::sha256(reinterpret_cast<const unsigned char*>(data), size);
+            std::string content_hash = AWSV4Signer::hexEncode(hash.data(), hash.size());
 
             // Build headers
             std::map<std::string, std::string> headers;
@@ -2645,6 +2440,7 @@ public:
 
         throw std::runtime_error("S3 PUT failed after retries");
     }
+#endif  // __EMSCRIPTEN__
 };
 
 #endif // ENABLE_S3
@@ -2867,6 +2663,64 @@ private:
 };
 
 #ifdef ENABLE_CURL
+#if defined(__EMSCRIPTEN__)
+// HTTP under WebAssembly: each ranged read is one fetch() (em_fetch_get, blocking
+// via ASYNCIFY). There is no persistent connection to reuse — the browser's HTTP
+// stack handles keep-alive — so this reader just issues a Range GET per read and
+// caches the whole object when it's small (same contract as the curl version).
+class HttpRangeReader : public RangeReader {
+public:
+    explicit HttpRangeReader(const std::string& url) : m_url(url) {}
+    ~HttpRangeReader() override = default;
+
+    size_t read_at(size_t offset, size_t len, std::vector<char>& out) override {
+        if (m_cached) return serve_from_cache(offset, len, out);
+        out.clear();
+        if (len == 0) return 0;
+        std::string range = "bytes=" + std::to_string(offset) + "-" +
+                            std::to_string(offset + len - 1);
+        auto resp = em_fetch_get(m_url, {{"Range", range}}, out);
+        if (resp.total_size != SIZE_MAX) m_total_size = resp.total_size;
+        if (resp.status < 200 || resp.status >= 300) { out.clear(); return 0; }
+        return out.size();
+    }
+
+    size_t size_or_unknown() override { return m_total_size; }
+    bool good() const override { return !m_url.empty(); }
+
+    bool ensure_whole_cached(size_t max_bytes) override {
+        if (m_cached) return true;
+        if (max_bytes == 0) return false;
+        std::vector<char> buf;
+        std::string range = "bytes=0-" + std::to_string(max_bytes - 1);
+        auto resp = em_fetch_get(m_url, {{"Range", range}}, buf);
+        if (resp.total_size != SIZE_MAX) m_total_size = resp.total_size;
+        if (resp.status < 200 || resp.status >= 300) return false;
+        bool whole = (m_total_size != SIZE_MAX && m_total_size <= max_bytes) ||
+                     (buf.size() < max_bytes);
+        if (whole) {
+            m_whole = std::move(buf);
+            m_cached = true;
+            if (m_total_size == SIZE_MAX) m_total_size = m_whole.size();
+            return true;
+        }
+        return false;
+    }
+
+private:
+    size_t serve_from_cache(size_t offset, size_t len, std::vector<char>& out) {
+        if (offset >= m_whole.size()) { out.clear(); return 0; }
+        size_t avail = std::min(len, m_whole.size() - offset);
+        out.assign(m_whole.begin() + offset, m_whole.begin() + offset + avail);
+        return avail;
+    }
+
+    std::string m_url;
+    std::vector<char> m_whole;
+    bool m_cached = false;
+    size_t m_total_size = SIZE_MAX;
+};
+#else
 // HTTP: one persistent CURL handle, reused across ranged GETs. libcurl keeps the
 // TCP+TLS connection alive between star_curl_perform() calls on the same handle,
 // so N array reads cost ~N GETs on ONE connection (vs N HEAD+GET+handshakes).
@@ -2975,9 +2829,137 @@ private:
     bool m_cached = false;
     size_t m_total_size = SIZE_MAX;
 };
+#endif  // __EMSCRIPTEN__
 #endif // ENABLE_CURL
 
 #ifdef ENABLE_S3
+#if defined(__EMSCRIPTEN__)
+// S3 under WebAssembly: same AWS SigV4 signing as native (via AWSV4Signer, whose
+// crypto comes from mbedTLS here), but each signed ranged GET is one fetch()
+// (em_fetch_get, blocking via ASYNCIFY) instead of a curl perform. Bucket-region
+// (301) resolution still happens lazily on the first request and is then cached.
+class S3RangeReader : public RangeReader {
+public:
+    S3RangeReader(std::string bucket, std::string key, std::string region,
+                  S3Credentials creds)
+        : m_bucket(std::move(bucket)), m_key(std::move(key)),
+          m_region(std::move(region)), m_creds(std::move(creds)) {
+        m_signer = std::make_unique<AWSV4Signer>(
+            m_creds.access_key, m_creds.secret_key, m_region, m_creds.session_token);
+    }
+    ~S3RangeReader() override = default;
+
+    size_t read_at(size_t offset, size_t len, std::vector<char>& out) override {
+        if (m_cached) return serve_from_cache(offset, len, out);
+        out.clear();
+        if (len == 0) return 0;
+        if (!signed_get(offset, offset + len - 1, out)) { out.clear(); return 0; }
+        return out.size();
+    }
+
+    size_t size_or_unknown() override { return m_total_size; }
+    bool good() const override { return true; }
+
+    bool ensure_whole_cached(size_t max_bytes) override {
+        if (m_cached) return true;
+        if (max_bytes == 0) return false;
+        std::vector<char> buf;
+        if (!signed_get(0, max_bytes - 1, buf)) return false;
+        bool whole = (m_total_size != SIZE_MAX && m_total_size <= max_bytes) ||
+                     (buf.size() < max_bytes);
+        if (whole) {
+            m_whole = std::move(buf);
+            m_cached = true;
+            if (m_total_size == SIZE_MAX) m_total_size = m_whole.size();
+            return true;
+        }
+        return false;
+    }
+
+private:
+    std::string getUrl() const {
+        return S3EndpointConfig::resolve().url(m_bucket, m_region,
+                                               AWSV4Signer::urlEncode(m_key));
+    }
+    std::string getHost() const {
+        return S3EndpointConfig::resolve().host(m_bucket, m_region);
+    }
+    static std::string timestamp() {
+        auto now = std::chrono::system_clock::now();
+        std::time_t t = std::chrono::system_clock::to_time_t(now);
+        std::tm tm{};
+        gmtime_r(&t, &tm);
+        char buf[17];
+        std::strftime(buf, sizeof(buf), "%Y%m%dT%H%M%SZ", &tm);
+        return std::string(buf);
+    }
+
+    // One signed GET for [start, end] via browser fetch, with a one-time region
+    // retry on 301 (mirrors the curl path). end==SIZE_MAX => open-ended to EOF.
+    bool signed_get(size_t start, size_t end, std::vector<char>& out) {
+        for (int attempt = 0; attempt < 2; ++attempt) {
+            static const char* kEmptyHash =
+                "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
+            std::string url = getUrl();
+            std::string host = getHost();
+            std::string ts = timestamp();
+
+            std::map<std::string, std::string> sign_headers;
+            sign_headers["host"] = host;
+            sign_headers["x-amz-content-sha256"] = kEmptyHash;
+            sign_headers["x-amz-date"] = ts;
+            if (!m_creds.session_token.empty()) {
+                sign_headers["x-amz-security-token"] = m_creds.session_token;
+            }
+            std::string authorization = m_signer->signRequest(
+                "GET", m_bucket, m_key, kEmptyHash, sign_headers);
+
+            std::string range = (end == SIZE_MAX)
+                ? ("bytes=" + std::to_string(start) + "-")
+                : ("bytes=" + std::to_string(start) + "-" + std::to_string(end));
+            // NOTE: the browser sets Host itself; a manual Host header is a
+            // forbidden fetch header and would be dropped, so it's omitted (it is
+            // still part of the signed SigV4 canonical request above, which is
+            // what AWS validates).
+            std::vector<std::pair<std::string, std::string>> req_headers = {
+                {"Range", range},
+                {"x-amz-date", ts},
+                {"x-amz-content-sha256", kEmptyHash},
+                {"Authorization", authorization},
+            };
+            if (!m_creds.session_token.empty()) {
+                req_headers.push_back({"x-amz-security-token", m_creds.session_token});
+            }
+
+            auto resp = em_fetch_get(url, req_headers, out);
+            if (resp.total_size != SIZE_MAX) m_total_size = resp.total_size;
+
+            if (resp.status == 301 && !resp.bucket_region.empty() && attempt == 0) {
+                m_region = resp.bucket_region;
+                m_signer = std::make_unique<AWSV4Signer>(
+                    m_creds.access_key, m_creds.secret_key, m_region, m_creds.session_token);
+                continue;
+            }
+            return resp.status >= 200 && resp.status < 300;
+        }
+        return false;
+    }
+
+    size_t serve_from_cache(size_t offset, size_t len, std::vector<char>& out) {
+        if (offset >= m_whole.size()) { out.clear(); return 0; }
+        size_t avail = std::min(len, m_whole.size() - offset);
+        out.assign(m_whole.begin() + offset, m_whole.begin() + offset + avail);
+        return avail;
+    }
+
+    std::string m_bucket, m_key, m_region;
+    S3Credentials m_creds;
+    std::unique_ptr<AWSV4Signer> m_signer;
+    std::vector<char> m_whole;
+    bool m_cached = false;
+    size_t m_total_size = SIZE_MAX;
+};
+#else
 // S3: one persistent CURL handle + one cached AWS SigV4 signer, reused across
 // signed ranged GETs. Bucket-region (301) resolution happens lazily on the first
 // request and is then cached — no per-read HEAD, no per-read handshake.
@@ -3161,6 +3143,7 @@ private:
     bool m_cached = false;
     size_t m_total_size = SIZE_MAX;
 };
+#endif  // __EMSCRIPTEN__
 #endif // ENABLE_S3
 
 
@@ -4283,16 +4266,17 @@ inline std::vector<char> decompressBlocks(
 struct StarConfig {
     // Main data compression settings.
     //
-    // Default: LZ4_SHUFFLE (fast, strong on numeric arrays) when LZ4 is compiled
-    // in, else NONE. The default is chosen at compile time from the enabled
-    // codecs so a build never defaults to a codec it cannot actually run — e.g. a
-    // browser/WASM build without LZ4 falls back to NONE rather than producing
-    // files it can't read back. NOTE: shuffle codecs are not sliceable
-    // (get_slice()/is_sliceable() require a non-shuffle codec) — pass an explicit
-    // NONE/GZIP/LZ4 StarConfig when you need partial reads.
+    // Default: LZ4_SHUFFLE_BLOCK (fast, strong on numeric arrays, AND sliceable)
+    // when LZ4 is compiled in, else NONE. The default is chosen at compile time
+    // from the enabled codecs so a build never defaults to a codec it cannot
+    // actually run — e.g. a browser/WASM build without LZ4 falls back to NONE
+    // rather than producing files it can't read back. The per-block shuffle
+    // variant gives the same compression benefit as the legacy global LZ4_SHUFFLE
+    // while remaining sliceable (get_slice()/is_sliceable()); only the legacy
+    // global GZIP_SHUFFLE/LZ4_SHUFFLE codecs are non-sliceable.
     CompressionAlgorithm compression =
 #ifdef ENABLE_LZ4
-        CompressionAlgorithm::LZ4_SHUFFLE;
+        CompressionAlgorithm::LZ4_SHUFFLE_BLOCK;
 #else
         CompressionAlgorithm::NONE;
 #endif
@@ -4807,13 +4791,23 @@ public:
 
         // If a byte-shuffle prefilter was applied on write, reverse it now (the
         // decompressed bytes are byte-planes; unshuffle back to element order).
-        // Only fixed-width numeric arrays are shuffled; strings never are.
+        // Only fixed-width numeric arrays are shuffled; strings never are. The
+        // global variants shuffled the whole array at once; the per-block variants
+        // shuffled each write-time block independently (the first block's
+        // uncompressed_size is that write-time block size — every block is full
+        // except possibly the last, so the chunk boundaries align exactly).
         if (uses_shuffle(m_cold.compressions[idx]) && dtype != DataType::STRING) {
             size_t elem_size = datatype_size(dtype);
             if (elem_size > 1 && decompressed_data.size() % elem_size == 0) {
-                size_t count = decompressed_data.size() / elem_size;
                 std::vector<char> unshuffled(decompressed_data.size());
-                byte_unshuffle(decompressed_data.data(), unshuffled.data(), count, elem_size);
+                if (uses_block_shuffle(m_cold.compressions[idx]) && !m_cold.block_infos[idx].empty()) {
+                    size_t blk = m_cold.block_infos[idx][0].uncompressed_size;
+                    byte_unshuffle_blocked(decompressed_data.data(), unshuffled.data(),
+                                           decompressed_data.size(), elem_size, blk);
+                } else {
+                    size_t count = decompressed_data.size() / elem_size;
+                    byte_unshuffle(decompressed_data.data(), unshuffled.data(), count, elem_size);
+                }
                 decompressed_data = std::move(unshuffled);
             }
         }
@@ -5243,16 +5237,31 @@ public:
      * Shuffle is only valid for fixed-width numeric elements laid out as raw
      * contiguous bytes; std::string arrays are length-prefixed and variable
      * width, so they are never shuffled (they store fine under the base codec).
+     *
+     * Two shuffle layouts are produced depending on the codec:
+     *  - global (GZIP_SHUFFLE/LZ4_SHUFFLE): shuffle the whole buffer at once.
+     *  - per-block (GZIP_SHUFFLE_BLOCK/LZ4_SHUFFLE_BLOCK): shuffle each
+     *    `block_size` chunk independently, so it lines up with the compression
+     *    blocks that compressBlocksBuffered() cuts at the same boundaries. Each
+     *    block is then self-contained and sliceable.
      */
     template<typename T>
     std::vector<char> serialize_array_data(const std::vector<T>& data,
-                                           CompressionAlgorithm codec) const {
+                                           CompressionAlgorithm codec,
+                                           size_t block_size) const {
         std::vector<char> buf = serialize_array_data<T>(data);
         if constexpr (!std::is_same<T, std::string>::value) {
-            if (uses_shuffle(codec) && sizeof(T) > 1 && !data.empty()) {
-                std::vector<char> shuffled(buf.size());
-                byte_shuffle(buf.data(), shuffled.data(), data.size(), sizeof(T));
-                return shuffled;
+            if (sizeof(T) > 1 && !data.empty()) {
+                if (uses_block_shuffle(codec)) {
+                    std::vector<char> shuffled(buf.size());
+                    byte_shuffle_blocked(buf.data(), shuffled.data(), buf.size(), sizeof(T), block_size);
+                    return shuffled;
+                }
+                if (uses_global_shuffle(codec)) {
+                    std::vector<char> shuffled(buf.size());
+                    byte_shuffle(buf.data(), shuffled.data(), data.size(), sizeof(T));
+                    return shuffled;
+                }
             }
         }
         return buf;
@@ -5938,7 +5947,7 @@ private:
                     using T = typename std::decay_t<decltype(arr)>::value_type;
                     // Length-prefixes strings; raw bytes for numerics; byte-shuffle
                     // prefilter applied for *_SHUFFLE codecs (numeric only).
-                    serialize_buffer = serialize_array_data<T>(arr.data(), m_config.compression);
+                    serialize_buffer = serialize_array_data<T>(arr.data(), m_config.compression, m_config.block_size);
                 }, var);
 
                 // Estimate compressed size (NO COMPRESSION!)
@@ -5996,7 +6005,7 @@ private:
                     using T = typename std::decay_t<decltype(arr)>::value_type;
                     // Length-prefixes strings; raw bytes for numerics; byte-shuffle
                     // prefilter applied for *_SHUFFLE codecs (numeric only).
-                    m_serialize_buffer = serialize_array_data<T>(arr.data(), m_config.compression);
+                    m_serialize_buffer = serialize_array_data<T>(arr.data(), m_config.compression, m_config.block_size);
                 }, var);
 
                 size_t estimated_size = estimateCompressedSize(
@@ -6198,7 +6207,7 @@ private:
                     const ValueVariant& var = m_data_storage[m_hot.data_indices[i]];
                     std::visit([this, &serialize_buffer](auto&& arr) {
                         using T = typename std::decay_t<decltype(arr)>::value_type;
-                        serialize_buffer = serialize_array_data<T>(arr.data(), m_config.compression);
+                        serialize_buffer = serialize_array_data<T>(arr.data(), m_config.compression, m_config.block_size);
                     }, var);
                 }
 
@@ -7390,10 +7399,14 @@ public:
                 "Array '" + key + "' has " + std::to_string(m_cold.shapes[idx].size()) + " dimensions.");
         }
 
-        // Byte-shuffled arrays regroup bytes across the WHOLE array, so per-block
+        // GLOBAL byte-shuffle regroups bytes across the WHOLE array, so per-block
         // element extraction (what get_slice does) can't reconstruct individual
-        // elements without the full array. Slicing is therefore unsupported for
-        // *_SHUFFLE codecs; read the whole array with get<T>() instead.
+        // elements without the full array. Slicing is therefore unsupported for the
+        // legacy global *_SHUFFLE codecs; read the whole array with get<T>() instead.
+        //
+        // The per-block *_SHUFFLE_BLOCK codecs shuffle each block independently, so
+        // each covering block can be un-shuffled on its own after decompression
+        // (done below) — those ARE sliceable and fall through here.
         //
         // String columns are exempt: shuffle is a fixed-width numeric prefilter
         // that serialize_array_data() never applies to strings (see the string
@@ -7401,10 +7414,11 @@ public:
         // still holds an un-shuffled length-prefix stream on disk. The dedicated
         // string path below decompresses (base codec) and decodes it directly,
         // exactly as get<T>() does for the full-array read.
-        if (uses_shuffle(m_cold.compressions[idx]) && m_hot.dtypes[idx] != DataType::STRING) {
+        if (uses_global_shuffle(m_cold.compressions[idx]) && m_hot.dtypes[idx] != DataType::STRING) {
             throw std::runtime_error(
-                "Array '" + key + "' uses a byte-shuffle compression codec and cannot be "
-                "sliced. Use get<T>(\"" + key + "\") to read the full array.");
+                "Array '" + key + "' uses the legacy global byte-shuffle compression codec "
+                "and cannot be sliced. Use get<T>(\"" + key + "\") to read the full array, "
+                "or rewrite it with a *_SHUFFLE_BLOCK codec to enable slicing.");
         }
 
         // Metadata block items must always be accessed as complete units
@@ -7425,7 +7439,19 @@ public:
         entry.total_bytes = m_cold.compressed_sizes[idx];
         entry.compression = m_cold.compressions[idx];
         entry.blocks = m_cold.block_infos[idx];
-        entry.block_size = m_config.block_size;
+        // Use the block size the array was WRITTEN with, not the currently-open
+        // config's block_size. On a READ_ONLY reopen m_config holds defaults
+        // (1 MB), which may differ from what this array used. createBlockMap()
+        // derives elements_per_block from entry.block_size while
+        // createExtractionPlan()/extractElements() use blocks[0].uncompressed_size;
+        // if the two disagree, blocks past the first are dropped and the tail of
+        // the slice silently reads back as zero. The first block's uncompressed
+        // size IS the write-time block size (every block is full except possibly
+        // the last), so it is the correct source of truth. Fall back to the
+        // config value only when the array has no blocks.
+        entry.block_size = m_cold.block_infos[idx].empty()
+                               ? m_config.block_size
+                               : m_cold.block_infos[idx][0].uncompressed_size;
         entry.stored_in_metadata = m_cold.stored_in_metadata_flags[idx];
 
         if constexpr (std::is_same_v<T, std::string>) {
@@ -7551,6 +7577,31 @@ public:
             sequential_indices,
             m_thread_pool.get());
 
+        // Per-block shuffle codecs store each block as an independently shuffled
+        // chunk (byte planes local to the block). The legacy global variant is
+        // rejected above, so only *_SHUFFLE_BLOCK reaches here. Un-shuffle each
+        // selected block in place — decompressed holds the blocks concatenated in
+        // sequential_indices order, each spanning adjusted_blocks[i].uncompressed_size
+        // bytes — so extractElements() below sees plain element-order bytes.
+        if (uses_block_shuffle(entry.compression) && sizeof(T) > 1) {
+            size_t region = 0;
+            for (const auto& b : adjusted_blocks) {
+                size_t bytes = b.uncompressed_size;
+                if (bytes > 0) {
+                    size_t whole = (bytes / sizeof(T)) * sizeof(T);
+                    std::vector<char> tmp(bytes);
+                    byte_unshuffle(decompressed.data() + region, tmp.data(),
+                                   whole / sizeof(T), sizeof(T));
+                    if (whole < bytes) {
+                        std::memcpy(tmp.data() + whole, decompressed.data() + region + whole,
+                                    bytes - whole);
+                    }
+                    std::memcpy(decompressed.data() + region, tmp.data(), bytes);
+                }
+                region += bytes;
+            }
+        }
+
         // Extract sliced elements (pure)
         std::vector<char> extracted = extractElements(decompressed, plan, adjusted_blocks, sequential_indices, sizeof(T));
 
@@ -7659,9 +7710,11 @@ public:
             return true;
         }
 
-        // Numeric arrays: not sliceable when byte-shuffled (shuffle precludes
-        // per-block element extraction — see get_slice()).
-        return !uses_shuffle(m_cold.compressions[idx]);
+        // Numeric arrays: not sliceable only under the legacy GLOBAL shuffle
+        // (its byte planes span the whole array). The per-block *_SHUFFLE_BLOCK
+        // variants un-shuffle each covering block independently, so they ARE
+        // sliceable — see get_slice().
+        return !uses_global_shuffle(m_cold.compressions[idx]);
     }
 
     /**

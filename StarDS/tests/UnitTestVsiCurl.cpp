@@ -1,7 +1,7 @@
 /**
  * @file UnitTestVsiCurl.cpp
  * @brief Functional tests for the /vsicurl (HTTP) read path, exercising the real
- *        HttpStreamBuf against an in-process mock HTTP server (no network).
+ *        HttpRangeReader against an in-process mock HTTP server (no network).
  *
  * Pattern (GDAL-style): write a real .stards locally, serve its bytes over a
  * localhost HTTP server, then open it via /vsicurl/http://127.0.0.1:PORT/... and

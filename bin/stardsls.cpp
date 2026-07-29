@@ -15,6 +15,8 @@ const char* compression_name(CompressionAlgorithm c) {
         case CompressionAlgorithm::LZ4:  return "LZ4";
         case CompressionAlgorithm::GZIP_SHUFFLE: return "GZIP+shuffle";
         case CompressionAlgorithm::LZ4_SHUFFLE:  return "LZ4+shuffle";
+        case CompressionAlgorithm::GZIP_SHUFFLE_BLOCK: return "GZIP+shuffle(block)";
+        case CompressionAlgorithm::LZ4_SHUFFLE_BLOCK:  return "LZ4+shuffle(block)";
         default: return "Unknown";
     }
 }
@@ -27,24 +29,34 @@ void print_usage(const char* program_name) {
     std::cout << "  -d, --data <key>     Print data for specific key\n";
     std::cout << "  -m, --metadata <key> Show metadata without loading data\n";
     std::cout << "  -a, --all            Print all data (WARNING: may be large)\n";
+    std::cout << "  -l, --long           Print arrays in full (no truncation to first 100)\n";
     std::cout << "  -v, --verbose        Verbose output with detailed metadata\n";
     std::cout << "  -f, --force          Force loading large arrays (bypass safety check)\n";
     std::cout << "\nExamples:\n";
     std::cout << "  " << program_name << " data.stards              # List all keys\n";
     std::cout << "  " << program_name << " -v data.stards           # Verbose listing\n";
     std::cout << "  " << program_name << " -m data data.stards      # Show metadata only\n";
-    std::cout << "  " << program_name << " -d mykey data.stards     # Print specific key\n";
+    std::cout << "  " << program_name << " -d mykey data.stards     # Print specific key (first 100 elems)\n";
+    std::cout << "  " << program_name << " -d mykey -l data.stards  # Print specific key in full\n";
     std::cout << "  " << program_name << " -d mykey -f data.stards  # Force load large array\n";
-    std::cout << "  " << program_name << " -a data.stards           # Print all data\n";
+    std::cout << "  " << program_name << " -a -l data.stards        # Print all data in full\n";
 }
 
+// Print array elements. By default only the first `max_elements` are shown
+// (with a "... (N more)" tail); when `full` is true (the -l/--long flag) every
+// element is printed regardless of size.
 template<typename T>
-void print_NDArray_data(const NDArray<T>& arr, size_t max_elements = 100) {
-    std::cout << "    Data (showing up to " << max_elements << " elements):\n    [";
+void print_NDArray_data(const NDArray<T>& arr, size_t max_elements = 100, bool full = false) {
+    size_t limit = full ? arr.size() : max_elements;
+    if (full) {
+        std::cout << "    Data (" << arr.size() << " elements):\n    [";
+    } else {
+        std::cout << "    Data (showing up to " << max_elements << " elements):\n    [";
+    }
 
     size_t count = 0;
     for (const auto& val : arr) {
-        if (count >= max_elements) break;
+        if (count >= limit) break;
         if (count > 0) std::cout << ", ";
         if (count > 0 && count % 10 == 0) std::cout << "\n     ";
 
@@ -56,7 +68,7 @@ void print_NDArray_data(const NDArray<T>& arr, size_t max_elements = 100) {
         count++;
     }
 
-    if (arr.size() > max_elements) {
+    if (!full && arr.size() > max_elements) {
         std::cout << ", ... (" << (arr.size() - max_elements) << " more)";
     }
 
@@ -412,7 +424,7 @@ void print_metadata_block_summary(StarDataset* store, bool verbose) {
     }
 }
 
-void print_key_data(StarDataset* store, const std::string& key, bool verbose) {
+void print_key_data(StarDataset* store, const std::string& key, bool verbose, bool full = false) {
     std::cout << "\n=== Key: " << key << " ===\n";
 
     // Find key in SoA
@@ -476,11 +488,11 @@ void print_key_data(StarDataset* store, const std::string& key, bool verbose) {
         auto read_and_print = [&](auto tag) {
             using T = decltype(tag);
             if (is_array) {
-                print_NDArray_data(store->get<T>(key));
+                print_NDArray_data(store->get<T>(key), 100, full);
             } else {
                 auto meta = store->meta.get(key);
                 if (!meta) { std::cout << "    Key not found\n"; return; }
-                print_NDArray_data(meta->template as<T>());
+                print_NDArray_data(meta->template as<T>(), 100, full);
             }
         };
 
@@ -497,11 +509,11 @@ void print_key_data(StarDataset* store, const std::string& key, bool verbose) {
             case DataType::FLOAT64: read_and_print(double{});   break;
             case DataType::STRING: {
                 if (is_array) {
-                    print_NDArray_data(store->get<std::string>(key), 20);
+                    print_NDArray_data(store->get<std::string>(key), 20, full);
                 } else {
                     auto meta = store->meta.get(key);
                     if (!meta) { std::cout << "    Key not found\n"; break; }
-                    print_NDArray_data(meta->as<std::string>(), 20);
+                    print_NDArray_data(meta->as<std::string>(), 20, full);
                 }
                 break;
             }
@@ -520,6 +532,7 @@ int main(int argc, char* argv[]) {
     bool verbose = false;
     bool print_all_data = false;
     bool force_load = false;
+    bool long_print = false;   // -l/--long: print arrays in full (no truncation)
     std::string specific_key;
     std::string metadata_key;
     std::string filename;
@@ -535,6 +548,8 @@ int main(int argc, char* argv[]) {
             verbose = true;
         } else if (arg == "-a" || arg == "--all") {
             print_all_data = true;
+        } else if (arg == "-l" || arg == "--long") {
+            long_print = true;
         } else if (arg == "-k" || arg == "--keys") {
             // Default behavior, do nothing
         } else if (arg == "-d" || arg == "--data") {
@@ -741,7 +756,7 @@ int main(int argc, char* argv[]) {
                     }
                 }
 
-                print_key_data(store.get(), specific_key, verbose);
+                print_key_data(store.get(), specific_key, verbose, long_print);
             } else if (store->meta.contains(specific_key)) {
                 // Key lives in the metadata namespace, not separate array storage.
                 print_metadata_value(store.get(), specific_key, verbose);
@@ -768,7 +783,7 @@ int main(int argc, char* argv[]) {
             // Then print all separately stored array keys
             for (size_t i = 0; i < store->m_hot.keys.size(); i++) {
                 if (store->m_cold.stored_in_metadata_flags[i] == 0) {
-                    print_key_data(store.get(), store->m_hot.keys[i], verbose);
+                    print_key_data(store.get(), store->m_hot.keys[i], verbose, long_print);
                 }
             }
         }
@@ -852,6 +867,7 @@ int main(int argc, char* argv[]) {
                 std::cout << "\nUse -v/--verbose for detailed metadata\n";
                 std::cout << "Use -d/--data <key> to print specific key data\n";
                 std::cout << "Use -a/--all to print all data (may be large)\n";
+                std::cout << "Use -l/--long to print arrays in full (no truncation)\n";
             }
         }
 

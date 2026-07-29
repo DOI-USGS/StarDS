@@ -30,6 +30,8 @@ static const char* compression_name(CompressionAlgorithm c) {
         case CompressionAlgorithm::LZ4:          return "lz4";
         case CompressionAlgorithm::GZIP_SHUFFLE: return "gzip-shuffle";
         case CompressionAlgorithm::LZ4_SHUFFLE:  return "lz4-shuffle";
+        case CompressionAlgorithm::GZIP_SHUFFLE_BLOCK: return "gzip-shuffle-block";
+        case CompressionAlgorithm::LZ4_SHUFFLE_BLOCK:  return "lz4-shuffle-block";
         default:                                 return "unknown";
     }
 }

@@ -50,10 +50,13 @@ void print_usage(const char* program_name) {
     std::cout << "  -f, --format <fmt>      Output format (json, msgpack, isds)\n";
     std::cout << "                          Auto-detected from output extension if not specified\n";
     std::cout << "  -c, --compression <alg> Compression algorithm for STAR output\n";
-    std::cout << "                          Options: none, gzip, lz4, gzip-shuffle, lz4-shuffle\n";
+    std::cout << "                          Options: none, gzip, lz4, gzip-shuffle, lz4-shuffle,\n";
+    std::cout << "                                   gzip-shuffle-block, lz4-shuffle-block\n";
     std::cout << "                          (*-shuffle adds a byte-shuffle prefilter that greatly\n";
-    std::cout << "                           improves compression of numeric arrays, e.g. float64;\n";
-    std::cout << "                           shuffled arrays are read whole, not sliceable)\n";
+    std::cout << "                           improves compression of numeric arrays, e.g. float64.\n";
+    std::cout << "                           The legacy global *-shuffle arrays are read whole (not\n";
+    std::cout << "                           sliceable); the *-shuffle-block variants shuffle each\n";
+    std::cout << "                           block independently and remain sliceable.)\n";
     std::cout << "                          Default: lz4\n";
     std::cout << "  -b, --block-size <size> Block size for STAR compression (bytes)\n";
     std::cout << "                          Default: 1048576 (1MB)\n";
@@ -102,6 +105,8 @@ std::string compression_name(CompressionAlgorithm c) {
         case CompressionAlgorithm::LZ4:          return "lz4";
         case CompressionAlgorithm::GZIP_SHUFFLE: return "gzip-shuffle";
         case CompressionAlgorithm::LZ4_SHUFFLE:  return "lz4-shuffle";
+        case CompressionAlgorithm::GZIP_SHUFFLE_BLOCK: return "gzip-shuffle-block";
+        case CompressionAlgorithm::LZ4_SHUFFLE_BLOCK:  return "lz4-shuffle-block";
         default:                                 return "unknown";
     }
 }
@@ -1674,9 +1679,14 @@ int main(int argc, char* argv[]) {
         compression = CompressionAlgorithm::GZIP_SHUFFLE;
     } else if (compression_str == "lz4-shuffle") {
         compression = CompressionAlgorithm::LZ4_SHUFFLE;
+    } else if (compression_str == "gzip-shuffle-block") {
+        compression = CompressionAlgorithm::GZIP_SHUFFLE_BLOCK;
+    } else if (compression_str == "lz4-shuffle-block") {
+        compression = CompressionAlgorithm::LZ4_SHUFFLE_BLOCK;
     } else {
         std::cerr << "Error: Unsupported compression algorithm: " << compression_str << std::endl;
-        std::cerr << "Supported: none, gzip, lz4, gzip-shuffle, lz4-shuffle" << std::endl;
+        std::cerr << "Supported: none, gzip, lz4, gzip-shuffle, lz4-shuffle, "
+                     "gzip-shuffle-block, lz4-shuffle-block" << std::endl;
         return 1;
     }
 
