@@ -6802,14 +6802,19 @@ public:
             m_memory_source = std::move(*memory_source);
             m_path_info.type = FilePathInfo::MEMORY;
         } else {
-#ifdef ENABLE_S3
-            // Parse path once at construction (minimize allocations)
+#if defined(ENABLE_S3) || defined(ENABLE_CURL)
+            // Parse path once at construction (minimize allocations) so remote
+            // schemes (S3 /vsis3, HTTP /vsicurl) are routed to the right reader.
+            // Guarded on ENABLE_CURL too: /vsicurl/ HTTP needs curl but not S3, so
+            // gating this on ENABLE_S3 alone left HTTP URLs mis-parsed as LOCAL.
             m_path_info = parseFilePath(fname);
 
+#ifdef ENABLE_S3
             // Resolve credentials once (cache hot data)
             if (m_path_info.type == FilePathInfo::S3) {
                 m_s3_credentials = std::make_unique<S3Credentials>(S3Credentials::resolve());
             }
+#endif
 #else
             m_path_info.type = FilePathInfo::LOCAL;
             m_path_info.path = fname;
