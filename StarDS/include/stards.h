@@ -39,6 +39,20 @@
 #include <unistd.h>
 #endif
 
+// Memory-mapped local reads. On Linux/macOS a local .stards file is mmap'd once
+// and every ranged read is served as a memcpy from the page-cache-backed
+// mapping — this removes the per-read open()/seek()/read() syscall trio the
+// std::ifstream path incurs (one file open per array load). Guarded so it is
+// STRICTLY ADDITIVE: on Windows, WASM, or if mmap fails at runtime, the reader
+// falls back to the unchanged std::ifstream path, so no existing behavior is
+// altered. Not enabled under Emscripten (its virtual FS is already in-memory).
+#if (defined(__APPLE__) || defined(__linux__)) && !defined(__EMSCRIPTEN__)
+#  include <sys/mman.h>
+#  include <sys/stat.h>
+#  include <fcntl.h>
+#  define STARDS_HAVE_MMAP 1
+#endif
+
 
 #ifdef ENABLE_ZLIB
 #include <zlib.h>
@@ -130,6 +144,41 @@
     STAR_STRINGIFY(STAR_VERSION_MAJOR) "." \
     STAR_STRINGIFY(STAR_VERSION_MINOR) "." \
     STAR_STRINGIFY(STAR_VERSION_PATCH)
+
+//==============================================================================
+// SIMD intrinsics for the byte-shuffle codec kernels (see byte_shuffle /
+// byte_unshuffle below). Included at GLOBAL scope, NOT inside `namespace star`,
+// for the same reason curl/openssl are hoisted above: putting the x86 intrinsic
+// headers (<emmintrin.h> etc.) inside a namespace turns __m128i into
+// star::__m128i and breaks libstdc++'s <random> SSE path. Dispatch is purely
+// COMPILE-TIME on architecture — no runtime CPU probing:
+//   * arm64  -> NEON   (mandatory on aarch64): shuffle + unshuffle
+//   * x86_64 -> SSE2   (baseline of the x86-64 ABI): unshuffle (the read path)
+//   * WASM (only with -msimd128) / anything else -> scalar reference
+// Every non-vectorized element width and every trailing tail runs the exact
+// scalar loop shipped previously, so output is byte-identical by construction.
+#if defined(__EMSCRIPTEN__)
+#  if defined(__wasm_simd128__)
+#    include <wasm_simd128.h>
+#    define STARDS_SIMD_WASM 1
+#  endif
+#elif defined(__aarch64__) || defined(__ARM_NEON) || defined(__ARM_NEON__)
+#  include <arm_neon.h>
+#  define STARDS_SIMD_NEON 1
+#elif defined(__x86_64__) || defined(_M_X64)
+#  include <emmintrin.h>   // SSE2 (baseline of the x86-64 ABI)
+#  define STARDS_SIMD_SSE2 1
+   // Optional AVX2 tier for the read-path unshuffle, selected at RUNTIME. Only on
+   // GCC/Clang, which provide __attribute__((target("avx2"))) — that lets a
+   // baseline (SSE2) binary contain AVX2-compiled kernels and dispatch to them
+   // only when __builtin_cpu_supports("avx2") is true, so nothing that runs today
+   // on an SSE2-only CPU (or CI) changes. MSVC has no such per-function targeting
+   // (it needs a global /arch:AVX2), so it stays on SSE2.
+#  if defined(__GNUC__) || defined(__clang__)
+#    include <immintrin.h>  // AVX2 intrinsics (used only inside target("avx2") fns)
+#    define STARDS_SIMD_AVX2 1
+#  endif
+#endif
 
 //==============================================================================
 // STAR Namespace
@@ -533,34 +582,363 @@ inline bool uses_block_shuffle(CompressionAlgorithm c) {
     return c == CompressionAlgorithm::GZIP_SHUFFLE_BLOCK || c == CompressionAlgorithm::LZ4_SHUFFLE_BLOCK;
 }
 
+// ---------------------------------------------------------------------------
+// Byte-shuffle kernels. The scalar helpers are the reference implementation;
+// the SIMD kernels below must produce byte-identical output (verified for every
+// element size and count, incl. tails, on NEON and SSE2). Each SIMD kernel
+// vectorizes the whole-16-element body and RETURNS the number of elements it
+// completed; the public wrappers finish any trailing tail with the scalar loop.
+// Only elem_size in {2,4,8} — StarDS's multi-byte numeric dtypes — are
+// vectorized; every other width falls entirely to scalar.
+namespace shuffle_detail {
+
+// Scalar reference, resumable from element `from` (used for the SIMD tail).
+inline void shuffle_scalar_from(const char* in, char* out, size_t count,
+                                size_t E, size_t from) {
+    for (size_t b = 0; b < E; ++b) {
+        char* dst = out + b * count;
+        for (size_t i = from; i < count; ++i) dst[i] = in[i * E + b];
+    }
+}
+inline void unshuffle_scalar_from(const char* in, char* out, size_t count,
+                                  size_t E, size_t from) {
+    for (size_t b = 0; b < E; ++b) {
+        const char* src = in + b * count;
+        for (size_t i = from; i < count; ++i) out[i * E + b] = src[i];
+    }
+}
+
+#if defined(STARDS_SIMD_NEON)
+// unshuffle (byte-planes -> elements): interleave.
+inline size_t unshuffle_E2(const char* in, char* out, size_t count) {
+    const uint8_t* p0 = reinterpret_cast<const uint8_t*>(in); const uint8_t* p1 = p0 + count;
+    size_t i = 0;
+    for (; i + 16 <= count; i += 16) {
+        uint8x16x2_t v; v.val[0] = vld1q_u8(p0 + i); v.val[1] = vld1q_u8(p1 + i);
+        vst2q_u8(reinterpret_cast<uint8_t*>(out) + i * 2, v);
+    }
+    return i;
+}
+inline size_t unshuffle_E4(const char* in, char* out, size_t count) {
+    const uint8_t* p0 = reinterpret_cast<const uint8_t*>(in);
+    const uint8_t* p1 = p0 + count, *p2 = p0 + 2*count, *p3 = p0 + 3*count;
+    size_t i = 0;
+    for (; i + 16 <= count; i += 16) {
+        uint8x16x4_t v;
+        v.val[0] = vld1q_u8(p0 + i); v.val[1] = vld1q_u8(p1 + i);
+        v.val[2] = vld1q_u8(p2 + i); v.val[3] = vld1q_u8(p3 + i);
+        vst4q_u8(reinterpret_cast<uint8_t*>(out) + i * 4, v);
+    }
+    return i;
+}
+inline size_t unshuffle_E8(const char* in, char* out, size_t count) {
+    const uint8_t* p[8]; for (int b = 0; b < 8; ++b) p[b] = reinterpret_cast<const uint8_t*>(in) + b * count;
+    size_t i = 0;
+    for (; i + 16 <= count; i += 16) {
+        uint8x16_t q0 = vzip1q_u8(vld1q_u8(p[0]+i), vld1q_u8(p[1]+i));
+        uint8x16_t q1 = vzip2q_u8(vld1q_u8(p[0]+i), vld1q_u8(p[1]+i));
+        uint8x16_t q2 = vzip1q_u8(vld1q_u8(p[2]+i), vld1q_u8(p[3]+i));
+        uint8x16_t q3 = vzip2q_u8(vld1q_u8(p[2]+i), vld1q_u8(p[3]+i));
+        uint8x16_t q4 = vzip1q_u8(vld1q_u8(p[4]+i), vld1q_u8(p[5]+i));
+        uint8x16_t q5 = vzip2q_u8(vld1q_u8(p[4]+i), vld1q_u8(p[5]+i));
+        uint8x16_t q6 = vzip1q_u8(vld1q_u8(p[6]+i), vld1q_u8(p[7]+i));
+        uint8x16_t q7 = vzip2q_u8(vld1q_u8(p[6]+i), vld1q_u8(p[7]+i));
+        uint16x8_t r0 = vzip1q_u16(vreinterpretq_u16_u8(q0), vreinterpretq_u16_u8(q2));
+        uint16x8_t r1 = vzip2q_u16(vreinterpretq_u16_u8(q0), vreinterpretq_u16_u8(q2));
+        uint16x8_t r2 = vzip1q_u16(vreinterpretq_u16_u8(q1), vreinterpretq_u16_u8(q3));
+        uint16x8_t r3 = vzip2q_u16(vreinterpretq_u16_u8(q1), vreinterpretq_u16_u8(q3));
+        uint16x8_t r4 = vzip1q_u16(vreinterpretq_u16_u8(q4), vreinterpretq_u16_u8(q6));
+        uint16x8_t r5 = vzip2q_u16(vreinterpretq_u16_u8(q4), vreinterpretq_u16_u8(q6));
+        uint16x8_t r6 = vzip1q_u16(vreinterpretq_u16_u8(q5), vreinterpretq_u16_u8(q7));
+        uint16x8_t r7 = vzip2q_u16(vreinterpretq_u16_u8(q5), vreinterpretq_u16_u8(q7));
+        uint32x4_t o0 = vzip1q_u32(vreinterpretq_u32_u16(r0), vreinterpretq_u32_u16(r4));
+        uint32x4_t o1 = vzip2q_u32(vreinterpretq_u32_u16(r0), vreinterpretq_u32_u16(r4));
+        uint32x4_t o2 = vzip1q_u32(vreinterpretq_u32_u16(r1), vreinterpretq_u32_u16(r5));
+        uint32x4_t o3 = vzip2q_u32(vreinterpretq_u32_u16(r1), vreinterpretq_u32_u16(r5));
+        uint32x4_t o4 = vzip1q_u32(vreinterpretq_u32_u16(r2), vreinterpretq_u32_u16(r6));
+        uint32x4_t o5 = vzip2q_u32(vreinterpretq_u32_u16(r2), vreinterpretq_u32_u16(r6));
+        uint32x4_t o6 = vzip1q_u32(vreinterpretq_u32_u16(r3), vreinterpretq_u32_u16(r7));
+        uint32x4_t o7 = vzip2q_u32(vreinterpretq_u32_u16(r3), vreinterpretq_u32_u16(r7));
+        uint8_t* o = reinterpret_cast<uint8_t*>(out) + i * 8;
+        vst1q_u8(o+  0, vreinterpretq_u8_u32(o0)); vst1q_u8(o+ 16, vreinterpretq_u8_u32(o1));
+        vst1q_u8(o+ 32, vreinterpretq_u8_u32(o2)); vst1q_u8(o+ 48, vreinterpretq_u8_u32(o3));
+        vst1q_u8(o+ 64, vreinterpretq_u8_u32(o4)); vst1q_u8(o+ 80, vreinterpretq_u8_u32(o5));
+        vst1q_u8(o+ 96, vreinterpretq_u8_u32(o6)); vst1q_u8(o+112, vreinterpretq_u8_u32(o7));
+    }
+    return i;
+}
+// shuffle (elements -> byte-planes): deinterleave.
+inline size_t shuffle_E2(const char* in, char* out, size_t count) {
+    uint8_t* p0 = reinterpret_cast<uint8_t*>(out); uint8_t* p1 = p0 + count;
+    size_t i = 0;
+    for (; i + 16 <= count; i += 16) {
+        uint8x16x2_t v = vld2q_u8(reinterpret_cast<const uint8_t*>(in) + i * 2);
+        vst1q_u8(p0 + i, v.val[0]); vst1q_u8(p1 + i, v.val[1]);
+    }
+    return i;
+}
+inline size_t shuffle_E4(const char* in, char* out, size_t count) {
+    uint8_t* p0 = reinterpret_cast<uint8_t*>(out);
+    uint8_t* p1 = p0 + count, *p2 = p0 + 2*count, *p3 = p0 + 3*count;
+    size_t i = 0;
+    for (; i + 16 <= count; i += 16) {
+        uint8x16x4_t v = vld4q_u8(reinterpret_cast<const uint8_t*>(in) + i * 4);
+        vst1q_u8(p0 + i, v.val[0]); vst1q_u8(p1 + i, v.val[1]);
+        vst1q_u8(p2 + i, v.val[2]); vst1q_u8(p3 + i, v.val[3]);
+    }
+    return i;
+}
+inline size_t shuffle_E8(const char* in, char* out, size_t count) {
+    uint8_t* p[8]; for (int b = 0; b < 8; ++b) p[b] = reinterpret_cast<uint8_t*>(out) + b * count;
+    size_t i = 0;
+    for (; i + 16 <= count; i += 16) {
+        const uint8_t* e = reinterpret_cast<const uint8_t*>(in) + i * 8;
+        uint8x16_t e0 = vld1q_u8(e+  0), e1 = vld1q_u8(e+ 16), e2 = vld1q_u8(e+ 32), e3 = vld1q_u8(e+ 48);
+        uint8x16_t e4 = vld1q_u8(e+ 64), e5 = vld1q_u8(e+ 80), e6 = vld1q_u8(e+ 96), e7 = vld1q_u8(e+112);
+        uint32x4_t a0 = vuzp1q_u32(vreinterpretq_u32_u8(e0), vreinterpretq_u32_u8(e1));
+        uint32x4_t a1 = vuzp2q_u32(vreinterpretq_u32_u8(e0), vreinterpretq_u32_u8(e1));
+        uint32x4_t a2 = vuzp1q_u32(vreinterpretq_u32_u8(e2), vreinterpretq_u32_u8(e3));
+        uint32x4_t a3 = vuzp2q_u32(vreinterpretq_u32_u8(e2), vreinterpretq_u32_u8(e3));
+        uint32x4_t a4 = vuzp1q_u32(vreinterpretq_u32_u8(e4), vreinterpretq_u32_u8(e5));
+        uint32x4_t a5 = vuzp2q_u32(vreinterpretq_u32_u8(e4), vreinterpretq_u32_u8(e5));
+        uint32x4_t a6 = vuzp1q_u32(vreinterpretq_u32_u8(e6), vreinterpretq_u32_u8(e7));
+        uint32x4_t a7 = vuzp2q_u32(vreinterpretq_u32_u8(e6), vreinterpretq_u32_u8(e7));
+        uint16x8_t b0 = vuzp1q_u16(vreinterpretq_u16_u32(a0), vreinterpretq_u16_u32(a2));
+        uint16x8_t b1 = vuzp2q_u16(vreinterpretq_u16_u32(a0), vreinterpretq_u16_u32(a2));
+        uint16x8_t b2 = vuzp1q_u16(vreinterpretq_u16_u32(a1), vreinterpretq_u16_u32(a3));
+        uint16x8_t b3 = vuzp2q_u16(vreinterpretq_u16_u32(a1), vreinterpretq_u16_u32(a3));
+        uint16x8_t b4 = vuzp1q_u16(vreinterpretq_u16_u32(a4), vreinterpretq_u16_u32(a6));
+        uint16x8_t b5 = vuzp2q_u16(vreinterpretq_u16_u32(a4), vreinterpretq_u16_u32(a6));
+        uint16x8_t b6 = vuzp1q_u16(vreinterpretq_u16_u32(a5), vreinterpretq_u16_u32(a7));
+        uint16x8_t b7 = vuzp2q_u16(vreinterpretq_u16_u32(a5), vreinterpretq_u16_u32(a7));
+        uint8x16_t c0 = vuzp1q_u8(vreinterpretq_u8_u16(b0), vreinterpretq_u8_u16(b4));
+        uint8x16_t c1 = vuzp2q_u8(vreinterpretq_u8_u16(b0), vreinterpretq_u8_u16(b4));
+        uint8x16_t c2 = vuzp1q_u8(vreinterpretq_u8_u16(b1), vreinterpretq_u8_u16(b5));
+        uint8x16_t c3 = vuzp2q_u8(vreinterpretq_u8_u16(b1), vreinterpretq_u8_u16(b5));
+        uint8x16_t c4 = vuzp1q_u8(vreinterpretq_u8_u16(b2), vreinterpretq_u8_u16(b6));
+        uint8x16_t c5 = vuzp2q_u8(vreinterpretq_u8_u16(b2), vreinterpretq_u8_u16(b6));
+        uint8x16_t c6 = vuzp1q_u8(vreinterpretq_u8_u16(b3), vreinterpretq_u8_u16(b7));
+        uint8x16_t c7 = vuzp2q_u8(vreinterpretq_u8_u16(b3), vreinterpretq_u8_u16(b7));
+        vst1q_u8(p[0]+i,c0); vst1q_u8(p[1]+i,c1); vst1q_u8(p[2]+i,c2); vst1q_u8(p[3]+i,c3);
+        vst1q_u8(p[4]+i,c4); vst1q_u8(p[5]+i,c5); vst1q_u8(p[6]+i,c6); vst1q_u8(p[7]+i,c7);
+    }
+    return i;
+}
+#elif defined(STARDS_SIMD_SSE2)
+// unshuffle only on x86 (the read hot path). WRITE-side shuffle stays scalar:
+// StarDS writes already outrun the reference format and are off the read-latency
+// path, so an SSE2 deinterleave would add risk for no measured gain.
+inline size_t unshuffle_E2(const char* in, char* out, size_t count) {
+    const char* p1 = in + count; size_t i = 0;
+    for (; i + 16 <= count; i += 16) {
+        __m128i a = _mm_loadu_si128(reinterpret_cast<const __m128i*>(in + i));
+        __m128i b = _mm_loadu_si128(reinterpret_cast<const __m128i*>(p1 + i));
+        _mm_storeu_si128(reinterpret_cast<__m128i*>(out + i*2),      _mm_unpacklo_epi8(a, b));
+        _mm_storeu_si128(reinterpret_cast<__m128i*>(out + i*2 + 16), _mm_unpackhi_epi8(a, b));
+    }
+    return i;
+}
+inline size_t unshuffle_E4(const char* in, char* out, size_t count) {
+    const char* p0 = in, *p1 = in + count, *p2 = in + 2*count, *p3 = in + 3*count;
+    size_t i = 0;
+    for (; i + 16 <= count; i += 16) {
+        __m128i a = _mm_loadu_si128(reinterpret_cast<const __m128i*>(p0 + i));
+        __m128i b = _mm_loadu_si128(reinterpret_cast<const __m128i*>(p1 + i));
+        __m128i c = _mm_loadu_si128(reinterpret_cast<const __m128i*>(p2 + i));
+        __m128i d = _mm_loadu_si128(reinterpret_cast<const __m128i*>(p3 + i));
+        __m128i t0 = _mm_unpacklo_epi8(a, b), t1 = _mm_unpackhi_epi8(a, b);
+        __m128i t2 = _mm_unpacklo_epi8(c, d), t3 = _mm_unpackhi_epi8(c, d);
+        __m128i o0 = _mm_unpacklo_epi16(t0, t2), o1 = _mm_unpackhi_epi16(t0, t2);
+        __m128i o2 = _mm_unpacklo_epi16(t1, t3), o3 = _mm_unpackhi_epi16(t1, t3);
+        char* o = out + i*4;
+        _mm_storeu_si128(reinterpret_cast<__m128i*>(o+ 0), o0);
+        _mm_storeu_si128(reinterpret_cast<__m128i*>(o+16), o1);
+        _mm_storeu_si128(reinterpret_cast<__m128i*>(o+32), o2);
+        _mm_storeu_si128(reinterpret_cast<__m128i*>(o+48), o3);
+    }
+    return i;
+}
+inline size_t unshuffle_E8(const char* in, char* out, size_t count) {
+    const char* p[8]; for (int b = 0; b < 8; ++b) p[b] = in + b * count;
+    size_t i = 0;
+    for (; i + 16 <= count; i += 16) {
+        __m128i v[8]; for (int b = 0; b < 8; ++b) v[b] = _mm_loadu_si128(reinterpret_cast<const __m128i*>(p[b] + i));
+        __m128i a0 = _mm_unpacklo_epi8(v[0], v[1]), a0h = _mm_unpackhi_epi8(v[0], v[1]);
+        __m128i a1 = _mm_unpacklo_epi8(v[2], v[3]), a1h = _mm_unpackhi_epi8(v[2], v[3]);
+        __m128i a2 = _mm_unpacklo_epi8(v[4], v[5]), a2h = _mm_unpackhi_epi8(v[4], v[5]);
+        __m128i a3 = _mm_unpacklo_epi8(v[6], v[7]), a3h = _mm_unpackhi_epi8(v[6], v[7]);
+        __m128i b0 = _mm_unpacklo_epi16(a0, a1),  b0h = _mm_unpackhi_epi16(a0, a1);
+        __m128i b1 = _mm_unpacklo_epi16(a2, a3),  b1h = _mm_unpackhi_epi16(a2, a3);
+        __m128i b2 = _mm_unpacklo_epi16(a0h, a1h),b2h = _mm_unpackhi_epi16(a0h, a1h);
+        __m128i b3 = _mm_unpacklo_epi16(a2h, a3h),b3h = _mm_unpackhi_epi16(a2h, a3h);
+        __m128i o0 = _mm_unpacklo_epi32(b0, b1),  o1 = _mm_unpackhi_epi32(b0, b1);
+        __m128i o2 = _mm_unpacklo_epi32(b0h, b1h),o3 = _mm_unpackhi_epi32(b0h, b1h);
+        __m128i o4 = _mm_unpacklo_epi32(b2, b3),  o5 = _mm_unpackhi_epi32(b2, b3);
+        __m128i o6 = _mm_unpacklo_epi32(b2h, b3h),o7 = _mm_unpackhi_epi32(b2h, b3h);
+        char* o = out + i*8;
+        _mm_storeu_si128(reinterpret_cast<__m128i*>(o+  0), o0);
+        _mm_storeu_si128(reinterpret_cast<__m128i*>(o+ 16), o1);
+        _mm_storeu_si128(reinterpret_cast<__m128i*>(o+ 32), o2);
+        _mm_storeu_si128(reinterpret_cast<__m128i*>(o+ 48), o3);
+        _mm_storeu_si128(reinterpret_cast<__m128i*>(o+ 64), o4);
+        _mm_storeu_si128(reinterpret_cast<__m128i*>(o+ 80), o5);
+        _mm_storeu_si128(reinterpret_cast<__m128i*>(o+ 96), o6);
+        _mm_storeu_si128(reinterpret_cast<__m128i*>(o+112), o7);
+    }
+    return i;
+}
+
+#if defined(STARDS_SIMD_AVX2)
+// AVX2 unshuffle: same Blosc-style unpack tree as SSE2 but on 256-bit registers,
+// 32 elements per iteration (~2x the SSE2 body). unpack works within each 128-bit
+// lane, so a final _mm256_permute2x128_si256 stitches the two lanes into the
+// contiguous element order the scalar reference produces. Compiled for AVX2 via a
+// target attribute so the baseline (SSE2) binary can hold these and call them
+// only when the CPU reports AVX2 (see avx2_supported()); verified bit-identical
+// to the scalar reference for E in {2,4,8} over all counts. Marked
+// __always_inline__-free (attribute-target fns can't be forced inline across the
+// SSE2/AVX2 boundary); each is a small leaf call off the read path.
+__attribute__((target("avx2")))
+inline size_t unshuffle_avx2_E2(const char* in, char* out, size_t count) {
+    const char* p0 = in; const char* p1 = in + count; size_t i = 0;
+    for (; i + 32 <= count; i += 32) {
+        __m256i a = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(p0 + i));
+        __m256i b = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(p1 + i));
+        __m256i lo = _mm256_unpacklo_epi8(a, b);
+        __m256i hi = _mm256_unpackhi_epi8(a, b);
+        __m256i o0 = _mm256_permute2x128_si256(lo, hi, 0x20);
+        __m256i o1 = _mm256_permute2x128_si256(lo, hi, 0x31);
+        _mm256_storeu_si256(reinterpret_cast<__m256i*>(out + i*2),      o0);
+        _mm256_storeu_si256(reinterpret_cast<__m256i*>(out + i*2 + 32), o1);
+    }
+    return i;
+}
+__attribute__((target("avx2")))
+inline size_t unshuffle_avx2_E4(const char* in, char* out, size_t count) {
+    const char* p0 = in, *p1 = in + count, *p2 = in + 2*count, *p3 = in + 3*count;
+    size_t i = 0;
+    for (; i + 32 <= count; i += 32) {
+        __m256i a = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(p0 + i));
+        __m256i b = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(p1 + i));
+        __m256i c = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(p2 + i));
+        __m256i d = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(p3 + i));
+        __m256i t0 = _mm256_unpacklo_epi8(a, b), t1 = _mm256_unpackhi_epi8(a, b);
+        __m256i t2 = _mm256_unpacklo_epi8(c, d), t3 = _mm256_unpackhi_epi8(c, d);
+        __m256i u0 = _mm256_unpacklo_epi16(t0, t2), u1 = _mm256_unpackhi_epi16(t0, t2);
+        __m256i u2 = _mm256_unpacklo_epi16(t1, t3), u3 = _mm256_unpackhi_epi16(t1, t3);
+        __m256i o0 = _mm256_permute2x128_si256(u0, u1, 0x20);
+        __m256i o1 = _mm256_permute2x128_si256(u2, u3, 0x20);
+        __m256i o2 = _mm256_permute2x128_si256(u0, u1, 0x31);
+        __m256i o3 = _mm256_permute2x128_si256(u2, u3, 0x31);
+        char* o = out + i*4;
+        _mm256_storeu_si256(reinterpret_cast<__m256i*>(o+ 0), o0);
+        _mm256_storeu_si256(reinterpret_cast<__m256i*>(o+32), o1);
+        _mm256_storeu_si256(reinterpret_cast<__m256i*>(o+64), o2);
+        _mm256_storeu_si256(reinterpret_cast<__m256i*>(o+96), o3);
+    }
+    return i;
+}
+__attribute__((target("avx2")))
+inline size_t unshuffle_avx2_E8(const char* in, char* out, size_t count) {
+    const char* p[8]; for (int b = 0; b < 8; ++b) p[b] = in + b * count;
+    size_t i = 0;
+    for (; i + 32 <= count; i += 32) {
+        __m256i v[8]; for (int b = 0; b < 8; ++b) v[b] = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(p[b] + i));
+        __m256i a0 = _mm256_unpacklo_epi8(v[0], v[1]), a0h = _mm256_unpackhi_epi8(v[0], v[1]);
+        __m256i a1 = _mm256_unpacklo_epi8(v[2], v[3]), a1h = _mm256_unpackhi_epi8(v[2], v[3]);
+        __m256i a2 = _mm256_unpacklo_epi8(v[4], v[5]), a2h = _mm256_unpackhi_epi8(v[4], v[5]);
+        __m256i a3 = _mm256_unpacklo_epi8(v[6], v[7]), a3h = _mm256_unpackhi_epi8(v[6], v[7]);
+        __m256i b0 = _mm256_unpacklo_epi16(a0, a1),  b0h = _mm256_unpackhi_epi16(a0, a1);
+        __m256i b1 = _mm256_unpacklo_epi16(a2, a3),  b1h = _mm256_unpackhi_epi16(a2, a3);
+        __m256i b2 = _mm256_unpacklo_epi16(a0h, a1h),b2h = _mm256_unpackhi_epi16(a0h, a1h);
+        __m256i b3 = _mm256_unpacklo_epi16(a2h, a3h),b3h = _mm256_unpackhi_epi16(a2h, a3h);
+        __m256i c0 = _mm256_unpacklo_epi32(b0, b1),  c1 = _mm256_unpackhi_epi32(b0, b1);
+        __m256i c2 = _mm256_unpacklo_epi32(b0h, b1h),c3 = _mm256_unpackhi_epi32(b0h, b1h);
+        __m256i c4 = _mm256_unpacklo_epi32(b2, b3),  c5 = _mm256_unpackhi_epi32(b2, b3);
+        __m256i c6 = _mm256_unpacklo_epi32(b2h, b3h),c7 = _mm256_unpackhi_epi32(b2h, b3h);
+        __m256i o0 = _mm256_permute2x128_si256(c0, c1, 0x20);
+        __m256i o1 = _mm256_permute2x128_si256(c2, c3, 0x20);
+        __m256i o2 = _mm256_permute2x128_si256(c4, c5, 0x20);
+        __m256i o3 = _mm256_permute2x128_si256(c6, c7, 0x20);
+        __m256i o4 = _mm256_permute2x128_si256(c0, c1, 0x31);
+        __m256i o5 = _mm256_permute2x128_si256(c2, c3, 0x31);
+        __m256i o6 = _mm256_permute2x128_si256(c4, c5, 0x31);
+        __m256i o7 = _mm256_permute2x128_si256(c6, c7, 0x31);
+        char* o = out + i*8;
+        _mm256_storeu_si256(reinterpret_cast<__m256i*>(o+  0), o0);
+        _mm256_storeu_si256(reinterpret_cast<__m256i*>(o+ 32), o1);
+        _mm256_storeu_si256(reinterpret_cast<__m256i*>(o+ 64), o2);
+        _mm256_storeu_si256(reinterpret_cast<__m256i*>(o+ 96), o3);
+        _mm256_storeu_si256(reinterpret_cast<__m256i*>(o+128), o4);
+        _mm256_storeu_si256(reinterpret_cast<__m256i*>(o+160), o5);
+        _mm256_storeu_si256(reinterpret_cast<__m256i*>(o+192), o6);
+        _mm256_storeu_si256(reinterpret_cast<__m256i*>(o+224), o7);
+    }
+    return i;
+}
+// One-time runtime probe (thread-safe via function-local static init). AVX2 is a
+// microarchitecture feature, not part of the x86-64 ABI baseline, so we cannot
+// assume it — CI machines and older CPUs may lack it. When absent, byte_unshuffle
+// stays on the SSE2 kernels below with no behavior change.
+inline bool avx2_supported() {
+    static const bool ok = (__builtin_cpu_supports("avx2") != 0);
+    return ok;
+}
+#endif  // STARDS_SIMD_AVX2
+#endif  // STARDS_SIMD_SSE2
+
+}  // namespace shuffle_detail
+
 /**
  * @brief Byte-shuffle: reorder `count` elements of `elem_size` bytes so that byte
  *        plane 0 of every element comes first, then plane 1, etc.
  *
  * Splits an array-of-structs byte layout into a struct-of-byte-planes layout.
  * A no-op for elem_size <= 1. `out` must hold `count * elem_size` bytes.
+ * SIMD-accelerated on NEON for elem_size {2,4,8}; scalar everywhere else (the
+ * scalar tail below is bit-identical to the historical loop).
  */
 inline void byte_shuffle(const char* in, char* out, size_t count, size_t elem_size) {
-    if (elem_size <= 1) { std::memcpy(out, in, count * elem_size); return; }
-    for (size_t b = 0; b < elem_size; ++b) {
-        char* dst = out + b * count;
-        for (size_t i = 0; i < count; ++i) {
-            dst[i] = in[i * elem_size + b];
-        }
-    }
+    if (elem_size <= 1 || count == 0) { std::memcpy(out, in, count * elem_size); return; }
+    size_t done = 0;
+#if defined(STARDS_SIMD_NEON)
+    if      (elem_size == 2) done = shuffle_detail::shuffle_E2(in, out, count);
+    else if (elem_size == 4) done = shuffle_detail::shuffle_E4(in, out, count);
+    else if (elem_size == 8) done = shuffle_detail::shuffle_E8(in, out, count);
+#endif
+    if (done < count) shuffle_detail::shuffle_scalar_from(in, out, count, elem_size, done);
 }
 
 /**
  * @brief Inverse of byte_shuffle(): reassemble byte planes back into elements.
+ *
+ * This is the read hot path. SIMD-accelerated for elem_size {2,4,8} on NEON
+ * (arm64) and SSE2 (x86-64); scalar everywhere else. The scalar tail is
+ * bit-identical to the historical loop, so decoded bytes never change.
  */
 inline void byte_unshuffle(const char* in, char* out, size_t count, size_t elem_size) {
-    if (elem_size <= 1) { std::memcpy(out, in, count * elem_size); return; }
-    for (size_t b = 0; b < elem_size; ++b) {
-        const char* src = in + b * count;
-        for (size_t i = 0; i < count; ++i) {
-            out[i * elem_size + b] = src[i];
-        }
+    if (elem_size <= 1 || count == 0) { std::memcpy(out, in, count * elem_size); return; }
+    size_t done = 0;
+#if defined(STARDS_SIMD_AVX2)
+    // Prefer the AVX2 tier when the running CPU has it (runtime-detected once);
+    // otherwise fall through to the SSE2 kernels. Both leave the < 32- (resp.
+    // < 16-) element tail for the scalar finisher.
+    if (shuffle_detail::avx2_supported()) {
+        if      (elem_size == 2) done = shuffle_detail::unshuffle_avx2_E2(in, out, count);
+        else if (elem_size == 4) done = shuffle_detail::unshuffle_avx2_E4(in, out, count);
+        else if (elem_size == 8) done = shuffle_detail::unshuffle_avx2_E8(in, out, count);
     }
+    if (done == 0) {
+        if      (elem_size == 2) done = shuffle_detail::unshuffle_E2(in, out, count);
+        else if (elem_size == 4) done = shuffle_detail::unshuffle_E4(in, out, count);
+        else if (elem_size == 8) done = shuffle_detail::unshuffle_E8(in, out, count);
+    }
+#elif defined(STARDS_SIMD_NEON) || defined(STARDS_SIMD_SSE2)
+    if      (elem_size == 2) done = shuffle_detail::unshuffle_E2(in, out, count);
+    else if (elem_size == 4) done = shuffle_detail::unshuffle_E4(in, out, count);
+    else if (elem_size == 8) done = shuffle_detail::unshuffle_E8(in, out, count);
+#endif
+    if (done < count) shuffle_detail::unshuffle_scalar_from(in, out, count, elem_size, done);
 }
 
 /**
@@ -606,6 +984,24 @@ inline void byte_unshuffle_blocked(const char* in, char* out, size_t data_size,
         }
     }
 }
+
+/**
+ * @brief Describes an in-place byte-unshuffle to fuse into an array's fill.
+ *
+ * On the read hot path the decompressed bytes of a shuffle-codec array are
+ * byte-planes that must be transposed back to element order before use. Rather
+ * than unshuffle into a scratch buffer and then memcpy that buffer into the
+ * NDArray (two full passes), deserialize_typed_value_bytes() can unshuffle
+ * straight into the freshly allocated NDArray storage (one pass) when handed one
+ * of these. `active == false` means "no shuffle — plain memcpy", preserving the
+ * exact behavior of the non-shuffle codecs.
+ */
+struct ByteUnshuffleSpec {
+    bool   active     = false;  // decompressed bytes are byte-planes to reverse
+    bool   blocked    = false;  // per-block variant (unshuffle each block_size chunk)
+    size_t elem_size  = 0;      // width of one element in bytes (> 1)
+    size_t block_size = 0;      // write-time block size (blocked variant only)
+};
 
 /**
  * @brief Hash function for keys in global key registry
@@ -2582,15 +2978,36 @@ public:
     virtual bool ensure_whole_cached(size_t max_bytes) { (void)max_bytes; return false; }
 };
 
-// LOCAL: a plain file. seek+read; no network. Optionally slurps the whole file.
+// LOCAL: a plain file. On Linux/macOS the file is memory-mapped once on first
+// read and every ranged read is a memcpy out of the page-cache-backed mapping —
+// no per-read open()/seek()/read() syscalls. If mmap is unavailable (Windows,
+// WASM) or fails at runtime, it transparently falls back to the original
+// std::ifstream seek+read path, so behavior is identical everywhere; the mapping
+// is purely a faster backing store for the same bytes. Optionally slurps the
+// whole file (ensure_whole_cached) as before.
 class LocalRangeReader : public RangeReader {
 public:
     explicit LocalRangeReader(const std::string& path) : m_path(path) {}
 
+    ~LocalRangeReader() override {
+#ifdef STARDS_HAVE_MMAP
+        if (m_map != nullptr && m_map != MAP_FAILED) {
+            ::munmap(m_map, m_map_size);
+        }
+#endif
+    }
+
     size_t read_at(size_t offset, size_t len, std::vector<char>& out) override {
         if (!m_whole.empty() || m_cached) {
-            return serve_from_cache(offset, len, out);
+            return serve_from_cache(offset, len, out, m_whole.data(), m_whole.size());
         }
+#ifdef STARDS_HAVE_MMAP
+        if (ensure_mapped()) {
+            return serve_from_cache(offset, len, out,
+                                    static_cast<const char*>(m_map), m_map_size);
+        }
+        // mmap failed (e.g. special file) — fall through to the ifstream path.
+#endif
         std::ifstream in(m_path, std::ios::binary);
         if (!in.good()) { out.clear(); return 0; }
         in.seekg(static_cast<std::streamoff>(offset));
@@ -2602,6 +3019,9 @@ public:
 
     size_t size_or_unknown() override {
         if (m_cached) return m_whole.size();
+#ifdef STARDS_HAVE_MMAP
+        if (ensure_mapped()) return m_map_size;
+#endif
         std::ifstream in(m_path, std::ios::binary | std::ios::ate);
         if (!in.good()) return SIZE_MAX;
         std::streamoff n = in.tellg();
@@ -2629,15 +3049,46 @@ public:
     }
 
 private:
-    size_t serve_from_cache(size_t offset, size_t len, std::vector<char>& out) {
-        if (offset >= m_whole.size()) { out.clear(); return 0; }
-        size_t avail = std::min(len, m_whole.size() - offset);
-        out.assign(m_whole.begin() + offset, m_whole.begin() + offset + avail);
+    // Serve a [offset, offset+len) span from an in-memory base buffer, resizing
+    // `out` to the bytes actually available. Shared by the mmap and whole-file
+    // cache paths — both are just "copy from a contiguous byte range".
+    static size_t serve_from_cache(size_t offset, size_t len, std::vector<char>& out,
+                                   const char* base, size_t base_size) {
+        if (base == nullptr || offset >= base_size) { out.clear(); return 0; }
+        size_t avail = std::min(len, base_size - offset);
+        out.assign(base + offset, base + offset + avail);
         return avail;
     }
+
+#ifdef STARDS_HAVE_MMAP
+    // Map the file once. Returns false (and leaves the reader on the ifstream
+    // path) if the file can't be opened/stat'd/mapped, or is empty. The
+    // `m_map == nullptr` sentinel makes this a single attempt — once it fails it
+    // records MAP_FAILED and never retries per read.
+    bool ensure_mapped() {
+        if (m_map != nullptr) return m_map != MAP_FAILED;
+        int fd = ::open(m_path.c_str(), O_RDONLY);
+        if (fd < 0) { m_map = MAP_FAILED; return false; }
+        struct stat st;
+        if (::fstat(fd, &st) != 0 || st.st_size <= 0) { ::close(fd); m_map = MAP_FAILED; return false; }
+        size_t sz = static_cast<size_t>(st.st_size);
+        void* p = ::mmap(nullptr, sz, PROT_READ, MAP_PRIVATE, fd, 0);
+        ::close(fd);  // the mapping keeps its own reference; fd no longer needed
+        if (p == MAP_FAILED) { m_map = MAP_FAILED; return false; }
+        m_map = p;
+        m_map_size = sz;
+        return true;
+    }
+#endif
+
     std::string m_path;
     std::vector<char> m_whole;
     bool m_cached = false;
+#ifdef STARDS_HAVE_MMAP
+    void*  m_map = nullptr;       // nullptr = not yet tried; MAP_FAILED = tried & failed
+    size_t m_map_size = 0;
+    bool   m_map_tried = false;
+#endif
 };
 
 // MEMORY: the entire .stards image is held in a byte buffer (no file, no
@@ -4253,6 +4704,113 @@ inline std::vector<char> decompressBlocks(
     return decompressed_output;
 }
 
+/**
+ * @brief One-pass sibling of decompressBlocks(): decompress every block straight
+ *        into a caller-owned destination buffer instead of allocating and
+ *        returning a std::vector.
+ *
+ * decompressBlocks() allocates a full-size buffer, decodes into it, and returns
+ * it — the caller then copies that buffer into its final home (e.g. an NDArray),
+ * so every byte is written twice and a whole extra buffer is allocated. When the
+ * on-disk bytes ARE the final element bytes (fixed-width numeric arrays with no
+ * byte-shuffle prefilter to undo), that intermediate buffer is pure overhead:
+ * this function decodes each block directly to `dst + <block offset>`, giving a
+ * single pass over the data with no scratch allocation.
+ *
+ * The per-codec decode calls are identical to decompressBlocks() (same LZ4/zlib
+ * entry points, same block layout, same threading gate) so the produced bytes are
+ * bit-for-bit the same; only the destination differs. It intentionally does NOT
+ * support a block-index subset (the fused path is always a whole-array read) — the
+ * slicing paths keep using decompressBlocks(). Left as a separate function rather
+ * than refactoring decompressBlocks() to delegate, so the existing return-a-vector
+ * path is untouched.
+ *
+ * @param dst          Destination buffer; must hold at least the sum of block
+ *                     uncompressed sizes.
+ * @param dst_capacity Size of `dst` in bytes (checked; a larger declared shape
+ *                     leaves the trailing bytes untouched, matching the partial
+ *                     memcpy the general path performs).
+ */
+inline void decompressBlocksInto(
+    const std::vector<char>& compressed_data,
+    const std::vector<BlockInfo>& blocks,
+    CompressionAlgorithm algorithm,
+    char* dst,
+    size_t dst_capacity,
+    ThreadPool* thread_pool = nullptr) {
+
+    // Undo shuffle-variant labeling exactly as decompressBlocks() does — the
+    // blocks were written with the base codec. (This function is only ever called
+    // for the non-shuffle case, but normalizing keeps it a faithful sibling.)
+    algorithm = base_compression(algorithm);
+
+    // Whole-array read: every block, in order.
+    std::vector<size_t> output_offsets(blocks.size());
+    size_t total_size = 0;
+    for (size_t i = 0; i < blocks.size(); ++i) {
+        output_offsets[i] = total_size;
+        total_size += blocks[i].uncompressed_size;
+    }
+
+    if (total_size > dst_capacity) {
+        throw std::runtime_error(
+            "Corrupt entry: declared data length (" + std::to_string(total_size) +
+            " bytes) exceeds capacity implied by shape (" +
+            std::to_string(dst_capacity) + " bytes)");
+    }
+    if (total_size == 0) return;
+
+    auto decode_block = [&](size_t i) {
+        const BlockInfo& block = blocks[i];
+        char* out = dst + output_offsets[i];
+
+        if (algorithm == CompressionAlgorithm::GZIP) {
+            #ifdef ENABLE_ZLIB
+            uLongf dest_len = block.uncompressed_size;
+            int result = uncompress(
+                reinterpret_cast<Bytef*>(out),
+                &dest_len,
+                reinterpret_cast<const Bytef*>(compressed_data.data() + block.offset),
+                block.compressed_size);
+            if (result != Z_OK) {
+                throw std::runtime_error("Block decompression failed: block " + std::to_string(i));
+            }
+            #else
+            throw std::runtime_error("zlib not enabled");
+            #endif
+        } else if (algorithm == CompressionAlgorithm::LZ4) {
+            #ifdef ENABLE_LZ4
+            if (block.compressed_size > INT_MAX || block.uncompressed_size > INT_MAX) {
+                throw std::runtime_error("LZ4 block size exceeds INT_MAX limit");
+            }
+            int decompressed_size = LZ4_decompress_safe(
+                reinterpret_cast<const char*>(compressed_data.data() + block.offset),
+                out,
+                static_cast<int>(block.compressed_size),
+                static_cast<int>(block.uncompressed_size));
+            if (decompressed_size != static_cast<int>(block.uncompressed_size)) {
+                throw std::runtime_error("LZ4 block decompression failed: block " + std::to_string(i));
+            }
+            #else
+            throw std::runtime_error("LZ4 not enabled");
+            #endif
+        } else if (algorithm == CompressionAlgorithm::NONE) {
+            std::memcpy(out, compressed_data.data() + block.offset, block.compressed_size);
+        } else {
+            throw std::runtime_error("Unsupported compression algorithm");
+        }
+    };
+
+    bool use_threading = thread_pool &&
+                         blocks.size() >= g_min_blocks_for_threading &&
+                         total_size >= g_min_bytes_for_threading;
+    if (use_threading) {
+        thread_pool->parallel_for(0, blocks.size(), decode_block);
+    } else {
+        for (size_t i = 0; i < blocks.size(); ++i) decode_block(i);
+    }
+}
+
 //==============================================================================
 // Metadata Block Configuration
 //==============================================================================
@@ -4746,6 +5304,125 @@ public:
     }
 
     /**
+     * @brief Decode one array entry's compressed bytes into a ValueVariant.
+     *
+     * This is the CPU half of an array load (everything after the ranged read):
+     * decompress the blocks, reverse any byte-shuffle prefilter, and materialize
+     * the NDArray. It is a pure function of its arguments — it reads no shared
+     * mutable state and writes none — so it is safe to run concurrently on
+     * thread-pool workers, which is what prefetch() relies on to decode many
+     * columns in parallel.
+     *
+     * `thread_pool` controls only INTRA-array block parallelism inside
+     * decompressBlocks(). A batch caller that is already parallelizing ACROSS
+     * arrays MUST pass nullptr here: a pool worker that enqueued to and waited on
+     * the same pool could deadlock. The single-array load path (load_entry) passes
+     * the pool so a lone large array still decompresses its blocks in parallel.
+     */
+    /**
+     * @brief One-pass decode for the fast path: build the NDArray<T> and
+     *        decompress every block directly into its storage.
+     *
+     * Only reached for fixed-width numeric arrays with no byte-shuffle prefilter,
+     * where the decompressed block bytes are exactly the element bytes. Produces
+     * the identical NDArray the general (decompressBlocks + memcpy) path would,
+     * without the intermediate full-size buffer or the second pass. Pure function
+     * of its arguments — safe to run on pool workers, same as decode_array_bytes().
+     */
+    ValueVariant decode_numeric_blocks_into_ndarray(
+            const std::vector<char>& compressed_data,
+            const std::vector<BlockInfo>& blocks,
+            CompressionAlgorithm compression,
+            DataType dtype,
+            const std::vector<size_t>& shape,
+            ThreadPool* thread_pool) {
+        auto load = [&](auto tag) -> ValueVariant {
+            using T = decltype(tag);
+            NDArray<T> arr(shape);
+            char* dst = reinterpret_cast<char*>(arr.data().data());
+            // Capacity implied by the shape. decompressBlocksInto() checks the
+            // decoded total against this (the same corruption guard the general
+            // path applies) and throws if the blocks would overrun it.
+            size_t capacity_bytes = arr.data().size() * sizeof(T);
+            decompressBlocksInto(compressed_data, blocks, compression,
+                                 dst, capacity_bytes, thread_pool);
+            return arr;
+        };
+        switch (dtype) {
+            case DataType::INT8:    return load(int8_t{});
+            case DataType::INT16:   return load(int16_t{});
+            case DataType::INT32:   return load(int32_t{});
+            case DataType::INT64:   return load(int64_t{});
+            case DataType::UINT8:   return load(uint8_t{});
+            case DataType::UINT16:  return load(uint16_t{});
+            case DataType::UINT32:  return load(uint32_t{});
+            case DataType::UINT64:  return load(uint64_t{});
+            case DataType::FLOAT32: return load(float{});
+            case DataType::FLOAT64: return load(double{});
+            default:
+                throw std::runtime_error("Unsupported numeric dtype in fast decode: " +
+                                         std::to_string(static_cast<int>(dtype)));
+        }
+    }
+
+    ValueVariant decode_array_bytes(const std::vector<char>& compressed_data,
+                                    const std::vector<BlockInfo>& blocks,
+                                    CompressionAlgorithm compression,
+                                    DataType dtype,
+                                    const std::vector<size_t>& shape,
+                                    ThreadPool* thread_pool) {
+        // FAST PATH — one pass, no scratch buffer. When the on-disk bytes ARE the
+        // final element bytes (fixed-width numeric array, no byte-shuffle prefilter
+        // to reverse) the general path below would decompress into a full-size
+        // scratch vector and then memcpy that into the NDArray — two passes over
+        // the data plus a whole extra allocation. Instead, size the NDArray up
+        // front and decompress every block straight into its storage. Strings
+        // (variable-width) and any shuffle codec (bytes need transposing first)
+        // fall through to the general path unchanged.
+        if (dtype != DataType::STRING && !uses_shuffle(compression) && !blocks.empty()) {
+            return decode_numeric_blocks_into_ndarray(
+                compressed_data, blocks, compression, dtype, shape, thread_pool);
+        }
+
+        // Decompress data (blocks decompressed in parallel if a pool is given).
+        std::vector<char> decompressed_data = decompressBlocks(
+            compressed_data, blocks, compression, {} /*all blocks*/, thread_pool);
+
+        // If a byte-shuffle prefilter was applied on write, it must be reversed —
+        // the decompressed bytes are byte-planes and need transposing back to
+        // element order. Rather than unshuffle into a scratch buffer and then copy
+        // that into the NDArray (two passes over the data), we describe the
+        // transpose here and let deserialize_typed_value_bytes() unshuffle straight
+        // into the NDArray storage (one pass). The eligibility test is identical to
+        // the old code: only fixed-width numeric arrays are shuffled (strings never
+        // are), elem_size must be > 1, and the byte count must divide evenly — if
+        // any of those fail we leave `active` false and fall back to a plain copy,
+        // exactly as before. The global variants shuffled the whole array at once;
+        // the per-block variants shuffled each write-time block independently (the
+        // first block's uncompressed_size is that write-time block size — every
+        // block is full except possibly the last, so chunk boundaries align).
+        ByteUnshuffleSpec unshuffle;
+        if (uses_shuffle(compression) && dtype != DataType::STRING) {
+            size_t elem_size = datatype_size(dtype);
+            if (elem_size > 1 && decompressed_data.size() % elem_size == 0) {
+                unshuffle.active = true;
+                unshuffle.elem_size = elem_size;
+                if (uses_block_shuffle(compression) && !blocks.empty()) {
+                    unshuffle.blocked = true;
+                    unshuffle.block_size = blocks[0].uncompressed_size;
+                }
+            }
+        }
+
+        // Deserialize straight from the contiguous buffer — no stringstream copy.
+        // For numeric arrays this is a single pass into the NDArray (a memcpy, or a
+        // fused byte-unshuffle when `unshuffle.active`); strings delegate to the
+        // stream parser inside deserialize_typed_value_bytes().
+        return deserialize_typed_value_bytes(
+            decompressed_data.data(), decompressed_data.size(), dtype, shape, unshuffle);
+    }
+
+    /**
      * @brief Load entry from disk into memory
      * @param idx Index in SoA arrays
      */
@@ -4776,47 +5453,11 @@ public:
                 std::to_string(compressed_data.size()) + ")");
         }
 
-        // Decompress data (with parallel decompression if thread pool available)
-        std::vector<char> decompressed_data = decompressBlocks(
-            compressed_data,
-            m_cold.block_infos[idx],
-            m_cold.compressions[idx],
-            {},  // decompress all blocks
-            m_thread_pool.get()
-        );
-
-        // Deserialize based on type
-        DataType dtype = m_hot.dtypes[idx];
-        const auto& shape = m_cold.shapes[idx];
-
-        // If a byte-shuffle prefilter was applied on write, reverse it now (the
-        // decompressed bytes are byte-planes; unshuffle back to element order).
-        // Only fixed-width numeric arrays are shuffled; strings never are. The
-        // global variants shuffled the whole array at once; the per-block variants
-        // shuffled each write-time block independently (the first block's
-        // uncompressed_size is that write-time block size — every block is full
-        // except possibly the last, so the chunk boundaries align exactly).
-        if (uses_shuffle(m_cold.compressions[idx]) && dtype != DataType::STRING) {
-            size_t elem_size = datatype_size(dtype);
-            if (elem_size > 1 && decompressed_data.size() % elem_size == 0) {
-                std::vector<char> unshuffled(decompressed_data.size());
-                if (uses_block_shuffle(m_cold.compressions[idx]) && !m_cold.block_infos[idx].empty()) {
-                    size_t blk = m_cold.block_infos[idx][0].uncompressed_size;
-                    byte_unshuffle_blocked(decompressed_data.data(), unshuffled.data(),
-                                           decompressed_data.size(), elem_size, blk);
-                } else {
-                    size_t count = decompressed_data.size() / elem_size;
-                    byte_unshuffle(decompressed_data.data(), unshuffled.data(), count, elem_size);
-                }
-                decompressed_data = std::move(unshuffled);
-            }
-        }
-
-        std::stringstream data_stream;
-        data_stream.write(decompressed_data.data(), decompressed_data.size());
-        data_stream.seekg(0);
-
-        ValueVariant value = deserialize_typed_value(data_stream, dtype, shape, decompressed_data.size());
+        // Decompress + unshuffle + materialize. A single large array uses the pool
+        // for intra-array block parallelism.
+        ValueVariant value = decode_array_bytes(
+            compressed_data, m_cold.block_infos[idx], m_cold.compressions[idx],
+            m_hot.dtypes[idx], m_cold.shapes[idx], m_thread_pool.get());
 
         // Store in m_data_storage
         m_data_storage.push_back(std::move(value));
@@ -5504,6 +6145,90 @@ public:
                     is.read(&str[0], str_len);
                 }
                 return arr;
+            }
+            default:
+                throw std::runtime_error("Unsupported metadata block type: " +
+                                       std::to_string(static_cast<int>(dtype)));
+        }
+    }
+
+    /**
+     * @brief Zero-stream variant of deserialize_typed_value() for the array load
+     *        hot path: deserialize directly from a contiguous byte buffer.
+     *
+     * The stream version copies the buffer INTO a std::stringstream and then reads
+     * it back OUT into the NDArray — two extra full-buffer passes plus stream
+     * overhead. For fixed-width numeric arrays (the common case) the wire format
+     * is just raw native-endian bytes, so a single std::memcpy reproduces the
+     * exact same result an order of magnitude faster. Strings are variable-width
+     * (length-prefixed) and rare on this path, so they delegate to the stream
+     * version unchanged — behavior is identical for every dtype.
+     *
+     * When `unshuffle.active`, the incoming bytes are byte-planes from a shuffle
+     * codec: instead of a plain memcpy we run byte_unshuffle straight INTO the
+     * NDArray storage. This fuses the transpose with the fill, eliminating the
+     * scratch buffer and the extra full-buffer pass the caller would otherwise do
+     * (decompress → scratch → unshuffle → scratch2 → memcpy → NDArray becomes
+     * decompress → scratch → unshuffle → NDArray). The default (`active == false`)
+     * is a byte-identical plain memcpy, so non-shuffle codecs are unchanged.
+     */
+    ValueVariant deserialize_typed_value_bytes(const char* data, size_t data_len,
+                                               DataType dtype,
+                                               const std::vector<size_t>& shape,
+                                               const ByteUnshuffleSpec& unshuffle = {}) {
+        // Same corruption guard as the stream version (numeric types only). The
+        // byte-plane layout doesn't change the total byte count, so this holds
+        // whether or not an unshuffle is fused in.
+        if (dtype != DataType::STRING) {
+            size_t elem_count = 1;
+            for (size_t dim : shape) elem_count *= dim;
+            size_t capacity_bytes = elem_count * datatype_size(dtype);
+            if (data_len > capacity_bytes) {
+                throw std::runtime_error(
+                    "Corrupt entry: declared data length (" + std::to_string(data_len) +
+                    " bytes) exceeds capacity implied by shape (" +
+                    std::to_string(capacity_bytes) + " bytes)");
+            }
+        }
+
+        // Fill a freshly sized NDArray<T> from `data_len` raw bytes. Without a
+        // fused unshuffle this is a single memcpy — the exact bytes is.read()
+        // would have produced. With one, byte_unshuffle writes element-order bytes
+        // directly into the same destination, still a single pass over the output.
+        auto load = [&](auto tag) -> ValueVariant {
+            using T = decltype(tag);
+            NDArray<T> arr(shape);
+            char* dst = reinterpret_cast<char*>(arr.data().data());
+            if (data_len) {
+                if (unshuffle.active && unshuffle.blocked) {
+                    byte_unshuffle_blocked(data, dst, data_len,
+                                           unshuffle.elem_size, unshuffle.block_size);
+                } else if (unshuffle.active) {
+                    byte_unshuffle(data, dst, data_len / unshuffle.elem_size,
+                                   unshuffle.elem_size);
+                } else {
+                    std::memcpy(dst, data, data_len);
+                }
+            }
+            return arr;
+        };
+        switch (dtype) {
+            case DataType::INT8:    return load(int8_t{});
+            case DataType::INT16:   return load(int16_t{});
+            case DataType::INT32:   return load(int32_t{});
+            case DataType::INT64:   return load(int64_t{});
+            case DataType::UINT8:   return load(uint8_t{});
+            case DataType::UINT16:  return load(uint16_t{});
+            case DataType::UINT32:  return load(uint32_t{});
+            case DataType::UINT64:  return load(uint64_t{});
+            case DataType::FLOAT32: return load(float{});
+            case DataType::FLOAT64: return load(double{});
+            case DataType::STRING: {
+                // Variable-width; reuse the proven stream parser verbatim.
+                std::stringstream ss;
+                ss.write(data, data_len);
+                ss.seekg(0);
+                return deserialize_typed_value(ss, dtype, shape, data_len);
             }
             default:
                 throw std::runtime_error("Unsupported metadata block type: " +
@@ -7289,6 +8014,122 @@ public:
 
         // Return copy of the data
         return std::get<NDArray<T>>(m_data_storage[m_hot.data_indices[idx]]);
+    }
+
+    /**
+     * @brief Load several arrays into cache in parallel (a read-ahead hint).
+     *
+     * A single get()/get_slice() reads one array end-to-end: the read pipeline
+     * (ranged I/O -> decompress -> unshuffle -> materialize) runs serially, and a
+     * caller reading N columns pays that latency N times back-to-back — only the
+     * block decompression WITHIN one array is threaded. prefetch() overlaps the
+     * whole pipeline ACROSS arrays:
+     *
+     *   - I/O stays SERIAL on the dataset's single persistent reader (one reused
+     *     connection; remote reads issue exactly one GET per array, same as
+     *     today — no request amplification), but
+     *   - each array's CPU work (decompress + unshuffle + build NDArray) is
+     *     dispatched to the thread pool the moment its bytes arrive, so array
+     *     k+1's read overlaps array k's decode and multiple decodes run at once.
+     *
+     * After prefetch() returns, the named arrays are cached, so subsequent
+     * get<T>()/get_slice<T>() calls just copy out — this is the batch "read many
+     * columns" path. Results are byte-identical to loading each key individually;
+     * this only changes WHEN/where the work runs. Keys that are unknown throw
+     * (same contract as get); keys already loaded or stored in the metadata block
+     * are handled on the normal serial path. With threading disabled (num_threads
+     * == 1) it degrades to loading each key in turn.
+     *
+     * Thread-safety: holds the dataset write lock for the whole batch; the decode
+     * tasks are pure (they read only stable per-entry metadata we do not mutate
+     * here and own their input buffers), and they pass nullptr for the pool so a
+     * pool worker never waits on the same pool (no nested-parallel deadlock).
+     */
+    void prefetch(const std::vector<std::string>& keys) {
+        std::unique_lock<std::shared_mutex> write_lock(m_mutex);
+
+        // Partition the request: array entries needing a load go through the
+        // parallel path; everything else (unknown -> throw, already-loaded ->
+        // nothing to do, metadata-block entries -> shared block load) is handled
+        // inline exactly as a normal load would.
+        std::vector<size_t> array_idxs;
+        array_idxs.reserve(keys.size());
+        for (const std::string& key : keys) {
+            auto it = m_key_to_index.find(key);
+            if (it == m_key_to_index.end()) {
+                throw std::runtime_error("Key not found: " + key);
+            }
+            size_t idx = it->second;
+            if (m_hot.data_indices[idx] != SIZE_MAX) continue;      // already cached
+            if (m_cold.stored_in_metadata_flags[idx] == 1) {
+                load_entry(idx);                                    // loads the metadata block
+                continue;
+            }
+            array_idxs.push_back(idx);
+        }
+
+        if (array_idxs.empty()) return;
+
+        // No pool (single-threaded mode): fall back to loading each in turn. Same
+        // result, just without the cross-array overlap.
+        if (!m_thread_pool) {
+            for (size_t idx : array_idxs) load_entry(idx);
+            return;
+        }
+
+        size_t n = array_idxs.size();
+        // Pre-sized so every slot's address is stable while decode tasks (which
+        // capture slots by reference) run.
+        std::vector<std::vector<char>> compressed(n);
+        std::vector<ValueVariant> results(n);
+        std::vector<std::exception_ptr> errors(n);
+        std::vector<std::future<void>> futures;
+        futures.reserve(n);
+
+        for (size_t s = 0; s < n; ++s) {
+            size_t idx = array_idxs[s];
+            size_t position = m_cold.file_positions[idx];
+            size_t compressed_size = m_cold.compressed_sizes[idx];
+
+            // Serial ranged read on the shared reader (one GET for remote).
+            compressed[s] = read_range(position, compressed_size);
+            if (compressed[s].size() != compressed_size) {
+                throw std::runtime_error("Short read loading entry (expected " +
+                    std::to_string(compressed_size) + ", got " +
+                    std::to_string(compressed[s].size()) + ")");
+            }
+
+            // Dispatch this array's decode; it overlaps the next array's read and
+            // runs concurrently with the other decode tasks. nullptr pool => no
+            // nested parallel_for.
+            futures.push_back(m_thread_pool->enqueue(
+                [this, s, idx, &compressed, &results, &errors] {
+                    try {
+                        results[s] = decode_array_bytes(
+                            compressed[s], m_cold.block_infos[idx],
+                            m_cold.compressions[idx], m_hot.dtypes[idx],
+                            m_cold.shapes[idx], nullptr);
+                    } catch (...) {
+                        errors[s] = std::current_exception();
+                    }
+                }));
+        }
+
+        for (auto& f : futures) f.get();  // wait for every decode
+
+        // All-or-nothing: if any decode failed, surface the first error and commit
+        // nothing (a later get() will simply reload). Otherwise commit each result
+        // into storage on this (single) thread — no concurrent m_data_storage growth.
+        for (size_t s = 0; s < n; ++s) {
+            if (errors[s]) std::rethrow_exception(errors[s]);
+        }
+        for (size_t s = 0; s < n; ++s) {
+            size_t idx = array_idxs[s];
+            m_data_storage.push_back(std::move(results[s]));
+            m_hot.data_indices[idx] = m_data_storage.size() - 1;
+            m_hot.loaded_flags[idx] = true;
+            m_hot.locations[idx] = StorageLocation::CACHED;
+        }
     }
 
 

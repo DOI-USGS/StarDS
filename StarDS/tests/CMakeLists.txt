@@ -24,6 +24,7 @@ set (STARDS_TEST_SOURCE    ${STARDS_TEST_DIRECTORY}/UnitTestBlockCompression.cpp
                                     ${STARDS_TEST_DIRECTORY}/UnitTestLayers.cpp
                                     ${STARDS_TEST_DIRECTORY}/UnitTestReadmeExamples.cpp
                                     ${STARDS_TEST_DIRECTORY}/UnitTestBytesAPI.cpp
+                                    ${STARDS_TEST_DIRECTORY}/UnitTestPrefetch.cpp
                                     ${STARDS_TEST_DIRECTORY}/Fixtures.cpp
                             )
 
