@@ -5,43 +5,66 @@ edit_uri: ""
 
 theme:
   name: material
+  language: en
   custom_dir: overrides
+  # Palette mirrors the Miniset docs: indigo/deep-orange in light, black/deep-orange
+  # in dark, both following the OS preference by default.
   palette:
-    # Dark mode (default) — click the toggle to switch to light.
-    - scheme: slate
+    # Light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: deep orange
       toggle:
         icon: material/weather-night
-        name: Switch to light mode
-    - scheme: default
+        name: Switch to dark mode
+    # Dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: black
+      accent: deep orange
       toggle:
         icon: material/weather-sunny
-        name: Switch to dark mode
+        name: Switch to light mode
   site_name_style: bold
   title_style: light
-  font:
-    text: Inter
-    code: Roboto Mono
   icon:
     annotation: material/chevron-right-circle
   highlightjs: true
   features:
+    # Miniset's feature set, plus the navigation.path / indexes / sections that
+    # the deeper StarDS nav (Guides, C++ API, CLI, Reference) relies on.
     - navigation.tabs
     - navigation.path
     - navigation.indexes
     - navigation.sections
     - navigation.top
+    - navigation.footer
+    - navigation.instant
+    - navigation.instant.progress
+    - toc.follow
     - search.suggest
-    - content.tabs.link
+    - search.highlight
     - content.code.copy
+    - content.code.annotate
+    - content.tabs.link
 
 extra_css:
   - stylesheets/extra.css
 
-# Note: the 3D hero (hero-banner.js) is an ES module loaded home-page-only from
-# overrides/home.html with a Three.js import map — not listed here, so it isn't
-# pulled in on every page.
+# Note: the 3D point-cloud hero (hero.js, ported from the Miniset docs) is an ES
+# module loaded home-page-only from overrides/home.html — not listed here, so
+# neither it nor the Three.js build it imports is pulled in on every page.
+
+extra:
+  generator: false
 
 markdown_extensions:
+  - abbr
+  - footnotes
+  - toc:
+      permalink: true
+      title: On this page
   - pymdownx.highlight:
       anchor_linenums: true
   - pymdownx.superfences

@@ -2,57 +2,54 @@
 
 <!--
   Custom homepage template for StarDS.
-  Renders a full-bleed hero banner with a scroll-driven parallax background
-  (see docs/javascripts/parallax.js and docs/stylesheets/extra.css), then the
-  normal Markdown page body from docs/index.md scrolls underneath it.
+  Renders the Miniset-style hero banner — a streaming point-cloud globe drawn by
+  docs/javascripts/hero.js (Three.js) behind the title/CTAs — followed by the
+  normal Markdown body from docs/index.md.
   Selected per-page via `template: home.html` front matter in docs/index.md.
+
+  The hero markup mirrors Miniset's (docs/index.md there): the script binds to
+  `[data-ms-hero]` / `[data-ms-hero-canvas]`, and styling comes from the
+  `.ms-hero*` rules in docs/stylesheets/extra.css.
+
+  hero.js is loaded HERE rather than via mkdocs.yml's `extra_javascript` so the
+  module (and the ~600 KB Three.js build it imports) is fetched on the homepage
+  only, not on every page of the site.
 -->
 
 {% block extrahead %}
   {{ super() }}
-  <!-- Bebas Neue (display) + Oswald 700 (bold-capable fallback) for the hero title. -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@700&display=swap" rel="stylesheet">
-
-  <!-- Three.js for the 3D point-cloud hero (home page only). The import map lets
-       hero-banner.js load `three` as an ES module; the module is home-scoped so
-       it isn't loaded on the rest of the site. -->
-  <script type="importmap">
-    { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }
-  </script>
-  <script type="module" src="{{ 'javascripts/hero-banner.js' | url }}"></script>
+  <script type="module" src="{{ 'javascripts/hero.js' | url }}"></script>
 {% endblock %}
 
 {% block content %}
-  <section class="star-hero" id="star-hero" data-md-component="hero">
-    <div class="star-hero__bg" id="star-hero-bg">
-      <!-- Single WebGL canvas: hero-banner.js renders a 3D point cloud (Three.js)
-           that naturally parallaxes as the page scrolls. -->
-      <canvas class="star-hero__canvas" id="star-hero-canvas"></canvas>
-    </div>
-    <div class="star-hero__inner">
-      <h1 class="star-hero__title">
-        <span>StarDS</span>
-      </h1>
-      <p class="star-hero__tagline">
-        Header-only C++ &amp; Python library for storing large
-        N-dimensional arrays: chunked, compressed, and readable straight from
-        local disk or the cloud.
-      </p>
-      <div class="star-hero__actions">
-        <a href="{{ 'getting-started/quickstart/' | url }}" class="md-button md-button--primary">
-          Get Started
-        </a>
-        <a href="{{ 'cpp-api/' | url }}" class="md-button">
-          API Reference
-        </a>
-      </div>
-    </div>
-  </section>
-
   <div class="md-content star-home-content" data-md-component="content">
     <article class="md-content__inner md-typeset">
+
+      <div class="ms-hero" data-ms-hero>
+        <canvas class="ms-hero__canvas" data-ms-hero-canvas></canvas>
+
+        <div class="ms-hero__content">
+          <span class="ms-hero__eyebrow">U.S. Geological Survey &middot; Astrogeology</span>
+
+          <h1 class="ms-hero__title">Persistent N-dimensional arrays, local or in the cloud</h1>
+
+          <p>
+            Header-only C++ &amp; Python library for storing large N-dimensional
+            arrays: chunked, compressed, and readable straight from local disk,
+            S3, or HTTP.
+          </p>
+
+          <p>
+            <a href="{{ 'getting-started/quickstart/' | url }}" class="md-button md-button--primary">
+              Get started
+            </a>
+            <a href="{{ 'cpp-api/' | url }}" class="md-button">
+              API reference
+            </a>
+          </p>
+        </div>
+      </div>
+
       {{ page.content }}
     </article>
   </div>
