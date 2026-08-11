@@ -25,9 +25,39 @@
  *
  * Three.js is pulled from a CDN as an ES module so the static docs need no build
  * step (same no-bundler approach as the WASM playground).
+ *
+ * STARTUP ORDER (why nothing here is awaited up front): the render must appear
+ * IMMEDIATELY, so boot() waits only on Three.js — never on the WASM module. The
+ * placeholder globe is pure geometry (no network), so it draws on the first frame,
+ * and the WASM-backed layers (overview, then the real streamed points) attach
+ * themselves later through the promises in `src`. See openStream() and boot().
  */
 
-import * as THREE from "https://unpkg.com/three@0.160.0/build/three.module.js";
+// Three.js, loaded LAZILY via dynamic import rather than the top-level static
+// import this file used to carry (`import * as THREE from <cdn>`). Two reasons:
+//
+//   1. boot() can then await Three.js EXPLICITLY and nothing else, which is what
+//      makes "render immediately, attach the WASM layers later" a visible contract
+//      instead of an accident of import order. With a static import, this module's
+//      body could not run at all until the ~600 KB CDN build had arrived, so the
+//      load ordering below wasn't ours to choose.
+//   2. A CDN failure becomes catchable. A failed static import aborts the whole
+//      module — no code of ours ever runs and the hero silently stays blank;
+//      here the rejection surfaces in boot()'s catch as a console warning.
+//
+// THREE is referenced only from inside functions, every one of which runs after
+// loadThree() has resolved, so a module-scope binding filled in at that point is
+// equivalent to the namespace import. Memoized: one fetch per page.
+const THREE_URL = "https://unpkg.com/three@0.160.0/build/three.module.js";
+let THREE = null;
+let threePromise = null;
+function loadThree() {
+  if (threePromise) return threePromise;
+  threePromise = import(/* webpackIgnore: true */ THREE_URL)
+    .then((mod) => { THREE = mod; return mod; })
+    .catch((err) => { threePromise = null; throw err; });
+  return threePromise;
+}
 
 /* ==========================================================================
    TUNING LEVERS — tweak these live; everything visual keys off this object.
@@ -177,8 +207,9 @@ const CONFIG = {
 //
 // `window.STARDS_HERO_WASM_BASE` overrides the location (e.g. to serve the
 // module from a CDN instead of the docs origin). If the module fails to load,
-// loadMiniset() rejects, boot() catches it, and the hero still renders its
-// gradient + text — just without the point cloud.
+// loadMiniset() rejects; the render is never gated on it, so the hero keeps
+// spinning its placeholder globe over the gradient + text — just without the
+// streamed points — and boot() retries on the next navigation.
 const WASM_BASE =
   (typeof window !== "undefined" && window.STARDS_HERO_WASM_BASE) ||
   new URL("../assets/wasm/", import.meta.url).href;
@@ -206,16 +237,52 @@ function loadMiniset() {
   return minisetPromise;
 }
 
+// Kick BOTH loads off here, at module-evaluation time (rather than waiting for
+// boot()), with Three.js FIRST and the WASM module chained after it.
+//
+// The order is deliberate. Three.js is all the placeholder globe needs, and the
+// placeholder is the thing that must appear immediately — so it must not have to
+// share the link with a ~36 MB download. Chaining costs the module nothing relative
+// to before: the old top-level *static* `import` of Three.js blocked this whole
+// module's body, so the WASM load already started after Three.js — only now the
+// render starts the moment Three.js lands instead of waiting for the module too.
+//
+// Both loaders are memoized, so boot()/openStream() reuse these exact promises.
+// The .catch()es merely mark rejections as observed (no unhandled-rejection noise);
+// each failure is reported and handled at its real use site.
+loadThree()
+  .catch(() => {})
+  .then(() => { loadMiniset().catch(() => {}); });
+
 /**
  * Open a streaming point source over the net, PARSED BY MINISET (WASM StarDS).
  * The module opens the net BY URL over /vsicurl/ and reads only the byte ranges
  * it needs — opening pulls just the header/index (one ranged GET); each later
  * pointsReadXYZ pulls only the covering blocks. The ~2 GB file is never
  * downloaded whole. (No local copy is fetched here.)
- * @returns {Promise<{Miniset: any, handle: number, total: number}>}
+ *
+ * SYNCHRONOUS BY DESIGN — it returns the source object immediately and does NOT
+ * await the WASM module. That is what lets initScene() start on the first frame:
+ * `Miniset` starts out null and is filled in on this same object the moment the
+ * module resolves, and both opens are handed back as PROMISES. Every consumer of
+ * `src.Miniset` (the two read pumps, dispose) is gated on `pointHandle` / awaits
+ * `src.ready`, and both of those are chained AFTER the module load — so nothing can
+ * dereference `Miniset` while it is still null.
+ *
+ * @returns {{Miniset: any, overviewReady: Promise<{lines,summary}>, ready: Promise<{handle,total}>}}
  */
-async function openStream() {
-  const Miniset = await loadMiniset();
+function openStream() {
+  // `failed` is set if the module never loads, so boot() can retry on a later
+  // document$ emit instead of leaving a permanently point-less globe.
+  const src = { Miniset: null, overviewReady: null, ready: null, failed: false };
+
+  // The module fetch was already kicked off at module-eval time; loadMiniset() is
+  // memoized, so this just latches onto that in-flight promise.
+  const moduleReady = loadMiniset().then((M) => { src.Miniset = M; return M; });
+  // Marks the rejection observed (no unhandled-rejection noise — the overviewReady
+  // chain below reports it) and flags the src as retryable.
+  moduleReady.catch(() => { src.failed = true; });
+
   // Every StarDS call over /vsicurl SUSPENDS (ASYNCIFY → returns a Promise we
   // await), and ASYNCIFY allows only ONE suspension in flight — so the overview
   // open and the point-stream open must be strictly SERIAL (never overlapping).
@@ -224,10 +291,12 @@ async function openStream() {
   // render the PLACEHOLDER globe from the first frame (no network) while these
   // load. `overviewReady` resolves with {lines, summary}; `ready` (the point
   // stream) is CHAINED off overviewReady so its open only starts once the overview
-  // open has fully completed — preserving the single-suspension invariant.
+  // open has fully completed — preserving the single-suspension invariant. Both are
+  // additionally chained off `moduleReady`, so neither opens before the module
+  // exists (and both reject, harmlessly, if it never loads).
 
   // --- Overview (preferred: polyline "lines" layer; fallback: GMM "summary"). --
-  const overviewReady = (async () => {
+  src.overviewReady = moduleReady.then(async (Miniset) => {
     let lines = null, summary = null;
     try {
       if (typeof Miniset.openLines === "function") {
@@ -254,17 +323,18 @@ async function openStream() {
       }
     }
     return { lines, summary };
-  })();
+  });
 
   // --- Point stream: opened AFTER the overview open completes (single-suspension),
   // handed back as a promise so the pump can await it before its first read.
-  const ready = overviewReady.then(async () => {
+  src.ready = src.overviewReady.then(async () => {
+    const Miniset = src.Miniset;   // resolved: overviewReady is chained off moduleReady
     const handle = await Miniset.openPointsXYZ(STARDS_URL);
     const total = await Miniset.pointsCount(handle);
     return { handle, total };
   });
 
-  return { Miniset, overviewReady, ready };
+  return src;
 }
 
 /**
@@ -764,6 +834,12 @@ function makeGmmCloud(splats, pixelRatio) {
 /**
  * Initialize the Three.js scene inside `canvas`, sized to `host`, and stream the
  * point cloud in from `src` over time.
+ *
+ * Called as soon as Three.js is available — the WASM module is typically STILL
+ * LOADING at this point, so `src.Miniset` may be null on entry and is filled in
+ * later (see openStream). It is only ever read once `pointHandle` is set or from
+ * inside a `src.ready` continuation, both of which imply the module has resolved.
+ *
  * @param {HTMLCanvasElement} canvas
  * @param {HTMLElement} host
  * @param {{Miniset: any, overviewReady: Promise<{lines,summary}>, ready: Promise<{handle,total}>}} src
@@ -1419,8 +1495,11 @@ function initScene(canvas, host, src) {
 // NOT tear the live render down and rebuild (that's what blanked it and reset the
 // stream to 0). We only rebuild when the canvas is a genuinely new element (a real
 // page content swap). Claimed synchronously below so a re-fire during the initial
-// multi-second openStream() can't start a second stream.
+// Three.js load can't start a second render.
 let heroCanvas = null;
+// The src handed to the live render, kept only so boot() can see whether its module
+// load failed (see the same-canvas early return below).
+let heroSrc = null;
 
 async function boot() {
   const host = document.querySelector("[data-ms-hero]");
@@ -1431,24 +1510,41 @@ async function boot() {
   if (!host || !canvas) {
     if (window.msHero) { window.msHero.dispose(); window.msHero = null; }
     heroCanvas = null;
+    heroSrc = null;
     return;
   }
 
   // Same canvas we already own (or are initializing) → leave the running render
   // alone. This is the fix: instant-nav / same-page clicks no longer blank it.
-  if (heroCanvas === canvas) return;
+  //
+  // ONE exception: if the WASM module never loaded for that render, it's a
+  // placeholder-only globe with no points coming. Before initScene stopped waiting
+  // on the module, a failed load left heroCanvas null and the next document$ emit
+  // retried the whole thing; keep that recovery by rebuilding in exactly that case
+  // (loadMiniset() clears its memo on failure, so this genuinely re-fetches).
+  if (heroCanvas === canvas && !(heroSrc && heroSrc.failed)) return;
 
-  // A genuinely new canvas (real content swap): dispose the old render first.
+  // A genuinely new canvas (real content swap), or a retry after a failed module
+  // load: dispose the old render first.
   if (window.msHero) { window.msHero.dispose(); window.msHero = null; }
   heroCanvas = canvas;   // claim BEFORE the await so a re-entrant boot() no-ops
+  heroSrc = null;
 
   try {
-    const src = await openStream();
+    // Await ONLY Three.js — never the WASM module. openStream() returns
+    // synchronously with the module load still in flight, so initScene() runs as
+    // soon as the (small) Three.js build lands and the placeholder globe is on
+    // screen from its very first frame. The WASM-backed layers attach themselves
+    // afterwards via src.overviewReady / src.ready, each of which already handles
+    // its own failure — so a slow or broken module delays the points only, never
+    // the render.
+    await loadThree();
     if (heroCanvas !== canvas) return;   // superseded while awaiting — abandon
-    initScene(canvas, host, src);
+    heroSrc = openStream();
+    initScene(canvas, host, heroSrc);
     host.setAttribute("data-ms-hero-ready", "true");
   } catch (err) {
-    if (heroCanvas === canvas) heroCanvas = null;   // let a later emit retry
+    if (heroCanvas === canvas) { heroCanvas = null; heroSrc = null; }   // let a later emit retry
     // Non-fatal: the hero still shows its gradient + text without the render.
     console.warn("[Miniset hero] point render unavailable:", err);
   }
