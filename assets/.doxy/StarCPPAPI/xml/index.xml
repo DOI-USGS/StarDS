@@ -1,3 +1,700 @@
 <?xml version='1.0' encoding='UTF-8' standalone='no'?>
 <doxygenindex xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="index.xsd" version="1.17.0" xml:lang="en-US">
+  <compound refid="classstar_1_1AWSConfigParser" kind="class"><name>star::AWSConfigParser</name>
+    <member refid="classstar_1_1AWSConfigParser_1a42bbad487f492abe100ecdd6d72bbead" kind="variable"><name>m_profiles</name></member>
+    <member refid="classstar_1_1AWSConfigParser_1a7ae9cc8b715d20b68b0550f30b4a98d8" kind="function"><name>getHomeDir</name></member>
+    <member refid="classstar_1_1AWSConfigParser_1ae22b7dc53cdd379a96e8c6ab5f41c119" kind="function"><name>trim</name></member>
+    <member refid="classstar_1_1AWSConfigParser_1a030af99bbf3f57a109be3ea37b9f658e" kind="function"><name>AWSConfigParser</name></member>
+    <member refid="classstar_1_1AWSConfigParser_1af253e659b1831cda66f7bda82bffe2f1" kind="function"><name>hasProfile</name></member>
+    <member refid="classstar_1_1AWSConfigParser_1a06d1bbc2256fc3288ed66378d2ec4f90" kind="function"><name>getValue</name></member>
+    <member refid="classstar_1_1AWSConfigParser_1a135923fe21a3196ba2e32410228934ce" kind="function"><name>getConfigPath</name></member>
+    <member refid="classstar_1_1AWSConfigParser_1ae63dc14ea20541f92e483d3d6430141d" kind="function"><name>getCredentialsPath</name></member>
+  </compound>
+  <compound refid="classstar_1_1AWSTokenCache" kind="class"><name>star::AWSTokenCache</name>
+    <member refid="classstar_1_1AWSTokenCache_1a9c6bece323973f6f9dab0037ed7faa15" kind="function"><name>getHomeDir</name></member>
+    <member refid="classstar_1_1AWSTokenCache_1a45b57cf38f8ea90ce66b2092afdef745" kind="function"><name>getSSOCacheDir</name></member>
+    <member refid="classstar_1_1AWSTokenCache_1ab49fb0ad2db4b68cc627a0eef76168dd" kind="function"><name>sha1LowerHex</name></member>
+    <member refid="classstar_1_1AWSTokenCache_1afa56258ffe5b1bb974554cc8471b8624" kind="function"><name>parseTokenJson</name></member>
+    <member refid="classstar_1_1AWSTokenCache_1a6b94a918da586b04dd118dc91c1415cf" kind="function"><name>extractJsonValue</name></member>
+    <member refid="classstar_1_1AWSTokenCache_1a9d55b8b59ae0fce543944ee3ed369b3c" kind="function"><name>readToken</name></member>
+    <member refid="classstar_1_1AWSTokenCache_1af92bd1ece2ad7ea57fd11fc84019a541" kind="function"><name>getCredentialsFromToken</name></member>
+  </compound>
+  <compound refid="classstar_1_1AWSV4Signer" kind="class"><name>star::AWSV4Signer</name>
+    <member refid="classstar_1_1AWSV4Signer_1af395cd771783a25d7524c955ab0f8353" kind="variable"><name>m_access_key</name></member>
+    <member refid="classstar_1_1AWSV4Signer_1acf6b18d4f7673498e977e589931fa5c8" kind="variable"><name>m_secret_key</name></member>
+    <member refid="classstar_1_1AWSV4Signer_1a308449f50e0c6a298092c56943074d99" kind="variable"><name>m_session_token</name></member>
+    <member refid="classstar_1_1AWSV4Signer_1ac13f6df4bf1c39b558d2a022443de835" kind="variable"><name>m_region</name></member>
+    <member refid="classstar_1_1AWSV4Signer_1a63fd45c9c3826f553867677f216bc1bc" kind="friend"><name>S3Writer</name></member>
+    <member refid="classstar_1_1AWSV4Signer_1ad97bd143161d3c4b5c636a38a9361c89" kind="function"><name>sha256</name></member>
+    <member refid="classstar_1_1AWSV4Signer_1a438cf88b62e5475253ca76c093cdde84" kind="function"><name>hmacSha256</name></member>
+    <member refid="classstar_1_1AWSV4Signer_1ad6214ae1a5521998168fdd47a50f8b26" kind="function"><name>createCanonicalHeaders</name></member>
+    <member refid="classstar_1_1AWSV4Signer_1a1bc503612125e94312ceca1026c8d6d5" kind="function"><name>createSignedHeaders</name></member>
+    <member refid="classstar_1_1AWSV4Signer_1aba8a8b4db839d282797112006f576015" kind="function"><name>AWSV4Signer</name></member>
+    <member refid="classstar_1_1AWSV4Signer_1a1dfdded7b88210738da7c6a5880b2f98" kind="function"><name>signRequest</name></member>
+    <member refid="classstar_1_1AWSV4Signer_1a6bdb89c88d08afe49f012169ab46750a" kind="function"><name>getSessionToken</name></member>
+    <member refid="classstar_1_1AWSV4Signer_1a4c044ec1410563622d1f294df24a85a2" kind="function"><name>hexEncode</name></member>
+    <member refid="classstar_1_1AWSV4Signer_1abddb250a54ac4cc60d5f1d5bcca822c1" kind="function"><name>urlEncode</name></member>
+  </compound>
+  <compound refid="structstar_1_1BlockInfo" kind="struct"><name>star::BlockInfo</name>
+    <member refid="structstar_1_1BlockInfo_1acdc8bdbd7a7ce873a9e2ee1076f67764" kind="variable"><name>offset</name></member>
+    <member refid="structstar_1_1BlockInfo_1af4ba491104187b20bedac009e1f7a13e" kind="variable"><name>compressed_size</name></member>
+    <member refid="structstar_1_1BlockInfo_1a68e05ddfc85c26881e8e0eec1241808f" kind="variable"><name>uncompressed_size</name></member>
+    <member refid="structstar_1_1BlockInfo_1a85b90ea55f678c257dfd28db1f6248b0" kind="function"><name>write</name></member>
+    <member refid="structstar_1_1BlockInfo_1a35ea0e2195b925b2bbcbbc180d21ba7b" kind="function"><name>read</name></member>
+  </compound>
+  <compound refid="structstar_1_1BlockMap" kind="struct"><name>star::BlockMap</name>
+    <member refid="structstar_1_1BlockMap_1a3ee2733ba1c7645d5be2edbf953dd14f" kind="variable"><name>block_indices</name></member>
+    <member refid="structstar_1_1BlockMap_1a17e2b1fe22e6b2e87ecfb4c4ccd64b9d" kind="variable"><name>block_offsets</name></member>
+    <member refid="structstar_1_1BlockMap_1a8de6da72eb66b4b9f9ad958996a45923" kind="variable"><name>block_sizes</name></member>
+    <member refid="structstar_1_1BlockMap_1a7e6f7e40d79b1c310ac58301b80f3052" kind="variable"><name>total_compressed_bytes</name></member>
+    <member refid="structstar_1_1BlockMap_1a7986354b3bfc64299cdfe2fbd56978f1" kind="variable"><name>blocks_contiguous</name></member>
+    <member refid="structstar_1_1BlockMap_1a883626b818429378972f28141a146de2" kind="variable"><name>contiguous_start_offset</name></member>
+  </compound>
+  <compound refid="structstar_1_1ByteUnshuffleSpec" kind="struct"><name>star::ByteUnshuffleSpec</name>
+    <member refid="structstar_1_1ByteUnshuffleSpec_1a81e09506cf1d6ba54739e5e077148bc8" kind="variable"><name>active</name></member>
+    <member refid="structstar_1_1ByteUnshuffleSpec_1a4990904d01cffc68e36ee32373697122" kind="variable"><name>blocked</name></member>
+    <member refid="structstar_1_1ByteUnshuffleSpec_1a0cc1dd76b4a912e45a68a1452631a10e" kind="variable"><name>elem_size</name></member>
+    <member refid="structstar_1_1ByteUnshuffleSpec_1a010d0f5d06cb533b1bfb4c2498fe590e" kind="variable"><name>block_size</name></member>
+  </compound>
+  <compound refid="structstar_1_1ColdStorage" kind="struct"><name>star::ColdStorage</name>
+    <member refid="structstar_1_1ColdStorage_1acdd9599f642581541cb7bd4275d24323" kind="variable"><name>shapes</name></member>
+    <member refid="structstar_1_1ColdStorage_1ab2065ade1017604d09bc4648690de9e5" kind="variable"><name>file_positions</name></member>
+    <member refid="structstar_1_1ColdStorage_1abe0bc58631c887c2c6b0af35f1988f58" kind="variable"><name>compressed_sizes</name></member>
+    <member refid="structstar_1_1ColdStorage_1a95f703e7ab54170753143f39234df10b" kind="variable"><name>uncompressed_sizes</name></member>
+    <member refid="structstar_1_1ColdStorage_1a34907d3f211e76e083159d7e407e8c78" kind="variable"><name>compressions</name></member>
+    <member refid="structstar_1_1ColdStorage_1adcb3cbed0f0d18c8ba580949b871173f" kind="variable"><name>block_infos</name></member>
+    <member refid="structstar_1_1ColdStorage_1a2e49e7d4aaca156ab627edd6d3dc28cc" kind="variable"><name>stored_in_metadata_flags</name></member>
+  </compound>
+  <compound refid="structstar_1_1ExtractionPlan_1_1ElementRange" kind="struct"><name>star::ExtractionPlan::ElementRange</name>
+    <member refid="structstar_1_1ExtractionPlan_1_1ElementRange_1acf428855f7ba0aa1022f0c62fd468935" kind="variable"><name>block_idx</name></member>
+    <member refid="structstar_1_1ExtractionPlan_1_1ElementRange_1a1d8c8d92d259a13f4d8c6f02dd1f5e79" kind="variable"><name>element_start</name></member>
+    <member refid="structstar_1_1ExtractionPlan_1_1ElementRange_1a68008e1730cdf4e93871f4cc9a8f35f5" kind="variable"><name>element_count</name></member>
+    <member refid="structstar_1_1ExtractionPlan_1_1ElementRange_1a56514c945e3c6bc00127d55fad3c13b4" kind="variable"><name>output_offset</name></member>
+  </compound>
+  <compound refid="structstar_1_1ExtractionPlan" kind="struct"><name>star::ExtractionPlan</name>
+    <member refid="structstar_1_1ExtractionPlan_1a54ecbcf194f50e3b6a63ec8e53d6a9c9" kind="variable"><name>ranges</name></member>
+    <member refid="structstar_1_1ExtractionPlan_1ab25d5e78bbc361e35d7ac82a65c5bd83" kind="variable"><name>total_elements</name></member>
+  </compound>
+  <compound refid="structstar_1_1FileHeader" kind="struct"><name>star::FileHeader</name>
+    <member refid="structstar_1_1FileHeader_1a4f0dbe4b0f8e0ac98e7bf4cef05402ff" kind="variable"><name>magic</name></member>
+    <member refid="structstar_1_1FileHeader_1a5dd676c90148cb14eb8e5f7bf6a69780" kind="variable"><name>format_version</name></member>
+    <member refid="structstar_1_1FileHeader_1af36f39dd3128f29f071401ddf161ba64" kind="variable"><name>header_size</name></member>
+    <member refid="structstar_1_1FileHeader_1ae970e5fa5ddaccbf45a2c00da1ea4836" kind="variable"><name>entry_count</name></member>
+    <member refid="structstar_1_1FileHeader_1a0b59a500d63910f405964bfb6b13e9e0" kind="variable"><name>layer_count</name></member>
+    <member refid="structstar_1_1FileHeader_1aafc92f7e327a54697ea2610d1b34e9b8" kind="variable"><name>key_registry_count</name></member>
+    <member refid="structstar_1_1FileHeader_1ad1be5336d371b47428079330330f142d" kind="function"><name>isValid</name></member>
+    <member refid="structstar_1_1FileHeader_1ab14b5fdcf23158435e4e9c145e8a5cf4" kind="function"><name>getVersionString</name></member>
+    <member refid="structstar_1_1FileHeader_1a49ba68460959dc42f4171d97e1dbd4b6" kind="function"><name>write</name></member>
+    <member refid="structstar_1_1FileHeader_1adf76d75cd9d85a702844e1e8a6efd9dc" kind="function"><name>read</name></member>
+    <member refid="structstar_1_1FileHeader_1a06dc1c5ab6013f23eba1c1d49cf694be" kind="function"><name>size</name></member>
+  </compound>
+  <compound refid="structstar_1_1FilePathInfo" kind="struct"><name>star::FilePathInfo</name>
+    <member refid="structstar_1_1FilePathInfo_1a705e790763b2a193c947e1dba66c8c9b" kind="enum"><name>Type</name></member>
+    <member refid="structstar_1_1FilePathInfo_1a705e790763b2a193c947e1dba66c8c9ba4b5541e68c6bf0b78a19a2706948d853" kind="enumvalue"><name>LOCAL</name></member>
+    <member refid="structstar_1_1FilePathInfo_1a705e790763b2a193c947e1dba66c8c9bafca0f506cf4248ff236f2b70a2832f27" kind="enumvalue"><name>HTTP</name></member>
+    <member refid="structstar_1_1FilePathInfo_1a705e790763b2a193c947e1dba66c8c9ba3a1cb1b2fe6dc1a93d51e1581922ef5f" kind="enumvalue"><name>S3</name></member>
+    <member refid="structstar_1_1FilePathInfo_1a705e790763b2a193c947e1dba66c8c9ba7cf5be6769952d351a23bc5d68860424" kind="enumvalue"><name>MEMORY</name></member>
+    <member refid="structstar_1_1FilePathInfo_1a4432b2983dcfeb6e144384a08adb42bd" kind="variable"><name>type</name></member>
+    <member refid="structstar_1_1FilePathInfo_1a27d998ff7190248ecc530b7ec4cc6ed2" kind="variable"><name>path</name></member>
+    <member refid="structstar_1_1FilePathInfo_1a0abb48bd40bfd18f0cea57f015ba9774" kind="variable"><name>bucket</name></member>
+    <member refid="structstar_1_1FilePathInfo_1ad2b837cba47c8003dd539744003a320b" kind="variable"><name>key</name></member>
+    <member refid="structstar_1_1FilePathInfo_1a6cb8048d1f8d83fd15cda5babe7019c9" kind="variable"><name>region</name></member>
+  </compound>
+  <compound refid="structstar_1_1S3Writer_1_1HeaderData" kind="struct"><name>star::S3Writer::HeaderData</name>
+    <member refid="structstar_1_1S3Writer_1_1HeaderData_1afe9537e4891d2830d42d68ce31630c56" kind="variable"><name>bucket_region</name></member>
+  </compound>
+  <compound refid="structstar_1_1HotStorage" kind="struct"><name>star::HotStorage</name>
+    <member refid="structstar_1_1HotStorage_1a56da3d15edfe5e1778010334f83aa3d9" kind="variable"><name>keys</name></member>
+    <member refid="structstar_1_1HotStorage_1a1170f7234af9ddac9ac49857ab64c743" kind="variable"><name>dtypes</name></member>
+    <member refid="structstar_1_1HotStorage_1aa59c0b2a2ca708d58c7ce3ef6a5ec7b8" kind="variable"><name>locations</name></member>
+    <member refid="structstar_1_1HotStorage_1acf88236bb676fa26eaf3e13bc96c318c" kind="variable"><name>dirty_flags</name></member>
+    <member refid="structstar_1_1HotStorage_1ad6c9391a9bc170f852f11c85cb1c5fe6" kind="variable"><name>loaded_flags</name></member>
+    <member refid="structstar_1_1HotStorage_1a3f1b6e9e16fb8923201d29d272a71788" kind="variable"><name>data_indices</name></member>
+  </compound>
+  <compound refid="classstar_1_1HttpRangeReader" kind="class"><name>star::HttpRangeReader</name>
+    <member refid="classstar_1_1HttpRangeReader_1a4a1b4775401b357e88bde6d4d7917ca0" kind="variable"><name>m_curl</name></member>
+    <member refid="classstar_1_1HttpRangeReader_1a5506ecce1fd216dcebe2382f78c2b0d3" kind="variable"><name>m_url</name></member>
+    <member refid="classstar_1_1HttpRangeReader_1afa824ec348df750c393855bcfb0d70ed" kind="variable"><name>m_sink</name></member>
+    <member refid="classstar_1_1HttpRangeReader_1aa7db575163827bf054e31229acb28049" kind="variable"><name>m_whole</name></member>
+    <member refid="classstar_1_1HttpRangeReader_1add62ff8f739555397b3847ba05f6e022" kind="variable"><name>m_cached</name></member>
+    <member refid="classstar_1_1HttpRangeReader_1ad0e75852ae029fedf26842756fa1b611" kind="variable"><name>m_total_size</name></member>
+    <member refid="classstar_1_1HttpRangeReader_1aa659c297c756301307f8e90bba75d14c" kind="function"><name>HttpRangeReader</name></member>
+    <member refid="classstar_1_1HttpRangeReader_1a8c70aa2c3fc436d60ffddefea794b1e8" kind="function"><name>~HttpRangeReader</name></member>
+    <member refid="classstar_1_1HttpRangeReader_1ad2248f8c087e90d4e4b36bfcb5d1e14d" kind="function"><name>read_at</name></member>
+    <member refid="classstar_1_1HttpRangeReader_1a1e23e4a2240df49607b187b06796b290" kind="function"><name>size_or_unknown</name></member>
+    <member refid="classstar_1_1HttpRangeReader_1af851f3e435bfea0075f548652f23343c" kind="function"><name>good</name></member>
+    <member refid="classstar_1_1HttpRangeReader_1a96d9d0c3030dfb74eb3da404a27d851f" kind="function"><name>ensure_whole_cached</name></member>
+    <member refid="classstar_1_1HttpRangeReader_1ae91e10c1239f5ac10e679611b37a169f" kind="function"><name>write_cb</name></member>
+    <member refid="classstar_1_1HttpRangeReader_1abad1f076bf620199b71cb0448ad6b6bb" kind="function"><name>header_cb</name></member>
+    <member refid="classstar_1_1HttpRangeReader_1a04076a64c6aebfd1d71f5ed38ae53920" kind="function"><name>serve_from_cache</name></member>
+  </compound>
+  <compound refid="structstar_1_1IndexEntry" kind="struct"><name>star::IndexEntry</name>
+    <member refid="structstar_1_1IndexEntry_1ac4bcddbd379a6b6568d89ea0afd6c555" kind="variable"><name>position</name></member>
+    <member refid="structstar_1_1IndexEntry_1a6df4b887d42ab94384c16f9dd5161890" kind="variable"><name>total_bytes</name></member>
+    <member refid="structstar_1_1IndexEntry_1a3706acf36b410be5a340fd80c06c2404" kind="variable"><name>datatype</name></member>
+    <member refid="structstar_1_1IndexEntry_1aa8c28ba727efeb8eaa9c75699847a445" kind="variable"><name>shape</name></member>
+    <member refid="structstar_1_1IndexEntry_1a5337a27d720d1efdfeca8aa54597cfe7" kind="variable"><name>compression</name></member>
+    <member refid="structstar_1_1IndexEntry_1ac85ef12200ce8d3d8f30c050e8eaf576" kind="variable"><name>block_size</name></member>
+    <member refid="structstar_1_1IndexEntry_1a66c5195dfcbcc03e0e18949a4a8f96da" kind="variable"><name>blocks</name></member>
+    <member refid="structstar_1_1IndexEntry_1a7a4d7118ed7d4c7324fd47cce1450a42" kind="variable"><name>dirty</name></member>
+    <member refid="structstar_1_1IndexEntry_1a15c36c6cf7bacde64b9f5b80787df0d9" kind="variable"><name>is_metadata_block</name></member>
+    <member refid="structstar_1_1IndexEntry_1a7da2e80bd65d352cb92c3681698b2e2f" kind="variable"><name>stored_in_metadata</name></member>
+    <member refid="structstar_1_1IndexEntry_1accb42a3d72697eb89d594e39cb95eb33" kind="function"><name>is_scalar</name></member>
+    <member refid="structstar_1_1IndexEntry_1ab073928847466021ba56f3894a44f812" kind="function"><name>num_elements</name></member>
+    <member refid="structstar_1_1IndexEntry_1a30ad48338021274913e26ccfc80c2269" kind="function"><name>write</name></member>
+    <member refid="structstar_1_1IndexEntry_1a9ae6fafb1de26722371f68deb21258ea" kind="function"><name>read</name></member>
+    <member refid="structstar_1_1IndexEntry_1a90047523a8c939b664307db90c733fd6" kind="function"><name>serialized_size</name></member>
+    <member refid="structstar_1_1IndexEntry_1a2935aeb7e0cfbf7449917f1f2362204a" kind="function"><name>print</name></member>
+  </compound>
+  <compound refid="structstar_1_1KeyRegistry" kind="struct"><name>star::KeyRegistry</name>
+    <member refid="structstar_1_1KeyRegistry_1adc8c8ff9ee63e11bcac605c29a32108a" kind="variable"><name>names</name></member>
+    <member refid="structstar_1_1KeyRegistry_1a68cfe9eef9f179dcf8a2b1d0abeeaad1" kind="variable"><name>hashes</name></member>
+    <member refid="structstar_1_1KeyRegistry_1a9da84c383630993f0373842597cad5d4" kind="variable"><name>hash_to_index</name></member>
+    <member refid="structstar_1_1KeyRegistry_1a43e4bf93b616117d9dc7d714d2e4de7f" kind="variable"><name>name_to_index</name></member>
+    <member refid="structstar_1_1KeyRegistry_1a835f182f98e84a581065c5a3ae106872" kind="function"><name>get_or_create</name></member>
+    <member refid="structstar_1_1KeyRegistry_1a000d24c5ee69ae62f6c6aae253ff96b1" kind="function"><name>get_index</name></member>
+    <member refid="structstar_1_1KeyRegistry_1a72bf85eaaaf54ee242491c1f3a837d7d" kind="function"><name>contains</name></member>
+  </compound>
+  <compound refid="classstar_1_1LayerMetadataAccessor" kind="class"><name>star::LayerMetadataAccessor</name>
+    <member refid="classstar_1_1LayerMetadataAccessor_1a1e16886dc2434ef3aabaad9e71ec95c9" kind="variable"><name>m_store</name></member>
+    <member refid="classstar_1_1LayerMetadataAccessor_1a62bb085380f2c9da054194f0ce301074" kind="variable"><name>m_layer_name</name></member>
+    <member refid="classstar_1_1LayerMetadataAccessor_1a051eccf5363ba1760e0686f9e8b636f3" kind="function"><name>make_layer_key</name></member>
+    <member refid="classstar_1_1LayerMetadataAccessor_1a0a12ebdf9bb4b864fc5cde54a6c55c56" kind="function"><name>LayerMetadataAccessor</name></member>
+    <member refid="classstar_1_1LayerMetadataAccessor_1a2ccac260d0b430e4105cab7eff665912" kind="function"><name>put</name></member>
+    <member refid="classstar_1_1LayerMetadataAccessor_1afecd26ee2dba84ee7839b83a4e449334" kind="function"><name>get</name></member>
+    <member refid="classstar_1_1LayerMetadataAccessor_1a111474203bc21588363712997b63042e" kind="function"><name>contains</name></member>
+    <member refid="classstar_1_1LayerMetadataAccessor_1a583cd59cb1761c6c0bfbe962813d3f95" kind="function"><name>remove</name></member>
+    <member refid="classstar_1_1LayerMetadataAccessor_1a6bd04f129de14a0edbb26bac474c5cc6" kind="function"><name>keys</name></member>
+  </compound>
+  <compound refid="structstar_1_1LayerMetadataRegistry" kind="struct"><name>star::LayerMetadataRegistry</name>
+    <member refid="structstar_1_1LayerMetadataRegistry_1a99603a8ef8d36fbb2636d5d5a828501a" kind="variable"><name>layer_names</name></member>
+    <member refid="structstar_1_1LayerMetadataRegistry_1acb9e3440f969eb23b32312039b652657" kind="variable"><name>block_positions</name></member>
+    <member refid="structstar_1_1LayerMetadataRegistry_1ae6b5f239cebeab15b9a9236585967272" kind="variable"><name>block_sizes</name></member>
+    <member refid="structstar_1_1LayerMetadataRegistry_1aa5a37c2319812ea7b4527ed6910f00a3" kind="variable"><name>compressions</name></member>
+    <member refid="structstar_1_1LayerMetadataRegistry_1a8922500131f1b035da2a3f0b6c02db5c" kind="variable"><name>key_indices</name></member>
+    <member refid="structstar_1_1LayerMetadataRegistry_1a1948e1b5335ad4e13a1fa783fed837f3" kind="variable"><name>name_to_layer_index</name></member>
+    <member refid="structstar_1_1LayerMetadataRegistry_1a5baea95ecea7dcec7273345524f7698b" kind="function"><name>get_layer_index</name></member>
+    <member refid="structstar_1_1LayerMetadataRegistry_1a70044f74bccc2fabb604434689b6c68f" kind="function"><name>contains_layer</name></member>
+    <member refid="structstar_1_1LayerMetadataRegistry_1a1bc2ccba40ab40612907c14253889843" kind="function"><name>add_layer</name></member>
+  </compound>
+  <compound refid="classstar_1_1LayerView" kind="class"><name>star::LayerView</name>
+    <member refid="classstar_1_1LayerView_1a6627e9e6172f54af1ad99fa5f15b5bc5" kind="variable"><name>m_base</name></member>
+    <member refid="classstar_1_1LayerView_1a88a79927ef3113a9f3bf9be1e6b30ace" kind="variable"><name>m_layer_name</name></member>
+    <member refid="classstar_1_1LayerView_1ade5608a367ac5867e714de80af48b1d8" kind="variable"><name>meta</name></member>
+    <member refid="classstar_1_1LayerView_1af5195edcc81f9200d274b893c481175f" kind="function"><name>LayerView</name></member>
+    <member refid="classstar_1_1LayerView_1a5e5295e01e36c52f6b8cabb00c3794a3" kind="function"><name>contains</name></member>
+    <member refid="classstar_1_1LayerView_1adf5f341bfc20359f17598f84b0e03d17" kind="function"><name>keys</name></member>
+    <member refid="classstar_1_1LayerView_1a83ef65cf7e248ab827dda5ead2f3296f" kind="function"><name>name</name></member>
+    <member refid="classstar_1_1LayerView_1a72d7406f3284c4d0ddc674ea063f06e9" kind="function"><name>base</name></member>
+    <member refid="classstar_1_1LayerView_1a22c564ef52d303033054b29c71028a4e" kind="function"><name>get</name></member>
+    <member refid="classstar_1_1LayerView_1a581bcd0480cc3d104ac2fdcefc0d30fb" kind="function"><name>put</name></member>
+  </compound>
+  <compound refid="classstar_1_1LocalRangeReader" kind="class"><name>star::LocalRangeReader</name>
+    <member refid="classstar_1_1LocalRangeReader_1a3105547d705e9a5c38f76b66c72f583a" kind="variable"><name>m_path</name></member>
+    <member refid="classstar_1_1LocalRangeReader_1ac97505ff0f64ec479072e483704a58bc" kind="variable"><name>m_whole</name></member>
+    <member refid="classstar_1_1LocalRangeReader_1a4fa27120afc9f1f0977d77c38316cff4" kind="variable"><name>m_cached</name></member>
+    <member refid="classstar_1_1LocalRangeReader_1a065fa2e5e5f1133c77bc955791df4ba9" kind="function"><name>LocalRangeReader</name></member>
+    <member refid="classstar_1_1LocalRangeReader_1aafb100591e197179dd3ac480b382fa3f" kind="function"><name>~LocalRangeReader</name></member>
+    <member refid="classstar_1_1LocalRangeReader_1a1571e734a7f9cb5aff4b19792463a9e2" kind="function"><name>read_at</name></member>
+    <member refid="classstar_1_1LocalRangeReader_1a0ae5d7a339d340eecb075afce4592eaa" kind="function"><name>size_or_unknown</name></member>
+    <member refid="classstar_1_1LocalRangeReader_1a092a1a885ccbd4f38b69729faf55706d" kind="function"><name>good</name></member>
+    <member refid="classstar_1_1LocalRangeReader_1a445d226dc57ae9e55e737a3ea688123e" kind="function"><name>ensure_whole_cached</name></member>
+    <member refid="classstar_1_1LocalRangeReader_1a6c71c9871dce049ff87919148c9e4a33" kind="function"><name>serve_from_cache</name></member>
+  </compound>
+  <compound refid="classstar_1_1MemoryRangeReader" kind="class"><name>star::MemoryRangeReader</name>
+    <member refid="classstar_1_1MemoryRangeReader_1a60c2698ebfb92fd3844b27046bdd1b4e" kind="variable"><name>m_bytes</name></member>
+    <member refid="classstar_1_1MemoryRangeReader_1a951ecc73f0a14a551d046367ac4855be" kind="function"><name>MemoryRangeReader</name></member>
+    <member refid="classstar_1_1MemoryRangeReader_1a997cb08d5a0860e6de9ce89d745d6b02" kind="function"><name>read_at</name></member>
+    <member refid="classstar_1_1MemoryRangeReader_1ae9eb7bbb4050465f522048e41a199d66" kind="function"><name>size_or_unknown</name></member>
+    <member refid="classstar_1_1MemoryRangeReader_1aa9a7aab5a2684aa17579b3f6a9dba3db" kind="function"><name>good</name></member>
+    <member refid="classstar_1_1MemoryRangeReader_1aecd4e2d256a14ae0e9f148d3adcd18d2" kind="function"><name>ensure_whole_cached</name></member>
+  </compound>
+  <compound refid="classstar_1_1MetadataAccessor" kind="class"><name>star::MetadataAccessor</name>
+    <member refid="classstar_1_1MetadataAccessor_1a12848b9fe15345e166b685d747dbb235" kind="variable"><name>m_store</name></member>
+    <member refid="classstar_1_1MetadataAccessor_1a507c2bb4bf2af918aa3400da6334dbec" kind="friend"><name>StarDataset</name></member>
+    <member refid="classstar_1_1MetadataAccessor_1a8c81e46b6119e297eceb76ea1d643095" kind="function"><name>MetadataAccessor</name></member>
+    <member refid="classstar_1_1MetadataAccessor_1a48f30d7aef54302fa40106d898193c8b" kind="function"><name>put</name></member>
+    <member refid="classstar_1_1MetadataAccessor_1a10b5de60b31343c64673e626fe3f3e6f" kind="function"><name>get</name></member>
+    <member refid="classstar_1_1MetadataAccessor_1a108c4cda0037ade210a4bc69808dfe2e" kind="function"><name>put_batch</name></member>
+    <member refid="classstar_1_1MetadataAccessor_1a684fc1c196386ee148be1e4a9dad0050" kind="function"><name>get_batch</name></member>
+    <member refid="classstar_1_1MetadataAccessor_1a6f40ab0c23e4e39e7bb0141cfd72e650" kind="function"><name>get_all</name></member>
+    <member refid="classstar_1_1MetadataAccessor_1aa3ac6374a36d28bac6ed8f3311939ad6" kind="function"><name>remove</name></member>
+    <member refid="classstar_1_1MetadataAccessor_1a0bf0da8bd827066a4f246c0ee2a86501" kind="function"><name>clear</name></member>
+    <member refid="classstar_1_1MetadataAccessor_1aabbbcd4401738bb014e7851668ba3da4" kind="function"><name>contains</name></member>
+  </compound>
+  <compound refid="structstar_1_1MetadataValue" kind="struct"><name>star::MetadataValue</name>
+    <member refid="structstar_1_1MetadataValue_1ae1b137c09f71d4694374c231e7d4bc0b" kind="variable"><name>data</name></member>
+    <member refid="structstar_1_1MetadataValue_1a68e6bb65e220045af87c758782bb764b" kind="variable"><name>dtype</name></member>
+    <member refid="structstar_1_1MetadataValue_1ad7f1896d1f52e07ffe20892c81e1891d" kind="variable"><name>shape</name></member>
+    <member refid="structstar_1_1MetadataValue_1a1c5e76e59948252c4390d5a6daefa744" kind="function"><name>is_scalar</name></member>
+    <member refid="structstar_1_1MetadataValue_1a1d1c1ba1f38970cba08d93a1d7e316a4" kind="function"><name>is_array</name></member>
+    <member refid="structstar_1_1MetadataValue_1a7d847d68a4a701ec900220dfd5edae25" kind="function"><name>ndim</name></member>
+    <member refid="structstar_1_1MetadataValue_1a6b7a005945cddc2c501e6a7f53204262" kind="function"><name>size</name></member>
+    <member refid="structstar_1_1MetadataValue_1a45ab00d6ed58449c1e9ca4b32059a972" kind="function"><name>as</name></member>
+    <member refid="structstar_1_1MetadataValue_1ace65a6a3238e227334b6c9202128165c" kind="function"><name>try_as</name></member>
+    <member refid="structstar_1_1MetadataValue_1aa405a4a87da006a1243955a325fe39de" kind="function"><name>type_name</name></member>
+  </compound>
+  <compound refid="classstar_1_1NDArray" kind="class"><name>star::NDArray</name>
+    <member refid="classstar_1_1NDArray_1aff3f5c73c4df5b060d0f07b2a7d66fe2" kind="typedef"><name>value_type</name></member>
+    <member refid="classstar_1_1NDArray_1aa884f619e2a87589568e893c648146ef" kind="typedef"><name>iterator</name></member>
+    <member refid="classstar_1_1NDArray_1a1be1fae7722d4fbb391ae08cc2f6df3f" kind="typedef"><name>const_iterator</name></member>
+    <member refid="classstar_1_1NDArray_1ae82f20c14c9846df79cda65c9120047d" kind="typedef"><name>reverse_iterator</name></member>
+    <member refid="classstar_1_1NDArray_1acb7a76bdabfa8b7a1e5e32d227948734" kind="typedef"><name>const_reverse_iterator</name></member>
+    <member refid="classstar_1_1NDArray_1a480dd7f021c16a931c5127dd034b7e08" kind="variable"><name>m_data</name></member>
+    <member refid="classstar_1_1NDArray_1ad67044364a7d17e164007b4688d782a7" kind="variable"><name>m_shape</name></member>
+    <member refid="classstar_1_1NDArray_1a58947fd2fdfe9e7f7c23bac6837d49a6" kind="variable"><name>m_strides</name></member>
+    <member refid="classstar_1_1NDArray_1acd13dad75214c2d660c49fbc84040e3b" kind="function"><name>NDArray</name></member>
+    <member refid="classstar_1_1NDArray_1a17b6e14eaf4ac54e7a57d69ce67b7f46" kind="function"><name>NDArray</name></member>
+    <member refid="classstar_1_1NDArray_1a77d8fe11359bd0fe31cdc90a1d109ec6" kind="function"><name>NDArray</name></member>
+    <member refid="classstar_1_1NDArray_1a3bc264e0c9143bfcdd1acd2f1174456c" kind="function"><name>NDArray</name></member>
+    <member refid="classstar_1_1NDArray_1ace7843a84f3bdebfa5f1fe29cefcde18" kind="function"><name>NDArray</name></member>
+    <member refid="classstar_1_1NDArray_1a0a945366eced86fa34712008561c9846" kind="function"><name>NDArray</name></member>
+    <member refid="classstar_1_1NDArray_1a17ff9f6817ab7b99a61654fe35666940" kind="function"><name>data</name></member>
+    <member refid="classstar_1_1NDArray_1a59d274b39392a3247c5e8807d8125ff3" kind="function"><name>data</name></member>
+    <member refid="classstar_1_1NDArray_1a1b95b6a02e0bf25eecb05544736b8e44" kind="function"><name>data_ptr</name></member>
+    <member refid="classstar_1_1NDArray_1ab351afb6740573436cc2fbbc33022e55" kind="function"><name>data_ptr</name></member>
+    <member refid="classstar_1_1NDArray_1a075e3e8c9b2080ddf6af42573dfcdbe4" kind="function"><name>shape</name></member>
+    <member refid="classstar_1_1NDArray_1a576ac9f81033fb89a156e2376c2540bf" kind="function"><name>shape</name></member>
+    <member refid="classstar_1_1NDArray_1acdd8887347f2192a04ce9643f7398065" kind="function"><name>strides</name></member>
+    <member refid="classstar_1_1NDArray_1acebd501d29e9ebc73b331c6eec10402c" kind="function"><name>dimension</name></member>
+    <member refid="classstar_1_1NDArray_1ae581a1c469dbc97aea190f79e96f7d49" kind="function"><name>size</name></member>
+    <member refid="classstar_1_1NDArray_1ab93c1e1929ec91f8217f55b5716e59ae" kind="function"><name>operator()</name></member>
+    <member refid="classstar_1_1NDArray_1a979112bb375bf22df423008395e76030" kind="function"><name>operator()</name></member>
+    <member refid="classstar_1_1NDArray_1a0da7664d6ea9160e539e6b119c8890aa" kind="function"><name>flat</name></member>
+    <member refid="classstar_1_1NDArray_1a9095ac1aac77368b3e4b62161390c336" kind="function"><name>flat</name></member>
+    <member refid="classstar_1_1NDArray_1a26e7e8d9e4d8612556b91de8eada77b4" kind="function"><name>at</name></member>
+    <member refid="classstar_1_1NDArray_1a561d3996d2ebdea4f3e4d47b31a32d7a" kind="function"><name>at</name></member>
+    <member refid="classstar_1_1NDArray_1a55081eb1597b726654a64acdf47aef83" kind="function"><name>begin</name></member>
+    <member refid="classstar_1_1NDArray_1ae1d72ce843bad28e35978ebcaaa13587" kind="function"><name>begin</name></member>
+    <member refid="classstar_1_1NDArray_1aa75caa0fd1f1d17afd962da5ce45db30" kind="function"><name>cbegin</name></member>
+    <member refid="classstar_1_1NDArray_1a05e719b889e0d36d9869fd0396d38f72" kind="function"><name>end</name></member>
+    <member refid="classstar_1_1NDArray_1ae00c045237423322caa142c70068607c" kind="function"><name>end</name></member>
+    <member refid="classstar_1_1NDArray_1afae360076e06d76158ee3f9ca21639db" kind="function"><name>cend</name></member>
+    <member refid="classstar_1_1NDArray_1a15fb32b3151a54381e1407a826d841ec" kind="function"><name>rbegin</name></member>
+    <member refid="classstar_1_1NDArray_1a21bbac2d434d5b25fb319c297944ae0a" kind="function"><name>rbegin</name></member>
+    <member refid="classstar_1_1NDArray_1a1b34bc6a24ff256d0e7ad29b67ffef95" kind="function"><name>rend</name></member>
+    <member refid="classstar_1_1NDArray_1a145d8aedff88e092ee67d76428f3bca3" kind="function"><name>rend</name></member>
+    <member refid="classstar_1_1NDArray_1a88da2a78953617abc9d13a5e86286023" kind="function"><name>reshape</name></member>
+    <member refid="classstar_1_1NDArray_1a17e2645dd2be8096b0c12c05a4608070" kind="function"><name>resize</name></member>
+    <member refid="classstar_1_1NDArray_1a29ed7668598104f0ece7693f8b858dde" kind="function"><name>from_vector_move</name></member>
+    <member refid="classstar_1_1NDArray_1a68e4f435e160207c1bfd8ee9154f11f8" kind="function"><name>zeros</name></member>
+    <member refid="classstar_1_1NDArray_1acdca3c229ebb61f3d408893883356568" kind="function"><name>ones</name></member>
+    <member refid="classstar_1_1NDArray_1a20d40981744351da0f73360cd1a388e6" kind="function"><name>full</name></member>
+    <member refid="classstar_1_1NDArray_1a2a0ddcd3847c23a8c27fbd258792ac60" kind="function"><name>empty</name></member>
+    <member refid="classstar_1_1NDArray_1acbe795d4a65ae19e4635b7165cce6677" kind="function"><name>arange</name></member>
+    <member refid="classstar_1_1NDArray_1aeeca72ae307bb14369abe251c2fff2d3" kind="friend"><name>operator&lt;&lt;</name></member>
+    <member refid="classstar_1_1NDArray_1ab829f921cd0ef443102de640374b1e21" kind="friend"><name>operator&gt;&gt;</name></member>
+    <member refid="classstar_1_1NDArray_1adc6194de519079666ac1215c6631c03e" kind="function"><name>calculateStrides</name></member>
+    <member refid="classstar_1_1NDArray_1a81cf69072b57eb167ad0fd256a21dbe2" kind="function"><name>computeTotalSize</name></member>
+    <member refid="classstar_1_1NDArray_1ae8ae41494c515640db58ffb09356f9a8" kind="function"><name>flattenIndex</name></member>
+    <member refid="classstar_1_1NDArray_1a303fe9f07293c18b154fc2c1a53fa704" kind="function"><name>flattenIndex</name></member>
+  </compound>
+  <compound refid="structstar_1_1OpenOptions" kind="struct"><name>star::OpenOptions</name>
+    <member refid="structstar_1_1OpenOptions_1a542af6b09370710da68a85b33722579f" kind="variable"><name>layer_inheritance</name></member>
+    <member refid="structstar_1_1OpenOptions_1af9345ed69aecd3d191356f7c90078696" kind="variable"><name>prefetch_whole_below_bytes</name></member>
+  </compound>
+  <compound refid="classstar_1_1RangeReader" kind="class"><name>star::RangeReader</name>
+    <member refid="classstar_1_1RangeReader_1a5ff2bd9d200f10d0542cede7eba2835d" kind="function"><name>~RangeReader</name></member>
+    <member refid="classstar_1_1RangeReader_1aea7e78a3edbd2dc856bcecfb31e60c12" kind="function"><name>read_at</name></member>
+    <member refid="classstar_1_1RangeReader_1a65c6796cbf23bbd06041667b819c2e36" kind="function"><name>size_or_unknown</name></member>
+    <member refid="classstar_1_1RangeReader_1a1b408fc6cf5816c3faf6718a3a9f35a9" kind="function"><name>good</name></member>
+    <member refid="classstar_1_1RangeReader_1a33457d72df6fc8440d91665d75ec22ba" kind="function"><name>ensure_whole_cached</name></member>
+  </compound>
+  <compound refid="structstar_1_1S3Credentials" kind="struct"><name>star::S3Credentials</name>
+    <member refid="structstar_1_1S3Credentials_1a2b522cc9ee7e4071c702d0f3824ac6e4" kind="variable"><name>access_key</name></member>
+    <member refid="structstar_1_1S3Credentials_1a8a9708d6b9257b8eefe2d889f94fd2bf" kind="variable"><name>secret_key</name></member>
+    <member refid="structstar_1_1S3Credentials_1a6fd45e94b06ab06f39cc0cd0a7c5d8d0" kind="variable"><name>session_token</name></member>
+    <member refid="structstar_1_1S3Credentials_1ace6662cb3d31e760fa0b3958a32843c6" kind="function"><name>resolve</name></member>
+    <member refid="structstar_1_1S3Credentials_1a5876d87bc0eecd02a38cc9b49a8dbcc9" kind="function"><name>fromEnvironment</name></member>
+    <member refid="structstar_1_1S3Credentials_1ab832427b6a706d847da44b95470849d2" kind="function"><name>fromSSO</name></member>
+    <member refid="structstar_1_1S3Credentials_1af681d1eb8594c8b4c162f8a8dd90c61d" kind="function"><name>fromCredentialsFile</name></member>
+  </compound>
+  <compound refid="structstar_1_1S3EndpointConfig" kind="struct"><name>star::S3EndpointConfig</name>
+    <member refid="structstar_1_1S3EndpointConfig_1a4dcac8d5e9130f4cf5b55f9c7976b3b5" kind="variable"><name>endpoint</name></member>
+    <member refid="structstar_1_1S3EndpointConfig_1aa8b60dfd4a5ed5fa5a477b79def512cf" kind="variable"><name>path_style</name></member>
+    <member refid="structstar_1_1S3EndpointConfig_1a1141e4a712296cd321eb62ac4868d46a" kind="variable"><name>use_https</name></member>
+    <member refid="structstar_1_1S3EndpointConfig_1a363994eb4feb6dfdf76d41b6cbb72f5e" kind="function"><name>env_is_false</name></member>
+    <member refid="structstar_1_1S3EndpointConfig_1a12245aa9ed21d606cb0bda0f3ebd7579" kind="function"><name>resolve</name></member>
+    <member refid="structstar_1_1S3EndpointConfig_1a2d175972f7d919f494bc69a5350ee95f" kind="function"><name>host</name></member>
+    <member refid="structstar_1_1S3EndpointConfig_1a0bcf7b1f9e6980bbde95b6f77c0ac3ee" kind="function"><name>url</name></member>
+    <member refid="structstar_1_1S3EndpointConfig_1a18e28db8d634dddbd8c6f10d588985f7" kind="function"><name>canonical_uri</name></member>
+  </compound>
+  <compound refid="classstar_1_1S3RangeReader" kind="class"><name>star::S3RangeReader</name>
+    <member refid="classstar_1_1S3RangeReader_1a0f518afce26dae6ab7bab95925be0b22" kind="variable"><name>m_curl</name></member>
+    <member refid="classstar_1_1S3RangeReader_1afd851326b8a0388d44afc76dddc8276a" kind="variable"><name>m_bucket</name></member>
+    <member refid="classstar_1_1S3RangeReader_1a2505e3c341eab56cc912305c9bf43717" kind="variable"><name>m_key</name></member>
+    <member refid="classstar_1_1S3RangeReader_1a7958f43c91e2689190500dde6ecf7a1f" kind="variable"><name>m_region</name></member>
+    <member refid="classstar_1_1S3RangeReader_1a4ae34164a2b2c03a3b15ca7d2e0041e5" kind="variable"><name>m_creds</name></member>
+    <member refid="classstar_1_1S3RangeReader_1acf4235746376984d65d5146162b3f979" kind="variable"><name>m_signer</name></member>
+    <member refid="classstar_1_1S3RangeReader_1aea81aae4d375d12d7786907d04b9b80d" kind="variable"><name>m_sink</name></member>
+    <member refid="classstar_1_1S3RangeReader_1a11a98c4b4f351abbfcc149806ba7e43f" kind="variable"><name>m_redirect_region</name></member>
+    <member refid="classstar_1_1S3RangeReader_1ad101bf6ddaf973452ff82c03b236b791" kind="variable"><name>m_whole</name></member>
+    <member refid="classstar_1_1S3RangeReader_1aa26067ad62cbc0fca5a67107eec567c6" kind="variable"><name>m_cached</name></member>
+    <member refid="classstar_1_1S3RangeReader_1ada83e9057f3abe87d3085e6a39861512" kind="variable"><name>m_total_size</name></member>
+    <member refid="classstar_1_1S3RangeReader_1a02e9448689b138085f0d3efe0552d48e" kind="function"><name>S3RangeReader</name></member>
+    <member refid="classstar_1_1S3RangeReader_1ad705871bd873a31570d1d8e77772bbf9" kind="function"><name>~S3RangeReader</name></member>
+    <member refid="classstar_1_1S3RangeReader_1af61f7c7991c11f682efc1b5cfb33c27a" kind="function"><name>read_at</name></member>
+    <member refid="classstar_1_1S3RangeReader_1afc720a948415d2ea530eef22a1e6cd89" kind="function"><name>size_or_unknown</name></member>
+    <member refid="classstar_1_1S3RangeReader_1a881f16e4b5c567835ff3e8d38f068d54" kind="function"><name>good</name></member>
+    <member refid="classstar_1_1S3RangeReader_1ada5d026ee1de67edccc03ab370872b7c" kind="function"><name>ensure_whole_cached</name></member>
+    <member refid="classstar_1_1S3RangeReader_1a8317efb6b55766102e9852916e6d0e6c" kind="function"><name>write_cb</name></member>
+    <member refid="classstar_1_1S3RangeReader_1abaa63f0f996f4914a1cf87263b3383ed" kind="function"><name>header_cb</name></member>
+    <member refid="classstar_1_1S3RangeReader_1a205361cdcd78eda2132eab4a01a2cc10" kind="function"><name>timestamp</name></member>
+    <member refid="classstar_1_1S3RangeReader_1adfbbde03a3888848b2efedace423d496" kind="function"><name>getUrl</name></member>
+    <member refid="classstar_1_1S3RangeReader_1a5a78416b41083a5375469807a96acbf1" kind="function"><name>getHost</name></member>
+    <member refid="classstar_1_1S3RangeReader_1adac2d37b224f7eeb9a33549a3ac76199" kind="function"><name>signed_get</name></member>
+    <member refid="classstar_1_1S3RangeReader_1a238a252f146d7d543b1c68b62c6f36a7" kind="function"><name>serve_from_cache</name></member>
+  </compound>
+  <compound refid="classstar_1_1S3Writer" kind="class"><name>star::S3Writer</name>
+    <member refid="classstar_1_1S3Writer_1acdd6953655b9175fbb9c55d8ba66dba8" kind="variable"><name>m_curl</name></member>
+    <member refid="classstar_1_1S3Writer_1ade99f400cec12e284fd800b67b06b96a" kind="variable"><name>m_bucket</name></member>
+    <member refid="classstar_1_1S3Writer_1a4de2b429948ccd817e66737a8700aab8" kind="variable"><name>m_key</name></member>
+    <member refid="classstar_1_1S3Writer_1af216a2dcc3c621aa23b48208f0d90589" kind="variable"><name>m_region</name></member>
+    <member refid="classstar_1_1S3Writer_1a89ed343c88d42c07c9759cb16e844540" kind="variable"><name>m_signer</name></member>
+    <member refid="classstar_1_1S3Writer_1a27f80d567d4d8bdccc50c1bd89e69e0d" kind="function"><name>getS3Url</name></member>
+    <member refid="classstar_1_1S3Writer_1a8347c4294a1b4977c0fe792e5eb82419" kind="function"><name>getS3Host</name></member>
+    <member refid="classstar_1_1S3Writer_1a801dbdcbf3d866a1c110af29b2d88a0d" kind="function"><name>getCurrentTimestamp</name></member>
+    <member refid="classstar_1_1S3Writer_1a9ad57b50e9890417ca217e7bd4a7ce4a" kind="function"><name>ReadCallback</name></member>
+    <member refid="classstar_1_1S3Writer_1a12861654cb7d12b0b833f33a2eede306" kind="function"><name>S3Writer</name></member>
+    <member refid="classstar_1_1S3Writer_1abf3662b767dfdf5f0389c7e2363bc9ee" kind="function"><name>~S3Writer</name></member>
+    <member refid="classstar_1_1S3Writer_1a960b63dda7fad2a498ce26f01970891e" kind="function"><name>putObject</name></member>
+    <member refid="classstar_1_1S3Writer_1a46564a1deaa4943d6065fc81f7a09e9e" kind="function"><name>HeaderCallback</name></member>
+    <member refid="classstar_1_1S3Writer_1a653ebbe7f396783576041289cc16a6a5" kind="function"><name>WriteCallback</name></member>
+  </compound>
+  <compound refid="structstar_1_1Slice" kind="struct"><name>star::Slice</name>
+    <member refid="structstar_1_1Slice_1addeb9b03be71fff0a3f0787820512ab3" kind="variable"><name>start</name></member>
+    <member refid="structstar_1_1Slice_1a3e9c16e88dcdff520ed785dcfd840a4f" kind="variable"><name>stop</name></member>
+    <member refid="structstar_1_1Slice_1ae913cbab6390d1ea35b66ad5621c3ca2" kind="variable"><name>step</name></member>
+    <member refid="structstar_1_1Slice_1a51b695be914a0845aaf774925d15ab52" kind="function"><name>length</name></member>
+  </compound>
+  <compound refid="structstar_1_1SliceSpec" kind="struct"><name>star::SliceSpec</name>
+    <member refid="structstar_1_1SliceSpec_1a37271e30b7f47c9727dbcfb18347543c" kind="variable"><name>slices</name></member>
+    <member refid="structstar_1_1SliceSpec_1a01c184cecc64719790da7e5a8a00c998" kind="variable"><name>output_shape</name></member>
+    <member refid="structstar_1_1SliceSpec_1a75fc4e52093208af246586a10b8d4166" kind="variable"><name>total_elements</name></member>
+    <member refid="structstar_1_1SliceSpec_1a155667354b0ff589bdcdfa0b15afed2b" kind="variable"><name>element_size</name></member>
+    <member refid="structstar_1_1SliceSpec_1ab96b382b8c126f740a953b9a53e02a3f" kind="variable"><name>is_contiguous</name></member>
+    <member refid="structstar_1_1SliceSpec_1a34513b3e767f581c0c1a64152979d0cd" kind="variable"><name>is_full_rows</name></member>
+  </compound>
+  <compound refid="structstar_1_1AWSTokenCache_1_1SSOToken" kind="struct"><name>star::AWSTokenCache::SSOToken</name>
+    <member refid="structstar_1_1AWSTokenCache_1_1SSOToken_1a582b0aa21c1da2a73b9e241704c4f0d0" kind="variable"><name>access_token</name></member>
+    <member refid="structstar_1_1AWSTokenCache_1_1SSOToken_1ab4ae4fe03bde399db16d306a26b5fe22" kind="variable"><name>expires_at</name></member>
+    <member refid="structstar_1_1AWSTokenCache_1_1SSOToken_1a2d78871fba0a9db1d11eed5e78e53b53" kind="variable"><name>region</name></member>
+    <member refid="structstar_1_1AWSTokenCache_1_1SSOToken_1aed6c556e9029456956efb5d3351d1f62" kind="variable"><name>start_url</name></member>
+    <member refid="structstar_1_1AWSTokenCache_1_1SSOToken_1abc8e9901fde92fbb62ddf543ef7b0ebf" kind="function"><name>isExpired</name></member>
+  </compound>
+  <compound refid="structstar_1_1StarConfig" kind="struct"><name>star::StarConfig</name>
+    <member refid="structstar_1_1StarConfig_1a8110be9b48d9dc1fe099f25393d8040e" kind="variable"><name>compression</name></member>
+    <member refid="structstar_1_1StarConfig_1a5a1b1688d34ac19a5c3e6492496fe6b1" kind="variable"><name>block_size</name></member>
+    <member refid="structstar_1_1StarConfig_1a8950c615a6b88afb650fb05628a2e761" kind="variable"><name>metadata_block_enabled</name></member>
+    <member refid="structstar_1_1StarConfig_1a70c8149ee0487b5caf8eeac945117f4d" kind="variable"><name>metadata_max_block_size</name></member>
+    <member refid="structstar_1_1StarConfig_1a00e2ea145c5935d061adc35c1ebe29b0" kind="variable"><name>metadata_compression</name></member>
+    <member refid="structstar_1_1StarConfig_1a9b4b61bfe6d61afccc82c4f0090f6029" kind="variable"><name>metadata_force_separate_keys</name></member>
+    <member refid="structstar_1_1StarConfig_1ac5c66be6035adc00917353eb2cd384a9" kind="variable"><name>buffer_shrink_threshold</name></member>
+    <member refid="structstar_1_1StarConfig_1a1c2e0f0caeab25c6ae4636cbe02e1972" kind="variable"><name>arena_chunk_size</name></member>
+  </compound>
+  <compound refid="classstar_1_1StarDataset" kind="class"><name>star::StarDataset</name>
+    <member refid="classstar_1_1StarDataset_1a5c396e3ad89800e66a36bea68d09ba95" kind="typedef"><name>iterator</name></member>
+    <member refid="classstar_1_1StarDataset_1ab79bf9db2987f66409cb21f356e8c0bd" kind="typedef"><name>const_iterator</name></member>
+    <member refid="classstar_1_1StarDataset_1a015b70c9b130674c6d74ca816f38ac9f" kind="friend"><name>LayerMetadataAccessor</name></member>
+    <member refid="classstar_1_1StarDataset_1a4a41100e7d8fff93deedefb5593b6a6b" kind="variable"><name>m_filename</name></member>
+    <member refid="classstar_1_1StarDataset_1a9b964ffa557774a85a2235dffa61e1b7" kind="variable"><name>m_file_header</name></member>
+    <member refid="classstar_1_1StarDataset_1aa0af233b472755cde030dfd67c00486e" kind="variable"><name>m_header_size</name></member>
+    <member refid="classstar_1_1StarDataset_1aa35ae19e556b60e10da699fe17cfd7fe" kind="variable"><name>m_header_dirty</name></member>
+    <member refid="classstar_1_1StarDataset_1a65bb10d2d8ae7e16fbc73bb49cb24fb5" kind="variable"><name>m_mutex</name></member>
+    <member refid="classstar_1_1StarDataset_1a0fd17f8b896ea72962218389307e5edb" kind="variable"><name>m_hot</name></member>
+    <member refid="classstar_1_1StarDataset_1ae1ad21033194c378505839e5189ea8ed" kind="variable"><name>m_cold</name></member>
+    <member refid="classstar_1_1StarDataset_1af53ec93ff2b22d6f1fcf6dee8fc0f78c" kind="variable"><name>m_data_storage</name></member>
+    <member refid="classstar_1_1StarDataset_1a5a6e5e5aaf91b36c68d093a02a8b1eb1" kind="variable"><name>m_key_to_index</name></member>
+    <member refid="classstar_1_1StarDataset_1ae2904c1f0618c9a3cfe544f536f854cc" kind="variable"><name>m_metadata_loaded</name></member>
+    <member refid="classstar_1_1StarDataset_1ae75df7720592442281f7ecc5b0b6a637" kind="variable"><name>m_key_registry</name></member>
+    <member refid="classstar_1_1StarDataset_1a8adf8fc6ba0410c26a4311855c1be7ff" kind="variable"><name>m_layer_metadata_registry</name></member>
+    <member refid="classstar_1_1StarDataset_1a2c757feefb1d2dcbfe3b741edcb67cbb" kind="variable"><name>m_layer_metadata_loaded</name></member>
+    <member refid="classstar_1_1StarDataset_1a4d5b6dd0447d157ea0faa6cbe3a4b14c" kind="variable"><name>m_layer_metadata_indices</name></member>
+    <member refid="classstar_1_1StarDataset_1a5f1d4634a079d78fc1f99baeb91b4f64" kind="variable"><name>m_layer_presence</name></member>
+    <member refid="classstar_1_1StarDataset_1a18dd8808fdb7b88f4b05a47d28f69e0a" kind="variable"><name>m_metadata_dtypes</name></member>
+    <member refid="classstar_1_1StarDataset_1a9f33d573f3b38edcb00c79169c9f8519" kind="variable"><name>m_metadata_shapes</name></member>
+    <member refid="classstar_1_1StarDataset_1ab3a631360d980d3010867cf576549436" kind="variable"><name>m_serialize_buffer</name></member>
+    <member refid="classstar_1_1StarDataset_1a45561d7041f5a14a262c47683295dff0" kind="variable"><name>m_compress_buffer</name></member>
+    <member refid="classstar_1_1StarDataset_1a856813487b1936db6756ba7473652a34" kind="variable"><name>meta</name></member>
+    <member refid="classstar_1_1StarDataset_1a1d73dd82953e1260da02721e6a8ee060" kind="variable"><name>m_file_mode</name></member>
+    <member refid="classstar_1_1StarDataset_1ac444bd44b150741b2502b3f80663afa9" kind="variable"><name>m_path_info</name></member>
+    <member refid="classstar_1_1StarDataset_1a8fbdf94214dd5da47aa3cfae069c35fd" kind="variable"><name>m_s3_credentials</name></member>
+    <member refid="classstar_1_1StarDataset_1a547ae8e882bb3fed98e408c1b084248d" kind="variable"><name>m_config</name></member>
+    <member refid="classstar_1_1StarDataset_1a1615360f9642b16f84afe157470ef3c1" kind="variable"><name>m_open_options</name></member>
+    <member refid="classstar_1_1StarDataset_1a63b1ed8f5b4635be32a8132919decc77" kind="variable"><name>m_flushed</name></member>
+    <member refid="classstar_1_1StarDataset_1a8ec971a7148701235cfb5c958774ab6e" kind="variable"><name>m_thread_pool</name></member>
+    <member refid="classstar_1_1StarDataset_1a062f183ffc0c2090deb5a2b42a662bd5" kind="variable"><name>m_reader</name></member>
+    <member refid="classstar_1_1StarDataset_1ab5d068d39b491824da69eaf7ebcc6719" kind="variable"><name>m_memory_source</name></member>
+    <member refid="classstar_1_1StarDataset_1a8d30dd4d25011c6cfd7144dc0183aaf7" kind="variable"><name>m_capture_image</name></member>
+    <member refid="classstar_1_1StarDataset_1ada45adc172a5d4661501cab69571c621" kind="function"><name>useThreading</name></member>
+    <member refid="classstar_1_1StarDataset_1a374c4ac9b32b35e1ce85c814c1529b75" kind="function"><name>reader</name></member>
+    <member refid="classstar_1_1StarDataset_1af5cfd7806ec64acef710e394d9e64594" kind="function"><name>read_range</name></member>
+    <member refid="classstar_1_1StarDataset_1ac2771aa56780b1e7715b79fcd9ce1557" kind="function"><name>decode_numeric_blocks_into_ndarray</name></member>
+    <member refid="classstar_1_1StarDataset_1a1e9437653ff2eff23edfbf14fcc5ac4e" kind="function"><name>decode_array_bytes</name></member>
+    <member refid="classstar_1_1StarDataset_1aef9d358e9585311ae5aa2b651da66cab" kind="function"><name>load_entry</name></member>
+    <member refid="classstar_1_1StarDataset_1a33c7865d6e7cc05b34cb0c8183642a8e" kind="function"><name>deserializeKey</name></member>
+    <member refid="classstar_1_1StarDataset_1a703e8f06dc28a122e20c4c5a41a80d6a" kind="function"><name>calculateHeaderSize</name></member>
+    <member refid="classstar_1_1StarDataset_1a24e20cbd39b3e6eaafdc48b2163a1b25" kind="function"><name>loadIndex</name></member>
+    <member refid="classstar_1_1StarDataset_1a0c8bcdb169a7c7b879934cfe1e92d5f8" kind="function"><name>serialize_metadata_value</name></member>
+    <member refid="classstar_1_1StarDataset_1a851845e0b884cf8a529e0aaa05c25344" kind="function"><name>serialize_metadata_value</name></member>
+    <member refid="classstar_1_1StarDataset_1a4ba4c2706e54a1585e1398e5e5bd252b" kind="function"><name>serialize_array_data</name></member>
+    <member refid="classstar_1_1StarDataset_1a78c1eaca5966f89a7ae30896c43981a3" kind="function"><name>serialize_array_data</name></member>
+    <member refid="classstar_1_1StarDataset_1ab0df6d3b6d3b7708afe0ffdae786ec23" kind="function"><name>serialize_layer_metadata_block</name></member>
+    <member refid="classstar_1_1StarDataset_1abb240b1e97e7fd590b90fba8631058c0" kind="function"><name>serialize_metadata_block</name></member>
+    <member refid="classstar_1_1StarDataset_1aa7090387f438ffed049fa3b13a9926b9" kind="function"><name>deserialize_typed_value</name></member>
+    <member refid="classstar_1_1StarDataset_1a5b2e680be05fc87317164e0e0d4d7cef" kind="function"><name>deserialize_typed_value_bytes</name></member>
+    <member refid="classstar_1_1StarDataset_1ad7b01eb3a61d6924c49ffa0b31efe329" kind="function"><name>ensure_layer_metadata_loaded</name></member>
+    <member refid="classstar_1_1StarDataset_1a4a56c27bbf64f2311c937893ff31a685" kind="function"><name>load_layer_metadata</name></member>
+    <member refid="classstar_1_1StarDataset_1a30b05c1f639348d9d3212c0c7efc4b6d" kind="function"><name>load_all_metadata</name></member>
+    <member refid="classstar_1_1StarDataset_1ab68aaf017d9e65e1c4e4c59190545f07" kind="function"><name>parse_layer_metadata_block</name></member>
+    <member refid="classstar_1_1StarDataset_1a70da2003a512cf11c0b349e4fc8ec0df" kind="function"><name>compress_single_block</name></member>
+    <member refid="classstar_1_1StarDataset_1a09f054743966116ca53a8940823eaf4b" kind="function"><name>decompress_single_block</name></member>
+    <member refid="classstar_1_1StarDataset_1a38b6402d7829e5f9f7cb311b743c849d" kind="function"><name>load_metadata_block</name></member>
+    <member refid="classstar_1_1StarDataset_1a25d51491f7f2b3a373229dcdf329f92b" kind="function"><name>has_metadata_block</name></member>
+    <member refid="classstar_1_1StarDataset_1a9d32fbac0f2228fa5c4aeae41db99e2c" kind="function"><name>print_header</name></member>
+    <member refid="classstar_1_1StarDataset_1adf87ca87a5947a74bfc4cd149e45cb31" kind="function"><name>flush</name></member>
+    <member refid="classstar_1_1StarDataset_1a21da4ed3ebb7efbb85cc90db146902fa" kind="function"><name>flush_quiet</name></member>
+    <member refid="classstar_1_1StarDataset_1a5452cb4edda0e36c034f1623f398f8ca" kind="function"><name>save_to</name></member>
+    <member refid="classstar_1_1StarDataset_1aacea5f33f6f1addab145ff845580e0e7" kind="function"><name>write_bytes</name></member>
+    <member refid="classstar_1_1StarDataset_1acd630a1fae2d4c933b6fd78a76f23383" kind="function"><name>is_read_only</name></member>
+    <member refid="classstar_1_1StarDataset_1aea855492329354e778e4babb6204d393" kind="function"><name>get_filename</name></member>
+    <member refid="classstar_1_1StarDataset_1acb5056d0b881c92a708519f1be85c7a0" kind="function"><name>get_file_header</name></member>
+    <member refid="classstar_1_1StarDataset_1ab0d5fb81b8a6d3b35823771be6236b90" kind="function"><name>open_options</name></member>
+    <member refid="classstar_1_1StarDataset_1a7735c6c58262b9a15fcd4ab588beaeb0" kind="function"><name>set_open_options</name></member>
+    <member refid="classstar_1_1StarDataset_1ac5d91179173cfe6d100d564dd119bf21" kind="function"><name>layer_inheritance</name></member>
+    <member refid="classstar_1_1StarDataset_1ade1a2b04d64f472aa2c527212a35fa60" kind="function"><name>set_layer_inheritance</name></member>
+    <member refid="classstar_1_1StarDataset_1a14d3536739b1cf182ddcdfbd48c66a3a" kind="function"><name>StarDataset</name></member>
+    <member refid="classstar_1_1StarDataset_1a03182b18c3bb025a2aa9a3bb73d0b021" kind="function"><name>StarDataset</name></member>
+    <member refid="classstar_1_1StarDataset_1a50455ef8c570c23b8a043127e2d29142" kind="function"><name>operator=</name></member>
+    <member refid="classstar_1_1StarDataset_1a7df1744109a0e16ad45b896ee0230643" kind="function"><name>StarDataset</name></member>
+    <member refid="classstar_1_1StarDataset_1afcdd478183a4b0c98ae4e101aefb3c4f" kind="function"><name>operator=</name></member>
+    <member refid="classstar_1_1StarDataset_1a9fdddbc2a3dce03b071870a21657f04f" kind="function"><name>~StarDataset</name></member>
+    <member refid="classstar_1_1StarDataset_1a10a5a364006a389de3d4bc7420704044" kind="function"><name>close</name></member>
+    <member refid="classstar_1_1StarDataset_1ab98915b65bab49ff8efe46c90ae7ca4f" kind="function"><name>get_layer</name></member>
+    <member refid="classstar_1_1StarDataset_1af294f0ff29a052e37b0a3be70621b1e0" kind="function"><name>create_layer</name></member>
+    <member refid="classstar_1_1StarDataset_1a38864db372a88555179a399c1871f8a7" kind="function"><name>has_layer</name></member>
+    <member refid="classstar_1_1StarDataset_1a2c74250a987534615f168663bd288ce7" kind="function"><name>set_layer_presence</name></member>
+    <member refid="classstar_1_1StarDataset_1a12b4cab643600c1a57b03671948ece94" kind="function"><name>list_layers</name></member>
+    <member refid="classstar_1_1StarDataset_1a27a892dca3ce2a420cd08a1e8f6ce4ee" kind="function"><name>key_in_layer</name></member>
+    <member refid="classstar_1_1StarDataset_1aad09bab49cdbac225431b89f1cf4d8b0" kind="function"><name>put</name></member>
+    <member refid="classstar_1_1StarDataset_1a20f653fce8594a669994c9f13f33c0f9" kind="function"><name>put</name></member>
+    <member refid="classstar_1_1StarDataset_1a6b29611e42303840401cbda4bd8eae77" kind="function"><name>get</name></member>
+    <member refid="classstar_1_1StarDataset_1ab9f9dc2c84f028de3072b4cf1f5f9a6b" kind="function"><name>prefetch</name></member>
+    <member refid="classstar_1_1StarDataset_1a2615ec97c24b48b9043eb754aa1764f0" kind="function"><name>get_metadata_keys</name></member>
+    <member refid="classstar_1_1StarDataset_1aa189673f0b96a941ae1e9b589a43ddb1" kind="function"><name>get_metadata_count</name></member>
+    <member refid="classstar_1_1StarDataset_1a61b40bf1e193a5167f27de61e8f67fa4" kind="function"><name>get_all_keys</name></member>
+    <member refid="classstar_1_1StarDataset_1ae2ca462f52a62ca50d244472f7794d98" kind="function"><name>get_slice</name></member>
+    <member refid="classstar_1_1StarDataset_1ab584ab192a9024e4f18a9eb697549fff" kind="function"><name>is_sliceable</name></member>
+    <member refid="classstar_1_1StarDataset_1ae8cb0dffb4b3f44faf9682fac8074fdb" kind="function"><name>dtype_of</name></member>
+    <member refid="classstar_1_1StarDataset_1a7cc3144ff3539829552c4ef82a6a14fb" kind="function"><name>array_length</name></member>
+    <member refid="classstar_1_1StarDataset_1a305f7f9436cec48fb6391e5f4c181b5c" kind="function"><name>shape_of</name></member>
+    <member refid="classstar_1_1StarDataset_1ab3c3e1773e08e3ba6dc11c4d9c928878" kind="function"><name>contains</name></member>
+    <member refid="classstar_1_1StarDataset_1ad601cb8d8ea68e1bff2696e729bafc5a" kind="function"><name>is_metadata_loaded</name></member>
+    <member refid="classstar_1_1StarDataset_1afc6353d115eb0bfa2f5d4c8fb13e8e0c" kind="function"><name>begin</name></member>
+    <member refid="classstar_1_1StarDataset_1a8c09da0603b8de5cbc11bdd4a0a68baa" kind="function"><name>end</name></member>
+    <member refid="classstar_1_1StarDataset_1a491a851b5326fa74d63d8687c61943a7" kind="function"><name>begin</name></member>
+    <member refid="classstar_1_1StarDataset_1a716836a56c7aee3516906be14edc6b39" kind="function"><name>end</name></member>
+    <member refid="classstar_1_1StarDataset_1a5927796bd8576558c990f790895f8318" kind="function"><name>cbegin</name></member>
+    <member refid="classstar_1_1StarDataset_1af3f207c66918f12ad59ccf3ef97274c4" kind="function"><name>cend</name></member>
+    <member refid="classstar_1_1StarDataset_1aa64d4174f4b9d1db4f87295e3a38445d" kind="function"><name>size</name></member>
+    <member refid="classstar_1_1StarDataset_1ae2c02dfede4863f0921d335bda15571a" kind="function"><name>flush_internal</name></member>
+    <member refid="classstar_1_1StarDataset_1aef5c0e47e5af65f17a340b3964958fab" kind="function"><name>stage_all_entries_for_resave</name></member>
+    <member refid="classstar_1_1StarDataset_1a92bb10028638eda0657180cbf7aff5bd" kind="function"><name>has_layer_unlocked</name></member>
+    <member refid="classstar_1_1StarDataset_1aa674f161366ef3b21e032c446eea45f5" kind="function"><name>resolve_metadata_inheritance</name></member>
+    <member refid="classstar_1_1StarDataset_1a93f397e097e2013040338469b379c508" kind="function"><name>has_metadata_key_in_layer</name></member>
+    <member refid="classstar_1_1StarDataset_1a609d676d9cc6edc2886193ab82c16699" kind="function"><name>get_all_metadata_keys_internal</name></member>
+    <member refid="classstar_1_1StarDataset_1a499ce54db1cb9254b4c1b628713bb92c" kind="function"><name>flatIndex</name></member>
+    <member refid="classstar_1_1StarDataset_1ad2a1d59c6de22d9b6e3f82d6ed266ca9" kind="function"><name>createSliceSpec</name></member>
+    <member refid="classstar_1_1StarDataset_1aa9417e88497b7193b236cecede847330" kind="function"><name>createBlockMap</name></member>
+    <member refid="classstar_1_1StarDataset_1a9b68bcbb59a40c2f646a61e10d06fbd5" kind="function"><name>createExtractionPlan</name></member>
+    <member refid="classstar_1_1StarDataset_1a41feda62da9ea92a6349e328e82569fa" kind="function"><name>readBlocks</name></member>
+    <member refid="classstar_1_1StarDataset_1ad439ce7d1f100593691783ce7f60dcd8" kind="function"><name>extractElements</name></member>
+    <member refid="classstar_1_1StarDataset_1afcfe466aad9322b2d0c78f06ab1e3024" kind="function"><name>create</name></member>
+    <member refid="classstar_1_1StarDataset_1a7da82ee4803e6302ad903e12e3c4c0c7" kind="function"><name>open</name></member>
+    <member refid="classstar_1_1StarDataset_1a14f8ceae696e8169da339013e43b44cd" kind="function"><name>open</name></member>
+    <member refid="classstar_1_1StarDataset_1aa5564459aaa53ae6d4c417ef0ddb13ef" kind="function"><name>open_bytes</name></member>
+    <member refid="classstar_1_1StarDataset_1adcf5b132c72673b00adf2724b0244ad5" kind="function"><name>open_bytes</name></member>
+  </compound>
+  <compound refid="classstar_1_1ThreadPool" kind="class"><name>star::ThreadPool</name>
+    <member refid="classstar_1_1ThreadPool_1a76b2fd6e671a580b606209114f9d82c5" kind="variable"><name>workers</name></member>
+    <member refid="classstar_1_1ThreadPool_1ab596de65875f99930ae3141b55239a23" kind="variable"><name>tasks</name></member>
+    <member refid="classstar_1_1ThreadPool_1ae8666e7ffa45c3a77c262c91b8e573bb" kind="variable"><name>queue_mutex</name></member>
+    <member refid="classstar_1_1ThreadPool_1a122bdbf6d93d03b4ca58cb45560cb016" kind="variable"><name>condition</name></member>
+    <member refid="classstar_1_1ThreadPool_1a9a121716f1c110d4095bf5ce0cc9a76c" kind="variable"><name>stop</name></member>
+    <member refid="classstar_1_1ThreadPool_1ab5421e3dea6950c267608dcfccdc254e" kind="function"><name>ThreadPool</name></member>
+    <member refid="classstar_1_1ThreadPool_1a2a9e6fd15e414dffae69e9a5ebfe42d0" kind="function"><name>~ThreadPool</name></member>
+    <member refid="classstar_1_1ThreadPool_1a383df2d4ade87fed6d93debff846f8d6" kind="function"><name>ThreadPool</name></member>
+    <member refid="classstar_1_1ThreadPool_1a0081e4c508801510309f7785865b30a5" kind="function"><name>operator=</name></member>
+    <member refid="classstar_1_1ThreadPool_1a8da1bdfe6bcc8c49a8f0530d6ad20c61" kind="function"><name>ThreadPool</name></member>
+    <member refid="classstar_1_1ThreadPool_1acf2a0b8267ceca1b8dc107626c05c638" kind="function"><name>operator=</name></member>
+    <member refid="classstar_1_1ThreadPool_1a4e5464b540d16d7438f321cbbab287aa" kind="function"><name>parallel_for</name></member>
+    <member refid="classstar_1_1ThreadPool_1a8eda89a0062e8ff4d5ac15d8862269b0" kind="function"><name>enqueue</name></member>
+    <member refid="classstar_1_1ThreadPool_1afcb6ef96de3891f175867101419191b2" kind="function"><name>size</name></member>
+    <member refid="classstar_1_1ThreadPool_1a57ce88c659b32742c34d86bf397c6c8c" kind="function"><name>worker_thread</name></member>
+  </compound>
+  <compound refid="structstar_1_1TypeToDataType" kind="struct"><name>star::TypeToDataType</name>
+  </compound>
+  <compound refid="structstar_1_1TypeToDataType_3_01double_01_4" kind="struct"><name>star::TypeToDataType&lt; double &gt;</name>
+    <member refid="structstar_1_1TypeToDataType_3_01double_01_4_1a672df710885919115684d913fbf60a98" kind="variable"><name>value</name></member>
+  </compound>
+  <compound refid="structstar_1_1TypeToDataType_3_01float_01_4" kind="struct"><name>star::TypeToDataType&lt; float &gt;</name>
+    <member refid="structstar_1_1TypeToDataType_3_01float_01_4_1a82a1915d5144bba48c5283a1e4a1d848" kind="variable"><name>value</name></member>
+  </compound>
+  <compound refid="structstar_1_1TypeToDataType_3_01int16__t_01_4" kind="struct"><name>star::TypeToDataType&lt; int16_t &gt;</name>
+    <member refid="structstar_1_1TypeToDataType_3_01int16__t_01_4_1a2e491e3d1f2d0cd63489fc9f1feaab25" kind="variable"><name>value</name></member>
+  </compound>
+  <compound refid="structstar_1_1TypeToDataType_3_01int32__t_01_4" kind="struct"><name>star::TypeToDataType&lt; int32_t &gt;</name>
+    <member refid="structstar_1_1TypeToDataType_3_01int32__t_01_4_1aa8a4f52e3d1ff613b16991a9bd68ceb7" kind="variable"><name>value</name></member>
+  </compound>
+  <compound refid="structstar_1_1TypeToDataType_3_01int64__t_01_4" kind="struct"><name>star::TypeToDataType&lt; int64_t &gt;</name>
+    <member refid="structstar_1_1TypeToDataType_3_01int64__t_01_4_1a12c2ffaba6c678f435ce07f756b4d2eb" kind="variable"><name>value</name></member>
+  </compound>
+  <compound refid="structstar_1_1TypeToDataType_3_01int8__t_01_4" kind="struct"><name>star::TypeToDataType&lt; int8_t &gt;</name>
+    <member refid="structstar_1_1TypeToDataType_3_01int8__t_01_4_1a403fd743f3f41722f5c39692d548a57c" kind="variable"><name>value</name></member>
+  </compound>
+  <compound refid="structstar_1_1TypeToDataType_3_01std_1_1string_01_4" kind="struct"><name>star::TypeToDataType&lt; std::string &gt;</name>
+    <member refid="structstar_1_1TypeToDataType_3_01std_1_1string_01_4_1a2ac8152aa7cc832573b81c8e6fd96630" kind="variable"><name>value</name></member>
+  </compound>
+  <compound refid="structstar_1_1TypeToDataType_3_01uint16__t_01_4" kind="struct"><name>star::TypeToDataType&lt; uint16_t &gt;</name>
+    <member refid="structstar_1_1TypeToDataType_3_01uint16__t_01_4_1a93e450e36085de9a4274c44d4cf476c1" kind="variable"><name>value</name></member>
+  </compound>
+  <compound refid="structstar_1_1TypeToDataType_3_01uint32__t_01_4" kind="struct"><name>star::TypeToDataType&lt; uint32_t &gt;</name>
+    <member refid="structstar_1_1TypeToDataType_3_01uint32__t_01_4_1a937d2677577b554d9a08ed4a73d47093" kind="variable"><name>value</name></member>
+  </compound>
+  <compound refid="structstar_1_1TypeToDataType_3_01uint64__t_01_4" kind="struct"><name>star::TypeToDataType&lt; uint64_t &gt;</name>
+    <member refid="structstar_1_1TypeToDataType_3_01uint64__t_01_4_1a8e3a0fdd64dcb7877f4f55a4863106e2" kind="variable"><name>value</name></member>
+  </compound>
+  <compound refid="structstar_1_1TypeToDataType_3_01uint8__t_01_4" kind="struct"><name>star::TypeToDataType&lt; uint8_t &gt;</name>
+    <member refid="structstar_1_1TypeToDataType_3_01uint8__t_01_4_1a39fa8c9930e43225af11a008377fada3" kind="variable"><name>value</name></member>
+  </compound>
+  <compound refid="namespacestar" kind="namespace"><name>star</name>
+    <member refid="stards_8h_1a8871b3979c7ab7ca4689ee6f2030c589" kind="enum"><name>DataType</name></member>
+    <member refid="stards_8h_1a8871b3979c7ab7ca4689ee6f2030c589aee9d73311ff0658494edfff14c3ec1e3" kind="enumvalue"><name>INT8</name></member>
+    <member refid="stards_8h_1a8871b3979c7ab7ca4689ee6f2030c589a5f90af42814c0a419d715d43ae54fd7a" kind="enumvalue"><name>INT16</name></member>
+    <member refid="stards_8h_1a8871b3979c7ab7ca4689ee6f2030c589a6495adba09844fac8eeb0aba86e6f1bf" kind="enumvalue"><name>INT32</name></member>
+    <member refid="stards_8h_1a8871b3979c7ab7ca4689ee6f2030c589a4e866b275c85fbb439f6484251cfb31c" kind="enumvalue"><name>INT64</name></member>
+    <member refid="stards_8h_1a8871b3979c7ab7ca4689ee6f2030c589aecfc091ed2a607335524c8389cfa41b5" kind="enumvalue"><name>UINT8</name></member>
+    <member refid="stards_8h_1a8871b3979c7ab7ca4689ee6f2030c589a48d8f1a723d44ff4a87db1bb6c551c62" kind="enumvalue"><name>UINT16</name></member>
+    <member refid="stards_8h_1a8871b3979c7ab7ca4689ee6f2030c589a17266551181f69a1b4a3ad5c9e270afc" kind="enumvalue"><name>UINT32</name></member>
+    <member refid="stards_8h_1a8871b3979c7ab7ca4689ee6f2030c589a6de7acf711860176ba606e9aa2b85d5f" kind="enumvalue"><name>UINT64</name></member>
+    <member refid="stards_8h_1a8871b3979c7ab7ca4689ee6f2030c589a967d280b5c16d95f2947647dd2ca6cc2" kind="enumvalue"><name>FLOAT32</name></member>
+    <member refid="stards_8h_1a8871b3979c7ab7ca4689ee6f2030c589a139882c654db8a57f7c3092de1dd0b02" kind="enumvalue"><name>FLOAT64</name></member>
+    <member refid="stards_8h_1a8871b3979c7ab7ca4689ee6f2030c589a63b588d5559f64f89a416e656880b949" kind="enumvalue"><name>STRING</name></member>
+    <member refid="stards_8h_1ae35d072348103b839a05d6381e5f1d87" kind="enum"><name>CompressionAlgorithm</name></member>
+    <member refid="stards_8h_1ae35d072348103b839a05d6381e5f1d87ab50339a10e1de285ac99d4c3990b8693" kind="enumvalue"><name>NONE</name></member>
+    <member refid="stards_8h_1ae35d072348103b839a05d6381e5f1d87af1cd28417b03cfab3a8e16d66e34e18a" kind="enumvalue"><name>GZIP</name></member>
+    <member refid="stards_8h_1ae35d072348103b839a05d6381e5f1d87a8406cc2302e19183037b61249546b234" kind="enumvalue"><name>ZSTD</name></member>
+    <member refid="stards_8h_1ae35d072348103b839a05d6381e5f1d87aca0c64c0de8f56bc573828ea6d764594" kind="enumvalue"><name>LZ4</name></member>
+    <member refid="stards_8h_1ae35d072348103b839a05d6381e5f1d87ae5a3c00af85c575810ad5ed8345662d1" kind="enumvalue"><name>GZIP_SHUFFLE</name></member>
+    <member refid="stards_8h_1ae35d072348103b839a05d6381e5f1d87a3d943ae2582ae7f2003c42e90f02b598" kind="enumvalue"><name>LZ4_SHUFFLE</name></member>
+    <member refid="stards_8h_1ae35d072348103b839a05d6381e5f1d87a945400bd780c6abdfad67860c2d0854d" kind="enumvalue"><name>GZIP_SHUFFLE_BLOCK</name></member>
+    <member refid="stards_8h_1ae35d072348103b839a05d6381e5f1d87a8604a8efe242f57ebd68d5bca9e3f0ae" kind="enumvalue"><name>LZ4_SHUFFLE_BLOCK</name></member>
+    <member refid="stards_8h_1a0fed662fd1d718de166ae717fe854821" kind="enum"><name>FileMode</name></member>
+    <member refid="stards_8h_1a0fed662fd1d718de166ae717fe854821aa7b843fb734e3b3fea8e5f902d3f4144" kind="enumvalue"><name>READ_WRITE</name></member>
+    <member refid="stards_8h_1a0fed662fd1d718de166ae717fe854821a47c7e7cb36a953a8c47e02000036bb44" kind="enumvalue"><name>READ_ONLY</name></member>
+    <member refid="stards_8h_1afbba80b68079b69fa574e7440bb5cbfd" kind="enum"><name>StorageClass</name></member>
+    <member refid="stards_8h_1afbba80b68079b69fa574e7440bb5cbfda134d025e41cca2200425dbb3e11294da" kind="enumvalue"><name>METADATA_BLOCK</name></member>
+    <member refid="stards_8h_1afbba80b68079b69fa574e7440bb5cbfda7cdf6dc49ffacacf8c352e1608ea9d22" kind="enumvalue"><name>SEPARATE_ARRAY</name></member>
+    <member refid="stards_8h_1afbba80b68079b69fa574e7440bb5cbfda4cec1503f78a5a101ab450607358163b" kind="enumvalue"><name>FORCE_SEPARATE</name></member>
+    <member refid="stards_8h_1a5e1d2e6b6994707b18e829a5360570b5" kind="enum"><name>StorageLocation</name></member>
+    <member refid="stards_8h_1a5e1d2e6b6994707b18e829a5360570b5ac69f06e1a9b016d133907b4e5f5864d2" kind="enumvalue"><name>PENDING</name></member>
+    <member refid="stards_8h_1a5e1d2e6b6994707b18e829a5360570b5a4a813ce01aaea55db7b1e7d6bdf21faf" kind="enumvalue"><name>PERSISTED</name></member>
+    <member refid="stards_8h_1a5e1d2e6b6994707b18e829a5360570b5aaa1b42b00b0251dbf8ad3de215c9e0d5" kind="enumvalue"><name>CACHED</name></member>
+    <member refid="stards_8h_1ac2784868caee4ec866eba533eeba1156" kind="typedef"><name>ValueVariant</name></member>
+    <member refid="stards_8h_1add104888f5d61a464c13a632010978d5" kind="variable"><name>PROJECT_NAME</name></member>
+    <member refid="stards_8h_1ad476f8ea0799df8b45ba1cfcf1667f84" kind="variable"><name>MAGIC_STRING</name></member>
+    <member refid="stards_8h_1ab71457f5da9118ae98e41f6116e48107" kind="variable"><name>MAGIC_STRING_LENGTH</name></member>
+    <member refid="stards_8h_1adbe805b3d2489228f2b2758de2c2a08f" kind="variable"><name>g_num_threads</name></member>
+    <member refid="stards_8h_1a55d43c249486a0271c8316749ec66bc3" kind="variable"><name>g_min_blocks_for_threading</name></member>
+    <member refid="stards_8h_1a5414cef91eaaa70055f19e1b566505c4" kind="variable"><name>g_min_bytes_for_threading</name></member>
+    <member refid="stards_8h_1acfbe176f53097f0381340532c4531728" kind="variable"><name>g_network_request_count</name></member>
+    <member refid="stards_8h_1a1ab7593647b3cbb031a4ed7589961ef3" kind="function"><name>write_le</name></member>
+    <member refid="stards_8h_1a1a3fb3d3587b4aad3cdb565ec3e88c37" kind="function"><name>read_le</name></member>
+    <member refid="stards_8h_1a6b532e4df1ad7c3ad2a1c9e237c2ddcf" kind="function"><name>write_u64</name></member>
+    <member refid="stards_8h_1a0fc3d6b656aee624fc5cd3def9272e0e" kind="function"><name>write_u32</name></member>
+    <member refid="stards_8h_1a82295d45ddad8456ee0a5c8d88547182" kind="function"><name>write_u16</name></member>
+    <member refid="stards_8h_1a29318048c3f3da2ad3241a1557b81e91" kind="function"><name>write_u8</name></member>
+    <member refid="stards_8h_1ac0cb3156bec6000ea986417f2028ecd0" kind="function"><name>read_u64</name></member>
+    <member refid="stards_8h_1a025a0c99b5f856b05e5b1f104902d127" kind="function"><name>read_u32</name></member>
+    <member refid="stards_8h_1af794a9065512f6b084be52c82892355c" kind="function"><name>read_u16</name></member>
+    <member refid="stards_8h_1a877c1a657e8d8de50604a870f93d77bc" kind="function"><name>read_u8</name></member>
+    <member refid="stards_8h_1a35d2c76daf2a1dbf8a50f215002adb78" kind="function"><name>setNumThreads</name></member>
+    <member refid="stards_8h_1a456a083efd6d9a5281918fa770521803" kind="function"><name>setMinBlocksForThreading</name></member>
+    <member refid="stards_8h_1ada1aeda45775defc1d35699c33baf8ac" kind="function"><name>setMinBytesForThreading</name></member>
+    <member refid="stards_8h_1a6051c002c138ae3ba61a44946607253e" kind="function"><name>getNumThreads</name></member>
+    <member refid="stards_8h_1a735ea57ff4a7c73633a1eec6badf7a9e" kind="function"><name>getNetworkRequestCount</name></member>
+    <member refid="stards_8h_1a9b6e4436248eedd09f4cf846f4987ad1" kind="function"><name>resetNetworkRequestCount</name></member>
+    <member refid="stards_8h_1a24f0a26068f52d4a5a7c43338be1e199" kind="function"><name>getLibraryVersion</name></member>
+    <member refid="stards_8h_1a906532b2a20e4f0d7f77e4de0a651b38" kind="function"><name>base_compression</name></member>
+    <member refid="stards_8h_1abdf4d4ec22cd0e35eacbc7de219bddea" kind="function"><name>uses_shuffle</name></member>
+    <member refid="stards_8h_1a4150c52a6a05f0c151652322998a7a36" kind="function"><name>uses_global_shuffle</name></member>
+    <member refid="stards_8h_1a170693a68990dc51168850ca97f9d388" kind="function"><name>uses_block_shuffle</name></member>
+    <member refid="stards_8h_1a93bb8ed692f59fb89e9fa4f464f93acc" kind="function"><name>byte_shuffle</name></member>
+    <member refid="stards_8h_1a76a9c679ed5ed7002233d2a4721cdd94" kind="function"><name>byte_unshuffle</name></member>
+    <member refid="stards_8h_1a1e31ad6d5cd28fda7577955b90f7607f" kind="function"><name>byte_shuffle_blocked</name></member>
+    <member refid="stards_8h_1a247aa4a7a0047c15d0a136f4a8943941" kind="function"><name>byte_unshuffle_blocked</name></member>
+    <member refid="stards_8h_1abbc1f01ad58689b526e003c582f81551" kind="function"><name>hash_key</name></member>
+    <member refid="stards_8h_1a5579dc16eb34115f42697b1f5c06f8a9" kind="function"><name>datatype_to_string</name></member>
+    <member refid="stards_8h_1a410c53616fde29a6487f7f579489aefa" kind="function"><name>datatype_size</name></member>
+    <member refid="stards_8h_1a37d78623f0f7e4512a36feeea3d23aaa" kind="function"><name>slice_all</name></member>
+    <member refid="stards_8h_1ae56c84afe3b1985f4ca1e719f66b5ac0" kind="function"><name>slice_range</name></member>
+    <member refid="stards_8h_1a21e0e90048002ec4472ba8bc0db04e4c" kind="function"><name>star_curl_perform</name></member>
+    <member refid="stards_8h_1ab7c8b458023c3ab482697d146d57e627" kind="function"><name>parseModeString</name></member>
+    <member refid="stards_8h_1aae39a3c1ad4cc87d269dc39e4fa7741a" kind="function"><name>getS3Region</name></member>
+    <member refid="stards_8h_1ac790209e925d9fd6398a4d7ee2455625" kind="function"><name>parseFilePath</name></member>
+    <member refid="stards_8h_1a1a0fb476dc8bf76da88420f3df1feb41" kind="function"><name>estimateCompressedSize</name></member>
+    <member refid="stards_8h_1a49578ed8572073c807f93cceec301dbd" kind="function"><name>compressBlocksBuffered</name></member>
+    <member refid="stards_8h_1a959a8d088b8da75c42fb70b4af2ac54c" kind="function"><name>compressBlocks</name></member>
+    <member refid="stards_8h_1abe76f55ea15d1fd894f94f53fa556b8f" kind="function"><name>decompressBlocks</name></member>
+    <member refid="stards_8h_1a0f459f011a279335dec75d5dd7d6ad19" kind="function"><name>decompressBlocksInto</name></member>
+    <member refid="stards_8h_1a0130b14a0fad270754cea7c19c0b39ac" kind="function"><name>extract_dtype_from_variant</name></member>
+    <member refid="stards_8h_1a2767eb5622de6c7d32b5bcafffec295c" kind="function"><name>extract_shape_from_variant</name></member>
+  </compound>
+  <compound refid="namespacestar_1_1logger" kind="namespace"><name>star::logger</name>
+    <member refid="stards_8h_1a39430f248805e64850d914466869bfff" kind="enum"><name>LogLevel</name></member>
+    <member refid="stards_8h_1a39430f248805e64850d914466869bfffade52e80d900d9dae870bb143bcf66a0c" kind="enumvalue"><name>STARDS_TRACE</name></member>
+    <member refid="stards_8h_1a39430f248805e64850d914466869bfffa212d902c7aaa288563184425180c198f" kind="enumvalue"><name>STARDS_DEBUG</name></member>
+    <member refid="stards_8h_1a39430f248805e64850d914466869bfffaaa19e61e3d09404332be6d5af1086ccf" kind="enumvalue"><name>STARDS_INFO</name></member>
+    <member refid="stards_8h_1a39430f248805e64850d914466869bfffa2e77fab57191c0de4f1c933a669b2a24" kind="enumvalue"><name>STARDS_WARN</name></member>
+    <member refid="stards_8h_1a39430f248805e64850d914466869bfffacb6f952eb00cb0928a46b53bd07b8205" kind="enumvalue"><name>STARDS_ERROR</name></member>
+    <member refid="stards_8h_1ac04ecb36a7a4e28defa5ad705c71644c" kind="variable"><name>current_log_level</name></member>
+    <member refid="stards_8h_1ae742a48114fe630f4a464682f0acb492" kind="variable"><name>LOG_LEVEL_STRINGS</name></member>
+    <member refid="stards_8h_1acaba3e454215e0ce632b0f53cefd5f77" kind="function"><name>log_impl</name></member>
+    <member refid="stards_8h_1ad1d07032e0c5311da6eac023626b1776" kind="function"><name>log_impl</name></member>
+    <member refid="stards_8h_1a30c307c318f304ab075b646484f6d8c8" kind="function"><name>log_internal</name></member>
+    <member refid="stards_8h_1aa0700525b70fe6f7c30b1c30cc69cb5b" kind="function"><name>set_log_level</name></member>
+    <member refid="stards_8h_1a2c16b1cf0c91983ecf5891654ebac8cc" kind="function"><name>get_log_level</name></member>
+  </compound>
+  <compound refid="namespacestar_1_1s3crypto" kind="namespace"><name>star::s3crypto</name>
+    <member refid="stards_8h_1a643a97a0646a16ab5d9c60bd79fca056" kind="function"><name>sha256</name></member>
+    <member refid="stards_8h_1ac842bcf1160b8da3d81062f4a529f084" kind="function"><name>sha256</name></member>
+    <member refid="stards_8h_1adddf18b4b2af23c622fd8bd781e88f78" kind="function"><name>hmacSha256</name></member>
+    <member refid="stards_8h_1aae2bd7f3d544ea774d187fa3e8da8d1f" kind="function"><name>hmacSha256</name></member>
+  </compound>
+  <compound refid="namespacestar_1_1shuffle__detail" kind="namespace"><name>star::shuffle_detail</name>
+    <member refid="stards_8h_1af04d3e65683714d71eb07574d7798fb6" kind="function"><name>shuffle_scalar_from</name></member>
+    <member refid="stards_8h_1a68f122b542a2028a961b19811d640bd1" kind="function"><name>unshuffle_scalar_from</name></member>
+  </compound>
+  <compound refid="namespacestd" kind="namespace"><name>std</name>
+  </compound>
+  <compound refid="stards_8h" kind="file"><name>stards.h</name>
+    <member refid="stards_8h_1a08362fbb32c0bd08cb13cdbb68d8c143" kind="define"><name>STAR_VERSION_MAJOR</name></member>
+    <member refid="stards_8h_1aa66928949ba88b688df3b1e327f7c4d3" kind="define"><name>STAR_VERSION_MINOR</name></member>
+    <member refid="stards_8h_1a1f60debbe880a4b5d6155d9ef5fb1938" kind="define"><name>STAR_VERSION_PATCH</name></member>
+    <member refid="stards_8h_1a07afe94bc8e7d9849b8c8d0c5b939801" kind="define"><name>STAR_STRINGIFY_IMPL</name></member>
+    <member refid="stards_8h_1aefa83da2abd1b18bdc4f54aa7c967cf3" kind="define"><name>STAR_STRINGIFY</name></member>
+    <member refid="stards_8h_1a010514992d8d3679bea0bc7626fc3bda" kind="define"><name>STAR_VERSION_STRING</name></member>
+    <member refid="stards_8h_1a96180b63703073e89a8192b9e962ae74" kind="define"><name>STARDS_IS_BIG_ENDIAN</name></member>
+    <member refid="stards_8h_1a58c994180e09d2f6400133b19b1d7036" kind="define"><name>LOG_TRACE</name></member>
+    <member refid="stards_8h_1a754b3d074e0af4ad3c7b918dd77ecb2d" kind="define"><name>LOG_DEBUG</name></member>
+    <member refid="stards_8h_1a378e28bfcb78d17285210d6bbb70a083" kind="define"><name>LOG_INFO</name></member>
+    <member refid="stards_8h_1add82efa459e0af380b68522c29b9fd44" kind="define"><name>LOG_WARN</name></member>
+    <member refid="stards_8h_1ad4a9117ce894e3319e903142347a0f63" kind="define"><name>LOG_ERROR</name></member>
+  </compound>
+  <compound refid="deprecated" kind="page"><name>deprecated</name>
+  </compound>
+  <compound refid="dir_b0f4f9828a575b9faf4f13364a06fab6" kind="dir"><name>StarDS/include</name>
+  </compound>
+  <compound refid="dir_7b9276b290ca3533ce90423fcc5f6188" kind="dir"><name>StarDS</name>
+  </compound>
 </doxygenindex>

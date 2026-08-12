@@ -1,0 +1,48 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.17.0" xml:lang="en-US">
+  <compounddef id="structstar_1_1ExtractionPlan" kind="struct" language="C++" prot="public">
+    <compoundname>star::ExtractionPlan</compoundname>
+    <includes refid="stards_8h" local="no">stards.h</includes>
+    <innerclass refid="structstar_1_1ExtractionPlan_1_1ElementRange" prot="public">star::ExtractionPlan::ElementRange</innerclass>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structstar_1_1ExtractionPlan_1a54ecbcf194f50e3b6a63ec8e53d6a9c9" prot="public" static="no" mutable="no">
+        <type>std::vector&lt; <ref refid="structstar_1_1ExtractionPlan_1_1ElementRange" kindref="compound">ElementRange</ref> &gt;</type>
+        <definition>std::vector&lt;ElementRange&gt; star::ExtractionPlan::ranges</definition>
+        <argsstring></argsstring>
+        <name>ranges</name>
+        <qualifiedname>star::ExtractionPlan::ranges</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1307" column="17" bodyfile="StarDS/include/stards.h" bodystart="1307" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structstar_1_1ExtractionPlan_1ab25d5e78bbc361e35d7ac82a65c5bd83" prot="public" static="no" mutable="no">
+        <type>size_t</type>
+        <definition>size_t star::ExtractionPlan::total_elements</definition>
+        <argsstring></argsstring>
+        <name>total_elements</name>
+        <qualifiedname>star::ExtractionPlan::total_elements</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1308" column="12" bodyfile="StarDS/include/stards.h" bodystart="1308" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+<para>Describes how to extract elements from blocks. </para>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="StarDS/include/stards.h" line="1299" column="1" bodyfile="StarDS/include/stards.h" bodystart="1299" bodyend="1309"/>
+    <listofallmembers>
+      <member refid="structstar_1_1ExtractionPlan_1a54ecbcf194f50e3b6a63ec8e53d6a9c9" prot="public" virt="non-virtual"><scope>star::ExtractionPlan</scope><name>ranges</name></member>
+      <member refid="structstar_1_1ExtractionPlan_1ab25d5e78bbc361e35d7ac82a65c5bd83" prot="public" virt="non-virtual"><scope>star::ExtractionPlan</scope><name>total_elements</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

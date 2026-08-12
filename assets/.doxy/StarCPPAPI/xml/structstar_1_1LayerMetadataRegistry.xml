@@ -1,0 +1,173 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.17.0" xml:lang="en-US">
+  <compounddef id="structstar_1_1LayerMetadataRegistry" kind="struct" language="C++" prot="public">
+    <compoundname>star::LayerMetadataRegistry</compoundname>
+    <includes refid="stards_8h" local="no">stards.h</includes>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structstar_1_1LayerMetadataRegistry_1a99603a8ef8d36fbb2636d5d5a828501a" prot="public" static="no" mutable="no">
+        <type>std::vector&lt; std::string &gt;</type>
+        <definition>std::vector&lt;std::string&gt; star::LayerMetadataRegistry::layer_names</definition>
+        <argsstring></argsstring>
+        <name>layer_names</name>
+        <qualifiedname>star::LayerMetadataRegistry::layer_names</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1078" column="17" bodyfile="StarDS/include/stards.h" bodystart="1078" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structstar_1_1LayerMetadataRegistry_1acb9e3440f969eb23b32312039b652657" prot="public" static="no" mutable="no">
+        <type>std::vector&lt; uint64_t &gt;</type>
+        <definition>std::vector&lt;uint64_t&gt; star::LayerMetadataRegistry::block_positions</definition>
+        <argsstring></argsstring>
+        <name>block_positions</name>
+        <qualifiedname>star::LayerMetadataRegistry::block_positions</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1079" column="17" bodyfile="StarDS/include/stards.h" bodystart="1079" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structstar_1_1LayerMetadataRegistry_1ae6b5f239cebeab15b9a9236585967272" prot="public" static="no" mutable="no">
+        <type>std::vector&lt; uint32_t &gt;</type>
+        <definition>std::vector&lt;uint32_t&gt; star::LayerMetadataRegistry::block_sizes</definition>
+        <argsstring></argsstring>
+        <name>block_sizes</name>
+        <qualifiedname>star::LayerMetadataRegistry::block_sizes</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1080" column="17" bodyfile="StarDS/include/stards.h" bodystart="1080" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structstar_1_1LayerMetadataRegistry_1aa5a37c2319812ea7b4527ed6910f00a3" prot="public" static="no" mutable="no">
+        <type>std::vector&lt; CompressionAlgorithm &gt;</type>
+        <definition>std::vector&lt;CompressionAlgorithm&gt; star::LayerMetadataRegistry::compressions</definition>
+        <argsstring></argsstring>
+        <name>compressions</name>
+        <qualifiedname>star::LayerMetadataRegistry::compressions</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1081" column="17" bodyfile="StarDS/include/stards.h" bodystart="1081" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structstar_1_1LayerMetadataRegistry_1a8922500131f1b035da2a3f0b6c02db5c" prot="public" static="no" mutable="no">
+        <type>std::vector&lt; std::unordered_set&lt; uint16_t &gt; &gt;</type>
+        <definition>std::vector&lt;std::unordered_set&lt;uint16_t&gt; &gt; star::LayerMetadataRegistry::key_indices</definition>
+        <argsstring></argsstring>
+        <name>key_indices</name>
+        <qualifiedname>star::LayerMetadataRegistry::key_indices</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1082" column="17" bodyfile="StarDS/include/stards.h" bodystart="1082" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structstar_1_1LayerMetadataRegistry_1a1948e1b5335ad4e13a1fa783fed837f3" prot="public" static="no" mutable="no">
+        <type>std::unordered_map&lt; std::string, size_t &gt;</type>
+        <definition>std::unordered_map&lt;std::string, size_t&gt; star::LayerMetadataRegistry::name_to_layer_index</definition>
+        <argsstring></argsstring>
+        <name>name_to_layer_index</name>
+        <qualifiedname>star::LayerMetadataRegistry::name_to_layer_index</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1083" column="24" bodyfile="StarDS/include/stards.h" bodystart="1083" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="structstar_1_1LayerMetadataRegistry_1a5baea95ecea7dcec7273345524f7698b" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>size_t</type>
+        <definition>size_t star::LayerMetadataRegistry::get_layer_index</definition>
+        <argsstring>(const std::string &amp;layer_name) const</argsstring>
+        <name>get_layer_index</name>
+        <qualifiedname>star::LayerMetadataRegistry::get_layer_index</qualifiedname>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>layer_name</declname>
+        </param>
+        <briefdescription>
+<para>Get layer index by name. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>size_t index into the registry </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1089" column="12" bodyfile="StarDS/include/stards.h" bodystart="1089" bodyend="1095"/>
+      </memberdef>
+      <memberdef kind="function" id="structstar_1_1LayerMetadataRegistry_1a70044f74bccc2fabb604434689b6c68f" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool star::LayerMetadataRegistry::contains_layer</definition>
+        <argsstring>(const std::string &amp;layer_name) const</argsstring>
+        <name>contains_layer</name>
+        <qualifiedname>star::LayerMetadataRegistry::contains_layer</qualifiedname>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>layer_name</declname>
+        </param>
+        <briefdescription>
+<para>Check if layer exists. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1100" column="10" bodyfile="StarDS/include/stards.h" bodystart="1100" bodyend="1102"/>
+      </memberdef>
+      <memberdef kind="function" id="structstar_1_1LayerMetadataRegistry_1a1bc2ccba40ab40612907c14253889843" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>size_t</type>
+        <definition>size_t star::LayerMetadataRegistry::add_layer</definition>
+        <argsstring>(const std::string &amp;layer_name)</argsstring>
+        <name>add_layer</name>
+        <qualifiedname>star::LayerMetadataRegistry::add_layer</qualifiedname>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>layer_name</declname>
+        </param>
+        <briefdescription>
+<para>Add a new layer to the registry. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1107" column="12" bodyfile="StarDS/include/stards.h" bodystart="1107" bodyend="1119"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+<para>Per-layer metadata registry using data-oriented design (Structure of Arrays). </para>
+    </briefdescription>
+    <detaileddescription>
+<para>Stores metadata about each layer&apos;s metadata block for lazy loading. Each layer has its own independent STARMeta block in the file. </para>
+    </detaileddescription>
+    <location file="StarDS/include/stards.h" line="1077" column="1" bodyfile="StarDS/include/stards.h" bodystart="1077" bodyend="1120"/>
+    <listofallmembers>
+      <member refid="structstar_1_1LayerMetadataRegistry_1a1bc2ccba40ab40612907c14253889843" prot="public" virt="non-virtual"><scope>star::LayerMetadataRegistry</scope><name>add_layer</name></member>
+      <member refid="structstar_1_1LayerMetadataRegistry_1acb9e3440f969eb23b32312039b652657" prot="public" virt="non-virtual"><scope>star::LayerMetadataRegistry</scope><name>block_positions</name></member>
+      <member refid="structstar_1_1LayerMetadataRegistry_1ae6b5f239cebeab15b9a9236585967272" prot="public" virt="non-virtual"><scope>star::LayerMetadataRegistry</scope><name>block_sizes</name></member>
+      <member refid="structstar_1_1LayerMetadataRegistry_1aa5a37c2319812ea7b4527ed6910f00a3" prot="public" virt="non-virtual"><scope>star::LayerMetadataRegistry</scope><name>compressions</name></member>
+      <member refid="structstar_1_1LayerMetadataRegistry_1a70044f74bccc2fabb604434689b6c68f" prot="public" virt="non-virtual"><scope>star::LayerMetadataRegistry</scope><name>contains_layer</name></member>
+      <member refid="structstar_1_1LayerMetadataRegistry_1a5baea95ecea7dcec7273345524f7698b" prot="public" virt="non-virtual"><scope>star::LayerMetadataRegistry</scope><name>get_layer_index</name></member>
+      <member refid="structstar_1_1LayerMetadataRegistry_1a8922500131f1b035da2a3f0b6c02db5c" prot="public" virt="non-virtual"><scope>star::LayerMetadataRegistry</scope><name>key_indices</name></member>
+      <member refid="structstar_1_1LayerMetadataRegistry_1a99603a8ef8d36fbb2636d5d5a828501a" prot="public" virt="non-virtual"><scope>star::LayerMetadataRegistry</scope><name>layer_names</name></member>
+      <member refid="structstar_1_1LayerMetadataRegistry_1a1948e1b5335ad4e13a1fa783fed837f3" prot="public" virt="non-virtual"><scope>star::LayerMetadataRegistry</scope><name>name_to_layer_index</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

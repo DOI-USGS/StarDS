@@ -1,0 +1,33 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.17.0" xml:lang="en-US">
+  <compounddef id="structstar_1_1TypeToDataType_3_01uint64__t_01_4" kind="struct" language="C++" prot="public">
+    <compoundname>star::TypeToDataType&lt; uint64_t &gt;</compoundname>
+    <templateparamlist>
+    </templateparamlist>
+    <sectiondef kind="public-static-attrib">
+      <memberdef kind="variable" id="structstar_1_1TypeToDataType_3_01uint64__t_01_4_1a8e3a0fdd64dcb7877f4f55a4863106e2" prot="public" static="yes" constexpr="yes" mutable="no">
+        <type>DataType</type>
+        <definition>DataType star::TypeToDataType&lt; uint64_t &gt;::value</definition>
+        <argsstring></argsstring>
+        <name>value</name>
+        <qualifiedname>star::TypeToDataType&lt; uint64_t &gt;::value</qualifiedname>
+        <initializer>= DataType::UINT64</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1198" column="31" bodyfile="StarDS/include/stards.h" bodystart="1198" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="StarDS/include/stards.h" line="1197" column="10" bodyfile="StarDS/include/stards.h" bodystart="1197" bodyend="1199"/>
+    <listofallmembers>
+      <member refid="structstar_1_1TypeToDataType_3_01uint64__t_01_4_1a8e3a0fdd64dcb7877f4f55a4863106e2" prot="public" virt="non-virtual"><scope>star::TypeToDataType&lt; uint64_t &gt;</scope><name>value</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

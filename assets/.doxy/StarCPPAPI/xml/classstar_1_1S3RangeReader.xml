@@ -1,0 +1,503 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.17.0" xml:lang="en-US">
+  <compounddef id="classstar_1_1S3RangeReader" kind="class" language="C++" prot="public">
+    <compoundname>star::S3RangeReader</compoundname>
+    <basecompoundref refid="classstar_1_1RangeReader" prot="public" virt="non-virtual">star::RangeReader</basecompoundref>
+    <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classstar_1_1S3RangeReader_1a0f518afce26dae6ab7bab95925be0b22" prot="private" static="no" mutable="no">
+        <type>CURL *</type>
+        <definition>CURL* star::S3RangeReader::m_curl</definition>
+        <argsstring></argsstring>
+        <name>m_curl</name>
+        <qualifiedname>star::S3RangeReader::m_curl</qualifiedname>
+        <initializer>= nullptr</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="3587" column="10" bodyfile="StarDS/include/stards.h" bodystart="3587" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classstar_1_1S3RangeReader_1afd851326b8a0388d44afc76dddc8276a" prot="private" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string star::S3RangeReader::m_bucket</definition>
+        <argsstring></argsstring>
+        <name>m_bucket</name>
+        <qualifiedname>star::S3RangeReader::m_bucket</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="3588" column="17" bodyfile="StarDS/include/stards.h" bodystart="3588" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classstar_1_1S3RangeReader_1a2505e3c341eab56cc912305c9bf43717" prot="private" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string star::S3RangeReader::m_key</definition>
+        <argsstring></argsstring>
+        <name>m_key</name>
+        <qualifiedname>star::S3RangeReader::m_key</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="3588" column="26" bodyfile="StarDS/include/stards.h" bodystart="3588" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classstar_1_1S3RangeReader_1a7958f43c91e2689190500dde6ecf7a1f" prot="private" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string star::S3RangeReader::m_region</definition>
+        <argsstring></argsstring>
+        <name>m_region</name>
+        <qualifiedname>star::S3RangeReader::m_region</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="3588" column="32" bodyfile="StarDS/include/stards.h" bodystart="3588" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classstar_1_1S3RangeReader_1a4ae34164a2b2c03a3b15ca7d2e0041e5" prot="private" static="no" mutable="no">
+        <type><ref refid="structstar_1_1S3Credentials" kindref="compound">S3Credentials</ref></type>
+        <definition>S3Credentials star::S3RangeReader::m_creds</definition>
+        <argsstring></argsstring>
+        <name>m_creds</name>
+        <qualifiedname>star::S3RangeReader::m_creds</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="3589" column="19" bodyfile="StarDS/include/stards.h" bodystart="3589" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classstar_1_1S3RangeReader_1acf4235746376984d65d5146162b3f979" prot="private" static="no" mutable="no">
+        <type>std::unique_ptr&lt; <ref refid="classstar_1_1AWSV4Signer" kindref="compound">AWSV4Signer</ref> &gt;</type>
+        <definition>std::unique_ptr&lt;AWSV4Signer&gt; star::S3RangeReader::m_signer</definition>
+        <argsstring></argsstring>
+        <name>m_signer</name>
+        <qualifiedname>star::S3RangeReader::m_signer</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="3590" column="21" bodyfile="StarDS/include/stards.h" bodystart="3590" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classstar_1_1S3RangeReader_1aea81aae4d375d12d7786907d04b9b80d" prot="private" static="no" mutable="no">
+        <type>std::vector&lt; char &gt; *</type>
+        <definition>std::vector&lt;char&gt;* star::S3RangeReader::m_sink</definition>
+        <argsstring></argsstring>
+        <name>m_sink</name>
+        <qualifiedname>star::S3RangeReader::m_sink</qualifiedname>
+        <initializer>= nullptr</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="3591" column="17" bodyfile="StarDS/include/stards.h" bodystart="3591" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classstar_1_1S3RangeReader_1a11a98c4b4f351abbfcc149806ba7e43f" prot="private" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string star::S3RangeReader::m_redirect_region</definition>
+        <argsstring></argsstring>
+        <name>m_redirect_region</name>
+        <qualifiedname>star::S3RangeReader::m_redirect_region</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="3592" column="17" bodyfile="StarDS/include/stards.h" bodystart="3592" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classstar_1_1S3RangeReader_1ad101bf6ddaf973452ff82c03b236b791" prot="private" static="no" mutable="no">
+        <type>std::vector&lt; char &gt;</type>
+        <definition>std::vector&lt;char&gt; star::S3RangeReader::m_whole</definition>
+        <argsstring></argsstring>
+        <name>m_whole</name>
+        <qualifiedname>star::S3RangeReader::m_whole</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="3593" column="17" bodyfile="StarDS/include/stards.h" bodystart="3593" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classstar_1_1S3RangeReader_1aa26067ad62cbc0fca5a67107eec567c6" prot="private" static="no" mutable="no">
+        <type>bool</type>
+        <definition>bool star::S3RangeReader::m_cached</definition>
+        <argsstring></argsstring>
+        <name>m_cached</name>
+        <qualifiedname>star::S3RangeReader::m_cached</qualifiedname>
+        <initializer>= false</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="3594" column="10" bodyfile="StarDS/include/stards.h" bodystart="3594" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classstar_1_1S3RangeReader_1ada83e9057f3abe87d3085e6a39861512" prot="private" static="no" mutable="no">
+        <type>size_t</type>
+        <definition>size_t star::S3RangeReader::m_total_size</definition>
+        <argsstring></argsstring>
+        <name>m_total_size</name>
+        <qualifiedname>star::S3RangeReader::m_total_size</qualifiedname>
+        <initializer>= SIZE_MAX</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="3595" column="12" bodyfile="StarDS/include/stards.h" bodystart="3595" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="classstar_1_1S3RangeReader_1a02e9448689b138085f0d3efe0552d48e" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>star::S3RangeReader::S3RangeReader</definition>
+        <argsstring>(std::string bucket, std::string key, std::string region, S3Credentials creds)</argsstring>
+        <name>S3RangeReader</name>
+        <qualifiedname>star::S3RangeReader::S3RangeReader</qualifiedname>
+        <param>
+          <type>std::string</type>
+          <declname>bucket</declname>
+        </param>
+        <param>
+          <type>std::string</type>
+          <declname>key</declname>
+        </param>
+        <param>
+          <type>std::string</type>
+          <declname>region</declname>
+        </param>
+        <param>
+          <type><ref refid="structstar_1_1S3Credentials" kindref="compound">S3Credentials</ref></type>
+          <declname>creds</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="3419" column="5" bodyfile="StarDS/include/stards.h" bodystart="3419" bodyend="3434"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1S3RangeReader_1ad705871bd873a31570d1d8e77772bbf9" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>star::S3RangeReader::~S3RangeReader</definition>
+        <argsstring>() override</argsstring>
+        <name>~S3RangeReader</name>
+        <qualifiedname>star::S3RangeReader::~S3RangeReader</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="3435" column="5" bodyfile="StarDS/include/stards.h" bodystart="3435" bodyend="3435"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1S3RangeReader_1af61f7c7991c11f682efc1b5cfb33c27a" prot="public" static="no" const="no" explicit="no" inline="yes" virt="virtual">
+        <type>size_t</type>
+        <definition>size_t star::S3RangeReader::read_at</definition>
+        <argsstring>(size_t offset, size_t len, std::vector&lt; char &gt; &amp;out) override</argsstring>
+        <name>read_at</name>
+        <qualifiedname>star::S3RangeReader::read_at</qualifiedname>
+        <reimplements refid="classstar_1_1RangeReader_1aea7e78a3edbd2dc856bcecfb31e60c12">read_at</reimplements>
+        <param>
+          <type>size_t</type>
+          <declname>offset</declname>
+        </param>
+        <param>
+          <type>size_t</type>
+          <declname>len</declname>
+        </param>
+        <param>
+          <type>std::vector&lt; char &gt; &amp;</type>
+          <declname>out</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="3437" column="12" bodyfile="StarDS/include/stards.h" bodystart="3437" bodyend="3444"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1S3RangeReader_1afc720a948415d2ea530eef22a1e6cd89" prot="public" static="no" const="no" explicit="no" inline="yes" virt="virtual">
+        <type>size_t</type>
+        <definition>size_t star::S3RangeReader::size_or_unknown</definition>
+        <argsstring>() override</argsstring>
+        <name>size_or_unknown</name>
+        <qualifiedname>star::S3RangeReader::size_or_unknown</qualifiedname>
+        <reimplements refid="classstar_1_1RangeReader_1a65c6796cbf23bbd06041667b819c2e36">size_or_unknown</reimplements>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="3446" column="12" bodyfile="StarDS/include/stards.h" bodystart="3446" bodyend="3446"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1S3RangeReader_1a881f16e4b5c567835ff3e8d38f068d54" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="virtual">
+        <type>bool</type>
+        <definition>bool star::S3RangeReader::good</definition>
+        <argsstring>() const override</argsstring>
+        <name>good</name>
+        <qualifiedname>star::S3RangeReader::good</qualifiedname>
+        <reimplements refid="classstar_1_1RangeReader_1a1b408fc6cf5816c3faf6718a3a9f35a9">good</reimplements>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="3447" column="10" bodyfile="StarDS/include/stards.h" bodystart="3447" bodyend="3447"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1S3RangeReader_1ada5d026ee1de67edccc03ab370872b7c" prot="public" static="no" const="no" explicit="no" inline="yes" virt="virtual">
+        <type>bool</type>
+        <definition>bool star::S3RangeReader::ensure_whole_cached</definition>
+        <argsstring>(size_t max_bytes) override</argsstring>
+        <name>ensure_whole_cached</name>
+        <qualifiedname>star::S3RangeReader::ensure_whole_cached</qualifiedname>
+        <reimplements refid="classstar_1_1RangeReader_1a33457d72df6fc8440d91665d75ec22ba">ensure_whole_cached</reimplements>
+        <param>
+          <type>size_t</type>
+          <declname>max_bytes</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="3449" column="10" bodyfile="StarDS/include/stards.h" bodystart="3449" bodyend="3465"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="private-static-func">
+      <memberdef kind="function" id="classstar_1_1S3RangeReader_1a8317efb6b55766102e9852916e6d0e6c" prot="private" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>size_t</type>
+        <definition>static size_t star::S3RangeReader::write_cb</definition>
+        <argsstring>(char *ptr, size_t size, size_t nmemb, void *userdata)</argsstring>
+        <name>write_cb</name>
+        <qualifiedname>star::S3RangeReader::write_cb</qualifiedname>
+        <param>
+          <type>char *</type>
+          <declname>ptr</declname>
+        </param>
+        <param>
+          <type>size_t</type>
+          <declname>size</declname>
+        </param>
+        <param>
+          <type>size_t</type>
+          <declname>nmemb</declname>
+        </param>
+        <param>
+          <type>void *</type>
+          <declname>userdata</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="3468" column="19" bodyfile="StarDS/include/stards.h" bodystart="3468" bodyend="3473"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1S3RangeReader_1abaa63f0f996f4914a1cf87263b3383ed" prot="private" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>size_t</type>
+        <definition>static size_t star::S3RangeReader::header_cb</definition>
+        <argsstring>(char *buffer, size_t size, size_t nitems, void *userdata)</argsstring>
+        <name>header_cb</name>
+        <qualifiedname>star::S3RangeReader::header_cb</qualifiedname>
+        <param>
+          <type>char *</type>
+          <declname>buffer</declname>
+        </param>
+        <param>
+          <type>size_t</type>
+          <declname>size</declname>
+        </param>
+        <param>
+          <type>size_t</type>
+          <declname>nitems</declname>
+        </param>
+        <param>
+          <type>void *</type>
+          <declname>userdata</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="3474" column="19" bodyfile="StarDS/include/stards.h" bodystart="3474" bodyend="3496"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1S3RangeReader_1a205361cdcd78eda2132eab4a01a2cc10" prot="private" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::string</type>
+        <definition>static std::string star::S3RangeReader::timestamp</definition>
+        <argsstring>()</argsstring>
+        <name>timestamp</name>
+        <qualifiedname>star::S3RangeReader::timestamp</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="3505" column="24" bodyfile="StarDS/include/stards.h" bodystart="3505" bodyend="3517"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="private-func">
+      <memberdef kind="function" id="classstar_1_1S3RangeReader_1adfbbde03a3888848b2efedace423d496" prot="private" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::string</type>
+        <definition>std::string star::S3RangeReader::getUrl</definition>
+        <argsstring>() const</argsstring>
+        <name>getUrl</name>
+        <qualifiedname>star::S3RangeReader::getUrl</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="3498" column="17" bodyfile="StarDS/include/stards.h" bodystart="3498" bodyend="3501"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1S3RangeReader_1a5a78416b41083a5375469807a96acbf1" prot="private" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::string</type>
+        <definition>std::string star::S3RangeReader::getHost</definition>
+        <argsstring>() const</argsstring>
+        <name>getHost</name>
+        <qualifiedname>star::S3RangeReader::getHost</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="3502" column="17" bodyfile="StarDS/include/stards.h" bodystart="3502" bodyend="3504"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1S3RangeReader_1adac2d37b224f7eeb9a33549a3ac76199" prot="private" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool star::S3RangeReader::signed_get</definition>
+        <argsstring>(size_t start, size_t end, std::vector&lt; char &gt; &amp;out)</argsstring>
+        <name>signed_get</name>
+        <qualifiedname>star::S3RangeReader::signed_get</qualifiedname>
+        <param>
+          <type>size_t</type>
+          <declname>start</declname>
+        </param>
+        <param>
+          <type>size_t</type>
+          <declname>end</declname>
+        </param>
+        <param>
+          <type>std::vector&lt; char &gt; &amp;</type>
+          <declname>out</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="3521" column="10" bodyfile="StarDS/include/stards.h" bodystart="3521" bodyend="3578"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1S3RangeReader_1a238a252f146d7d543b1c68b62c6f36a7" prot="private" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>size_t</type>
+        <definition>size_t star::S3RangeReader::serve_from_cache</definition>
+        <argsstring>(size_t offset, size_t len, std::vector&lt; char &gt; &amp;out)</argsstring>
+        <name>serve_from_cache</name>
+        <qualifiedname>star::S3RangeReader::serve_from_cache</qualifiedname>
+        <param>
+          <type>size_t</type>
+          <declname>offset</declname>
+        </param>
+        <param>
+          <type>size_t</type>
+          <declname>len</declname>
+        </param>
+        <param>
+          <type>std::vector&lt; char &gt; &amp;</type>
+          <declname>out</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="3580" column="12" bodyfile="StarDS/include/stards.h" bodystart="3580" bodyend="3585"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="2">
+        <label>star::RangeReader</label>
+        <link refid="classstar_1_1RangeReader"/>
+      </node>
+      <node id="1">
+        <label>star::S3RangeReader</label>
+        <link refid="classstar_1_1S3RangeReader"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="2">
+        <label>star::RangeReader</label>
+        <link refid="classstar_1_1RangeReader"/>
+      </node>
+      <node id="1">
+        <label>star::S3RangeReader</label>
+        <link refid="classstar_1_1S3RangeReader"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="StarDS/include/stards.h" line="3417" column="1" bodyfile="StarDS/include/stards.h" bodystart="3417" bodyend="3596"/>
+    <listofallmembers>
+      <member refid="classstar_1_1S3RangeReader_1ada5d026ee1de67edccc03ab370872b7c" prot="public" virt="virtual"><scope>star::S3RangeReader</scope><name>ensure_whole_cached</name></member>
+      <member refid="classstar_1_1S3RangeReader_1a5a78416b41083a5375469807a96acbf1" prot="private" virt="non-virtual"><scope>star::S3RangeReader</scope><name>getHost</name></member>
+      <member refid="classstar_1_1S3RangeReader_1adfbbde03a3888848b2efedace423d496" prot="private" virt="non-virtual"><scope>star::S3RangeReader</scope><name>getUrl</name></member>
+      <member refid="classstar_1_1S3RangeReader_1a881f16e4b5c567835ff3e8d38f068d54" prot="public" virt="virtual"><scope>star::S3RangeReader</scope><name>good</name></member>
+      <member refid="classstar_1_1S3RangeReader_1abaa63f0f996f4914a1cf87263b3383ed" prot="private" virt="non-virtual"><scope>star::S3RangeReader</scope><name>header_cb</name></member>
+      <member refid="classstar_1_1S3RangeReader_1afd851326b8a0388d44afc76dddc8276a" prot="private" virt="non-virtual"><scope>star::S3RangeReader</scope><name>m_bucket</name></member>
+      <member refid="classstar_1_1S3RangeReader_1aa26067ad62cbc0fca5a67107eec567c6" prot="private" virt="non-virtual"><scope>star::S3RangeReader</scope><name>m_cached</name></member>
+      <member refid="classstar_1_1S3RangeReader_1a4ae34164a2b2c03a3b15ca7d2e0041e5" prot="private" virt="non-virtual"><scope>star::S3RangeReader</scope><name>m_creds</name></member>
+      <member refid="classstar_1_1S3RangeReader_1a0f518afce26dae6ab7bab95925be0b22" prot="private" virt="non-virtual"><scope>star::S3RangeReader</scope><name>m_curl</name></member>
+      <member refid="classstar_1_1S3RangeReader_1a2505e3c341eab56cc912305c9bf43717" prot="private" virt="non-virtual"><scope>star::S3RangeReader</scope><name>m_key</name></member>
+      <member refid="classstar_1_1S3RangeReader_1a11a98c4b4f351abbfcc149806ba7e43f" prot="private" virt="non-virtual"><scope>star::S3RangeReader</scope><name>m_redirect_region</name></member>
+      <member refid="classstar_1_1S3RangeReader_1a7958f43c91e2689190500dde6ecf7a1f" prot="private" virt="non-virtual"><scope>star::S3RangeReader</scope><name>m_region</name></member>
+      <member refid="classstar_1_1S3RangeReader_1acf4235746376984d65d5146162b3f979" prot="private" virt="non-virtual"><scope>star::S3RangeReader</scope><name>m_signer</name></member>
+      <member refid="classstar_1_1S3RangeReader_1aea81aae4d375d12d7786907d04b9b80d" prot="private" virt="non-virtual"><scope>star::S3RangeReader</scope><name>m_sink</name></member>
+      <member refid="classstar_1_1S3RangeReader_1ada83e9057f3abe87d3085e6a39861512" prot="private" virt="non-virtual"><scope>star::S3RangeReader</scope><name>m_total_size</name></member>
+      <member refid="classstar_1_1S3RangeReader_1ad101bf6ddaf973452ff82c03b236b791" prot="private" virt="non-virtual"><scope>star::S3RangeReader</scope><name>m_whole</name></member>
+      <member refid="classstar_1_1S3RangeReader_1af61f7c7991c11f682efc1b5cfb33c27a" prot="public" virt="virtual"><scope>star::S3RangeReader</scope><name>read_at</name></member>
+      <member refid="classstar_1_1S3RangeReader_1a02e9448689b138085f0d3efe0552d48e" prot="public" virt="non-virtual"><scope>star::S3RangeReader</scope><name>S3RangeReader</name></member>
+      <member refid="classstar_1_1S3RangeReader_1a238a252f146d7d543b1c68b62c6f36a7" prot="private" virt="non-virtual"><scope>star::S3RangeReader</scope><name>serve_from_cache</name></member>
+      <member refid="classstar_1_1S3RangeReader_1adac2d37b224f7eeb9a33549a3ac76199" prot="private" virt="non-virtual"><scope>star::S3RangeReader</scope><name>signed_get</name></member>
+      <member refid="classstar_1_1S3RangeReader_1afc720a948415d2ea530eef22a1e6cd89" prot="public" virt="virtual"><scope>star::S3RangeReader</scope><name>size_or_unknown</name></member>
+      <member refid="classstar_1_1S3RangeReader_1a205361cdcd78eda2132eab4a01a2cc10" prot="private" virt="non-virtual"><scope>star::S3RangeReader</scope><name>timestamp</name></member>
+      <member refid="classstar_1_1S3RangeReader_1a8317efb6b55766102e9852916e6d0e6c" prot="private" virt="non-virtual"><scope>star::S3RangeReader</scope><name>write_cb</name></member>
+      <member refid="classstar_1_1RangeReader_1a5ff2bd9d200f10d0542cede7eba2835d" prot="public" virt="virtual"><scope>star::S3RangeReader</scope><name>~RangeReader</name></member>
+      <member refid="classstar_1_1S3RangeReader_1ad705871bd873a31570d1d8e77772bbf9" prot="public" virt="non-virtual"><scope>star::S3RangeReader</scope><name>~S3RangeReader</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

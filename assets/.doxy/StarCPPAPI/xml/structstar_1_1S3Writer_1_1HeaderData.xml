@@ -1,0 +1,30 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.17.0" xml:lang="en-US">
+  <compounddef id="structstar_1_1S3Writer_1_1HeaderData" kind="struct" language="C++" prot="public">
+    <compoundname>star::S3Writer::HeaderData</compoundname>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structstar_1_1S3Writer_1_1HeaderData_1afe9537e4891d2830d42d68ce31630c56" prot="public" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string star::S3Writer::HeaderData::bucket_region</definition>
+        <argsstring></argsstring>
+        <name>bucket_region</name>
+        <qualifiedname>star::S3Writer::HeaderData::bucket_region</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="2648" column="21" bodyfile="StarDS/include/stards.h" bodystart="2648" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="StarDS/include/stards.h" line="2647" column="5" bodyfile="StarDS/include/stards.h" bodystart="2647" bodyend="2649"/>
+    <listofallmembers>
+      <member refid="structstar_1_1S3Writer_1_1HeaderData_1afe9537e4891d2830d42d68ce31630c56" prot="public" virt="non-virtual"><scope>star::S3Writer::HeaderData</scope><name>bucket_region</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

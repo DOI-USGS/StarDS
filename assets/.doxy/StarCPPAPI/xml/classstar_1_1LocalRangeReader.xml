@@ -1,0 +1,240 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.17.0" xml:lang="en-US">
+  <compounddef id="classstar_1_1LocalRangeReader" kind="class" language="C++" prot="public">
+    <compoundname>star::LocalRangeReader</compoundname>
+    <basecompoundref refid="classstar_1_1RangeReader" prot="public" virt="non-virtual">star::RangeReader</basecompoundref>
+    <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classstar_1_1LocalRangeReader_1a3105547d705e9a5c38f76b66c72f583a" prot="private" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string star::LocalRangeReader::m_path</definition>
+        <argsstring></argsstring>
+        <name>m_path</name>
+        <qualifiedname>star::LocalRangeReader::m_path</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="3084" column="17" bodyfile="StarDS/include/stards.h" bodystart="3084" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classstar_1_1LocalRangeReader_1ac97505ff0f64ec479072e483704a58bc" prot="private" static="no" mutable="no">
+        <type>std::vector&lt; char &gt;</type>
+        <definition>std::vector&lt;char&gt; star::LocalRangeReader::m_whole</definition>
+        <argsstring></argsstring>
+        <name>m_whole</name>
+        <qualifiedname>star::LocalRangeReader::m_whole</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="3085" column="17" bodyfile="StarDS/include/stards.h" bodystart="3085" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classstar_1_1LocalRangeReader_1a4fa27120afc9f1f0977d77c38316cff4" prot="private" static="no" mutable="no">
+        <type>bool</type>
+        <definition>bool star::LocalRangeReader::m_cached</definition>
+        <argsstring></argsstring>
+        <name>m_cached</name>
+        <qualifiedname>star::LocalRangeReader::m_cached</qualifiedname>
+        <initializer>= false</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="3086" column="10" bodyfile="StarDS/include/stards.h" bodystart="3086" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="classstar_1_1LocalRangeReader_1a065fa2e5e5f1133c77bc955791df4ba9" prot="public" static="no" const="no" explicit="yes" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>star::LocalRangeReader::LocalRangeReader</definition>
+        <argsstring>(const std::string &amp;path)</argsstring>
+        <name>LocalRangeReader</name>
+        <qualifiedname>star::LocalRangeReader::LocalRangeReader</qualifiedname>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>path</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="2990" column="14" bodyfile="StarDS/include/stards.h" bodystart="2990" bodyend="2990"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1LocalRangeReader_1aafb100591e197179dd3ac480b382fa3f" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>star::LocalRangeReader::~LocalRangeReader</definition>
+        <argsstring>() override</argsstring>
+        <name>~LocalRangeReader</name>
+        <qualifiedname>star::LocalRangeReader::~LocalRangeReader</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="2992" column="5" bodyfile="StarDS/include/stards.h" bodystart="2992" bodyend="2998"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1LocalRangeReader_1a1571e734a7f9cb5aff4b19792463a9e2" prot="public" static="no" const="no" explicit="no" inline="yes" virt="virtual">
+        <type>size_t</type>
+        <definition>size_t star::LocalRangeReader::read_at</definition>
+        <argsstring>(size_t offset, size_t len, std::vector&lt; char &gt; &amp;out) override</argsstring>
+        <name>read_at</name>
+        <qualifiedname>star::LocalRangeReader::read_at</qualifiedname>
+        <reimplements refid="classstar_1_1RangeReader_1aea7e78a3edbd2dc856bcecfb31e60c12">read_at</reimplements>
+        <param>
+          <type>size_t</type>
+          <declname>offset</declname>
+        </param>
+        <param>
+          <type>size_t</type>
+          <declname>len</declname>
+        </param>
+        <param>
+          <type>std::vector&lt; char &gt; &amp;</type>
+          <declname>out</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="3000" column="12" bodyfile="StarDS/include/stards.h" bodystart="3000" bodyend="3018"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1LocalRangeReader_1a0ae5d7a339d340eecb075afce4592eaa" prot="public" static="no" const="no" explicit="no" inline="yes" virt="virtual">
+        <type>size_t</type>
+        <definition>size_t star::LocalRangeReader::size_or_unknown</definition>
+        <argsstring>() override</argsstring>
+        <name>size_or_unknown</name>
+        <qualifiedname>star::LocalRangeReader::size_or_unknown</qualifiedname>
+        <reimplements refid="classstar_1_1RangeReader_1a65c6796cbf23bbd06041667b819c2e36">size_or_unknown</reimplements>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="3020" column="12" bodyfile="StarDS/include/stards.h" bodystart="3020" bodyend="3029"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1LocalRangeReader_1a092a1a885ccbd4f38b69729faf55706d" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="virtual">
+        <type>bool</type>
+        <definition>bool star::LocalRangeReader::good</definition>
+        <argsstring>() const override</argsstring>
+        <name>good</name>
+        <qualifiedname>star::LocalRangeReader::good</qualifiedname>
+        <reimplements refid="classstar_1_1RangeReader_1a1b408fc6cf5816c3faf6718a3a9f35a9">good</reimplements>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="3031" column="10" bodyfile="StarDS/include/stards.h" bodystart="3031" bodyend="3034"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1LocalRangeReader_1a445d226dc57ae9e55e737a3ea688123e" prot="public" static="no" const="no" explicit="no" inline="yes" virt="virtual">
+        <type>bool</type>
+        <definition>bool star::LocalRangeReader::ensure_whole_cached</definition>
+        <argsstring>(size_t max_bytes) override</argsstring>
+        <name>ensure_whole_cached</name>
+        <qualifiedname>star::LocalRangeReader::ensure_whole_cached</qualifiedname>
+        <reimplements refid="classstar_1_1RangeReader_1a33457d72df6fc8440d91665d75ec22ba">ensure_whole_cached</reimplements>
+        <param>
+          <type>size_t</type>
+          <declname>max_bytes</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="3036" column="10" bodyfile="StarDS/include/stards.h" bodystart="3036" bodyend="3049"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="private-static-func">
+      <memberdef kind="function" id="classstar_1_1LocalRangeReader_1a6c71c9871dce049ff87919148c9e4a33" prot="private" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>size_t</type>
+        <definition>static size_t star::LocalRangeReader::serve_from_cache</definition>
+        <argsstring>(size_t offset, size_t len, std::vector&lt; char &gt; &amp;out, const char *base, size_t base_size)</argsstring>
+        <name>serve_from_cache</name>
+        <qualifiedname>star::LocalRangeReader::serve_from_cache</qualifiedname>
+        <param>
+          <type>size_t</type>
+          <declname>offset</declname>
+        </param>
+        <param>
+          <type>size_t</type>
+          <declname>len</declname>
+        </param>
+        <param>
+          <type>std::vector&lt; char &gt; &amp;</type>
+          <declname>out</declname>
+        </param>
+        <param>
+          <type>const char *</type>
+          <declname>base</declname>
+        </param>
+        <param>
+          <type>size_t</type>
+          <declname>base_size</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="3055" column="19" bodyfile="StarDS/include/stards.h" bodystart="3055" bodyend="3061"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="1">
+        <label>star::LocalRangeReader</label>
+        <link refid="classstar_1_1LocalRangeReader"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>star::RangeReader</label>
+        <link refid="classstar_1_1RangeReader"/>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="1">
+        <label>star::LocalRangeReader</label>
+        <link refid="classstar_1_1LocalRangeReader"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>star::RangeReader</label>
+        <link refid="classstar_1_1RangeReader"/>
+      </node>
+    </collaborationgraph>
+    <location file="StarDS/include/stards.h" line="2988" column="1" bodyfile="StarDS/include/stards.h" bodystart="2988" bodyend="3092"/>
+    <listofallmembers>
+      <member refid="classstar_1_1LocalRangeReader_1a445d226dc57ae9e55e737a3ea688123e" prot="public" virt="virtual"><scope>star::LocalRangeReader</scope><name>ensure_whole_cached</name></member>
+      <member refid="classstar_1_1LocalRangeReader_1a092a1a885ccbd4f38b69729faf55706d" prot="public" virt="virtual"><scope>star::LocalRangeReader</scope><name>good</name></member>
+      <member refid="classstar_1_1LocalRangeReader_1a065fa2e5e5f1133c77bc955791df4ba9" prot="public" virt="non-virtual"><scope>star::LocalRangeReader</scope><name>LocalRangeReader</name></member>
+      <member refid="classstar_1_1LocalRangeReader_1a4fa27120afc9f1f0977d77c38316cff4" prot="private" virt="non-virtual"><scope>star::LocalRangeReader</scope><name>m_cached</name></member>
+      <member refid="classstar_1_1LocalRangeReader_1a3105547d705e9a5c38f76b66c72f583a" prot="private" virt="non-virtual"><scope>star::LocalRangeReader</scope><name>m_path</name></member>
+      <member refid="classstar_1_1LocalRangeReader_1ac97505ff0f64ec479072e483704a58bc" prot="private" virt="non-virtual"><scope>star::LocalRangeReader</scope><name>m_whole</name></member>
+      <member refid="classstar_1_1LocalRangeReader_1a1571e734a7f9cb5aff4b19792463a9e2" prot="public" virt="virtual"><scope>star::LocalRangeReader</scope><name>read_at</name></member>
+      <member refid="classstar_1_1LocalRangeReader_1a6c71c9871dce049ff87919148c9e4a33" prot="private" virt="non-virtual"><scope>star::LocalRangeReader</scope><name>serve_from_cache</name></member>
+      <member refid="classstar_1_1LocalRangeReader_1a0ae5d7a339d340eecb075afce4592eaa" prot="public" virt="virtual"><scope>star::LocalRangeReader</scope><name>size_or_unknown</name></member>
+      <member refid="classstar_1_1LocalRangeReader_1aafb100591e197179dd3ac480b382fa3f" prot="public" virt="non-virtual"><scope>star::LocalRangeReader</scope><name>~LocalRangeReader</name></member>
+      <member refid="classstar_1_1RangeReader_1a5ff2bd9d200f10d0542cede7eba2835d" prot="public" virt="virtual"><scope>star::LocalRangeReader</scope><name>~RangeReader</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

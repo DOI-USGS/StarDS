@@ -2,6 +2,11 @@
 # Namespace Member Typedefs
 
 
-Nothing related to **Namespace Member Typedefs** found.
+
+## v
+
+* **ValueVariant** ([**star**](namespacestar.md))
+
+
 
 

@@ -1361,6 +1361,61 @@
 
 <h1 id="class-hierarchy">Class Hierarchy<a class="headerlink" href="#class-hierarchy" title="Permanent link">&para;</a></h1>
 <p>This inheritance list is sorted roughly, but not completely, alphabetically:</p>
+<ul>
+<li><strong>class</strong> <a href="../classstar_1_1AWSConfigParser/"><strong>star::AWSConfigParser</strong></a> <em>AWS Configuration file parser.</em> </li>
+<li><strong>class</strong> <a href="../classstar_1_1AWSTokenCache/"><strong>star::AWSTokenCache</strong></a> <em>AWS SSO Token Cache reader.</em> </li>
+<li><strong>class</strong> <a href="../classstar_1_1AWSV4Signer/"><strong>star::AWSV4Signer</strong></a> <em>AWS Signature Version 4 signer.</em> </li>
+<li><strong>class</strong> <a href="../classstar_1_1RangeReader/"><strong>star::RangeReader</strong></a>     <ul>
+<li><strong>class</strong> <a href="../classstar_1_1HttpRangeReader/"><strong>star::HttpRangeReader</strong></a> </li>
+<li><strong>class</strong> <a href="../classstar_1_1LocalRangeReader/"><strong>star::LocalRangeReader</strong></a> </li>
+<li><strong>class</strong> <a href="../classstar_1_1MemoryRangeReader/"><strong>star::MemoryRangeReader</strong></a> </li>
+<li><strong>class</strong> <a href="../classstar_1_1S3RangeReader/"><strong>star::S3RangeReader</strong></a> </li>
+</ul>
+</li>
+<li><strong>class</strong> <a href="../classstar_1_1LayerMetadataAccessor/"><strong>star::LayerMetadataAccessor</strong></a> <em>Metadata accessor for a specific layer with inheritance.</em> </li>
+<li><strong>class</strong> <a href="../classstar_1_1LayerView/"><strong>star::LayerView</strong></a> <em>Lightweight view into a specific layer with inheritance from base.</em> </li>
+<li><strong>class</strong> <a href="../classstar_1_1MetadataAccessor/"><strong>star::MetadataAccessor</strong></a> <em>Accessor for metadata operations.</em> </li>
+<li><strong>class</strong> <a href="../classstar_1_1NDArray/"><strong>star::NDArray</strong></a> <em>Modern n-dimensional array class with xtensor-style API.</em> </li>
+<li><strong>class</strong> <a href="../classstar_1_1S3Writer/"><strong>star::S3Writer</strong></a> <em>S3 writer for uploading objects.</em> </li>
+<li><strong>class</strong> <a href="../classstar_1_1ThreadPool/"><strong>star::ThreadPool</strong></a> <em>Simple thread pool for parallel block operations.</em> </li>
+<li><strong>struct</strong> <a href="../structstar_1_1BlockInfo/"><strong>star::BlockInfo</strong></a> <em>Metadata for a single compressed block.</em> </li>
+<li><strong>struct</strong> <a href="../structstar_1_1BlockMap/"><strong>star::BlockMap</strong></a> <em>Maps logical elements to physical blocks.</em> </li>
+<li><strong>struct</strong> <a href="../structstar_1_1ByteUnshuffleSpec/"><strong>star::ByteUnshuffleSpec</strong></a> <em>Describes an in-place byte-unshuffle to fuse into an array's fill.</em> </li>
+<li><strong>struct</strong> <a href="../structstar_1_1ColdStorage/"><strong>star::ColdStorage</strong></a> <em>Cold storage - infrequently accessed data.</em> </li>
+<li><strong>struct</strong> <a href="../structstar_1_1ExtractionPlan/"><strong>star::ExtractionPlan</strong></a> <em>Describes how to extract elements from blocks.</em> </li>
+<li><strong>struct</strong> <a href="../structstar_1_1ExtractionPlan_1_1ElementRange/"><strong>star::ExtractionPlan::ElementRange</strong></a> </li>
+<li><strong>struct</strong> <a href="../structstar_1_1FileHeader/"><strong>star::FileHeader</strong></a> <em>File header structure (31 bytes fixed size).</em> </li>
+<li><strong>struct</strong> <a href="../structstar_1_1FilePathInfo/"><strong>star::FilePathInfo</strong></a> </li>
+<li><strong>struct</strong> <a href="../structstar_1_1HotStorage/"><strong>star::HotStorage</strong></a> <em>Hot storage - frequently accessed data (cache-friendly).</em> </li>
+<li><strong>struct</strong> <a href="../structstar_1_1IndexEntry/"><strong>star::IndexEntry</strong></a> <em>Index entry with block compression support and shape information.</em> </li>
+<li><strong>struct</strong> <a href="../structstar_1_1KeyRegistry/"><strong>star::KeyRegistry</strong></a> <em>Global key registry using data-oriented design (Structure of Arrays).</em> </li>
+<li><strong>struct</strong> <a href="../structstar_1_1LayerMetadataRegistry/"><strong>star::LayerMetadataRegistry</strong></a> <em>Per-layer metadata registry using data-oriented design (Structure of Arrays).</em> </li>
+<li><strong>struct</strong> <a href="../structstar_1_1MetadataValue/"><strong>star::MetadataValue</strong></a> <em>Type-erased wrapper for metadata values.</em> </li>
+<li><strong>struct</strong> <a href="../structstar_1_1OpenOptions/"><strong>star::OpenOptions</strong></a> <em>Read-time options for</em> <a href="../classstar_1_1StarDataset/#function-open-12"><em><strong>StarDataset::open()</strong></em></a> <em>.</em></li>
+<li><strong>struct</strong> <a href="../structstar_1_1S3Credentials/"><strong>star::S3Credentials</strong></a> <em>AWS Credentials with resolution chain.</em> </li>
+<li><strong>struct</strong> <a href="../structstar_1_1S3EndpointConfig/"><strong>star::S3EndpointConfig</strong></a> <em>S3 endpoint resolution (default AWS, or an override for S3-compatible services such as MinIO and for local testing).</em> </li>
+<li><strong>struct</strong> <a href="../structstar_1_1S3Writer_1_1HeaderData/"><strong>star::S3Writer::HeaderData</strong></a> </li>
+<li><strong>struct</strong> <a href="../structstar_1_1Slice/"><strong>star::Slice</strong></a> <em>Describes a slice along one dimension (Python-style slicing) Plain struct - no methods except helpers, just data.</em> </li>
+<li><strong>struct</strong> <a href="../structstar_1_1SliceSpec/"><strong>star::SliceSpec</strong></a> <em>Complete slice specification for n-dimensional array.</em> </li>
+<li><strong>struct</strong> <a href="../structstar_1_1StarConfig/"><strong>star::StarConfig</strong></a> <em>Configuration for metadata block optimization.</em> </li>
+<li><strong>struct</strong> <a href="../structstar_1_1TypeToDataType/"><strong>star::TypeToDataType</strong></a> </li>
+<li><strong>struct</strong> <a href="../structstar_1_1TypeToDataType_3_01double_01_4/"><strong>star::TypeToDataType&lt; double &gt;</strong></a> </li>
+<li><strong>struct</strong> <a href="../structstar_1_1TypeToDataType_3_01float_01_4/"><strong>star::TypeToDataType&lt; float &gt;</strong></a> </li>
+<li><strong>struct</strong> <a href="../structstar_1_1TypeToDataType_3_01int16__t_01_4/"><strong>star::TypeToDataType&lt; int16_t &gt;</strong></a> </li>
+<li><strong>struct</strong> <a href="../structstar_1_1TypeToDataType_3_01int32__t_01_4/"><strong>star::TypeToDataType&lt; int32_t &gt;</strong></a> </li>
+<li><strong>struct</strong> <a href="../structstar_1_1TypeToDataType_3_01int64__t_01_4/"><strong>star::TypeToDataType&lt; int64_t &gt;</strong></a> </li>
+<li><strong>struct</strong> <a href="../structstar_1_1TypeToDataType_3_01int8__t_01_4/"><strong>star::TypeToDataType&lt; int8_t &gt;</strong></a> </li>
+<li><strong>struct</strong> <a href="../structstar_1_1TypeToDataType_3_01std_1_1string_01_4/"><strong>star::TypeToDataType&lt; std::string &gt;</strong></a> </li>
+<li><strong>struct</strong> <a href="../structstar_1_1TypeToDataType_3_01uint16__t_01_4/"><strong>star::TypeToDataType&lt; uint16_t &gt;</strong></a> </li>
+<li><strong>struct</strong> <a href="../structstar_1_1TypeToDataType_3_01uint32__t_01_4/"><strong>star::TypeToDataType&lt; uint32_t &gt;</strong></a> </li>
+<li><strong>struct</strong> <a href="../structstar_1_1TypeToDataType_3_01uint64__t_01_4/"><strong>star::TypeToDataType&lt; uint64_t &gt;</strong></a> </li>
+<li><strong>struct</strong> <a href="../structstar_1_1TypeToDataType_3_01uint8__t_01_4/"><strong>star::TypeToDataType&lt; uint8_t &gt;</strong></a> </li>
+<li><strong>struct</strong> <a href="../structstar_1_1AWSTokenCache_1_1SSOToken/"><strong>star::AWSTokenCache::SSOToken</strong></a> </li>
+<li><strong>class</strong> <strong>std::enable_shared_from_this&lt; StarDataset &gt;</strong>    <ul>
+<li><strong>class</strong> <a href="../classstar_1_1StarDataset/"><strong>star::StarDataset</strong></a> <em>A cloud-optimized binary key-value store for serializable data types.</em> </li>
+</ul>
+</li>
+</ul>
 
 
 

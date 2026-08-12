@@ -1,0 +1,3296 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.17.0" xml:lang="en-US">
+  <compounddef id="classstar_1_1StarDataset" kind="class" language="C++" prot="public">
+    <compoundname>star::StarDataset</compoundname>
+    <basecompoundref prot="public" virt="non-virtual">std::enable_shared_from_this&lt; StarDataset &gt;</basecompoundref>
+    <includes refid="stards_8h" local="no">stards.h</includes>
+    <sectiondef kind="public-type">
+      <memberdef kind="typedef" id="classstar_1_1StarDataset_1a5c396e3ad89800e66a36bea68d09ba95" prot="public" static="no">
+        <type>std::vector&lt; std::string &gt;::iterator</type>
+        <definition>using star::StarDataset::iterator = std::vector&lt;std::string&gt;::iterator</definition>
+        <argsstring></argsstring>
+        <name>iterator</name>
+        <qualifiedname>star::StarDataset::iterator</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="5171" column="5" bodyfile="StarDS/include/stards.h" bodystart="5171" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="classstar_1_1StarDataset_1ab79bf9db2987f66409cb21f356e8c0bd" prot="public" static="no">
+        <type>std::vector&lt; std::string &gt;::const_iterator</type>
+        <definition>using star::StarDataset::const_iterator = std::vector&lt;std::string&gt;::const_iterator</definition>
+        <argsstring></argsstring>
+        <name>const_iterator</name>
+        <qualifiedname>star::StarDataset::const_iterator</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="5172" column="5" bodyfile="StarDS/include/stards.h" bodystart="5172" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="friend">
+      <memberdef kind="friend" id="classstar_1_1StarDataset_1a015b70c9b130674c6d74ca816f38ac9f" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>class</type>
+        <definition>friend class LayerMetadataAccessor</definition>
+        <argsstring></argsstring>
+        <name>LayerMetadataAccessor</name>
+        <qualifiedname>star::StarDataset::LayerMetadataAccessor</qualifiedname>
+        <param>
+          <type>LayerMetadataAccessor</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="5165" column="18" bodyfile="StarDS/include/stards.h" bodystart="5165" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classstar_1_1StarDataset_1a4a41100e7d8fff93deedefb5593b6a6b" prot="public" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string star::StarDataset::m_filename</definition>
+        <argsstring></argsstring>
+        <name>m_filename</name>
+        <qualifiedname>star::StarDataset::m_filename</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="5174" column="17" bodyfile="StarDS/include/stards.h" bodystart="5174" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classstar_1_1StarDataset_1a9b964ffa557774a85a2235dffa61e1b7" prot="public" static="no" mutable="no">
+        <type><ref refid="structstar_1_1FileHeader" kindref="compound">FileHeader</ref></type>
+        <definition>FileHeader star::StarDataset::m_file_header</definition>
+        <argsstring></argsstring>
+        <name>m_file_header</name>
+        <qualifiedname>star::StarDataset::m_file_header</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="5175" column="16" bodyfile="StarDS/include/stards.h" bodystart="5175" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classstar_1_1StarDataset_1aa0af233b472755cde030dfd67c00486e" prot="public" static="no" mutable="no">
+        <type>size_t</type>
+        <definition>size_t star::StarDataset::m_header_size</definition>
+        <argsstring></argsstring>
+        <name>m_header_size</name>
+        <qualifiedname>star::StarDataset::m_header_size</qualifiedname>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="5176" column="12" bodyfile="StarDS/include/stards.h" bodystart="5176" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classstar_1_1StarDataset_1aa35ae19e556b60e10da699fe17cfd7fe" prot="public" static="no" mutable="no">
+        <type>bool</type>
+        <definition>bool star::StarDataset::m_header_dirty</definition>
+        <argsstring></argsstring>
+        <name>m_header_dirty</name>
+        <qualifiedname>star::StarDataset::m_header_dirty</qualifiedname>
+        <initializer>= false</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="5177" column="10" bodyfile="StarDS/include/stards.h" bodystart="5177" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classstar_1_1StarDataset_1a65bb10d2d8ae7e16fbc73bb49cb24fb5" prot="public" static="no" mutable="yes">
+        <type>std::shared_mutex</type>
+        <definition>std::shared_mutex star::StarDataset::m_mutex</definition>
+        <argsstring></argsstring>
+        <name>m_mutex</name>
+        <qualifiedname>star::StarDataset::m_mutex</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="5178" column="31" bodyfile="StarDS/include/stards.h" bodystart="5178" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classstar_1_1StarDataset_1a0fd17f8b896ea72962218389307e5edb" prot="public" static="no" mutable="no">
+        <type><ref refid="structstar_1_1HotStorage" kindref="compound">HotStorage</ref></type>
+        <definition>HotStorage star::StarDataset::m_hot</definition>
+        <argsstring></argsstring>
+        <name>m_hot</name>
+        <qualifiedname>star::StarDataset::m_hot</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="5180" column="16" bodyfile="StarDS/include/stards.h" bodystart="5180" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classstar_1_1StarDataset_1ae1ad21033194c378505839e5189ea8ed" prot="public" static="no" mutable="no">
+        <type><ref refid="structstar_1_1ColdStorage" kindref="compound">ColdStorage</ref></type>
+        <definition>ColdStorage star::StarDataset::m_cold</definition>
+        <argsstring></argsstring>
+        <name>m_cold</name>
+        <qualifiedname>star::StarDataset::m_cold</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="5181" column="17" bodyfile="StarDS/include/stards.h" bodystart="5181" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classstar_1_1StarDataset_1af53ec93ff2b22d6f1fcf6dee8fc0f78c" prot="public" static="no" mutable="yes">
+        <type>std::vector&lt; ValueVariant &gt;</type>
+        <definition>std::vector&lt;ValueVariant&gt; star::StarDataset::m_data_storage</definition>
+        <argsstring></argsstring>
+        <name>m_data_storage</name>
+        <qualifiedname>star::StarDataset::m_data_storage</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="5182" column="25" bodyfile="StarDS/include/stards.h" bodystart="5182" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classstar_1_1StarDataset_1a5a6e5e5aaf91b36c68d093a02a8b1eb1" prot="public" static="no" mutable="no">
+        <type>std::unordered_map&lt; std::string, size_t &gt;</type>
+        <definition>std::unordered_map&lt;std::string, size_t&gt; star::StarDataset::m_key_to_index</definition>
+        <argsstring></argsstring>
+        <name>m_key_to_index</name>
+        <qualifiedname>star::StarDataset::m_key_to_index</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="5183" column="24" bodyfile="StarDS/include/stards.h" bodystart="5183" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classstar_1_1StarDataset_1ae2904c1f0618c9a3cfe544f536f854cc" prot="public" static="no" mutable="yes">
+        <type>bool</type>
+        <definition>bool star::StarDataset::m_metadata_loaded</definition>
+        <argsstring></argsstring>
+        <name>m_metadata_loaded</name>
+        <qualifiedname>star::StarDataset::m_metadata_loaded</qualifiedname>
+        <initializer>= false</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="5184" column="18" bodyfile="StarDS/include/stards.h" bodystart="5184" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classstar_1_1StarDataset_1ae75df7720592442281f7ecc5b0b6a637" prot="public" static="no" mutable="no">
+        <type><ref refid="structstar_1_1KeyRegistry" kindref="compound">KeyRegistry</ref></type>
+        <definition>KeyRegistry star::StarDataset::m_key_registry</definition>
+        <argsstring></argsstring>
+        <name>m_key_registry</name>
+        <qualifiedname>star::StarDataset::m_key_registry</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="5187" column="17" bodyfile="StarDS/include/stards.h" bodystart="5187" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classstar_1_1StarDataset_1a8adf8fc6ba0410c26a4311855c1be7ff" prot="public" static="no" mutable="no">
+        <type><ref refid="structstar_1_1LayerMetadataRegistry" kindref="compound">LayerMetadataRegistry</ref></type>
+        <definition>LayerMetadataRegistry star::StarDataset::m_layer_metadata_registry</definition>
+        <argsstring></argsstring>
+        <name>m_layer_metadata_registry</name>
+        <qualifiedname>star::StarDataset::m_layer_metadata_registry</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="5188" column="27" bodyfile="StarDS/include/stards.h" bodystart="5188" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classstar_1_1StarDataset_1a2c757feefb1d2dcbfe3b741edcb67cbb" prot="public" static="no" mutable="yes">
+        <type>std::vector&lt; bool &gt;</type>
+        <definition>std::vector&lt;bool&gt; star::StarDataset::m_layer_metadata_loaded</definition>
+        <argsstring></argsstring>
+        <name>m_layer_metadata_loaded</name>
+        <qualifiedname>star::StarDataset::m_layer_metadata_loaded</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="5189" column="25" bodyfile="StarDS/include/stards.h" bodystart="5189" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classstar_1_1StarDataset_1a4d5b6dd0447d157ea0faa6cbe3a4b14c" prot="public" static="no" mutable="yes">
+        <type>std::vector&lt; std::unordered_map&lt; uint16_t, size_t &gt; &gt;</type>
+        <definition>std::vector&lt;std::unordered_map&lt;uint16_t, size_t&gt; &gt; star::StarDataset::m_layer_metadata_indices</definition>
+        <argsstring></argsstring>
+        <name>m_layer_metadata_indices</name>
+        <qualifiedname>star::StarDataset::m_layer_metadata_indices</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="5190" column="25" bodyfile="StarDS/include/stards.h" bodystart="5190" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classstar_1_1StarDataset_1a5f1d4634a079d78fc1f99baeb91b4f64" prot="public" static="no" mutable="no">
+        <type>std::map&lt; std::string, std::vector&lt; uint64_t &gt; &gt;</type>
+        <definition>std::map&lt;std::string, std::vector&lt;uint64_t&gt; &gt; star::StarDataset::m_layer_presence</definition>
+        <argsstring></argsstring>
+        <name>m_layer_presence</name>
+        <qualifiedname>star::StarDataset::m_layer_presence</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="5191" column="14" bodyfile="StarDS/include/stards.h" bodystart="5191" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classstar_1_1StarDataset_1a18dd8808fdb7b88f4b05a47d28f69e0a" prot="public" static="no" mutable="yes">
+        <type>std::unordered_map&lt; size_t, DataType &gt;</type>
+        <definition>std::unordered_map&lt;size_t, DataType&gt; star::StarDataset::m_metadata_dtypes</definition>
+        <argsstring></argsstring>
+        <name>m_metadata_dtypes</name>
+        <qualifiedname>star::StarDataset::m_metadata_dtypes</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="5192" column="32" bodyfile="StarDS/include/stards.h" bodystart="5192" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classstar_1_1StarDataset_1a9f33d573f3b38edcb00c79169c9f8519" prot="public" static="no" mutable="yes">
+        <type>std::unordered_map&lt; size_t, std::vector&lt; size_t &gt; &gt;</type>
+        <definition>std::unordered_map&lt;size_t, std::vector&lt;size_t&gt; &gt; star::StarDataset::m_metadata_shapes</definition>
+        <argsstring></argsstring>
+        <name>m_metadata_shapes</name>
+        <qualifiedname>star::StarDataset::m_metadata_shapes</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="5193" column="32" bodyfile="StarDS/include/stards.h" bodystart="5193" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classstar_1_1StarDataset_1ab3a631360d980d3010867cf576549436" prot="public" static="no" mutable="no">
+        <type>std::vector&lt; char &gt;</type>
+        <definition>std::vector&lt;char&gt; star::StarDataset::m_serialize_buffer</definition>
+        <argsstring></argsstring>
+        <name>m_serialize_buffer</name>
+        <qualifiedname>star::StarDataset::m_serialize_buffer</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="5196" column="17" bodyfile="StarDS/include/stards.h" bodystart="5196" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classstar_1_1StarDataset_1a45561d7041f5a14a262c47683295dff0" prot="public" static="no" mutable="no">
+        <type>std::vector&lt; char &gt;</type>
+        <definition>std::vector&lt;char&gt; star::StarDataset::m_compress_buffer</definition>
+        <argsstring></argsstring>
+        <name>m_compress_buffer</name>
+        <qualifiedname>star::StarDataset::m_compress_buffer</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="5197" column="17" bodyfile="StarDS/include/stards.h" bodystart="5197" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classstar_1_1StarDataset_1a856813487b1936db6756ba7473652a34" prot="public" static="no" mutable="no">
+        <type><ref refid="classstar_1_1MetadataAccessor" kindref="compound">MetadataAccessor</ref></type>
+        <definition>MetadataAccessor star::StarDataset::meta</definition>
+        <argsstring></argsstring>
+        <name>meta</name>
+        <qualifiedname>star::StarDataset::meta</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="5200" column="22" bodyfile="StarDS/include/stards.h" bodystart="5200" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classstar_1_1StarDataset_1a1d73dd82953e1260da02721e6a8ee060" prot="public" static="no" mutable="no">
+        <type>FileMode</type>
+        <definition>FileMode star::StarDataset::m_file_mode</definition>
+        <argsstring></argsstring>
+        <name>m_file_mode</name>
+        <qualifiedname>star::StarDataset::m_file_mode</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="5201" column="14" bodyfile="StarDS/include/stards.h" bodystart="5201" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classstar_1_1StarDataset_1ac444bd44b150741b2502b3f80663afa9" prot="public" static="no" mutable="no">
+        <type><ref refid="structstar_1_1FilePathInfo" kindref="compound">FilePathInfo</ref></type>
+        <definition>FilePathInfo star::StarDataset::m_path_info</definition>
+        <argsstring></argsstring>
+        <name>m_path_info</name>
+        <qualifiedname>star::StarDataset::m_path_info</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="5202" column="18" bodyfile="StarDS/include/stards.h" bodystart="5202" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classstar_1_1StarDataset_1a8fbdf94214dd5da47aa3cfae069c35fd" prot="public" static="no" mutable="no">
+        <type>std::unique_ptr&lt; <ref refid="structstar_1_1S3Credentials" kindref="compound">S3Credentials</ref> &gt;</type>
+        <definition>std::unique_ptr&lt;S3Credentials&gt; star::StarDataset::m_s3_credentials</definition>
+        <argsstring></argsstring>
+        <name>m_s3_credentials</name>
+        <qualifiedname>star::StarDataset::m_s3_credentials</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="5206" column="21" bodyfile="StarDS/include/stards.h" bodystart="5206" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classstar_1_1StarDataset_1a547ae8e882bb3fed98e408c1b084248d" prot="public" static="no" mutable="no">
+        <type><ref refid="structstar_1_1StarConfig" kindref="compound">StarConfig</ref></type>
+        <definition>StarConfig star::StarDataset::m_config</definition>
+        <argsstring></argsstring>
+        <name>m_config</name>
+        <qualifiedname>star::StarDataset::m_config</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="5210" column="16" bodyfile="StarDS/include/stards.h" bodystart="5210" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classstar_1_1StarDataset_1a1615360f9642b16f84afe157470ef3c1" prot="public" static="no" mutable="no">
+        <type><ref refid="structstar_1_1OpenOptions" kindref="compound">OpenOptions</ref></type>
+        <definition>OpenOptions star::StarDataset::m_open_options</definition>
+        <argsstring></argsstring>
+        <name>m_open_options</name>
+        <qualifiedname>star::StarDataset::m_open_options</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="5211" column="17" bodyfile="StarDS/include/stards.h" bodystart="5211" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classstar_1_1StarDataset_1a63b1ed8f5b4635be32a8132919decc77" prot="public" static="no" mutable="no">
+        <type>bool</type>
+        <definition>bool star::StarDataset::m_flushed</definition>
+        <argsstring></argsstring>
+        <name>m_flushed</name>
+        <qualifiedname>star::StarDataset::m_flushed</qualifiedname>
+        <initializer>= false</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="5212" column="10" bodyfile="StarDS/include/stards.h" bodystart="5212" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classstar_1_1StarDataset_1a8ec971a7148701235cfb5c958774ab6e" prot="public" static="no" mutable="no">
+        <type>std::unique_ptr&lt; <ref refid="classstar_1_1ThreadPool" kindref="compound">ThreadPool</ref> &gt;</type>
+        <definition>std::unique_ptr&lt;ThreadPool&gt; star::StarDataset::m_thread_pool</definition>
+        <argsstring></argsstring>
+        <name>m_thread_pool</name>
+        <qualifiedname>star::StarDataset::m_thread_pool</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="5213" column="21" bodyfile="StarDS/include/stards.h" bodystart="5213" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classstar_1_1StarDataset_1a062f183ffc0c2090deb5a2b42a662bd5" prot="public" static="no" mutable="no">
+        <type>std::unique_ptr&lt; <ref refid="classstar_1_1RangeReader" kindref="compound">RangeReader</ref> &gt;</type>
+        <definition>std::unique_ptr&lt;RangeReader&gt; star::StarDataset::m_reader</definition>
+        <argsstring></argsstring>
+        <name>m_reader</name>
+        <qualifiedname>star::StarDataset::m_reader</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="5218" column="21" bodyfile="StarDS/include/stards.h" bodystart="5218" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classstar_1_1StarDataset_1ab5d068d39b491824da69eaf7ebcc6719" prot="public" static="no" mutable="no">
+        <type>std::vector&lt; char &gt;</type>
+        <definition>std::vector&lt;char&gt; star::StarDataset::m_memory_source</definition>
+        <argsstring></argsstring>
+        <name>m_memory_source</name>
+        <qualifiedname>star::StarDataset::m_memory_source</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="5222" column="17" bodyfile="StarDS/include/stards.h" bodystart="5222" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classstar_1_1StarDataset_1a8d30dd4d25011c6cfd7144dc0183aaf7" prot="public" static="no" mutable="no">
+        <type>std::vector&lt; char &gt; *</type>
+        <definition>std::vector&lt;char&gt;* star::StarDataset::m_capture_image</definition>
+        <argsstring></argsstring>
+        <name>m_capture_image</name>
+        <qualifiedname>star::StarDataset::m_capture_image</qualifiedname>
+        <initializer>= nullptr</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="5226" column="17" bodyfile="StarDS/include/stards.h" bodystart="5226" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="classstar_1_1StarDataset_1ada45adc172a5d4661501cab69571c621" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool star::StarDataset::useThreading</definition>
+        <argsstring>(size_t num_blocks, size_t data_size) const</argsstring>
+        <name>useThreading</name>
+        <qualifiedname>star::StarDataset::useThreading</qualifiedname>
+        <param>
+          <type>size_t</type>
+          <declname>num_blocks</declname>
+        </param>
+        <param>
+          <type>size_t</type>
+          <declname>data_size</declname>
+        </param>
+        <briefdescription>
+<para>Check if threading should be used based on workload. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>num_blocks</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Number of blocks to process </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>data_size</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Total data size in bytes </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>true if threading should be used, false otherwise </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="5234" column="10" bodyfile="StarDS/include/stards.h" bodystart="5234" bodyend="5238"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1a374c4ac9b32b35e1ce85c814c1529b75" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="classstar_1_1RangeReader" kindref="compound">RangeReader</ref> &amp;</type>
+        <definition>RangeReader &amp; star::StarDataset::reader</definition>
+        <argsstring>()</argsstring>
+        <name>reader</name>
+        <qualifiedname>star::StarDataset::reader</qualifiedname>
+        <briefdescription>
+<para>Return the dataset&apos;s persistent byte-range reader, creating it on first use. One reader (= one reused connection for remote files) is shared by every read path — the index load, layer-metadata loads, and array-block reads — so remote reads never open a new connection or issue a HEAD per read. </para>
+        </briefdescription>
+        <detaileddescription>
+<para>For small REMOTE files, this also triggers the whole-file prefetch (OpenOptions::prefetch_whole_below_bytes): the object is fetched once and all subsequent reads are served from memory. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="5252" column="17" bodyfile="StarDS/include/stards.h" bodystart="5252" bodyend="5294"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1af5cfd7806ec64acef710e394d9e64594" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::vector&lt; char &gt;</type>
+        <definition>std::vector&lt; char &gt; star::StarDataset::read_range</definition>
+        <argsstring>(size_t position, size_t len)</argsstring>
+        <name>read_range</name>
+        <qualifiedname>star::StarDataset::read_range</qualifiedname>
+        <param>
+          <type>size_t</type>
+          <declname>position</declname>
+        </param>
+        <param>
+          <type>size_t</type>
+          <declname>len</declname>
+        </param>
+        <briefdescription>
+<para>Read exactly [position, position+len) from the backing file via the persistent reader. Returns the bytes actually read. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="5300" column="17" bodyfile="StarDS/include/stards.h" bodystart="5300" bodyend="5304"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1ac2771aa56780b1e7715b79fcd9ce1557" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>ValueVariant</type>
+        <definition>ValueVariant star::StarDataset::decode_numeric_blocks_into_ndarray</definition>
+        <argsstring>(const std::vector&lt; char &gt; &amp;compressed_data, const std::vector&lt; BlockInfo &gt; &amp;blocks, CompressionAlgorithm compression, DataType dtype, const std::vector&lt; size_t &gt; &amp;shape, ThreadPool *thread_pool)</argsstring>
+        <name>decode_numeric_blocks_into_ndarray</name>
+        <qualifiedname>star::StarDataset::decode_numeric_blocks_into_ndarray</qualifiedname>
+        <param>
+          <type>const std::vector&lt; char &gt; &amp;</type>
+          <declname>compressed_data</declname>
+        </param>
+        <param>
+          <type>const std::vector&lt; <ref refid="structstar_1_1BlockInfo" kindref="compound">BlockInfo</ref> &gt; &amp;</type>
+          <declname>blocks</declname>
+        </param>
+        <param>
+          <type>CompressionAlgorithm</type>
+          <declname>compression</declname>
+        </param>
+        <param>
+          <type>DataType</type>
+          <declname>dtype</declname>
+        </param>
+        <param>
+          <type>const std::vector&lt; size_t &gt; &amp;</type>
+          <declname>shape</declname>
+        </param>
+        <param>
+          <type><ref refid="classstar_1_1ThreadPool" kindref="compound">ThreadPool</ref> *</type>
+          <declname>thread_pool</declname>
+        </param>
+        <briefdescription>
+<para>Decode one array entry&apos;s compressed bytes into a ValueVariant. </para>
+        </briefdescription>
+        <detaileddescription>
+<para>This is the CPU half of an array load (everything after the ranged read): decompress the blocks, reverse any byte-shuffle prefilter, and materialize the <ref refid="classstar_1_1NDArray" kindref="compound">NDArray</ref>. It is a pure function of its arguments — it reads no shared mutable state and writes none — so it is safe to run concurrently on thread-pool workers, which is what <ref refid="classstar_1_1StarDataset_1ab9f9dc2c84f028de3072b4cf1f5f9a6b" kindref="member">prefetch()</ref> relies on to decode many columns in parallel.</para>
+<para><computeroutput>thread_pool</computeroutput> controls only INTRA-array block parallelism inside decompressBlocks(). A batch caller that is already parallelizing ACROSS arrays MUST pass nullptr here: a pool worker that enqueued to and waited on the same pool could deadlock. The single-array load path (load_entry) passes the pool so a lone large array still decompresses its blocks in parallel.</para>
+<para>One-pass decode for the fast path: build the <ref refid="classstar_1_1NDArray" kindref="compound">NDArray&lt;T&gt;</ref> and decompress every block directly into its storage.</para>
+<para>Only reached for fixed-width numeric arrays with no byte-shuffle prefilter, where the decompressed block bytes are exactly the element bytes. Produces the identical <ref refid="classstar_1_1NDArray" kindref="compound">NDArray</ref> the general (decompressBlocks + memcpy) path would, without the intermediate full-size buffer or the second pass. Pure function of its arguments — safe to run on pool workers, same as decode_array_bytes(). </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="5332" column="18" bodyfile="StarDS/include/stards.h" bodystart="5332" bodyend="5366"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1a1e9437653ff2eff23edfbf14fcc5ac4e" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>ValueVariant</type>
+        <definition>ValueVariant star::StarDataset::decode_array_bytes</definition>
+        <argsstring>(const std::vector&lt; char &gt; &amp;compressed_data, const std::vector&lt; BlockInfo &gt; &amp;blocks, CompressionAlgorithm compression, DataType dtype, const std::vector&lt; size_t &gt; &amp;shape, ThreadPool *thread_pool)</argsstring>
+        <name>decode_array_bytes</name>
+        <qualifiedname>star::StarDataset::decode_array_bytes</qualifiedname>
+        <param>
+          <type>const std::vector&lt; char &gt; &amp;</type>
+          <declname>compressed_data</declname>
+        </param>
+        <param>
+          <type>const std::vector&lt; <ref refid="structstar_1_1BlockInfo" kindref="compound">BlockInfo</ref> &gt; &amp;</type>
+          <declname>blocks</declname>
+        </param>
+        <param>
+          <type>CompressionAlgorithm</type>
+          <declname>compression</declname>
+        </param>
+        <param>
+          <type>DataType</type>
+          <declname>dtype</declname>
+        </param>
+        <param>
+          <type>const std::vector&lt; size_t &gt; &amp;</type>
+          <declname>shape</declname>
+        </param>
+        <param>
+          <type><ref refid="classstar_1_1ThreadPool" kindref="compound">ThreadPool</ref> *</type>
+          <declname>thread_pool</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="5368" column="18" bodyfile="StarDS/include/stards.h" bodystart="5368" bodyend="5423"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1aef9d358e9585311ae5aa2b651da66cab" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void star::StarDataset::load_entry</definition>
+        <argsstring>(size_t idx)</argsstring>
+        <name>load_entry</name>
+        <qualifiedname>star::StarDataset::load_entry</qualifiedname>
+        <param>
+          <type>size_t</type>
+          <declname>idx</declname>
+        </param>
+        <briefdescription>
+<para>Load entry from disk into memory. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>idx</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Index in SoA arrays </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="5429" column="10" bodyfile="StarDS/include/stards.h" bodystart="5429" bodyend="5469"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1a33c7865d6e7cc05b34cb0c8183642a8e" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::string</type>
+        <definition>std::string star::StarDataset::deserializeKey</definition>
+        <argsstring>(std::istream &amp;is)</argsstring>
+        <name>deserializeKey</name>
+        <qualifiedname>star::StarDataset::deserializeKey</qualifiedname>
+        <param>
+          <type>std::istream &amp;</type>
+          <declname>is</declname>
+        </param>
+        <briefdescription>
+<para>Deserializes a key from the input stream. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>is</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Input stream </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>Deserialized key </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="5476" column="17" bodyfile="StarDS/include/stards.h" bodystart="5476" bodyend="5484"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1a703e8f06dc28a122e20c4c5a41a80d6a" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>size_t</type>
+        <definition>size_t star::StarDataset::calculateHeaderSize</definition>
+        <argsstring>()</argsstring>
+        <name>calculateHeaderSize</name>
+        <qualifiedname>star::StarDataset::calculateHeaderSize</qualifiedname>
+        <briefdescription>
+<para>Calculates the size of the header based on current index. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>Size of the header in bytes </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="5490" column="12" bodyfile="StarDS/include/stards.h" bodystart="5490" bodyend="5548"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1a24e20cbd39b3e6eaafdc48b2163a1b25" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void star::StarDataset::loadIndex</definition>
+        <argsstring>()</argsstring>
+        <name>loadIndex</name>
+        <qualifiedname>star::StarDataset::loadIndex</qualifiedname>
+        <briefdescription>
+<para>Loads the index from the file. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="5553" column="10" bodyfile="StarDS/include/stards.h" bodystart="5553" bodyend="5817"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1a0c8bcdb169a7c7b879934cfe1e92d5f8" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+        </templateparamlist>
+        <type>std::enable_if&lt; std::is_same&lt; T, std::string &gt;::value, void &gt;::type</type>
+        <definition>std::enable_if&lt; std::is_same&lt; T, std::string &gt;::value, void &gt;::type star::StarDataset::serialize_metadata_value</definition>
+        <argsstring>(std::ostream &amp;os, const std::vector&lt; T &gt; &amp;data) const</argsstring>
+        <name>serialize_metadata_value</name>
+        <qualifiedname>star::StarDataset::serialize_metadata_value</qualifiedname>
+        <param>
+          <type>std::ostream &amp;</type>
+          <declname>os</declname>
+        </param>
+        <param>
+          <type>const std::vector&lt; T &gt; &amp;</type>
+          <declname>data</declname>
+        </param>
+        <briefdescription>
+<para>Helper to serialize metadata value (string specialization). </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="5825" column="5" bodyfile="StarDS/include/stards.h" bodystart="5825" bodyend="5840"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1a851845e0b884cf8a529e0aaa05c25344" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+        </templateparamlist>
+        <type>std::enable_if&lt;!std::is_same&lt; T, std::string &gt;::value, void &gt;::type</type>
+        <definition>std::enable_if&lt;!std::is_same&lt; T, std::string &gt;::value, void &gt;::type star::StarDataset::serialize_metadata_value</definition>
+        <argsstring>(std::ostream &amp;os, const std::vector&lt; T &gt; &amp;data) const</argsstring>
+        <name>serialize_metadata_value</name>
+        <qualifiedname>star::StarDataset::serialize_metadata_value</qualifiedname>
+        <param>
+          <type>std::ostream &amp;</type>
+          <declname>os</declname>
+        </param>
+        <param>
+          <type>const std::vector&lt; T &gt; &amp;</type>
+          <declname>data</declname>
+        </param>
+        <briefdescription>
+<para>Helper to serialize metadata value (numeric types). </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="5847" column="5" bodyfile="StarDS/include/stards.h" bodystart="5847" bodyend="5851"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1a4ba4c2706e54a1585e1398e5e5bd252b" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+        </templateparamlist>
+        <type>std::vector&lt; char &gt;</type>
+        <definition>std::vector&lt; char &gt; star::StarDataset::serialize_array_data</definition>
+        <argsstring>(const std::vector&lt; T &gt; &amp;data) const</argsstring>
+        <name>serialize_array_data</name>
+        <qualifiedname>star::StarDataset::serialize_array_data</qualifiedname>
+        <param>
+          <type>const std::vector&lt; T &gt; &amp;</type>
+          <declname>data</declname>
+        </param>
+        <briefdescription>
+<para>Serialize an <ref refid="classstar_1_1NDArray" kindref="compound">NDArray</ref>&apos;s element data into a byte buffer for block storage, in the SAME wire format <ref refid="classstar_1_1StarDataset_1aa7090387f438ffed049fa3b13a9926b9" kindref="member">deserialize_typed_value()</ref> reads. </para>
+        </briefdescription>
+        <detaileddescription>
+<para>Numeric types are raw contiguous bytes; std::string arrays are length-prefixed (uint32 total length, then per-element uint32 length + bytes). Using this everywhere fixes the bug where string arrays were memcpy&apos;d as raw std::string OBJECTS (pointers/SSO) and came back empty after reload. For numeric types the bytes are identical to the old memcpy. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="5864" column="17" bodyfile="StarDS/include/stards.h" bodystart="5864" bodyend="5872"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1a78c1eaca5966f89a7ae30896c43981a3" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+        </templateparamlist>
+        <type>std::vector&lt; char &gt;</type>
+        <definition>std::vector&lt; char &gt; star::StarDataset::serialize_array_data</definition>
+        <argsstring>(const std::vector&lt; T &gt; &amp;data, CompressionAlgorithm codec, size_t block_size) const</argsstring>
+        <name>serialize_array_data</name>
+        <qualifiedname>star::StarDataset::serialize_array_data</qualifiedname>
+        <param>
+          <type>const std::vector&lt; T &gt; &amp;</type>
+          <declname>data</declname>
+        </param>
+        <param>
+          <type>CompressionAlgorithm</type>
+          <declname>codec</declname>
+        </param>
+        <param>
+          <type>size_t</type>
+          <declname>block_size</declname>
+        </param>
+        <briefdescription>
+<para>Serialize array data, applying the byte-shuffle prefilter if the codec is a *_SHUFFLE variant. </para>
+        </briefdescription>
+        <detaileddescription>
+<para>Shuffle is only valid for fixed-width numeric elements laid out as raw contiguous bytes; std::string arrays are length-prefixed and variable width, so they are never shuffled (they store fine under the base codec).</para>
+<para>Two shuffle layouts are produced depending on the codec:<itemizedlist>
+<listitem><para>global (GZIP_SHUFFLE/LZ4_SHUFFLE): shuffle the whole buffer at once.</para>
+</listitem><listitem><para>per-block (GZIP_SHUFFLE_BLOCK/LZ4_SHUFFLE_BLOCK): shuffle each <computeroutput>block_size</computeroutput> chunk independently, so it lines up with the compression blocks that compressBlocksBuffered() cuts at the same boundaries. Each block is then self-contained and sliceable. </para>
+</listitem></itemizedlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="5890" column="17" bodyfile="StarDS/include/stards.h" bodystart="5890" bodyend="5909"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1ab0df6d3b6d3b7708afe0ffdae786ec23" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void star::StarDataset::serialize_layer_metadata_block</definition>
+        <argsstring>(std::ostream &amp;os, const std::string &amp;layer_name)</argsstring>
+        <name>serialize_layer_metadata_block</name>
+        <qualifiedname>star::StarDataset::serialize_layer_metadata_block</qualifiedname>
+        <param>
+          <type>std::ostream &amp;</type>
+          <declname>os</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>layer_name</declname>
+        </param>
+        <briefdescription>
+<para>Serializes a single layer&apos;s metadata in STARMeta format (v1). </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>os</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Output stream </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>layer_name</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Layer name </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="5917" column="10" bodyfile="StarDS/include/stards.h" bodystart="5917" bodyend="5997"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1abb240b1e97e7fd590b90fba8631058c0" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void star::StarDataset::serialize_metadata_block</definition>
+        <argsstring>(std::ostream &amp;os) const</argsstring>
+        <name>serialize_metadata_block</name>
+        <qualifiedname>star::StarDataset::serialize_metadata_block</qualifiedname>
+        <param>
+          <type>std::ostream &amp;</type>
+          <declname>os</declname>
+        </param>
+        <briefdescription>
+<para>Serializes metadata block to stream (OLD FORMAT - deprecated). </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>os</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Output stream </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="6003" column="10" bodyfile="StarDS/include/stards.h" bodystart="6003" bodyend="6051"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1aa7090387f438ffed049fa3b13a9926b9" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>ValueVariant</type>
+        <definition>ValueVariant star::StarDataset::deserialize_typed_value</definition>
+        <argsstring>(std::istream &amp;is, DataType dtype, const std::vector&lt; size_t &gt; &amp;shape, size_t data_len)</argsstring>
+        <name>deserialize_typed_value</name>
+        <qualifiedname>star::StarDataset::deserialize_typed_value</qualifiedname>
+        <param>
+          <type>std::istream &amp;</type>
+          <declname>is</declname>
+        </param>
+        <param>
+          <type>DataType</type>
+          <declname>dtype</declname>
+        </param>
+        <param>
+          <type>const std::vector&lt; size_t &gt; &amp;</type>
+          <declname>shape</declname>
+        </param>
+        <param>
+          <type>size_t</type>
+          <declname>data_len</declname>
+        </param>
+        <briefdescription>
+<para>Deserializes typed value from stream. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>is</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Input stream </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>dtype</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Data type </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>shape</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Array shape </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>data_len</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Data length in bytes </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>ValueVariant containing the deserialized value </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="6061" column="18" bodyfile="StarDS/include/stards.h" bodystart="6061" bodyend="6153"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1a5b2e680be05fc87317164e0e0d4d7cef" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>ValueVariant</type>
+        <definition>ValueVariant star::StarDataset::deserialize_typed_value_bytes</definition>
+        <argsstring>(const char *data, size_t data_len, DataType dtype, const std::vector&lt; size_t &gt; &amp;shape, const ByteUnshuffleSpec &amp;unshuffle={})</argsstring>
+        <name>deserialize_typed_value_bytes</name>
+        <qualifiedname>star::StarDataset::deserialize_typed_value_bytes</qualifiedname>
+        <param>
+          <type>const char *</type>
+          <declname>data</declname>
+        </param>
+        <param>
+          <type>size_t</type>
+          <declname>data_len</declname>
+        </param>
+        <param>
+          <type>DataType</type>
+          <declname>dtype</declname>
+        </param>
+        <param>
+          <type>const std::vector&lt; size_t &gt; &amp;</type>
+          <declname>shape</declname>
+        </param>
+        <param>
+          <type>const <ref refid="structstar_1_1ByteUnshuffleSpec" kindref="compound">ByteUnshuffleSpec</ref> &amp;</type>
+          <declname>unshuffle</declname>
+          <defval>{}</defval>
+        </param>
+        <briefdescription>
+<para>Zero-stream variant of <ref refid="classstar_1_1StarDataset_1aa7090387f438ffed049fa3b13a9926b9" kindref="member">deserialize_typed_value()</ref> for the array load hot path: deserialize directly from a contiguous byte buffer. </para>
+        </briefdescription>
+        <detaileddescription>
+<para>The stream version copies the buffer INTO a std::stringstream and then reads it back OUT into the <ref refid="classstar_1_1NDArray" kindref="compound">NDArray</ref> — two extra full-buffer passes plus stream overhead. For fixed-width numeric arrays (the common case) the wire format is just raw native-endian bytes, so a single std::memcpy reproduces the exact same result an order of magnitude faster. Strings are variable-width (length-prefixed) and rare on this path, so they delegate to the stream version unchanged — behavior is identical for every dtype.</para>
+<para>When <computeroutput>unshuffle.active</computeroutput>, the incoming bytes are byte-planes from a shuffle codec: instead of a plain memcpy we run byte_unshuffle straight INTO the <ref refid="classstar_1_1NDArray" kindref="compound">NDArray</ref> storage. This fuses the transpose with the fill, eliminating the scratch buffer and the extra full-buffer pass the caller would otherwise do (decompress → scratch → unshuffle → scratch2 → memcpy → <ref refid="classstar_1_1NDArray" kindref="compound">NDArray</ref> becomes decompress → scratch → unshuffle → <ref refid="classstar_1_1NDArray" kindref="compound">NDArray</ref>). The default (<computeroutput>active == false</computeroutput>) is a byte-identical plain memcpy, so non-shuffle codecs are unchanged. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="6175" column="18" bodyfile="StarDS/include/stards.h" bodystart="6175" bodyend="6237"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1ad7b01eb3a61d6924c49ffa0b31efe329" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void star::StarDataset::ensure_layer_metadata_loaded</definition>
+        <argsstring>(size_t layer_idx)</argsstring>
+        <name>ensure_layer_metadata_loaded</name>
+        <qualifiedname>star::StarDataset::ensure_layer_metadata_loaded</qualifiedname>
+        <param>
+          <type>size_t</type>
+          <declname>layer_idx</declname>
+        </param>
+        <briefdescription>
+<para>Loads metadata block from file if not already loaded (supports HTTP/remote URLs). </para>
+        </briefdescription>
+        <detaileddescription>
+<para>Ensure a specific layer&apos;s metadata is loaded (v3 format) <parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>layer_idx</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Index of the layer to load </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="6246" column="10" bodyfile="StarDS/include/stards.h" bodystart="6246" bodyend="6251"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1a4a56c27bbf64f2311c937893ff31a685" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void star::StarDataset::load_layer_metadata</definition>
+        <argsstring>(const std::string &amp;layer_name)</argsstring>
+        <name>load_layer_metadata</name>
+        <qualifiedname>star::StarDataset::load_layer_metadata</qualifiedname>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>layer_name</declname>
+        </param>
+        <briefdescription>
+<para>Load a specific layer&apos;s metadata block (v3 format). </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>layer_name</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Name of the layer to load </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="6257" column="10" bodyfile="StarDS/include/stards.h" bodystart="6257" bodyend="6294"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1a30b05c1f639348d9d3212c0c7efc4b6d" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void star::StarDataset::load_all_metadata</definition>
+        <argsstring>()</argsstring>
+        <name>load_all_metadata</name>
+        <qualifiedname>star::StarDataset::load_all_metadata</qualifiedname>
+        <briefdescription>
+<para>Load all layer metadata blocks at once (v3 format). </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="6299" column="10" bodyfile="StarDS/include/stards.h" bodystart="6299" bodyend="6305"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1ab68aaf017d9e65e1c4e4c59190545f07" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void star::StarDataset::parse_layer_metadata_block</definition>
+        <argsstring>(size_t layer_idx, const std::vector&lt; char &gt; &amp;decompressed)</argsstring>
+        <name>parse_layer_metadata_block</name>
+        <qualifiedname>star::StarDataset::parse_layer_metadata_block</qualifiedname>
+        <param>
+          <type>size_t</type>
+          <declname>layer_idx</declname>
+        </param>
+        <param>
+          <type>const std::vector&lt; char &gt; &amp;</type>
+          <declname>decompressed</declname>
+        </param>
+        <briefdescription>
+<para>Parse a layer&apos;s metadata block (STARMeta format). </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>layer_idx</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Layer index </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>decompressed</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Decompressed block data </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="6312" column="10" bodyfile="StarDS/include/stards.h" bodystart="6312" bodyend="6393"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1a70da2003a512cf11c0b349e4fc8ec0df" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::vector&lt; char &gt;</type>
+        <definition>std::vector&lt; char &gt; star::StarDataset::compress_single_block</definition>
+        <argsstring>(const std::vector&lt; char &gt; &amp;uncompressed, CompressionAlgorithm compression)</argsstring>
+        <name>compress_single_block</name>
+        <qualifiedname>star::StarDataset::compress_single_block</qualifiedname>
+        <param>
+          <type>const std::vector&lt; char &gt; &amp;</type>
+          <declname>uncompressed</declname>
+        </param>
+        <param>
+          <type>CompressionAlgorithm</type>
+          <declname>compression</declname>
+        </param>
+        <briefdescription>
+<para>Compress a single block (helper for layer metadata). </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>uncompressed</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Uncompressed data </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>compression</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Compression algorithm </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>Compressed data </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="6401" column="17" bodyfile="StarDS/include/stards.h" bodystart="6401" bodyend="6446"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1a09f054743966116ca53a8940823eaf4b" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::vector&lt; char &gt;</type>
+        <definition>std::vector&lt; char &gt; star::StarDataset::decompress_single_block</definition>
+        <argsstring>(const std::vector&lt; char &gt; &amp;compressed, CompressionAlgorithm compression)</argsstring>
+        <name>decompress_single_block</name>
+        <qualifiedname>star::StarDataset::decompress_single_block</qualifiedname>
+        <param>
+          <type>const std::vector&lt; char &gt; &amp;</type>
+          <declname>compressed</declname>
+        </param>
+        <param>
+          <type>CompressionAlgorithm</type>
+          <declname>compression</declname>
+        </param>
+        <briefdescription>
+<para>Decompress a single block (helper for layer metadata). </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>compressed</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Compressed data </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>compression</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Compression algorithm </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>Decompressed data </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="6454" column="17" bodyfile="StarDS/include/stards.h" bodystart="6454" bodyend="6526"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1a38b6402d7829e5f9f7cb311b743c849d" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void star::StarDataset::load_metadata_block</definition>
+        <argsstring>()</argsstring>
+        <name>load_metadata_block</name>
+        <qualifiedname>star::StarDataset::load_metadata_block</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="6529" column="10" bodyfile="StarDS/include/stards.h" bodystart="6529" bodyend="6543"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1a25d51491f7f2b3a373229dcdf329f92b" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool star::StarDataset::has_metadata_block</definition>
+        <argsstring>() const</argsstring>
+        <name>has_metadata_block</name>
+        <qualifiedname>star::StarDataset::has_metadata_block</qualifiedname>
+        <briefdescription>
+<para>Checks if file has metadata block. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>True if metadata block exists </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="6549" column="10" bodyfile="StarDS/include/stards.h" bodystart="6549" bodyend="6557"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1a9d32fbac0f2228fa5c4aeae41db99e2c" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void star::StarDataset::print_header</definition>
+        <argsstring>() const</argsstring>
+        <name>print_header</name>
+        <qualifiedname>star::StarDataset::print_header</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="6559" column="10" bodyfile="StarDS/include/stards.h" bodystart="6559" bodyend="6572"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1adf87ca87a5947a74bfc4cd149e45cb31" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void star::StarDataset::flush</definition>
+        <argsstring>()</argsstring>
+        <name>flush</name>
+        <qualifiedname>star::StarDataset::flush</qualifiedname>
+        <briefdescription>
+<para>Writes all data to the file (including metadata block). </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="6578" column="10" bodyfile="StarDS/include/stards.h" bodystart="6578" bodyend="6590"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1a21da4ed3ebb7efbb85cc90db146902fa" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void star::StarDataset::flush_quiet</definition>
+        <argsstring>()</argsstring>
+        <name>flush_quiet</name>
+        <qualifiedname>star::StarDataset::flush_quiet</qualifiedname>
+        <briefdescription>
+<para>Flush without throwing on read-only (silently skips instead). </para>
+        </briefdescription>
+        <detaileddescription>
+<para>Used by <ref refid="classstar_1_1StarDataset_1a10a5a364006a389de3d4bc7420704044" kindref="member">close()</ref> and the destructor, where flushing is best-effort cleanup rather than an explicit persist request — a read-only dataset must be destructible without raising. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="6599" column="10" bodyfile="StarDS/include/stards.h" bodystart="6599" bodyend="6602"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1a5452cb4edda0e36c034f1623f398f8ca" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void star::StarDataset::save_to</definition>
+        <argsstring>(const std::string &amp;target_path)</argsstring>
+        <name>save_to</name>
+        <qualifiedname>star::StarDataset::save_to</qualifiedname>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>target_path</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="7204" column="10" bodyfile="StarDS/include/stards.h" bodystart="7204" bodyend="7279"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1aacea5f33f6f1addab145ff845580e0e7" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::vector&lt; char &gt;</type>
+        <definition>std::vector&lt; char &gt; star::StarDataset::write_bytes</definition>
+        <argsstring>()</argsstring>
+        <name>write_bytes</name>
+        <qualifiedname>star::StarDataset::write_bytes</qualifiedname>
+        <briefdescription>
+<para>Serialize the dataset to an in-memory byte buffer. </para>
+        </briefdescription>
+        <detaileddescription>
+<para>The byte-array counterpart of save_to(): returns a complete .stards image (the exact bytes that would be written to a file) instead of writing to a path. Works on any dataset — including read-only ones and datasets opened with <ref refid="classstar_1_1StarDataset_1aa5564459aaa53ae6d4c417ef0ddb13ef" kindref="member">open_bytes()</ref> — since it never touches the source file. Round-trips with <ref refid="classstar_1_1StarDataset_1aa5564459aaa53ae6d4c417ef0ddb13ef" kindref="member">open_bytes()</ref>: <computeroutput><ref refid="classstar_1_1StarDataset_1aa5564459aaa53ae6d4c417ef0ddb13ef" kindref="member">open_bytes</ref>(ds-&gt;<ref refid="classstar_1_1StarDataset_1aacea5f33f6f1addab145ff845580e0e7" kindref="member">write_bytes()</ref>)</computeroutput> reconstructs the dataset.</para>
+<para><simplesect kind="return"><para>A complete .stards image as a byte array. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="7292" column="17" bodyfile="StarDS/include/stards.h" bodystart="7292" bodyend="7319"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1acd630a1fae2d4c933b6fd78a76f23383" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool star::StarDataset::is_read_only</definition>
+        <argsstring>() const</argsstring>
+        <name>is_read_only</name>
+        <qualifiedname>star::StarDataset::is_read_only</qualifiedname>
+        <briefdescription>
+<para>Check if file is in read-only mode. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>True if read-only </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="7325" column="10" bodyfile="StarDS/include/stards.h" bodystart="7325" bodyend="7329"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1aea855492329354e778e4babb6204d393" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::string</type>
+        <definition>std::string star::StarDataset::get_filename</definition>
+        <argsstring>() const</argsstring>
+        <name>get_filename</name>
+        <qualifiedname>star::StarDataset::get_filename</qualifiedname>
+        <briefdescription>
+<para>Get current filename. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>Filename </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="7335" column="17" bodyfile="StarDS/include/stards.h" bodystart="7335" bodyend="7337"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1acb5056d0b881c92a708519f1be85c7a0" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>const <ref refid="structstar_1_1FileHeader" kindref="compound">FileHeader</ref> &amp;</type>
+        <definition>const FileHeader &amp; star::StarDataset::get_file_header</definition>
+        <argsstring>() const</argsstring>
+        <name>get_file_header</name>
+        <qualifiedname>star::StarDataset::get_file_header</qualifiedname>
+        <briefdescription>
+<para>Get file header with version information. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>Reference to <ref refid="structstar_1_1FileHeader" kindref="compound">FileHeader</ref> </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="7343" column="22" bodyfile="StarDS/include/stards.h" bodystart="7343" bodyend="7345"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1ab0d5fb81b8a6d3b35823771be6236b90" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>const <ref refid="structstar_1_1OpenOptions" kindref="compound">OpenOptions</ref> &amp;</type>
+        <definition>const OpenOptions &amp; star::StarDataset::open_options</definition>
+        <argsstring>() const</argsstring>
+        <name>open_options</name>
+        <qualifiedname>star::StarDataset::open_options</qualifiedname>
+        <briefdescription>
+<para>Read-time options (e.g. layer inheritance) for this dataset. </para>
+        </briefdescription>
+        <detaileddescription>
+<para>These affect only how the in-memory dataset resolves reads; nothing is persisted. They are safe to change at any time, including on a read-only dataset, and take effect immediately for existing and future LayerViews. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="7354" column="23" bodyfile="StarDS/include/stards.h" bodystart="7354" bodyend="7354"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1a7735c6c58262b9a15fcd4ab588beaeb0" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void star::StarDataset::set_open_options</definition>
+        <argsstring>(const OpenOptions &amp;opts)</argsstring>
+        <name>set_open_options</name>
+        <qualifiedname>star::StarDataset::set_open_options</qualifiedname>
+        <param>
+          <type>const <ref refid="structstar_1_1OpenOptions" kindref="compound">OpenOptions</ref> &amp;</type>
+          <declname>opts</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="7355" column="10" bodyfile="StarDS/include/stards.h" bodystart="7355" bodyend="7355"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1ac5d91179173cfe6d100d564dd119bf21" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool star::StarDataset::layer_inheritance</definition>
+        <argsstring>() const</argsstring>
+        <name>layer_inheritance</name>
+        <qualifiedname>star::StarDataset::layer_inheritance</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="7358" column="10" bodyfile="StarDS/include/stards.h" bodystart="7358" bodyend="7358"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1ade1a2b04d64f472aa2c527212a35fa60" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void star::StarDataset::set_layer_inheritance</definition>
+        <argsstring>(bool on)</argsstring>
+        <name>set_layer_inheritance</name>
+        <qualifiedname>star::StarDataset::set_layer_inheritance</qualifiedname>
+        <param>
+          <type>bool</type>
+          <declname>on</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="7359" column="10" bodyfile="StarDS/include/stards.h" bodystart="7359" bodyend="7359"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1a14d3536739b1cf182ddcdfbd48c66a3a" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>star::StarDataset::StarDataset</definition>
+        <argsstring>(const std::string &amp;fname, FileMode mode, const StarConfig *config, const OpenOptions &amp;open_options={}, std::vector&lt; char &gt; *memory_source=nullptr)</argsstring>
+        <name>StarDataset</name>
+        <qualifiedname>star::StarDataset::StarDataset</qualifiedname>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>fname</declname>
+        </param>
+        <param>
+          <type>FileMode</type>
+          <declname>mode</declname>
+        </param>
+        <param>
+          <type>const <ref refid="structstar_1_1StarConfig" kindref="compound">StarConfig</ref> *</type>
+          <declname>config</declname>
+        </param>
+        <param>
+          <type>const <ref refid="structstar_1_1OpenOptions" kindref="compound">OpenOptions</ref> &amp;</type>
+          <declname>open_options</declname>
+          <defval>{}</defval>
+        </param>
+        <param>
+          <type>std::vector&lt; char &gt; *</type>
+          <declname>memory_source</declname>
+          <defval>nullptr</defval>
+        </param>
+        <briefdescription>
+<para>Constructor with compression options. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>fname</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Filename to use for storage </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>mode</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>File open mode (READ_WRITE or READ_ONLY) </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>config</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Optional configuration (nullptr to load from file)</para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+NOTE: Constructor is public to enable std::make_shared, but you should use the static factory methods <ref refid="classstar_1_1StarDataset_1afcfe466aad9322b2d0c78f06ab1e3024" kindref="member">create()</ref> and <ref refid="classstar_1_1StarDataset_1a7da82ee4803e6302ad903e12e3c4c0c7" kindref="member">open()</ref> instead. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="7516" column="5" bodyfile="StarDS/include/stards.h" bodystart="7516" bodyend="7593"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1a03182b18c3bb025a2aa9a3bb73d0b021" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>star::StarDataset::StarDataset</definition>
+        <argsstring>(const StarDataset &amp;)=delete</argsstring>
+        <name>StarDataset</name>
+        <qualifiedname>star::StarDataset::StarDataset</qualifiedname>
+        <param>
+          <type>const StarDataset &amp;</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="7596" column="5"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1a50455ef8c570c23b8a043127e2d29142" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type><ref refid="classstar_1_1StarDataset_1a14d3536739b1cf182ddcdfbd48c66a3a" kindref="member">StarDataset</ref> &amp;</type>
+        <definition>StarDataset &amp; star::StarDataset::operator=</definition>
+        <argsstring>(const StarDataset &amp;)=delete</argsstring>
+        <name>operator=</name>
+        <qualifiedname>star::StarDataset::operator=</qualifiedname>
+        <param>
+          <type>const <ref refid="classstar_1_1StarDataset_1a14d3536739b1cf182ddcdfbd48c66a3a" kindref="member">StarDataset</ref> &amp;</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="7597" column="17"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1a7df1744109a0e16ad45b896ee0230643" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>star::StarDataset::StarDataset</definition>
+        <argsstring>(StarDataset &amp;&amp;)=delete</argsstring>
+        <name>StarDataset</name>
+        <qualifiedname>star::StarDataset::StarDataset</qualifiedname>
+        <param>
+          <type>StarDataset &amp;&amp;</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="7598" column="5"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1afcdd478183a4b0c98ae4e101aefb3c4f" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type><ref refid="classstar_1_1StarDataset_1a14d3536739b1cf182ddcdfbd48c66a3a" kindref="member">StarDataset</ref> &amp;</type>
+        <definition>StarDataset &amp; star::StarDataset::operator=</definition>
+        <argsstring>(StarDataset &amp;&amp;)=delete</argsstring>
+        <name>operator=</name>
+        <qualifiedname>star::StarDataset::operator=</qualifiedname>
+        <param>
+          <type><ref refid="classstar_1_1StarDataset_1a14d3536739b1cf182ddcdfbd48c66a3a" kindref="member">StarDataset</ref> &amp;&amp;</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="7599" column="17"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1a9fdddbc2a3dce03b071870a21657f04f" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>star::StarDataset::~StarDataset</definition>
+        <argsstring>()</argsstring>
+        <name>~StarDataset</name>
+        <qualifiedname>star::StarDataset::~StarDataset</qualifiedname>
+        <briefdescription>
+<para>Destructor - writes all pending changes to disk (RAII). </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="7605" column="5" bodyfile="StarDS/include/stards.h" bodystart="7605" bodyend="7615"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1a10a5a364006a389de3d4bc7420704044" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void star::StarDataset::close</definition>
+        <argsstring>()</argsstring>
+        <name>close</name>
+        <qualifiedname>star::StarDataset::close</qualifiedname>
+        <briefdescription>
+<para>Flush all pending writes to disk. </para>
+        </briefdescription>
+        <detaileddescription>
+<para>This is automatically called on context manager exit or object destruction. You can call this manually to ensure data is persisted without closing the dataset. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="7623" column="10" bodyfile="StarDS/include/stards.h" bodystart="7623" bodyend="7627"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1ab98915b65bab49ff8efe46c90ae7ca4f" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::shared_ptr&lt; <ref refid="classstar_1_1LayerView" kindref="compound">LayerView</ref> &gt;</type>
+        <definition>std::shared_ptr&lt; LayerView &gt; star::StarDataset::get_layer</definition>
+        <argsstring>(const std::string &amp;layer_name)</argsstring>
+        <name>get_layer</name>
+        <qualifiedname>star::StarDataset::get_layer</qualifiedname>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>layer_name</declname>
+        </param>
+        <briefdescription>
+<para>Get existing layer view. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>layer_name</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Name of the layer </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>Shared pointer to <ref refid="classstar_1_1LayerView" kindref="compound">LayerView</ref> </para>
+</simplesect>
+<parameterlist kind="exception"><parameteritem>
+<parameternamelist>
+<parametername>std::runtime_error</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>if layer doesn&apos;t exist </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="7639" column="21" bodyfile="StarDS/include/stards.h" bodystart="9575" bodyend="9583"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1af294f0ff29a052e37b0a3be70621b1e0" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::shared_ptr&lt; <ref refid="classstar_1_1LayerView" kindref="compound">LayerView</ref> &gt;</type>
+        <definition>std::shared_ptr&lt; LayerView &gt; star::StarDataset::create_layer</definition>
+        <argsstring>(const std::string &amp;layer_name)</argsstring>
+        <name>create_layer</name>
+        <qualifiedname>star::StarDataset::create_layer</qualifiedname>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>layer_name</declname>
+        </param>
+        <briefdescription>
+<para>Create new layer and return view. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>layer_name</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Name of new layer </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>Shared pointer to <ref refid="classstar_1_1LayerView" kindref="compound">LayerView</ref> </para>
+</simplesect>
+<parameterlist kind="exception"><parameteritem>
+<parameternamelist>
+<parametername>std::runtime_error</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>if layer already exists </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="7647" column="21" bodyfile="StarDS/include/stards.h" bodystart="9585" bodyend="9611"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1a38864db372a88555179a399c1871f8a7" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool star::StarDataset::has_layer</definition>
+        <argsstring>(const std::string &amp;layer_name) const</argsstring>
+        <name>has_layer</name>
+        <qualifiedname>star::StarDataset::has_layer</qualifiedname>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>layer_name</declname>
+        </param>
+        <briefdescription>
+<para>Check if layer exists. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>layer_name</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Layer name to check </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>true if layer exists, false otherwise </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="7654" column="10" bodyfile="StarDS/include/stards.h" bodystart="7654" bodyend="7657"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1a2c74250a987534615f168663bd288ce7" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void star::StarDataset::set_layer_presence</definition>
+        <argsstring>(const std::string &amp;layer_name, const std::string &amp;key, bool present)</argsstring>
+        <name>set_layer_presence</name>
+        <qualifiedname>star::StarDataset::set_layer_presence</qualifiedname>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>layer_name</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>key</declname>
+        </param>
+        <param>
+          <type>bool</type>
+          <declname>present</declname>
+        </param>
+        <briefdescription>
+<para>Set layer presence for a data array key. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>layer_name</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Layer name </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>key</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Data array key </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>present</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Whether the key is present in this layer </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="7665" column="10" bodyfile="StarDS/include/stards.h" bodystart="7665" bodyend="7706"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1a12b4cab643600c1a57b03671948ece94" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::vector&lt; std::string &gt;</type>
+        <definition>std::vector&lt; std::string &gt; star::StarDataset::list_layers</definition>
+        <argsstring>() const</argsstring>
+        <name>list_layers</name>
+        <qualifiedname>star::StarDataset::list_layers</qualifiedname>
+        <briefdescription>
+<para>Get list of all layer names. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>Vector of layer names </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="7779" column="17" bodyfile="StarDS/include/stards.h" bodystart="7779" bodyend="7790"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1a27a892dca3ce2a420cd08a1e8f6ce4ee" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool star::StarDataset::key_in_layer</definition>
+        <argsstring>(const std::string &amp;key, const std::string &amp;layer_name) const</argsstring>
+        <name>key_in_layer</name>
+        <qualifiedname>star::StarDataset::key_in_layer</qualifiedname>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>key</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>layer_name</declname>
+        </param>
+        <briefdescription>
+<para>Check if key exists in specific layer using bit-mask (O(1)). </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>key</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Key to check </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>layer_name</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Layer name </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>true if key exists in layer, false otherwise </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="7798" column="10" bodyfile="StarDS/include/stards.h" bodystart="7798" bodyend="7836"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1aad09bab49cdbac225431b89f1cf4d8b0" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+        </templateparamlist>
+        <type>void</type>
+        <definition>void star::StarDataset::put</definition>
+        <argsstring>(const std::string &amp;key, NDArray&lt; T &gt; &amp;&amp;value)</argsstring>
+        <name>put</name>
+        <qualifiedname>star::StarDataset::put</qualifiedname>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>key</declname>
+        </param>
+        <param>
+          <type><ref refid="classstar_1_1NDArray" kindref="compound">NDArray</ref>&lt; T &gt; &amp;&amp;</type>
+          <declname>value</declname>
+        </param>
+        <briefdescription>
+<para>Store array as separate compressed array (not in metadata block). </para>
+        </briefdescription>
+        <detaileddescription>
+<para>Use this for large arrays that need slicing support. Small arrays should use meta.put() instead.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>key</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Array key </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>value</parametername>
+</parameternamelist>
+<parameterdescription>
+<para><ref refid="classstar_1_1NDArray" kindref="compound">NDArray</ref> to store </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="7848" column="10" bodyfile="StarDS/include/stards.h" bodystart="7848" bodyend="7964"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1a20f653fce8594a669994c9f13f33c0f9" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+        </templateparamlist>
+        <type>void</type>
+        <definition>void star::StarDataset::put</definition>
+        <argsstring>(const std::string &amp;key, const NDArray&lt; T &gt; &amp;value)</argsstring>
+        <name>put</name>
+        <qualifiedname>star::StarDataset::put</qualifiedname>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>key</declname>
+        </param>
+        <param>
+          <type>const <ref refid="classstar_1_1NDArray" kindref="compound">NDArray</ref>&lt; T &gt; &amp;</type>
+          <declname>value</declname>
+        </param>
+        <briefdescription>
+<para>Store array as separate compressed array (const lvalue overload). </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="7970" column="10" bodyfile="StarDS/include/stards.h" bodystart="7970" bodyend="7973"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1a6b29611e42303840401cbda4bd8eae77" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+        </templateparamlist>
+        <type><ref refid="classstar_1_1NDArray" kindref="compound">NDArray</ref>&lt; T &gt;</type>
+        <definition>NDArray&lt; T &gt; star::StarDataset::get</definition>
+        <argsstring>(const std::string &amp;key)</argsstring>
+        <name>get</name>
+        <qualifiedname>star::StarDataset::get</qualifiedname>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>key</declname>
+        </param>
+        <briefdescription>
+<para>Get array from storage. </para>
+        </briefdescription>
+        <detaileddescription>
+<para>Retrieves array from either metadata block or separate storage.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>key</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Array key </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para><ref refid="classstar_1_1NDArray" kindref="compound">NDArray</ref> </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="7984" column="13" bodyfile="StarDS/include/stards.h" bodystart="7984" bodyend="8017"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1ab9f9dc2c84f028de3072b4cf1f5f9a6b" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void star::StarDataset::prefetch</definition>
+        <argsstring>(const std::vector&lt; std::string &gt; &amp;keys)</argsstring>
+        <name>prefetch</name>
+        <qualifiedname>star::StarDataset::prefetch</qualifiedname>
+        <param>
+          <type>const std::vector&lt; std::string &gt; &amp;</type>
+          <declname>keys</declname>
+        </param>
+        <briefdescription>
+<para>Load several arrays into cache in parallel (a read-ahead hint). </para>
+        </briefdescription>
+        <detaileddescription>
+<para>A single <ref refid="classstar_1_1StarDataset_1a6b29611e42303840401cbda4bd8eae77" kindref="member">get()</ref>/get_slice() reads one array end-to-end: the read pipeline (ranged I/O -&gt; decompress -&gt; unshuffle -&gt; materialize) runs serially, and a caller reading N columns pays that latency N times back-to-back — only the block decompression WITHIN one array is threaded. <ref refid="classstar_1_1StarDataset_1ab9f9dc2c84f028de3072b4cf1f5f9a6b" kindref="member">prefetch()</ref> overlaps the whole pipeline ACROSS arrays:</para>
+<para><itemizedlist>
+<listitem><para>I/O stays SERIAL on the dataset&apos;s single persistent reader (one reused connection; remote reads issue exactly one GET per array, same as today — no request amplification), but</para>
+</listitem><listitem><para>each array&apos;s CPU work (decompress + unshuffle + build <ref refid="classstar_1_1NDArray" kindref="compound">NDArray</ref>) is dispatched to the thread pool the moment its bytes arrive, so array k+1&apos;s read overlaps array k&apos;s decode and multiple decodes run at once.</para>
+</listitem></itemizedlist>
+</para>
+<para>After <ref refid="classstar_1_1StarDataset_1ab9f9dc2c84f028de3072b4cf1f5f9a6b" kindref="member">prefetch()</ref> returns, the named arrays are cached, so subsequent <ref refid="classstar_1_1StarDataset_1a6b29611e42303840401cbda4bd8eae77" kindref="member">get&lt;T&gt;()</ref>/get_slice&lt;T&gt;() calls just copy out — this is the batch &quot;read many
+columns&quot; path. Results are byte-identical to loading each key individually; this only changes WHEN/where the work runs. Keys that are unknown throw (same contract as get); keys already loaded or stored in the metadata block are handled on the normal serial path. With threading disabled (num_threads == 1) it degrades to loading each key in turn.</para>
+<para>Thread-safety: holds the dataset write lock for the whole batch; the decode tasks are pure (they read only stable per-entry metadata we do not mutate here and own their input buffers), and they pass nullptr for the pool so a pool worker never waits on the same pool (no nested-parallel deadlock). </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="8048" column="10" bodyfile="StarDS/include/stards.h" bodystart="8048" bodyend="8133"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1a2615ec97c24b48b9043eb754aa1764f0" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::vector&lt; std::string &gt;</type>
+        <definition>std::vector&lt; std::string &gt; star::StarDataset::get_metadata_keys</definition>
+        <argsstring>() const</argsstring>
+        <name>get_metadata_keys</name>
+        <qualifiedname>star::StarDataset::get_metadata_keys</qualifiedname>
+        <briefdescription>
+<para>Gets list of keys in metadata block. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>Vector of key names (excludes layer-prefixed internal keys) </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="8140" column="17" bodyfile="StarDS/include/stards.h" bodystart="8140" bodyend="8149"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1aa189673f0b96a941ae1e9b589a43ddb1" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>size_t</type>
+        <definition>size_t star::StarDataset::get_metadata_count</definition>
+        <argsstring>() const</argsstring>
+        <name>get_metadata_count</name>
+        <qualifiedname>star::StarDataset::get_metadata_count</qualifiedname>
+        <briefdescription>
+<para>Gets count of entries in metadata block. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>Number of metadata entries (excludes layer-prefixed internal keys) </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="8169" column="12" bodyfile="StarDS/include/stards.h" bodystart="8169" bodyend="8176"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1a61b40bf1e193a5167f27de61e8f67fa4" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::vector&lt; std::string &gt;</type>
+        <definition>std::vector&lt; std::string &gt; star::StarDataset::get_all_keys</definition>
+        <argsstring>()</argsstring>
+        <name>get_all_keys</name>
+        <qualifiedname>star::StarDataset::get_all_keys</qualifiedname>
+        <briefdescription>
+<para>Gets all keys (metadata block + separate arrays). </para>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>Vector of all keys in the store </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="8182" column="17" bodyfile="StarDS/include/stards.h" bodystart="8182" bodyend="8185"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1ae2ca462f52a62ca50d244472f7794d98" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+        </templateparamlist>
+        <type><ref refid="classstar_1_1NDArray" kindref="compound">NDArray</ref>&lt; T &gt;</type>
+        <definition>NDArray&lt; T &gt; star::StarDataset::get_slice</definition>
+        <argsstring>(const std::string &amp;key, const std::vector&lt; Slice &gt; &amp;slices)</argsstring>
+        <name>get_slice</name>
+        <qualifiedname>star::StarDataset::get_slice</qualifiedname>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>key</declname>
+        </param>
+        <param>
+          <type>const std::vector&lt; <ref refid="structstar_1_1Slice" kindref="compound">Slice</ref> &gt; &amp;</type>
+          <declname>slices</declname>
+        </param>
+        <briefdescription>
+<para>Gets n-dimensional slice of an array. </para>
+        </briefdescription>
+        <detaileddescription>
+<para>IMPORTANT: This function only works with arrays stored as separate compressed arrays with block structure. Arrays stored in the metadata block cannot be sliced and must be accessed as complete units using meta.get() instead.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>key</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Array key in store (must be separately stored with blocks) </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>slices</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Vector of slices, one per dimension Empty = entire dimension, unfilled dimensions = full slice </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para><ref refid="classstar_1_1NDArray" kindref="compound">NDArray</ref> containing the requested slice </para>
+</simplesect>
+<parameterlist kind="exception"><parameteritem>
+<parameternamelist>
+<parametername>std::runtime_error</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>if key not found or stored in metadata block</para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+Examples: // 1D: elements 1000-2000 (step defaults to 1) get_slice&lt;double&gt;(&quot;large_timeseries&quot;, {{1000, 2000}})</para>
+<para>// 2D: rows 10-20, all columns get_slice&lt;float&gt;(&quot;image_data&quot;, {{10, 20}, {0, width}})</para>
+<para>// Using helper functions for clarity get_slice&lt;float&gt;(&quot;matrix&quot;, {slice_range(10, 20), slice_all(width)})</para>
+<para>// 3D: hyperslab get_slice&lt;uint16_t&gt;(&quot;volume&quot;, {{0, 10}, {5, 15}, {0, depth}})</para>
+<para>// For small arrays in metadata block, use meta.get() instead: auto small_array = store.meta.get(&quot;small_data&quot;); </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="8217" column="13" bodyfile="StarDS/include/stards.h" bodystart="8217" bodyend="8516"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1ab584ab192a9024e4f18a9eb697549fff" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool star::StarDataset::is_sliceable</definition>
+        <argsstring>(const std::string &amp;key) const</argsstring>
+        <name>is_sliceable</name>
+        <qualifiedname>star::StarDataset::is_sliceable</qualifiedname>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>key</declname>
+        </param>
+        <briefdescription>
+<para>Checks if an array supports slicing. </para>
+        </briefdescription>
+        <detaileddescription>
+<para>Arrays stored in the metadata block cannot be sliced - they must be accessed as complete units. Only separately stored arrays with block compression support efficient slicing.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>key</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Array key to check </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>True if array supports <ref refid="classstar_1_1StarDataset_1ae2ca462f52a62ca50d244472f7794d98" kindref="member">get_slice()</ref>, false if only meta.get() works</para>
+</simplesect>
+Example: if (store.is_sliceable(&quot;large_data&quot;)) { auto slice = store.get_slice&lt;double&gt;(&quot;large_data&quot;, {{0, 1000}}); } else { auto full = store.meta.get(&quot;small_data&quot;); } </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="8535" column="10" bodyfile="StarDS/include/stards.h" bodystart="8535" bodyend="8564"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1ae8cb0dffb4b3f44faf9682fac8074fdb" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>DataType</type>
+        <definition>DataType star::StarDataset::dtype_of</definition>
+        <argsstring>(const std::string &amp;key) const</argsstring>
+        <name>dtype_of</name>
+        <qualifiedname>star::StarDataset::dtype_of</qualifiedname>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>key</declname>
+        </param>
+        <briefdescription>
+<para>Get the element data type of a stored array. </para>
+        </briefdescription>
+        <detaileddescription>
+<para>Looks up the array namespace (values stored via <ref refid="classstar_1_1StarDataset_1aad09bab49cdbac225431b89f1cf4d8b0" kindref="member">put()</ref>/put&lt;T&gt;()). This lets callers dispatch on the concrete type without probing every <ref refid="classstar_1_1StarDataset_1a6b29611e42303840401cbda4bd8eae77" kindref="member">get&lt;T&gt;()</ref> overload. For metadata-namespace values use meta.get(key)-&gt;dtype instead.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>key</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Array key </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>DataType of the stored array </para>
+</simplesect>
+<parameterlist kind="exception"><parameteritem>
+<parameternamelist>
+<parametername>std::runtime_error</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>if the key is not an array (not found in array storage) </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="8577" column="14" bodyfile="StarDS/include/stards.h" bodystart="8577" bodyend="8584"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1a7cc3144ff3539829552c4ef82a6a14fb" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>size_t</type>
+        <definition>size_t star::StarDataset::array_length</definition>
+        <argsstring>(const std::string &amp;key) const</argsstring>
+        <name>array_length</name>
+        <qualifiedname>star::StarDataset::array_length</qualifiedname>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>key</declname>
+        </param>
+        <briefdescription>
+<para>Length of a stored array&apos;s first (outermost) dimension. </para>
+        </briefdescription>
+        <detaileddescription>
+<para>Read from the index that <ref refid="classstar_1_1StarDataset_1a7da82ee4803e6302ad903e12e3c4c0c7" kindref="member">open()</ref> loads up front (m_cold.shapes) — NO block data is fetched, so this is cheap even for a multi-GB array or a remote (/vsicurl, /vsis3) source, and lets a caller size a streaming read (get_slice windows) before pulling any values. For a 1-D column this is the element count; for N-D it is shape[0] (the row count). Scalars report 1.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>key</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Array key (must be a separately-stored data array, not metadata) </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>Length of dimension 0 </para>
+</simplesect>
+<parameterlist kind="exception"><parameteritem>
+<parameternamelist>
+<parametername>std::runtime_error</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>if the key is not a stored data array </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="8599" column="12" bodyfile="StarDS/include/stards.h" bodystart="8599" bodyend="8607"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1a305f7f9436cec48fb6391e5f4c181b5c" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::vector&lt; size_t &gt;</type>
+        <definition>std::vector&lt; size_t &gt; star::StarDataset::shape_of</definition>
+        <argsstring>(const std::string &amp;key) const</argsstring>
+        <name>shape_of</name>
+        <qualifiedname>star::StarDataset::shape_of</qualifiedname>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>key</declname>
+        </param>
+        <briefdescription>
+<para>Full shape (all dimensions) of a stored data array. </para>
+        </briefdescription>
+        <detaileddescription>
+<para>Metadata-only: the shape is read from the index loaded at <ref refid="classstar_1_1StarDataset_1a7da82ee4803e6302ad903e12e3c4c0c7" kindref="member">open()</ref> time, so this issues NO data read (no decompression, no extra network request for remote datasets). Complements <ref refid="classstar_1_1StarDataset_1ae8cb0dffb4b3f44faf9682fac8074fdb" kindref="member">dtype_of()</ref>/array_length(); use <ref refid="classstar_1_1StarDataset_1a6b29611e42303840401cbda4bd8eae77" kindref="member">get&lt;T&gt;()</ref> only when the element data itself is needed.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>key</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Array key in store </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>Dimension sizes (empty for a scalar) </para>
+</simplesect>
+<parameterlist kind="exception"><parameteritem>
+<parameternamelist>
+<parametername>std::runtime_error</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>if the key is not a stored data array </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="8621" column="17" bodyfile="StarDS/include/stards.h" bodystart="8621" bodyend="8628"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1ab3c3e1773e08e3ba6dc11c4d9c928878" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool star::StarDataset::contains</definition>
+        <argsstring>(const std::string &amp;key) const</argsstring>
+        <name>contains</name>
+        <qualifiedname>star::StarDataset::contains</qualifiedname>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>key</declname>
+        </param>
+        <briefdescription>
+<para>Check whether a key exists in the dataset. </para>
+        </briefdescription>
+        <detaileddescription>
+<para>Returns true if <computeroutput>key</computeroutput> names either a stored array (array namespace) or a metadata-block value (metadata namespace). Layer-prefixed internal keys are matched as-is. Use this for membership tests; it does not load any data.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>key</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Key to look up </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>true if the key exists in either namespace </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="8640" column="10" bodyfile="StarDS/include/stards.h" bodystart="8640" bodyend="8649"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1ad601cb8d8ea68e1bff2696e729bafc5a" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool star::StarDataset::is_metadata_loaded</definition>
+        <argsstring>() const</argsstring>
+        <name>is_metadata_loaded</name>
+        <qualifiedname>star::StarDataset::is_metadata_loaded</qualifiedname>
+        <briefdescription>
+<para>Checks if metadata block has been loaded. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>True if loaded </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="8655" column="10" bodyfile="StarDS/include/stards.h" bodystart="8655" bodyend="8657"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1afc6353d115eb0bfa2f5d4c8fb13e8e0c" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>iterator</type>
+        <definition>iterator star::StarDataset::begin</definition>
+        <argsstring>()</argsstring>
+        <name>begin</name>
+        <qualifiedname>star::StarDataset::begin</qualifiedname>
+        <briefdescription>
+<para>Returns an iterator to the beginning of the index. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>Iterator to the first key-value pair </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="9272" column="14" bodyfile="StarDS/include/stards.h" bodystart="9272" bodyend="9274"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1a8c09da0603b8de5cbc11bdd4a0a68baa" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>iterator</type>
+        <definition>iterator star::StarDataset::end</definition>
+        <argsstring>()</argsstring>
+        <name>end</name>
+        <qualifiedname>star::StarDataset::end</qualifiedname>
+        <briefdescription>
+<para>Returns an iterator to the end of the index. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>Iterator to one past the last key-value pair </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="9280" column="14" bodyfile="StarDS/include/stards.h" bodystart="9280" bodyend="9282"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1a491a851b5326fa74d63d8687c61943a7" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>const_iterator</type>
+        <definition>const_iterator star::StarDataset::begin</definition>
+        <argsstring>() const</argsstring>
+        <name>begin</name>
+        <qualifiedname>star::StarDataset::begin</qualifiedname>
+        <briefdescription>
+<para>Returns a const iterator to the beginning of the index. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>Const iterator to the first key-value pair </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="9288" column="20" bodyfile="StarDS/include/stards.h" bodystart="9288" bodyend="9290"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1a716836a56c7aee3516906be14edc6b39" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>const_iterator</type>
+        <definition>const_iterator star::StarDataset::end</definition>
+        <argsstring>() const</argsstring>
+        <name>end</name>
+        <qualifiedname>star::StarDataset::end</qualifiedname>
+        <briefdescription>
+<para>Returns a const iterator to the end of the index. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>Iterator to one past the last key-value pair </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="9296" column="20" bodyfile="StarDS/include/stards.h" bodystart="9296" bodyend="9298"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1a5927796bd8576558c990f790895f8318" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>const_iterator</type>
+        <definition>const_iterator star::StarDataset::cbegin</definition>
+        <argsstring>() const</argsstring>
+        <name>cbegin</name>
+        <qualifiedname>star::StarDataset::cbegin</qualifiedname>
+        <briefdescription>
+<para>Returns a const iterator to the beginning of the index. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>Const iterator to the first key-value pair </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="9304" column="20" bodyfile="StarDS/include/stards.h" bodystart="9304" bodyend="9306"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1af3f207c66918f12ad59ccf3ef97274c4" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>const_iterator</type>
+        <definition>const_iterator star::StarDataset::cend</definition>
+        <argsstring>() const</argsstring>
+        <name>cend</name>
+        <qualifiedname>star::StarDataset::cend</qualifiedname>
+        <briefdescription>
+<para>Returns a const iterator to the end of the index. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>Const iterator to one past the last key-value pair </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="9312" column="20" bodyfile="StarDS/include/stards.h" bodystart="9312" bodyend="9314"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1aa64d4174f4b9d1db4f87295e3a38445d" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>size_t</type>
+        <definition>size_t star::StarDataset::size</definition>
+        <argsstring>() const</argsstring>
+        <name>size</name>
+        <qualifiedname>star::StarDataset::size</qualifiedname>
+        <briefdescription>
+<para>Removes a key-value pair from the store. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>key</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Key to remove</para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+Returns the number of key-value pairs in the store <simplesect kind="return"><para>Number of key-value pairs </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="9324" column="12" bodyfile="StarDS/include/stards.h" bodystart="9324" bodyend="9327"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="private-func">
+      <memberdef kind="function" id="classstar_1_1StarDataset_1ae2c02dfede4863f0921d335bda15571a" prot="private" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void star::StarDataset::flush_internal</definition>
+        <argsstring>()</argsstring>
+        <name>flush_internal</name>
+        <qualifiedname>star::StarDataset::flush_internal</qualifiedname>
+        <briefdescription>
+<para>Internal flush implementation (no closed state check, no locking) Must be called with m_mutex already held Used by <ref refid="classstar_1_1StarDataset_1a10a5a364006a389de3d4bc7420704044" kindref="member">close()</ref> which already holds the lock. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="6610" column="10" bodyfile="StarDS/include/stards.h" bodystart="6610" bodyend="7169"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1aef5c0e47e5af65f17a340b3964958fab" prot="private" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void star::StarDataset::stage_all_entries_for_resave</definition>
+        <argsstring>()</argsstring>
+        <name>stage_all_entries_for_resave</name>
+        <qualifiedname>star::StarDataset::stage_all_entries_for_resave</qualifiedname>
+        <briefdescription>
+<para>Save to a different file (local or S3). </para>
+        </briefdescription>
+        <detaileddescription>
+<para>Allows saving the current state to a different file without modifying m_filename. This enables:<itemizedlist>
+<listitem><para>Read-only files to be saved elsewhere</para>
+</listitem><listitem><para>Local → S3 migration</para>
+</listitem><listitem><para>S3 → Local migration</para>
+</listitem><listitem><para>S3 → S3 copy</para>
+</listitem></itemizedlist>
+</para>
+<para>Streams unloaded data directly from source without loading into memory.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>target_path</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Path to save to (local, s3://... / /vsis3/...) </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="7191" column="10" bodyfile="StarDS/include/stards.h" bodystart="7191" bodyend="7201"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1a92bb10028638eda0657180cbf7aff5bd" prot="private" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool star::StarDataset::has_layer_unlocked</definition>
+        <argsstring>(const std::string &amp;layer_name) const</argsstring>
+        <name>has_layer_unlocked</name>
+        <qualifiedname>star::StarDataset::has_layer_unlocked</qualifiedname>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>layer_name</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="7710" column="10" bodyfile="StarDS/include/stards.h" bodystart="7710" bodyend="7712"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1aa674f161366ef3b21e032c446eea45f5" prot="private" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>size_t</type>
+        <definition>size_t star::StarDataset::resolve_metadata_inheritance</definition>
+        <argsstring>(const std::string &amp;key, const std::string &amp;layer_name) const</argsstring>
+        <name>resolve_metadata_inheritance</name>
+        <qualifiedname>star::StarDataset::resolve_metadata_inheritance</qualifiedname>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>key</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>layer_name</declname>
+        </param>
+        <briefdescription>
+<para>Resolve metadata inheritance from header (O(1) - no loading). </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>key</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Key to look up </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>layer_name</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Layer to start search from </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>Layer index where key exists (checks layer first, then base) </para>
+</simplesect>
+<parameterlist kind="exception"><parameteritem>
+<parameternamelist>
+<parametername>std::runtime_error</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>if key not found in layer or base </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="7721" column="12" bodyfile="StarDS/include/stards.h" bodystart="7721" bodyend="7750"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1a93f397e097e2013040338469b379c508" prot="private" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool star::StarDataset::has_metadata_key_in_layer</definition>
+        <argsstring>(const std::string &amp;key, const std::string &amp;layer_name) const</argsstring>
+        <name>has_metadata_key_in_layer</name>
+        <qualifiedname>star::StarDataset::has_metadata_key_in_layer</qualifiedname>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>key</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>layer_name</declname>
+        </param>
+        <briefdescription>
+<para>Check if metadata key exists in specific layer (header-only, O(1)). </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>key</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Key to check </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>layer_name</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Layer name </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>true if key exists in layer </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="7758" column="10" bodyfile="StarDS/include/stards.h" bodystart="7758" bodyend="7771"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1a609d676d9cc6edc2886193ab82c16699" prot="private" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::vector&lt; std::string &gt;</type>
+        <definition>std::vector&lt; std::string &gt; star::StarDataset::get_all_metadata_keys_internal</definition>
+        <argsstring>() const</argsstring>
+        <name>get_all_metadata_keys_internal</name>
+        <qualifiedname>star::StarDataset::get_all_metadata_keys_internal</qualifiedname>
+        <briefdescription>
+<para>Gets ALL keys from hot storage (internal use only). </para>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>Vector of all key names</para>
+</simplesect>
+Note: Returns ALL keys in m_hot.keys, including layer-prefixed internal keys. <ref refid="classstar_1_1LayerMetadataAccessor" kindref="compound">LayerMetadataAccessor</ref> will filter these to find its layer-specific keys. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="8159" column="17" bodyfile="StarDS/include/stards.h" bodystart="8159" bodyend="8161"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1a499ce54db1cb9254b4c1b628713bb92c" prot="private" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>size_t</type>
+        <definition>size_t star::StarDataset::flatIndex</definition>
+        <argsstring>(const std::vector&lt; size_t &gt; &amp;indices, const std::vector&lt; size_t &gt; &amp;shape) const</argsstring>
+        <name>flatIndex</name>
+        <qualifiedname>star::StarDataset::flatIndex</qualifiedname>
+        <param>
+          <type>const std::vector&lt; size_t &gt; &amp;</type>
+          <declname>indices</declname>
+        </param>
+        <param>
+          <type>const std::vector&lt; size_t &gt; &amp;</type>
+          <declname>shape</declname>
+        </param>
+        <briefdescription>
+<para>Converts n-dimensional indices to flat index (row-major). </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="8667" column="19" bodyfile="StarDS/include/stards.h" bodystart="8667" bodyend="8678"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1ad2a1d59c6de22d9b6e3f82d6ed266ca9" prot="private" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="structstar_1_1SliceSpec" kindref="compound">SliceSpec</ref></type>
+        <definition>SliceSpec star::StarDataset::createSliceSpec</definition>
+        <argsstring>(const std::vector&lt; size_t &gt; &amp;shape, const std::vector&lt; Slice &gt; &amp;slices, size_t element_size) const</argsstring>
+        <name>createSliceSpec</name>
+        <qualifiedname>star::StarDataset::createSliceSpec</qualifiedname>
+        <param>
+          <type>const std::vector&lt; size_t &gt; &amp;</type>
+          <declname>shape</declname>
+        </param>
+        <param>
+          <type>const std::vector&lt; <ref refid="structstar_1_1Slice" kindref="compound">Slice</ref> &gt; &amp;</type>
+          <declname>slices</declname>
+        </param>
+        <param>
+          <type>size_t</type>
+          <declname>element_size</declname>
+        </param>
+        <briefdescription>
+<para>Creates <ref refid="structstar_1_1SliceSpec" kindref="compound">SliceSpec</ref> from user slices + array shape. </para>
+        </briefdescription>
+        <detaileddescription>
+<para>Algorithm:<orderedlist>
+<listitem><para>Validate slice count matches dimensions</para>
+</listitem><listitem><para>Normalize slices (handle defaults, bounds)</para>
+</listitem><listitem><para>Calculate output shape</para>
+</listitem><listitem><para>Determine contiguity properties </para>
+</listitem></orderedlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="8689" column="15" bodyfile="StarDS/include/stards.h" bodystart="8689" bodyend="8753"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1aa9417e88497b7193b236cecede847330" prot="private" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="structstar_1_1BlockMap" kindref="compound">BlockMap</ref></type>
+        <definition>BlockMap star::StarDataset::createBlockMap</definition>
+        <argsstring>(const IndexEntry &amp;entry, const SliceSpec &amp;spec) const</argsstring>
+        <name>createBlockMap</name>
+        <qualifiedname>star::StarDataset::createBlockMap</qualifiedname>
+        <param>
+          <type>const <ref refid="structstar_1_1IndexEntry" kindref="compound">IndexEntry</ref> &amp;</type>
+          <declname>entry</declname>
+        </param>
+        <param>
+          <type>const <ref refid="structstar_1_1SliceSpec" kindref="compound">SliceSpec</ref> &amp;</type>
+          <declname>spec</declname>
+        </param>
+        <briefdescription>
+<para>Maps n-dimensional slice to block indices. </para>
+        </briefdescription>
+        <detaileddescription>
+<para>Algorithm:<orderedlist>
+<listitem><para>Convert multi-dim slices to flat element ranges</para>
+</listitem><listitem><para>Calculate elements_per_block</para>
+</listitem><listitem><para>Map element ranges to block ranges</para>
+</listitem><listitem><para>Detect contiguous blocks</para>
+</listitem><listitem><para>Build block read plan </para>
+</listitem></orderedlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="8765" column="14" bodyfile="StarDS/include/stards.h" bodystart="8765" bodyend="8888"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1a9b68bcbb59a40c2f646a61e10d06fbd5" prot="private" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="structstar_1_1ExtractionPlan" kindref="compound">ExtractionPlan</ref></type>
+        <definition>ExtractionPlan star::StarDataset::createExtractionPlan</definition>
+        <argsstring>(const SliceSpec &amp;spec, const BlockMap &amp;block_map, const std::vector&lt; size_t &gt; &amp;shape, const std::vector&lt; BlockInfo &gt; &amp;blocks, size_t element_size) const</argsstring>
+        <name>createExtractionPlan</name>
+        <qualifiedname>star::StarDataset::createExtractionPlan</qualifiedname>
+        <param>
+          <type>const <ref refid="structstar_1_1SliceSpec" kindref="compound">SliceSpec</ref> &amp;</type>
+          <declname>spec</declname>
+        </param>
+        <param>
+          <type>const <ref refid="structstar_1_1BlockMap" kindref="compound">BlockMap</ref> &amp;</type>
+          <declname>block_map</declname>
+        </param>
+        <param>
+          <type>const std::vector&lt; size_t &gt; &amp;</type>
+          <declname>shape</declname>
+        </param>
+        <param>
+          <type>const std::vector&lt; <ref refid="structstar_1_1BlockInfo" kindref="compound">BlockInfo</ref> &gt; &amp;</type>
+          <declname>blocks</declname>
+        </param>
+        <param>
+          <type>size_t</type>
+          <declname>element_size</declname>
+        </param>
+        <briefdescription>
+<para>Creates plan to extract elements from decompressed blocks. </para>
+        </briefdescription>
+        <detaileddescription>
+<para>Handles both contiguous and non-contiguous slicing:<itemizedlist>
+<listitem><para>Contiguous: single range per block</para>
+</listitem><listitem><para>Non-contiguous (e.g., partial columns in 2D): multiple ranges for each &quot;row&quot; </para>
+</listitem></itemizedlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="8897" column="20" bodyfile="StarDS/include/stards.h" bodystart="8897" bodyend="9085"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1a41feda62da9ea92a6349e328e82569fa" prot="private" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::vector&lt; char &gt;</type>
+        <definition>std::vector&lt; char &gt; star::StarDataset::readBlocks</definition>
+        <argsstring>(const IndexEntry &amp;entry, const BlockMap &amp;block_map)</argsstring>
+        <name>readBlocks</name>
+        <qualifiedname>star::StarDataset::readBlocks</qualifiedname>
+        <param>
+          <type>const <ref refid="structstar_1_1IndexEntry" kindref="compound">IndexEntry</ref> &amp;</type>
+          <declname>entry</declname>
+        </param>
+        <param>
+          <type>const <ref refid="structstar_1_1BlockMap" kindref="compound">BlockMap</ref> &amp;</type>
+          <declname>block_map</declname>
+        </param>
+        <briefdescription>
+<para>Reads blocks according to <ref refid="structstar_1_1BlockMap" kindref="compound">BlockMap</ref>. </para>
+        </briefdescription>
+        <detaileddescription>
+<para>Optimization:<itemizedlist>
+<listitem><para>If blocks_contiguous: single seekg + read</para>
+</listitem><listitem><para>Else: batch multiple seeks and reads</para>
+</listitem><listitem><para>For S3: minimize range requests </para>
+</listitem></itemizedlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="9095" column="17" bodyfile="StarDS/include/stards.h" bodystart="9095" bodyend="9185"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1ad439ce7d1f100593691783ce7f60dcd8" prot="private" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::vector&lt; char &gt;</type>
+        <definition>std::vector&lt; char &gt; star::StarDataset::extractElements</definition>
+        <argsstring>(const std::vector&lt; char &gt; &amp;decompressed, const ExtractionPlan &amp;plan, const std::vector&lt; BlockInfo &gt; &amp;blocks, const std::vector&lt; size_t &gt; &amp;block_indices, size_t element_size) const</argsstring>
+        <name>extractElements</name>
+        <qualifiedname>star::StarDataset::extractElements</qualifiedname>
+        <param>
+          <type>const std::vector&lt; char &gt; &amp;</type>
+          <declname>decompressed</declname>
+        </param>
+        <param>
+          <type>const <ref refid="structstar_1_1ExtractionPlan" kindref="compound">ExtractionPlan</ref> &amp;</type>
+          <declname>plan</declname>
+        </param>
+        <param>
+          <type>const std::vector&lt; <ref refid="structstar_1_1BlockInfo" kindref="compound">BlockInfo</ref> &gt; &amp;</type>
+          <declname>blocks</declname>
+        </param>
+        <param>
+          <type>const std::vector&lt; size_t &gt; &amp;</type>
+          <declname>block_indices</declname>
+        </param>
+        <param>
+          <type>size_t</type>
+          <declname>element_size</declname>
+        </param>
+        <briefdescription>
+<para>Extracts sliced elements from decompressed blocks. </para>
+        </briefdescription>
+        <detaileddescription>
+<para>Algorithm:<orderedlist>
+<listitem><para>Pre-allocate output buffer (exact size)</para>
+</listitem><listitem><para>For each range in <ref refid="structstar_1_1ExtractionPlan" kindref="compound">ExtractionPlan</ref>:<itemizedlist>
+<listitem><para>Memcpy from block to output</para>
+</listitem></itemizedlist>
+</para>
+</listitem><listitem><para>Return contiguous result </para>
+</listitem></orderedlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="9196" column="17" bodyfile="StarDS/include/stards.h" bodystart="9196" bodyend="9265"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-static-func">
+      <memberdef kind="function" id="classstar_1_1StarDataset_1afcfe466aad9322b2d0c78f06ab1e3024" prot="public" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::shared_ptr&lt; <ref refid="classstar_1_1StarDataset_1a14d3536739b1cf182ddcdfbd48c66a3a" kindref="member">StarDataset</ref> &gt;</type>
+        <definition>static std::shared_ptr&lt; StarDataset &gt; star::StarDataset::create</definition>
+        <argsstring>(const std::string &amp;filename, const StarConfig &amp;config=StarConfig())</argsstring>
+        <name>create</name>
+        <qualifiedname>star::StarDataset::create</qualifiedname>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>filename</declname>
+        </param>
+        <param>
+          <type>const <ref refid="structstar_1_1StarConfig" kindref="compound">StarConfig</ref> &amp;</type>
+          <declname>config</declname>
+          <defval><ref refid="structstar_1_1StarConfig" kindref="compound">StarConfig</ref>()</defval>
+        </param>
+        <briefdescription>
+<para>Create a new Star dataset file. </para>
+        </briefdescription>
+        <detaileddescription>
+<para>Creates a new file with the specified configuration. If the file already exists, it will be overwritten. The file will be created on the first <ref refid="classstar_1_1StarDataset_1adf87ca87a5947a74bfc4cd149e45cb31" kindref="member">flush()</ref> or when the object is destroyed.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>filename</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Path to create (local, s3://... / /vsis3/...) </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>config</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Configuration for compression, block sizes, metadata </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>New <ref refid="classstar_1_1StarDataset" kindref="compound">StarDataset</ref> instance </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="7373" column="28" bodyfile="StarDS/include/stards.h" bodystart="7373" bodyend="7384"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1a7da82ee4803e6302ad903e12e3c4c0c7" prot="public" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::shared_ptr&lt; <ref refid="classstar_1_1StarDataset_1a14d3536739b1cf182ddcdfbd48c66a3a" kindref="member">StarDataset</ref> &gt;</type>
+        <definition>static std::shared_ptr&lt; StarDataset &gt; star::StarDataset::open</definition>
+        <argsstring>(const std::string &amp;filename, FileMode mode=FileMode::READ_WRITE, const OpenOptions &amp;opts={})</argsstring>
+        <name>open</name>
+        <qualifiedname>star::StarDataset::open</qualifiedname>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>filename</declname>
+        </param>
+        <param>
+          <type>FileMode</type>
+          <declname>mode</declname>
+          <defval>FileMode::READ_WRITE</defval>
+        </param>
+        <param>
+          <type>const <ref refid="structstar_1_1OpenOptions" kindref="compound">OpenOptions</ref> &amp;</type>
+          <declname>opts</declname>
+          <defval>{}</defval>
+        </param>
+        <briefdescription>
+<para>Open an existing Star dataset file. </para>
+        </briefdescription>
+        <detaileddescription>
+<para>Opens an existing file and reads its configuration from the file header. The configuration used when the file was created is preserved.</para>
+<para>If mode is READ_WRITE and file doesn&apos;t exist, it will be created. If mode is READ_ONLY and file doesn&apos;t exist, an error is thrown.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>filename</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Path to open (local, s3:// or /vsis3/, <ulink url="https://">https://</ulink> or /vsicurl/) </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>mode</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>FileMode enum (READ_WRITE/READ_ONLY) </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>Opened <ref refid="classstar_1_1StarDataset" kindref="compound">StarDataset</ref> instance </para>
+</simplesect>
+<parameterlist kind="exception"><parameteritem>
+<parameternamelist>
+<parametername>std::runtime_error</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>if file doesn&apos;t exist in READ_ONLY mode or is corrupt </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="7400" column="28" bodyfile="StarDS/include/stards.h" bodystart="7400" bodyend="7454"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1a14f8ceae696e8169da339013e43b44cd" prot="public" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::shared_ptr&lt; <ref refid="classstar_1_1StarDataset_1a14d3536739b1cf182ddcdfbd48c66a3a" kindref="member">StarDataset</ref> &gt;</type>
+        <definition>static std::shared_ptr&lt; StarDataset &gt; star::StarDataset::open</definition>
+        <argsstring>(const std::string &amp;filename, const std::string &amp;mode_str, const OpenOptions &amp;opts={})</argsstring>
+        <name>open</name>
+        <qualifiedname>star::StarDataset::open</qualifiedname>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>filename</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>mode_str</declname>
+        </param>
+        <param>
+          <type>const <ref refid="structstar_1_1OpenOptions" kindref="compound">OpenOptions</ref> &amp;</type>
+          <declname>opts</declname>
+          <defval>{}</defval>
+        </param>
+        <briefdescription>
+<para>Open an existing Star dataset file (string mode overload). </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>filename</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Path to open (local, s3:// or /vsis3/, <ulink url="https://">https://</ulink> or /vsicurl/) </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>mode_str</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>String mode (&quot;r&quot;, &quot;w&quot;, &quot;rw&quot;, &quot;a&quot;) </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>Opened <ref refid="classstar_1_1StarDataset" kindref="compound">StarDataset</ref> instance </para>
+</simplesect>
+<parameterlist kind="exception"><parameteritem>
+<parameternamelist>
+<parametername>std::runtime_error</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>if file doesn&apos;t exist or is invalid </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="7464" column="28" bodyfile="StarDS/include/stards.h" bodystart="7464" bodyend="7467"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1aa5564459aaa53ae6d4c417ef0ddb13ef" prot="public" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::shared_ptr&lt; <ref refid="classstar_1_1StarDataset_1a14d3536739b1cf182ddcdfbd48c66a3a" kindref="member">StarDataset</ref> &gt;</type>
+        <definition>static std::shared_ptr&lt; StarDataset &gt; star::StarDataset::open_bytes</definition>
+        <argsstring>(std::vector&lt; char &gt; bytes, const OpenOptions &amp;opts={})</argsstring>
+        <name>open_bytes</name>
+        <qualifiedname>star::StarDataset::open_bytes</qualifiedname>
+        <param>
+          <type>std::vector&lt; char &gt;</type>
+          <declname>bytes</declname>
+        </param>
+        <param>
+          <type>const <ref refid="structstar_1_1OpenOptions" kindref="compound">OpenOptions</ref> &amp;</type>
+          <declname>opts</declname>
+          <defval>{}</defval>
+        </param>
+        <briefdescription>
+<para>Open a dataset from an in-memory byte buffer. </para>
+        </briefdescription>
+        <detaileddescription>
+<para>Mirrors <ref refid="classstar_1_1StarDataset_1a7da82ee4803e6302ad903e12e3c4c0c7" kindref="member">open()</ref>, but the source is a byte array holding a complete .stards image (e.g. bytes received over a socket or pulled from a database) instead of a path. The dataset is READ_ONLY — there is no backing file to flush to; use <ref refid="classstar_1_1StarDataset_1aacea5f33f6f1addab145ff845580e0e7" kindref="member">write_bytes()</ref> to serialize modifications back out to a new byte array.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>bytes</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>A complete .stards image. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>opts</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Read-time options (e.g. layer_inheritance). </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>Opened <ref refid="classstar_1_1StarDataset" kindref="compound">StarDataset</ref> backed by the provided bytes. </para>
+</simplesect>
+<parameterlist kind="exception"><parameteritem>
+<parameternamelist>
+<parametername>std::runtime_error</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>if the bytes are not a valid STAR image. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="7482" column="28" bodyfile="StarDS/include/stards.h" bodystart="7482" bodyend="7495"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1StarDataset_1adcf5b132c72673b00adf2724b0244ad5" prot="public" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::shared_ptr&lt; <ref refid="classstar_1_1StarDataset_1a14d3536739b1cf182ddcdfbd48c66a3a" kindref="member">StarDataset</ref> &gt;</type>
+        <definition>static std::shared_ptr&lt; StarDataset &gt; star::StarDataset::open_bytes</definition>
+        <argsstring>(const void *data, size_t size, const OpenOptions &amp;opts={})</argsstring>
+        <name>open_bytes</name>
+        <qualifiedname>star::StarDataset::open_bytes</qualifiedname>
+        <param>
+          <type>const void *</type>
+          <declname>data</declname>
+        </param>
+        <param>
+          <type>size_t</type>
+          <declname>size</declname>
+        </param>
+        <param>
+          <type>const <ref refid="structstar_1_1OpenOptions" kindref="compound">OpenOptions</ref> &amp;</type>
+          <declname>opts</declname>
+          <defval>{}</defval>
+        </param>
+        <briefdescription>
+<para>Convenience overload taking a raw pointer + length (e.g. from a C buffer, Python bytes, or a mapped region). </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="7501" column="28" bodyfile="StarDS/include/stards.h" bodystart="7501" bodyend="7505"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+<para>A cloud-optimized binary key-value store for serializable data types. </para>
+    </briefdescription>
+    <detaileddescription>
+<para>This class implements a binary key-value store that can persist data to disk in a cloud-optimized format. It uses a single file with an index section followed by data for efficient cloud storage and retrieval. Large arrays are chunked for better performance over networks. </para>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="1">
+        <label>star::StarDataset</label>
+        <link refid="classstar_1_1StarDataset"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>std::enable_shared_from_this&lt; StarDataset &gt;</label>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="5">
+        <label>star::ColdStorage</label>
+        <link refid="structstar_1_1ColdStorage"/>
+      </node>
+      <node id="3">
+        <label>star::FileHeader</label>
+        <link refid="structstar_1_1FileHeader"/>
+      </node>
+      <node id="9">
+        <label>star::FilePathInfo</label>
+        <link refid="structstar_1_1FilePathInfo"/>
+      </node>
+      <node id="4">
+        <label>star::HotStorage</label>
+        <link refid="structstar_1_1HotStorage"/>
+      </node>
+      <node id="6">
+        <label>star::KeyRegistry</label>
+        <link refid="structstar_1_1KeyRegistry"/>
+      </node>
+      <node id="7">
+        <label>star::LayerMetadataRegistry</label>
+        <link refid="structstar_1_1LayerMetadataRegistry"/>
+      </node>
+      <node id="8">
+        <label>star::MetadataAccessor</label>
+        <link refid="classstar_1_1MetadataAccessor"/>
+      </node>
+      <node id="11">
+        <label>star::OpenOptions</label>
+        <link refid="structstar_1_1OpenOptions"/>
+      </node>
+      <node id="10">
+        <label>star::StarConfig</label>
+        <link refid="structstar_1_1StarConfig"/>
+      </node>
+      <node id="1">
+        <label>star::StarDataset</label>
+        <link refid="classstar_1_1StarDataset"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+        <childnode refid="3" relation="usage">
+          <edgelabel>m_file_header</edgelabel>
+        </childnode>
+        <childnode refid="4" relation="usage">
+          <edgelabel>m_hot</edgelabel>
+        </childnode>
+        <childnode refid="5" relation="usage">
+          <edgelabel>m_cold</edgelabel>
+        </childnode>
+        <childnode refid="6" relation="usage">
+          <edgelabel>m_key_registry</edgelabel>
+        </childnode>
+        <childnode refid="7" relation="usage">
+          <edgelabel>m_layer_metadata_registry</edgelabel>
+        </childnode>
+        <childnode refid="8" relation="usage">
+          <edgelabel>meta</edgelabel>
+        </childnode>
+        <childnode refid="9" relation="usage">
+          <edgelabel>m_path_info</edgelabel>
+        </childnode>
+        <childnode refid="10" relation="usage">
+          <edgelabel>m_config</edgelabel>
+        </childnode>
+        <childnode refid="11" relation="usage">
+          <edgelabel>m_open_options</edgelabel>
+        </childnode>
+      </node>
+      <node id="2">
+        <label>std::enable_shared_from_this&lt; StarDataset &gt;</label>
+      </node>
+    </collaborationgraph>
+    <location file="StarDS/include/stards.h" line="5163" column="1" bodyfile="StarDS/include/stards.h" bodystart="5163" bodyend="9328"/>
+    <listofallmembers>
+      <member refid="classstar_1_1StarDataset_1a7cc3144ff3539829552c4ef82a6a14fb" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>array_length</name></member>
+      <member refid="classstar_1_1StarDataset_1afc6353d115eb0bfa2f5d4c8fb13e8e0c" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>begin</name></member>
+      <member refid="classstar_1_1StarDataset_1a491a851b5326fa74d63d8687c61943a7" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>begin</name></member>
+      <member refid="classstar_1_1StarDataset_1a703e8f06dc28a122e20c4c5a41a80d6a" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>calculateHeaderSize</name></member>
+      <member refid="classstar_1_1StarDataset_1a5927796bd8576558c990f790895f8318" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>cbegin</name></member>
+      <member refid="classstar_1_1StarDataset_1af3f207c66918f12ad59ccf3ef97274c4" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>cend</name></member>
+      <member refid="classstar_1_1StarDataset_1a10a5a364006a389de3d4bc7420704044" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>close</name></member>
+      <member refid="classstar_1_1StarDataset_1a70da2003a512cf11c0b349e4fc8ec0df" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>compress_single_block</name></member>
+      <member refid="classstar_1_1StarDataset_1ab79bf9db2987f66409cb21f356e8c0bd" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>const_iterator</name></member>
+      <member refid="classstar_1_1StarDataset_1ab3c3e1773e08e3ba6dc11c4d9c928878" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>contains</name></member>
+      <member refid="classstar_1_1StarDataset_1afcfe466aad9322b2d0c78f06ab1e3024" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>create</name></member>
+      <member refid="classstar_1_1StarDataset_1af294f0ff29a052e37b0a3be70621b1e0" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>create_layer</name></member>
+      <member refid="classstar_1_1StarDataset_1aa9417e88497b7193b236cecede847330" prot="private" virt="non-virtual"><scope>star::StarDataset</scope><name>createBlockMap</name></member>
+      <member refid="classstar_1_1StarDataset_1a9b68bcbb59a40c2f646a61e10d06fbd5" prot="private" virt="non-virtual"><scope>star::StarDataset</scope><name>createExtractionPlan</name></member>
+      <member refid="classstar_1_1StarDataset_1ad2a1d59c6de22d9b6e3f82d6ed266ca9" prot="private" virt="non-virtual"><scope>star::StarDataset</scope><name>createSliceSpec</name></member>
+      <member refid="classstar_1_1StarDataset_1a1e9437653ff2eff23edfbf14fcc5ac4e" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>decode_array_bytes</name></member>
+      <member refid="classstar_1_1StarDataset_1ac2771aa56780b1e7715b79fcd9ce1557" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>decode_numeric_blocks_into_ndarray</name></member>
+      <member refid="classstar_1_1StarDataset_1a09f054743966116ca53a8940823eaf4b" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>decompress_single_block</name></member>
+      <member refid="classstar_1_1StarDataset_1aa7090387f438ffed049fa3b13a9926b9" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>deserialize_typed_value</name></member>
+      <member refid="classstar_1_1StarDataset_1a5b2e680be05fc87317164e0e0d4d7cef" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>deserialize_typed_value_bytes</name></member>
+      <member refid="classstar_1_1StarDataset_1a33c7865d6e7cc05b34cb0c8183642a8e" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>deserializeKey</name></member>
+      <member refid="classstar_1_1StarDataset_1ae8cb0dffb4b3f44faf9682fac8074fdb" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>dtype_of</name></member>
+      <member refid="classstar_1_1StarDataset_1a8c09da0603b8de5cbc11bdd4a0a68baa" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>end</name></member>
+      <member refid="classstar_1_1StarDataset_1a716836a56c7aee3516906be14edc6b39" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>end</name></member>
+      <member refid="classstar_1_1StarDataset_1ad7b01eb3a61d6924c49ffa0b31efe329" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>ensure_layer_metadata_loaded</name></member>
+      <member refid="classstar_1_1StarDataset_1ad439ce7d1f100593691783ce7f60dcd8" prot="private" virt="non-virtual"><scope>star::StarDataset</scope><name>extractElements</name></member>
+      <member refid="classstar_1_1StarDataset_1a499ce54db1cb9254b4c1b628713bb92c" prot="private" virt="non-virtual"><scope>star::StarDataset</scope><name>flatIndex</name></member>
+      <member refid="classstar_1_1StarDataset_1adf87ca87a5947a74bfc4cd149e45cb31" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>flush</name></member>
+      <member refid="classstar_1_1StarDataset_1ae2c02dfede4863f0921d335bda15571a" prot="private" virt="non-virtual"><scope>star::StarDataset</scope><name>flush_internal</name></member>
+      <member refid="classstar_1_1StarDataset_1a21da4ed3ebb7efbb85cc90db146902fa" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>flush_quiet</name></member>
+      <member refid="classstar_1_1StarDataset_1a6b29611e42303840401cbda4bd8eae77" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>get</name></member>
+      <member refid="classstar_1_1StarDataset_1a61b40bf1e193a5167f27de61e8f67fa4" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>get_all_keys</name></member>
+      <member refid="classstar_1_1StarDataset_1a609d676d9cc6edc2886193ab82c16699" prot="private" virt="non-virtual"><scope>star::StarDataset</scope><name>get_all_metadata_keys_internal</name></member>
+      <member refid="classstar_1_1StarDataset_1acb5056d0b881c92a708519f1be85c7a0" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>get_file_header</name></member>
+      <member refid="classstar_1_1StarDataset_1aea855492329354e778e4babb6204d393" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>get_filename</name></member>
+      <member refid="classstar_1_1StarDataset_1ab98915b65bab49ff8efe46c90ae7ca4f" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>get_layer</name></member>
+      <member refid="classstar_1_1StarDataset_1aa189673f0b96a941ae1e9b589a43ddb1" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>get_metadata_count</name></member>
+      <member refid="classstar_1_1StarDataset_1a2615ec97c24b48b9043eb754aa1764f0" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>get_metadata_keys</name></member>
+      <member refid="classstar_1_1StarDataset_1ae2ca462f52a62ca50d244472f7794d98" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>get_slice</name></member>
+      <member refid="classstar_1_1StarDataset_1a38864db372a88555179a399c1871f8a7" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>has_layer</name></member>
+      <member refid="classstar_1_1StarDataset_1a92bb10028638eda0657180cbf7aff5bd" prot="private" virt="non-virtual"><scope>star::StarDataset</scope><name>has_layer_unlocked</name></member>
+      <member refid="classstar_1_1StarDataset_1a25d51491f7f2b3a373229dcdf329f92b" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>has_metadata_block</name></member>
+      <member refid="classstar_1_1StarDataset_1a93f397e097e2013040338469b379c508" prot="private" virt="non-virtual"><scope>star::StarDataset</scope><name>has_metadata_key_in_layer</name></member>
+      <member refid="classstar_1_1StarDataset_1ad601cb8d8ea68e1bff2696e729bafc5a" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>is_metadata_loaded</name></member>
+      <member refid="classstar_1_1StarDataset_1acd630a1fae2d4c933b6fd78a76f23383" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>is_read_only</name></member>
+      <member refid="classstar_1_1StarDataset_1ab584ab192a9024e4f18a9eb697549fff" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>is_sliceable</name></member>
+      <member refid="classstar_1_1StarDataset_1a5c396e3ad89800e66a36bea68d09ba95" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>iterator</name></member>
+      <member refid="classstar_1_1StarDataset_1a27a892dca3ce2a420cd08a1e8f6ce4ee" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>key_in_layer</name></member>
+      <member refid="classstar_1_1StarDataset_1ac5d91179173cfe6d100d564dd119bf21" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>layer_inheritance</name></member>
+      <member refid="classstar_1_1StarDataset_1a015b70c9b130674c6d74ca816f38ac9f" prot="private" virt="non-virtual"><scope>star::StarDataset</scope><name>LayerMetadataAccessor</name></member>
+      <member refid="classstar_1_1StarDataset_1a12b4cab643600c1a57b03671948ece94" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>list_layers</name></member>
+      <member refid="classstar_1_1StarDataset_1a30b05c1f639348d9d3212c0c7efc4b6d" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>load_all_metadata</name></member>
+      <member refid="classstar_1_1StarDataset_1aef9d358e9585311ae5aa2b651da66cab" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>load_entry</name></member>
+      <member refid="classstar_1_1StarDataset_1a4a56c27bbf64f2311c937893ff31a685" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>load_layer_metadata</name></member>
+      <member refid="classstar_1_1StarDataset_1a38b6402d7829e5f9f7cb311b743c849d" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>load_metadata_block</name></member>
+      <member refid="classstar_1_1StarDataset_1a24e20cbd39b3e6eaafdc48b2163a1b25" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>loadIndex</name></member>
+      <member refid="classstar_1_1StarDataset_1a8d30dd4d25011c6cfd7144dc0183aaf7" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>m_capture_image</name></member>
+      <member refid="classstar_1_1StarDataset_1ae1ad21033194c378505839e5189ea8ed" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>m_cold</name></member>
+      <member refid="classstar_1_1StarDataset_1a45561d7041f5a14a262c47683295dff0" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>m_compress_buffer</name></member>
+      <member refid="classstar_1_1StarDataset_1a547ae8e882bb3fed98e408c1b084248d" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>m_config</name></member>
+      <member refid="classstar_1_1StarDataset_1af53ec93ff2b22d6f1fcf6dee8fc0f78c" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>m_data_storage</name></member>
+      <member refid="classstar_1_1StarDataset_1a9b964ffa557774a85a2235dffa61e1b7" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>m_file_header</name></member>
+      <member refid="classstar_1_1StarDataset_1a1d73dd82953e1260da02721e6a8ee060" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>m_file_mode</name></member>
+      <member refid="classstar_1_1StarDataset_1a4a41100e7d8fff93deedefb5593b6a6b" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>m_filename</name></member>
+      <member refid="classstar_1_1StarDataset_1a63b1ed8f5b4635be32a8132919decc77" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>m_flushed</name></member>
+      <member refid="classstar_1_1StarDataset_1aa35ae19e556b60e10da699fe17cfd7fe" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>m_header_dirty</name></member>
+      <member refid="classstar_1_1StarDataset_1aa0af233b472755cde030dfd67c00486e" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>m_header_size</name></member>
+      <member refid="classstar_1_1StarDataset_1a0fd17f8b896ea72962218389307e5edb" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>m_hot</name></member>
+      <member refid="classstar_1_1StarDataset_1ae75df7720592442281f7ecc5b0b6a637" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>m_key_registry</name></member>
+      <member refid="classstar_1_1StarDataset_1a5a6e5e5aaf91b36c68d093a02a8b1eb1" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>m_key_to_index</name></member>
+      <member refid="classstar_1_1StarDataset_1a4d5b6dd0447d157ea0faa6cbe3a4b14c" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>m_layer_metadata_indices</name></member>
+      <member refid="classstar_1_1StarDataset_1a2c757feefb1d2dcbfe3b741edcb67cbb" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>m_layer_metadata_loaded</name></member>
+      <member refid="classstar_1_1StarDataset_1a8adf8fc6ba0410c26a4311855c1be7ff" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>m_layer_metadata_registry</name></member>
+      <member refid="classstar_1_1StarDataset_1a5f1d4634a079d78fc1f99baeb91b4f64" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>m_layer_presence</name></member>
+      <member refid="classstar_1_1StarDataset_1ab5d068d39b491824da69eaf7ebcc6719" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>m_memory_source</name></member>
+      <member refid="classstar_1_1StarDataset_1a18dd8808fdb7b88f4b05a47d28f69e0a" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>m_metadata_dtypes</name></member>
+      <member refid="classstar_1_1StarDataset_1ae2904c1f0618c9a3cfe544f536f854cc" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>m_metadata_loaded</name></member>
+      <member refid="classstar_1_1StarDataset_1a9f33d573f3b38edcb00c79169c9f8519" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>m_metadata_shapes</name></member>
+      <member refid="classstar_1_1StarDataset_1a65bb10d2d8ae7e16fbc73bb49cb24fb5" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>m_mutex</name></member>
+      <member refid="classstar_1_1StarDataset_1a1615360f9642b16f84afe157470ef3c1" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>m_open_options</name></member>
+      <member refid="classstar_1_1StarDataset_1ac444bd44b150741b2502b3f80663afa9" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>m_path_info</name></member>
+      <member refid="classstar_1_1StarDataset_1a062f183ffc0c2090deb5a2b42a662bd5" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>m_reader</name></member>
+      <member refid="classstar_1_1StarDataset_1a8fbdf94214dd5da47aa3cfae069c35fd" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>m_s3_credentials</name></member>
+      <member refid="classstar_1_1StarDataset_1ab3a631360d980d3010867cf576549436" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>m_serialize_buffer</name></member>
+      <member refid="classstar_1_1StarDataset_1a8ec971a7148701235cfb5c958774ab6e" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>m_thread_pool</name></member>
+      <member refid="classstar_1_1StarDataset_1a856813487b1936db6756ba7473652a34" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>meta</name></member>
+      <member refid="classstar_1_1StarDataset_1a7da82ee4803e6302ad903e12e3c4c0c7" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>open</name></member>
+      <member refid="classstar_1_1StarDataset_1a14f8ceae696e8169da339013e43b44cd" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>open</name></member>
+      <member refid="classstar_1_1StarDataset_1aa5564459aaa53ae6d4c417ef0ddb13ef" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>open_bytes</name></member>
+      <member refid="classstar_1_1StarDataset_1adcf5b132c72673b00adf2724b0244ad5" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>open_bytes</name></member>
+      <member refid="classstar_1_1StarDataset_1ab0d5fb81b8a6d3b35823771be6236b90" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>open_options</name></member>
+      <member refid="classstar_1_1StarDataset_1a50455ef8c570c23b8a043127e2d29142" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>operator=</name></member>
+      <member refid="classstar_1_1StarDataset_1afcdd478183a4b0c98ae4e101aefb3c4f" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>operator=</name></member>
+      <member refid="classstar_1_1StarDataset_1ab68aaf017d9e65e1c4e4c59190545f07" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>parse_layer_metadata_block</name></member>
+      <member refid="classstar_1_1StarDataset_1ab9f9dc2c84f028de3072b4cf1f5f9a6b" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>prefetch</name></member>
+      <member refid="classstar_1_1StarDataset_1a9d32fbac0f2228fa5c4aeae41db99e2c" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>print_header</name></member>
+      <member refid="classstar_1_1StarDataset_1aad09bab49cdbac225431b89f1cf4d8b0" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>put</name></member>
+      <member refid="classstar_1_1StarDataset_1a20f653fce8594a669994c9f13f33c0f9" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>put</name></member>
+      <member refid="classstar_1_1StarDataset_1af5cfd7806ec64acef710e394d9e64594" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>read_range</name></member>
+      <member refid="classstar_1_1StarDataset_1a41feda62da9ea92a6349e328e82569fa" prot="private" virt="non-virtual"><scope>star::StarDataset</scope><name>readBlocks</name></member>
+      <member refid="classstar_1_1StarDataset_1a374c4ac9b32b35e1ce85c814c1529b75" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>reader</name></member>
+      <member refid="classstar_1_1StarDataset_1aa674f161366ef3b21e032c446eea45f5" prot="private" virt="non-virtual"><scope>star::StarDataset</scope><name>resolve_metadata_inheritance</name></member>
+      <member refid="classstar_1_1StarDataset_1a5452cb4edda0e36c034f1623f398f8ca" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>save_to</name></member>
+      <member refid="classstar_1_1StarDataset_1a4ba4c2706e54a1585e1398e5e5bd252b" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>serialize_array_data</name></member>
+      <member refid="classstar_1_1StarDataset_1a78c1eaca5966f89a7ae30896c43981a3" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>serialize_array_data</name></member>
+      <member refid="classstar_1_1StarDataset_1ab0df6d3b6d3b7708afe0ffdae786ec23" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>serialize_layer_metadata_block</name></member>
+      <member refid="classstar_1_1StarDataset_1abb240b1e97e7fd590b90fba8631058c0" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>serialize_metadata_block</name></member>
+      <member refid="classstar_1_1StarDataset_1a0c8bcdb169a7c7b879934cfe1e92d5f8" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>serialize_metadata_value</name></member>
+      <member refid="classstar_1_1StarDataset_1a851845e0b884cf8a529e0aaa05c25344" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>serialize_metadata_value</name></member>
+      <member refid="classstar_1_1StarDataset_1ade1a2b04d64f472aa2c527212a35fa60" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>set_layer_inheritance</name></member>
+      <member refid="classstar_1_1StarDataset_1a2c74250a987534615f168663bd288ce7" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>set_layer_presence</name></member>
+      <member refid="classstar_1_1StarDataset_1a7735c6c58262b9a15fcd4ab588beaeb0" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>set_open_options</name></member>
+      <member refid="classstar_1_1StarDataset_1a305f7f9436cec48fb6391e5f4c181b5c" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>shape_of</name></member>
+      <member refid="classstar_1_1StarDataset_1aa64d4174f4b9d1db4f87295e3a38445d" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>size</name></member>
+      <member refid="classstar_1_1StarDataset_1aef5c0e47e5af65f17a340b3964958fab" prot="private" virt="non-virtual"><scope>star::StarDataset</scope><name>stage_all_entries_for_resave</name></member>
+      <member refid="classstar_1_1StarDataset_1a14d3536739b1cf182ddcdfbd48c66a3a" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>StarDataset</name></member>
+      <member refid="classstar_1_1StarDataset_1a03182b18c3bb025a2aa9a3bb73d0b021" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>StarDataset</name></member>
+      <member refid="classstar_1_1StarDataset_1a7df1744109a0e16ad45b896ee0230643" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>StarDataset</name></member>
+      <member refid="classstar_1_1StarDataset_1ada45adc172a5d4661501cab69571c621" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>useThreading</name></member>
+      <member refid="classstar_1_1StarDataset_1aacea5f33f6f1addab145ff845580e0e7" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>write_bytes</name></member>
+      <member refid="classstar_1_1StarDataset_1a9fdddbc2a3dce03b071870a21657f04f" prot="public" virt="non-virtual"><scope>star::StarDataset</scope><name>~StarDataset</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

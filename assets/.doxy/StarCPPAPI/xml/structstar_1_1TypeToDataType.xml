@@ -1,0 +1,18 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.17.0" xml:lang="en-US">
+  <compounddef id="structstar_1_1TypeToDataType" kind="struct" language="C++" prot="public">
+    <compoundname>star::TypeToDataType</compoundname>
+    <templateparamlist>
+      <param>
+        <type>typename T</type>
+      </param>
+    </templateparamlist>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="StarDS/include/stards.h" line="1171" column="1" bodyfile="StarDS/include/stards.h" bodystart="1171" bodyend="1173"/>
+    <listofallmembers>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

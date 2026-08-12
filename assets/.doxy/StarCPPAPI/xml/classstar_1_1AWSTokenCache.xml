@@ -1,0 +1,230 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.17.0" xml:lang="en-US">
+  <compounddef id="classstar_1_1AWSTokenCache" kind="class" language="C++" prot="public">
+    <compoundname>star::AWSTokenCache</compoundname>
+    <includes refid="stards_8h" local="no">stards.h</includes>
+    <innerclass refid="structstar_1_1AWSTokenCache_1_1SSOToken" prot="private">star::AWSTokenCache::SSOToken</innerclass>
+    <sectiondef kind="private-static-func">
+      <memberdef kind="function" id="classstar_1_1AWSTokenCache_1a9c6bece323973f6f9dab0037ed7faa15" prot="private" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::string</type>
+        <definition>static std::string star::AWSTokenCache::getHomeDir</definition>
+        <argsstring>()</argsstring>
+        <name>getHomeDir</name>
+        <qualifiedname>star::AWSTokenCache::getHomeDir</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="2166" column="24" bodyfile="StarDS/include/stards.h" bodystart="2166" bodyend="2172"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1AWSTokenCache_1a45b57cf38f8ea90ce66b2092afdef745" prot="private" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::string</type>
+        <definition>static std::string star::AWSTokenCache::getSSOCacheDir</definition>
+        <argsstring>()</argsstring>
+        <name>getSSOCacheDir</name>
+        <qualifiedname>star::AWSTokenCache::getSSOCacheDir</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="2174" column="24" bodyfile="StarDS/include/stards.h" bodystart="2174" bodyend="2178"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1AWSTokenCache_1ab49fb0ad2db4b68cc627a0eef76168dd" prot="private" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::string</type>
+        <definition>static std::string star::AWSTokenCache::sha1LowerHex</definition>
+        <argsstring>(const std::string &amp;input)</argsstring>
+        <name>sha1LowerHex</name>
+        <qualifiedname>star::AWSTokenCache::sha1LowerHex</qualifiedname>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>input</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="2190" column="24" bodyfile="StarDS/include/stards.h" bodystart="2190" bodyend="2194"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1AWSTokenCache_1afa56258ffe5b1bb974554cc8471b8624" prot="private" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::optional&lt; SSOToken &gt;</type>
+        <definition>static std::optional&lt; SSOToken &gt; star::AWSTokenCache::parseTokenJson</definition>
+        <argsstring>(const std::string &amp;json_content, const std::string &amp;start_url)</argsstring>
+        <name>parseTokenJson</name>
+        <qualifiedname>star::AWSTokenCache::parseTokenJson</qualifiedname>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>json_content</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>start_url</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="2199" column="26" bodyfile="StarDS/include/stards.h" bodystart="2199" bodyend="2214"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1AWSTokenCache_1a6b94a918da586b04dd118dc91c1415cf" prot="private" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::string</type>
+        <definition>static std::string star::AWSTokenCache::extractJsonValue</definition>
+        <argsstring>(const std::string &amp;json, const std::string &amp;key)</argsstring>
+        <name>extractJsonValue</name>
+        <qualifiedname>star::AWSTokenCache::extractJsonValue</qualifiedname>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>json</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>key</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="2217" column="24" bodyfile="StarDS/include/stards.h" bodystart="2217" bodyend="2233"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-static-func">
+      <memberdef kind="function" id="classstar_1_1AWSTokenCache_1a9d55b8b59ae0fce543944ee3ed369b3c" prot="public" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::optional&lt; SSOToken &gt;</type>
+        <definition>static std::optional&lt; SSOToken &gt; star::AWSTokenCache::readToken</definition>
+        <argsstring>(const std::string &amp;start_url, const std::string &amp;sso_session=&quot;&quot;)</argsstring>
+        <name>readToken</name>
+        <qualifiedname>star::AWSTokenCache::readToken</qualifiedname>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>start_url</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>sso_session</declname>
+          <defval>&quot;&quot;</defval>
+        </param>
+        <briefdescription>
+<para>Find and read SSO token for a given start URL. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>start_url</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The SSO start URL from AWS config </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>sso_session</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The sso-session name (if the profile uses one). When non-empty it is the cache-key the AWS CLI hashes; otherwise the start_url is used. Defaults to &quot;&quot; for compatibility. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>SSOToken if found and valid, empty optional otherwise </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="2245" column="26" bodyfile="StarDS/include/stards.h" bodystart="2245" bodyend="2332"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1AWSTokenCache_1af92bd1ece2ad7ea57fd11fc84019a541" prot="public" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::optional&lt; std::tuple&lt; std::string, std::string, std::string &gt; &gt;</type>
+        <definition>static std::optional&lt; std::tuple&lt; std::string, std::string, std::string &gt; &gt; star::AWSTokenCache::getCredentialsFromToken</definition>
+        <argsstring>(const std::string &amp;access_token, const std::string &amp;account_id, const std::string &amp;role_name, const std::string &amp;region)</argsstring>
+        <name>getCredentialsFromToken</name>
+        <qualifiedname>star::AWSTokenCache::getCredentialsFromToken</qualifiedname>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>access_token</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>account_id</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>role_name</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>region</declname>
+        </param>
+        <briefdescription>
+<para>Get temporary credentials using SSO token. </para>
+        </briefdescription>
+        <detaileddescription>
+<para>Makes API call to AWS SSO service to exchange token for credentials</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>access_token</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>SSO access token </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>account_id</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>AWS account ID </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>role_name</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>IAM role name </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>region</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>AWS region </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>tuple of (access_key, secret_key, session_token) </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="2346" column="5" bodyfile="StarDS/include/stards.h" bodystart="2346" bodyend="2401"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+<para>AWS SSO Token Cache reader. </para>
+    </briefdescription>
+    <detaileddescription>
+<para>Reads and manages SSO tokens cached by AWS CLI </para>
+    </detaileddescription>
+    <location file="StarDS/include/stards.h" line="2136" column="1" bodyfile="StarDS/include/stards.h" bodystart="2136" bodyend="2402"/>
+    <listofallmembers>
+      <member refid="classstar_1_1AWSTokenCache_1a6b94a918da586b04dd118dc91c1415cf" prot="private" virt="non-virtual"><scope>star::AWSTokenCache</scope><name>extractJsonValue</name></member>
+      <member refid="classstar_1_1AWSTokenCache_1af92bd1ece2ad7ea57fd11fc84019a541" prot="public" virt="non-virtual"><scope>star::AWSTokenCache</scope><name>getCredentialsFromToken</name></member>
+      <member refid="classstar_1_1AWSTokenCache_1a9c6bece323973f6f9dab0037ed7faa15" prot="private" virt="non-virtual"><scope>star::AWSTokenCache</scope><name>getHomeDir</name></member>
+      <member refid="classstar_1_1AWSTokenCache_1a45b57cf38f8ea90ce66b2092afdef745" prot="private" virt="non-virtual"><scope>star::AWSTokenCache</scope><name>getSSOCacheDir</name></member>
+      <member refid="classstar_1_1AWSTokenCache_1afa56258ffe5b1bb974554cc8471b8624" prot="private" virt="non-virtual"><scope>star::AWSTokenCache</scope><name>parseTokenJson</name></member>
+      <member refid="classstar_1_1AWSTokenCache_1a9d55b8b59ae0fce543944ee3ed369b3c" prot="public" virt="non-virtual"><scope>star::AWSTokenCache</scope><name>readToken</name></member>
+      <member refid="classstar_1_1AWSTokenCache_1ab49fb0ad2db4b68cc627a0eef76168dd" prot="private" virt="non-virtual"><scope>star::AWSTokenCache</scope><name>sha1LowerHex</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

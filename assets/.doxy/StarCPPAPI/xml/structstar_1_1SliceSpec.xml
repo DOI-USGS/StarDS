@@ -1,0 +1,107 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.17.0" xml:lang="en-US">
+  <compounddef id="structstar_1_1SliceSpec" kind="struct" language="C++" prot="public">
+    <compoundname>star::SliceSpec</compoundname>
+    <includes refid="stards_8h" local="no">stards.h</includes>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structstar_1_1SliceSpec_1a37271e30b7f47c9727dbcfb18347543c" prot="public" static="no" mutable="no">
+        <type>std::vector&lt; <ref refid="structstar_1_1Slice" kindref="compound">Slice</ref> &gt;</type>
+        <definition>std::vector&lt;Slice&gt; star::SliceSpec::slices</definition>
+        <argsstring></argsstring>
+        <name>slices</name>
+        <qualifiedname>star::SliceSpec::slices</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1274" column="17" bodyfile="StarDS/include/stards.h" bodystart="1274" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structstar_1_1SliceSpec_1a01c184cecc64719790da7e5a8a00c998" prot="public" static="no" mutable="no">
+        <type>std::vector&lt; size_t &gt;</type>
+        <definition>std::vector&lt;size_t&gt; star::SliceSpec::output_shape</definition>
+        <argsstring></argsstring>
+        <name>output_shape</name>
+        <qualifiedname>star::SliceSpec::output_shape</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1275" column="17" bodyfile="StarDS/include/stards.h" bodystart="1275" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structstar_1_1SliceSpec_1a75fc4e52093208af246586a10b8d4166" prot="public" static="no" mutable="no">
+        <type>size_t</type>
+        <definition>size_t star::SliceSpec::total_elements</definition>
+        <argsstring></argsstring>
+        <name>total_elements</name>
+        <qualifiedname>star::SliceSpec::total_elements</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1276" column="12" bodyfile="StarDS/include/stards.h" bodystart="1276" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structstar_1_1SliceSpec_1a155667354b0ff589bdcdfa0b15afed2b" prot="public" static="no" mutable="no">
+        <type>size_t</type>
+        <definition>size_t star::SliceSpec::element_size</definition>
+        <argsstring></argsstring>
+        <name>element_size</name>
+        <qualifiedname>star::SliceSpec::element_size</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1277" column="12" bodyfile="StarDS/include/stards.h" bodystart="1277" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structstar_1_1SliceSpec_1ab96b382b8c126f740a953b9a53e02a3f" prot="public" static="no" mutable="no">
+        <type>bool</type>
+        <definition>bool star::SliceSpec::is_contiguous</definition>
+        <argsstring></argsstring>
+        <name>is_contiguous</name>
+        <qualifiedname>star::SliceSpec::is_contiguous</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1280" column="10" bodyfile="StarDS/include/stards.h" bodystart="1280" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structstar_1_1SliceSpec_1a34513b3e767f581c0c1a64152979d0cd" prot="public" static="no" mutable="no">
+        <type>bool</type>
+        <definition>bool star::SliceSpec::is_full_rows</definition>
+        <argsstring></argsstring>
+        <name>is_full_rows</name>
+        <qualifiedname>star::SliceSpec::is_full_rows</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1281" column="10" bodyfile="StarDS/include/stards.h" bodystart="1281" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+<para>Complete slice specification for n-dimensional array. </para>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="StarDS/include/stards.h" line="1273" column="1" bodyfile="StarDS/include/stards.h" bodystart="1273" bodyend="1282"/>
+    <listofallmembers>
+      <member refid="structstar_1_1SliceSpec_1a155667354b0ff589bdcdfa0b15afed2b" prot="public" virt="non-virtual"><scope>star::SliceSpec</scope><name>element_size</name></member>
+      <member refid="structstar_1_1SliceSpec_1ab96b382b8c126f740a953b9a53e02a3f" prot="public" virt="non-virtual"><scope>star::SliceSpec</scope><name>is_contiguous</name></member>
+      <member refid="structstar_1_1SliceSpec_1a34513b3e767f581c0c1a64152979d0cd" prot="public" virt="non-virtual"><scope>star::SliceSpec</scope><name>is_full_rows</name></member>
+      <member refid="structstar_1_1SliceSpec_1a01c184cecc64719790da7e5a8a00c998" prot="public" virt="non-virtual"><scope>star::SliceSpec</scope><name>output_shape</name></member>
+      <member refid="structstar_1_1SliceSpec_1a37271e30b7f47c9727dbcfb18347543c" prot="public" virt="non-virtual"><scope>star::SliceSpec</scope><name>slices</name></member>
+      <member refid="structstar_1_1SliceSpec_1a75fc4e52093208af246586a10b8d4166" prot="public" virt="non-virtual"><scope>star::SliceSpec</scope><name>total_elements</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

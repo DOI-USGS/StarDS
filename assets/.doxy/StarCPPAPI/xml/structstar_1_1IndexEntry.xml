@@ -1,0 +1,272 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.17.0" xml:lang="en-US">
+  <compounddef id="structstar_1_1IndexEntry" kind="struct" language="C++" prot="public">
+    <compoundname>star::IndexEntry</compoundname>
+    <includes refid="stards_8h" local="no">stards.h</includes>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structstar_1_1IndexEntry_1ac4bcddbd379a6b6568d89ea0afd6c555" prot="public" static="no" mutable="no">
+        <type>uint64_t</type>
+        <definition>uint64_t star::IndexEntry::position</definition>
+        <argsstring></argsstring>
+        <name>position</name>
+        <qualifiedname>star::IndexEntry::position</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1323" column="14" bodyfile="StarDS/include/stards.h" bodystart="1323" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structstar_1_1IndexEntry_1a6df4b887d42ab94384c16f9dd5161890" prot="public" static="no" mutable="no">
+        <type>uint64_t</type>
+        <definition>uint64_t star::IndexEntry::total_bytes</definition>
+        <argsstring></argsstring>
+        <name>total_bytes</name>
+        <qualifiedname>star::IndexEntry::total_bytes</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1324" column="14" bodyfile="StarDS/include/stards.h" bodystart="1324" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structstar_1_1IndexEntry_1a3706acf36b410be5a340fd80c06c2404" prot="public" static="no" mutable="no">
+        <type>DataType</type>
+        <definition>DataType star::IndexEntry::datatype</definition>
+        <argsstring></argsstring>
+        <name>datatype</name>
+        <qualifiedname>star::IndexEntry::datatype</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1325" column="14" bodyfile="StarDS/include/stards.h" bodystart="1325" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structstar_1_1IndexEntry_1aa8c28ba727efeb8eaa9c75699847a445" prot="public" static="no" mutable="no">
+        <type>std::vector&lt; size_t &gt;</type>
+        <definition>std::vector&lt;size_t&gt; star::IndexEntry::shape</definition>
+        <argsstring></argsstring>
+        <name>shape</name>
+        <qualifiedname>star::IndexEntry::shape</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1326" column="17" bodyfile="StarDS/include/stards.h" bodystart="1326" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structstar_1_1IndexEntry_1a5337a27d720d1efdfeca8aa54597cfe7" prot="public" static="no" mutable="no">
+        <type>CompressionAlgorithm</type>
+        <definition>CompressionAlgorithm star::IndexEntry::compression</definition>
+        <argsstring></argsstring>
+        <name>compression</name>
+        <qualifiedname>star::IndexEntry::compression</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1330" column="26" bodyfile="StarDS/include/stards.h" bodystart="1330" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structstar_1_1IndexEntry_1ac85ef12200ce8d3d8f30c050e8eaf576" prot="public" static="no" mutable="no">
+        <type>uint64_t</type>
+        <definition>uint64_t star::IndexEntry::block_size</definition>
+        <argsstring></argsstring>
+        <name>block_size</name>
+        <qualifiedname>star::IndexEntry::block_size</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1331" column="14" bodyfile="StarDS/include/stards.h" bodystart="1331" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structstar_1_1IndexEntry_1a66c5195dfcbcc03e0e18949a4a8f96da" prot="public" static="no" mutable="no">
+        <type>std::vector&lt; <ref refid="structstar_1_1BlockInfo" kindref="compound">BlockInfo</ref> &gt;</type>
+        <definition>std::vector&lt;BlockInfo&gt; star::IndexEntry::blocks</definition>
+        <argsstring></argsstring>
+        <name>blocks</name>
+        <qualifiedname>star::IndexEntry::blocks</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1332" column="17" bodyfile="StarDS/include/stards.h" bodystart="1332" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structstar_1_1IndexEntry_1a7a4d7118ed7d4c7324fd47cce1450a42" prot="public" static="no" mutable="no">
+        <type>bool</type>
+        <definition>bool star::IndexEntry::dirty</definition>
+        <argsstring></argsstring>
+        <name>dirty</name>
+        <qualifiedname>star::IndexEntry::dirty</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1333" column="10" bodyfile="StarDS/include/stards.h" bodystart="1333" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structstar_1_1IndexEntry_1a15c36c6cf7bacde64b9f5b80787df0d9" prot="public" static="no" mutable="no">
+        <type>bool</type>
+        <definition>bool star::IndexEntry::is_metadata_block</definition>
+        <argsstring></argsstring>
+        <name>is_metadata_block</name>
+        <qualifiedname>star::IndexEntry::is_metadata_block</qualifiedname>
+        <initializer>= false</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1337" column="10" bodyfile="StarDS/include/stards.h" bodystart="1337" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structstar_1_1IndexEntry_1a7da2e80bd65d352cb92c3681698b2e2f" prot="public" static="no" mutable="no">
+        <type>bool</type>
+        <definition>bool star::IndexEntry::stored_in_metadata</definition>
+        <argsstring></argsstring>
+        <name>stored_in_metadata</name>
+        <qualifiedname>star::IndexEntry::stored_in_metadata</qualifiedname>
+        <initializer>= false</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1338" column="10" bodyfile="StarDS/include/stards.h" bodystart="1338" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="structstar_1_1IndexEntry_1accb42a3d72697eb89d594e39cb95eb33" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool star::IndexEntry::is_scalar</definition>
+        <argsstring>() const</argsstring>
+        <name>is_scalar</name>
+        <qualifiedname>star::IndexEntry::is_scalar</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1341" column="10" bodyfile="StarDS/include/stards.h" bodystart="1341" bodyend="1343"/>
+      </memberdef>
+      <memberdef kind="function" id="structstar_1_1IndexEntry_1ab073928847466021ba56f3894a44f812" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>size_t</type>
+        <definition>size_t star::IndexEntry::num_elements</definition>
+        <argsstring>() const</argsstring>
+        <name>num_elements</name>
+        <qualifiedname>star::IndexEntry::num_elements</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1346" column="12" bodyfile="StarDS/include/stards.h" bodystart="1346" bodyend="1353"/>
+      </memberdef>
+      <memberdef kind="function" id="structstar_1_1IndexEntry_1a30ad48338021274913e26ccfc80c2269" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void star::IndexEntry::write</definition>
+        <argsstring>(std::ostream &amp;os) const</argsstring>
+        <name>write</name>
+        <qualifiedname>star::IndexEntry::write</qualifiedname>
+        <param>
+          <type>std::ostream &amp;</type>
+          <declname>os</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1359" column="10" bodyfile="StarDS/include/stards.h" bodystart="1359" bodyend="1381"/>
+      </memberdef>
+      <memberdef kind="function" id="structstar_1_1IndexEntry_1a9ae6fafb1de26722371f68deb21258ea" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void star::IndexEntry::read</definition>
+        <argsstring>(std::istream &amp;is)</argsstring>
+        <name>read</name>
+        <qualifiedname>star::IndexEntry::read</qualifiedname>
+        <param>
+          <type>std::istream &amp;</type>
+          <declname>is</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1383" column="10" bodyfile="StarDS/include/stards.h" bodystart="1383" bodyend="1427"/>
+      </memberdef>
+      <memberdef kind="function" id="structstar_1_1IndexEntry_1a90047523a8c939b664307db90c733fd6" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>size_t</type>
+        <definition>size_t star::IndexEntry::serialized_size</definition>
+        <argsstring>() const</argsstring>
+        <name>serialized_size</name>
+        <qualifiedname>star::IndexEntry::serialized_size</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1429" column="12" bodyfile="StarDS/include/stards.h" bodystart="1429" bodyend="1438"/>
+      </memberdef>
+      <memberdef kind="function" id="structstar_1_1IndexEntry_1a2935aeb7e0cfbf7449917f1f2362204a" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void star::IndexEntry::print</definition>
+        <argsstring>() const</argsstring>
+        <name>print</name>
+        <qualifiedname>star::IndexEntry::print</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1441" column="10" bodyfile="StarDS/include/stards.h" bodystart="1441" bodyend="1459"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+<para>Index entry with block compression support and shape information. </para>
+    </briefdescription>
+    <detaileddescription>
+<para><simplesect kind="note"><para>On-disk portability: this descriptor and its <ref refid="structstar_1_1BlockInfo" kindref="compound">BlockInfo</ref> entries serialize their size_t fields as fixed-width little-endian uint64 values via write_u64 / read_u64 (which use the shift-based write_le/read_le, independent of host width and byte order). So .stards files interchange freely across platforms of any pointer width or endianness, including 32-bit wasm32 (size_t == 4 bytes) — the fields are narrowed to/from size_t with explicit static_casts on read. This matches the documented format-v1 layout. </para>
+</simplesect>
+</para>
+    </detaileddescription>
+    <location file="StarDS/include/stards.h" line="1322" column="1" bodyfile="StarDS/include/stards.h" bodystart="1322" bodyend="1460"/>
+    <listofallmembers>
+      <member refid="structstar_1_1IndexEntry_1ac85ef12200ce8d3d8f30c050e8eaf576" prot="public" virt="non-virtual"><scope>star::IndexEntry</scope><name>block_size</name></member>
+      <member refid="structstar_1_1IndexEntry_1a66c5195dfcbcc03e0e18949a4a8f96da" prot="public" virt="non-virtual"><scope>star::IndexEntry</scope><name>blocks</name></member>
+      <member refid="structstar_1_1IndexEntry_1a5337a27d720d1efdfeca8aa54597cfe7" prot="public" virt="non-virtual"><scope>star::IndexEntry</scope><name>compression</name></member>
+      <member refid="structstar_1_1IndexEntry_1a3706acf36b410be5a340fd80c06c2404" prot="public" virt="non-virtual"><scope>star::IndexEntry</scope><name>datatype</name></member>
+      <member refid="structstar_1_1IndexEntry_1a7a4d7118ed7d4c7324fd47cce1450a42" prot="public" virt="non-virtual"><scope>star::IndexEntry</scope><name>dirty</name></member>
+      <member refid="structstar_1_1IndexEntry_1a15c36c6cf7bacde64b9f5b80787df0d9" prot="public" virt="non-virtual"><scope>star::IndexEntry</scope><name>is_metadata_block</name></member>
+      <member refid="structstar_1_1IndexEntry_1accb42a3d72697eb89d594e39cb95eb33" prot="public" virt="non-virtual"><scope>star::IndexEntry</scope><name>is_scalar</name></member>
+      <member refid="structstar_1_1IndexEntry_1ab073928847466021ba56f3894a44f812" prot="public" virt="non-virtual"><scope>star::IndexEntry</scope><name>num_elements</name></member>
+      <member refid="structstar_1_1IndexEntry_1ac4bcddbd379a6b6568d89ea0afd6c555" prot="public" virt="non-virtual"><scope>star::IndexEntry</scope><name>position</name></member>
+      <member refid="structstar_1_1IndexEntry_1a2935aeb7e0cfbf7449917f1f2362204a" prot="public" virt="non-virtual"><scope>star::IndexEntry</scope><name>print</name></member>
+      <member refid="structstar_1_1IndexEntry_1a9ae6fafb1de26722371f68deb21258ea" prot="public" virt="non-virtual"><scope>star::IndexEntry</scope><name>read</name></member>
+      <member refid="structstar_1_1IndexEntry_1a90047523a8c939b664307db90c733fd6" prot="public" virt="non-virtual"><scope>star::IndexEntry</scope><name>serialized_size</name></member>
+      <member refid="structstar_1_1IndexEntry_1aa8c28ba727efeb8eaa9c75699847a445" prot="public" virt="non-virtual"><scope>star::IndexEntry</scope><name>shape</name></member>
+      <member refid="structstar_1_1IndexEntry_1a7da2e80bd65d352cb92c3681698b2e2f" prot="public" virt="non-virtual"><scope>star::IndexEntry</scope><name>stored_in_metadata</name></member>
+      <member refid="structstar_1_1IndexEntry_1a6df4b887d42ab94384c16f9dd5161890" prot="public" virt="non-virtual"><scope>star::IndexEntry</scope><name>total_bytes</name></member>
+      <member refid="structstar_1_1IndexEntry_1a30ad48338021274913e26ccfc80c2269" prot="public" virt="non-virtual"><scope>star::IndexEntry</scope><name>write</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

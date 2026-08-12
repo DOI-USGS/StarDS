@@ -1,0 +1,328 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.17.0" xml:lang="en-US">
+  <compounddef id="classstar_1_1S3Writer" kind="class" language="C++" prot="public">
+    <compoundname>star::S3Writer</compoundname>
+    <includes refid="stards_8h" local="no">stards.h</includes>
+    <innerclass refid="structstar_1_1S3Writer_1_1HeaderData" prot="public">star::S3Writer::HeaderData</innerclass>
+    <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classstar_1_1S3Writer_1acdd6953655b9175fbb9c55d8ba66dba8" prot="private" static="no" mutable="no">
+        <type>CURL *</type>
+        <definition>CURL* star::S3Writer::m_curl</definition>
+        <argsstring></argsstring>
+        <name>m_curl</name>
+        <qualifiedname>star::S3Writer::m_curl</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="2566" column="10" bodyfile="StarDS/include/stards.h" bodystart="2566" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classstar_1_1S3Writer_1ade99f400cec12e284fd800b67b06b96a" prot="private" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string star::S3Writer::m_bucket</definition>
+        <argsstring></argsstring>
+        <name>m_bucket</name>
+        <qualifiedname>star::S3Writer::m_bucket</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="2568" column="17" bodyfile="StarDS/include/stards.h" bodystart="2568" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classstar_1_1S3Writer_1a4de2b429948ccd817e66737a8700aab8" prot="private" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string star::S3Writer::m_key</definition>
+        <argsstring></argsstring>
+        <name>m_key</name>
+        <qualifiedname>star::S3Writer::m_key</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="2569" column="17" bodyfile="StarDS/include/stards.h" bodystart="2569" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classstar_1_1S3Writer_1af216a2dcc3c621aa23b48208f0d90589" prot="private" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string star::S3Writer::m_region</definition>
+        <argsstring></argsstring>
+        <name>m_region</name>
+        <qualifiedname>star::S3Writer::m_region</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="2570" column="17" bodyfile="StarDS/include/stards.h" bodystart="2570" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classstar_1_1S3Writer_1a89ed343c88d42c07c9759cb16e844540" prot="private" static="no" mutable="no">
+        <type>std::unique_ptr&lt; <ref refid="classstar_1_1AWSV4Signer" kindref="compound">AWSV4Signer</ref> &gt;</type>
+        <definition>std::unique_ptr&lt;AWSV4Signer&gt; star::S3Writer::m_signer</definition>
+        <argsstring></argsstring>
+        <name>m_signer</name>
+        <qualifiedname>star::S3Writer::m_signer</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="2571" column="21" bodyfile="StarDS/include/stards.h" bodystart="2571" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="private-func">
+      <memberdef kind="function" id="classstar_1_1S3Writer_1a27f80d567d4d8bdccc50c1bd89e69e0d" prot="private" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::string</type>
+        <definition>std::string star::S3Writer::getS3Url</definition>
+        <argsstring>() const</argsstring>
+        <name>getS3Url</name>
+        <qualifiedname>star::S3Writer::getS3Url</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="2573" column="17" bodyfile="StarDS/include/stards.h" bodystart="2573" bodyend="2579"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1S3Writer_1a8347c4294a1b4977c0fe792e5eb82419" prot="private" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::string</type>
+        <definition>std::string star::S3Writer::getS3Host</definition>
+        <argsstring>() const</argsstring>
+        <name>getS3Host</name>
+        <qualifiedname>star::S3Writer::getS3Host</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="2581" column="17" bodyfile="StarDS/include/stards.h" bodystart="2581" bodyend="2583"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1S3Writer_1a801dbdcbf3d866a1c110af29b2d88a0d" prot="private" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::string</type>
+        <definition>std::string star::S3Writer::getCurrentTimestamp</definition>
+        <argsstring>() const</argsstring>
+        <name>getCurrentTimestamp</name>
+        <qualifiedname>star::S3Writer::getCurrentTimestamp</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="2585" column="17" bodyfile="StarDS/include/stards.h" bodystart="2585" bodyend="2598"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="private-static-func">
+      <memberdef kind="function" id="classstar_1_1S3Writer_1a9ad57b50e9890417ca217e7bd4a7ce4a" prot="private" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>size_t</type>
+        <definition>static size_t star::S3Writer::ReadCallback</definition>
+        <argsstring>(char *ptr, size_t size, size_t nmemb, void *userdata)</argsstring>
+        <name>ReadCallback</name>
+        <qualifiedname>star::S3Writer::ReadCallback</qualifiedname>
+        <param>
+          <type>char *</type>
+          <declname>ptr</declname>
+        </param>
+        <param>
+          <type>size_t</type>
+          <declname>size</declname>
+        </param>
+        <param>
+          <type>size_t</type>
+          <declname>nmemb</declname>
+        </param>
+        <param>
+          <type>void *</type>
+          <declname>userdata</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="2601" column="19" bodyfile="StarDS/include/stards.h" bodystart="2601" bodyend="2617"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="classstar_1_1S3Writer_1a12861654cb7d12b0b833f33a2eede306" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>star::S3Writer::S3Writer</definition>
+        <argsstring>(const std::string &amp;bucket, const std::string &amp;key, const std::string &amp;region, const S3Credentials &amp;creds)</argsstring>
+        <name>S3Writer</name>
+        <qualifiedname>star::S3Writer::S3Writer</qualifiedname>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>bucket</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>key</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>region</declname>
+        </param>
+        <param>
+          <type>const <ref refid="structstar_1_1S3Credentials" kindref="compound">S3Credentials</ref> &amp;</type>
+          <declname>creds</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="2621" column="5" bodyfile="StarDS/include/stards.h" bodystart="2621" bodyend="2635"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1S3Writer_1abf3662b767dfdf5f0389c7e2363bc9ee" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>star::S3Writer::~S3Writer</definition>
+        <argsstring>()</argsstring>
+        <name>~S3Writer</name>
+        <qualifiedname>star::S3Writer::~S3Writer</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="2638" column="5" bodyfile="StarDS/include/stards.h" bodystart="2638" bodyend="2642"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1S3Writer_1a960b63dda7fad2a498ce26f01970891e" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void star::S3Writer::putObject</definition>
+        <argsstring>(const char *data, size_t size)</argsstring>
+        <name>putObject</name>
+        <qualifiedname>star::S3Writer::putObject</qualifiedname>
+        <param>
+          <type>const char *</type>
+          <declname>data</declname>
+        </param>
+        <param>
+          <type>size_t</type>
+          <declname>size</declname>
+        </param>
+        <briefdescription>
+<para>Upload object to S3. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>data</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Pointer to data to upload </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>size</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Size of data in bytes </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="2737" column="10" bodyfile="StarDS/include/stards.h" bodystart="2737" bodyend="2838"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-static-func">
+      <memberdef kind="function" id="classstar_1_1S3Writer_1a46564a1deaa4943d6065fc81f7a09e9e" prot="public" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>size_t</type>
+        <definition>static size_t star::S3Writer::HeaderCallback</definition>
+        <argsstring>(char *buffer, size_t size, size_t nitems, void *userdata)</argsstring>
+        <name>HeaderCallback</name>
+        <qualifiedname>star::S3Writer::HeaderCallback</qualifiedname>
+        <param>
+          <type>char *</type>
+          <declname>buffer</declname>
+        </param>
+        <param>
+          <type>size_t</type>
+          <declname>size</declname>
+        </param>
+        <param>
+          <type>size_t</type>
+          <declname>nitems</declname>
+        </param>
+        <param>
+          <type>void *</type>
+          <declname>userdata</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="2652" column="19" bodyfile="StarDS/include/stards.h" bodystart="2652" bodyend="2666"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1S3Writer_1a653ebbe7f396783576041289cc16a6a5" prot="public" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>size_t</type>
+        <definition>static size_t star::S3Writer::WriteCallback</definition>
+        <argsstring>(char *ptr, size_t size, size_t nmemb, void *userdata)</argsstring>
+        <name>WriteCallback</name>
+        <qualifiedname>star::S3Writer::WriteCallback</qualifiedname>
+        <param>
+          <type>char *</type>
+          <declname>ptr</declname>
+        </param>
+        <param>
+          <type>size_t</type>
+          <declname>size</declname>
+        </param>
+        <param>
+          <type>size_t</type>
+          <declname>nmemb</declname>
+        </param>
+        <param>
+          <type>void *</type>
+          <declname>userdata</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="2668" column="19" bodyfile="StarDS/include/stards.h" bodystart="2668" bodyend="2673"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+<para>S3 writer for uploading objects. </para>
+    </briefdescription>
+    <detaileddescription>
+<para>Handles uploading data to S3 using PUT requests with AWS Signature V4 authentication. Supports single-shot uploads (entire object in one PUT request). </para>
+    </detaileddescription>
+    <location file="StarDS/include/stards.h" line="2563" column="1" bodyfile="StarDS/include/stards.h" bodystart="2563" bodyend="2840"/>
+    <listofallmembers>
+      <member refid="classstar_1_1S3Writer_1a801dbdcbf3d866a1c110af29b2d88a0d" prot="private" virt="non-virtual"><scope>star::S3Writer</scope><name>getCurrentTimestamp</name></member>
+      <member refid="classstar_1_1S3Writer_1a8347c4294a1b4977c0fe792e5eb82419" prot="private" virt="non-virtual"><scope>star::S3Writer</scope><name>getS3Host</name></member>
+      <member refid="classstar_1_1S3Writer_1a27f80d567d4d8bdccc50c1bd89e69e0d" prot="private" virt="non-virtual"><scope>star::S3Writer</scope><name>getS3Url</name></member>
+      <member refid="classstar_1_1S3Writer_1a46564a1deaa4943d6065fc81f7a09e9e" prot="public" virt="non-virtual"><scope>star::S3Writer</scope><name>HeaderCallback</name></member>
+      <member refid="classstar_1_1S3Writer_1ade99f400cec12e284fd800b67b06b96a" prot="private" virt="non-virtual"><scope>star::S3Writer</scope><name>m_bucket</name></member>
+      <member refid="classstar_1_1S3Writer_1acdd6953655b9175fbb9c55d8ba66dba8" prot="private" virt="non-virtual"><scope>star::S3Writer</scope><name>m_curl</name></member>
+      <member refid="classstar_1_1S3Writer_1a4de2b429948ccd817e66737a8700aab8" prot="private" virt="non-virtual"><scope>star::S3Writer</scope><name>m_key</name></member>
+      <member refid="classstar_1_1S3Writer_1af216a2dcc3c621aa23b48208f0d90589" prot="private" virt="non-virtual"><scope>star::S3Writer</scope><name>m_region</name></member>
+      <member refid="classstar_1_1S3Writer_1a89ed343c88d42c07c9759cb16e844540" prot="private" virt="non-virtual"><scope>star::S3Writer</scope><name>m_signer</name></member>
+      <member refid="classstar_1_1S3Writer_1a960b63dda7fad2a498ce26f01970891e" prot="public" virt="non-virtual"><scope>star::S3Writer</scope><name>putObject</name></member>
+      <member refid="classstar_1_1S3Writer_1a9ad57b50e9890417ca217e7bd4a7ce4a" prot="private" virt="non-virtual"><scope>star::S3Writer</scope><name>ReadCallback</name></member>
+      <member refid="classstar_1_1S3Writer_1a12861654cb7d12b0b833f33a2eede306" prot="public" virt="non-virtual"><scope>star::S3Writer</scope><name>S3Writer</name></member>
+      <member refid="classstar_1_1S3Writer_1a653ebbe7f396783576041289cc16a6a5" prot="public" virt="non-virtual"><scope>star::S3Writer</scope><name>WriteCallback</name></member>
+      <member refid="classstar_1_1S3Writer_1abf3662b767dfdf5f0389c7e2363bc9ee" prot="public" virt="non-virtual"><scope>star::S3Writer</scope><name>~S3Writer</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

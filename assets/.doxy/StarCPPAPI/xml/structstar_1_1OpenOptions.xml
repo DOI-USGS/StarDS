@@ -1,0 +1,50 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.17.0" xml:lang="en-US">
+  <compounddef id="structstar_1_1OpenOptions" kind="struct" language="C++" prot="public">
+    <compoundname>star::OpenOptions</compoundname>
+    <includes refid="stards_8h" local="no">stards.h</includes>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structstar_1_1OpenOptions_1a542af6b09370710da68a85b33722579f" prot="public" static="no" mutable="no">
+        <type>bool</type>
+        <definition>bool star::OpenOptions::layer_inheritance</definition>
+        <argsstring></argsstring>
+        <name>layer_inheritance</name>
+        <qualifiedname>star::OpenOptions::layer_inheritance</qualifiedname>
+        <initializer>= false</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="4877" column="10" bodyfile="StarDS/include/stards.h" bodystart="4877" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structstar_1_1OpenOptions_1af9345ed69aecd3d191356f7c90078696" prot="public" static="no" mutable="no">
+        <type>size_t</type>
+        <definition>size_t star::OpenOptions::prefetch_whole_below_bytes</definition>
+        <argsstring></argsstring>
+        <name>prefetch_whole_below_bytes</name>
+        <qualifiedname>star::OpenOptions::prefetch_whole_below_bytes</qualifiedname>
+        <initializer>= 8u * 1024u * 1024u</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="4885" column="12" bodyfile="StarDS/include/stards.h" bodystart="4885" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+<para>Read-time options for <ref refid="classstar_1_1StarDataset_1a7da82ee4803e6302ad903e12e3c4c0c7" kindref="member">StarDataset::open()</ref>. </para>
+    </briefdescription>
+    <detaileddescription>
+<para>Distinct from <ref refid="structstar_1_1StarConfig" kindref="compound">StarConfig</ref>, which configures how a NEW dataset is <emphasis>written</emphasis> by create() (compression, block sizes). <ref refid="structstar_1_1OpenOptions" kindref="compound">OpenOptions</ref> only affects how an existing dataset is <emphasis>read</emphasis>; nothing here is persisted to the .stards file, so it is a per-open setting (and can also be changed after open — see StarDataset::set_layer_inheritance / set_open_options). </para>
+    </detaileddescription>
+    <location file="StarDS/include/stards.h" line="4872" column="1" bodyfile="StarDS/include/stards.h" bodystart="4872" bodyend="4886"/>
+    <listofallmembers>
+      <member refid="structstar_1_1OpenOptions_1a542af6b09370710da68a85b33722579f" prot="public" virt="non-virtual"><scope>star::OpenOptions</scope><name>layer_inheritance</name></member>
+      <member refid="structstar_1_1OpenOptions_1af9345ed69aecd3d191356f7c90078696" prot="public" virt="non-virtual"><scope>star::OpenOptions</scope><name>prefetch_whole_below_bytes</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

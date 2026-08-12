@@ -1,0 +1,180 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.17.0" xml:lang="en-US">
+  <compounddef id="structstar_1_1MetadataValue" kind="struct" language="C++" prot="public">
+    <compoundname>star::MetadataValue</compoundname>
+    <includes refid="stards_8h" local="no">stards.h</includes>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structstar_1_1MetadataValue_1ae1b137c09f71d4694374c231e7d4bc0b" prot="public" static="no" mutable="no">
+        <type>ValueVariant</type>
+        <definition>ValueVariant star::MetadataValue::data</definition>
+        <argsstring></argsstring>
+        <name>data</name>
+        <qualifiedname>star::MetadataValue::data</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="4949" column="18" bodyfile="StarDS/include/stards.h" bodystart="4949" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structstar_1_1MetadataValue_1a68e6bb65e220045af87c758782bb764b" prot="public" static="no" mutable="no">
+        <type>DataType</type>
+        <definition>DataType star::MetadataValue::dtype</definition>
+        <argsstring></argsstring>
+        <name>dtype</name>
+        <qualifiedname>star::MetadataValue::dtype</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="4950" column="14" bodyfile="StarDS/include/stards.h" bodystart="4950" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structstar_1_1MetadataValue_1ad7f1896d1f52e07ffe20892c81e1891d" prot="public" static="no" mutable="no">
+        <type>std::vector&lt; size_t &gt;</type>
+        <definition>std::vector&lt;size_t&gt; star::MetadataValue::shape</definition>
+        <argsstring></argsstring>
+        <name>shape</name>
+        <qualifiedname>star::MetadataValue::shape</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="4951" column="17" bodyfile="StarDS/include/stards.h" bodystart="4951" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="structstar_1_1MetadataValue_1a1c5e76e59948252c4390d5a6daefa744" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool star::MetadataValue::is_scalar</definition>
+        <argsstring>() const</argsstring>
+        <name>is_scalar</name>
+        <qualifiedname>star::MetadataValue::is_scalar</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="4954" column="10" bodyfile="StarDS/include/stards.h" bodystart="4954" bodyend="4956"/>
+      </memberdef>
+      <memberdef kind="function" id="structstar_1_1MetadataValue_1a1d1c1ba1f38970cba08d93a1d7e316a4" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool star::MetadataValue::is_array</definition>
+        <argsstring>() const</argsstring>
+        <name>is_array</name>
+        <qualifiedname>star::MetadataValue::is_array</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="4959" column="10" bodyfile="StarDS/include/stards.h" bodystart="4959" bodyend="4961"/>
+      </memberdef>
+      <memberdef kind="function" id="structstar_1_1MetadataValue_1a7d847d68a4a701ec900220dfd5edae25" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>size_t</type>
+        <definition>size_t star::MetadataValue::ndim</definition>
+        <argsstring>() const</argsstring>
+        <name>ndim</name>
+        <qualifiedname>star::MetadataValue::ndim</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="4964" column="12" bodyfile="StarDS/include/stards.h" bodystart="4964" bodyend="4966"/>
+      </memberdef>
+      <memberdef kind="function" id="structstar_1_1MetadataValue_1a6b7a005945cddc2c501e6a7f53204262" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>size_t</type>
+        <definition>size_t star::MetadataValue::size</definition>
+        <argsstring>() const</argsstring>
+        <name>size</name>
+        <qualifiedname>star::MetadataValue::size</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="4969" column="12" bodyfile="StarDS/include/stards.h" bodystart="4969" bodyend="4976"/>
+      </memberdef>
+      <memberdef kind="function" id="structstar_1_1MetadataValue_1a45ab00d6ed58449c1e9ca4b32059a972" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+        </templateparamlist>
+        <type><ref refid="classstar_1_1NDArray" kindref="compound">NDArray</ref>&lt; T &gt;</type>
+        <definition>NDArray&lt; T &gt; star::MetadataValue::as</definition>
+        <argsstring>() const</argsstring>
+        <name>as</name>
+        <qualifiedname>star::MetadataValue::as</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="4980" column="13" bodyfile="StarDS/include/stards.h" bodystart="4980" bodyend="4986"/>
+      </memberdef>
+      <memberdef kind="function" id="structstar_1_1MetadataValue_1ace65a6a3238e227334b6c9202128165c" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+        </templateparamlist>
+        <type>std::shared_ptr&lt; <ref refid="classstar_1_1NDArray" kindref="compound">NDArray</ref>&lt; T &gt; &gt;</type>
+        <definition>std::shared_ptr&lt; NDArray&lt; T &gt; &gt; star::MetadataValue::try_as</definition>
+        <argsstring>() const</argsstring>
+        <name>try_as</name>
+        <qualifiedname>star::MetadataValue::try_as</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="4990" column="21" bodyfile="StarDS/include/stards.h" bodystart="4990" bodyend="4996"/>
+      </memberdef>
+      <memberdef kind="function" id="structstar_1_1MetadataValue_1aa405a4a87da006a1243955a325fe39de" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::string</type>
+        <definition>std::string star::MetadataValue::type_name</definition>
+        <argsstring>() const</argsstring>
+        <name>type_name</name>
+        <qualifiedname>star::MetadataValue::type_name</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="4999" column="17" bodyfile="StarDS/include/stards.h" bodystart="4999" bodyend="5001"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+<para>Type-erased wrapper for metadata values. </para>
+    </briefdescription>
+    <detaileddescription>
+<para>Provides type introspection and safe casting for metadata retrieved without knowing the type ahead of time. Eliminates the need for type guessing loops. </para>
+    </detaileddescription>
+    <location file="StarDS/include/stards.h" line="4948" column="1" bodyfile="StarDS/include/stards.h" bodystart="4948" bodyend="5002"/>
+    <listofallmembers>
+      <member refid="structstar_1_1MetadataValue_1a45ab00d6ed58449c1e9ca4b32059a972" prot="public" virt="non-virtual"><scope>star::MetadataValue</scope><name>as</name></member>
+      <member refid="structstar_1_1MetadataValue_1ae1b137c09f71d4694374c231e7d4bc0b" prot="public" virt="non-virtual"><scope>star::MetadataValue</scope><name>data</name></member>
+      <member refid="structstar_1_1MetadataValue_1a68e6bb65e220045af87c758782bb764b" prot="public" virt="non-virtual"><scope>star::MetadataValue</scope><name>dtype</name></member>
+      <member refid="structstar_1_1MetadataValue_1a1d1c1ba1f38970cba08d93a1d7e316a4" prot="public" virt="non-virtual"><scope>star::MetadataValue</scope><name>is_array</name></member>
+      <member refid="structstar_1_1MetadataValue_1a1c5e76e59948252c4390d5a6daefa744" prot="public" virt="non-virtual"><scope>star::MetadataValue</scope><name>is_scalar</name></member>
+      <member refid="structstar_1_1MetadataValue_1a7d847d68a4a701ec900220dfd5edae25" prot="public" virt="non-virtual"><scope>star::MetadataValue</scope><name>ndim</name></member>
+      <member refid="structstar_1_1MetadataValue_1ad7f1896d1f52e07ffe20892c81e1891d" prot="public" virt="non-virtual"><scope>star::MetadataValue</scope><name>shape</name></member>
+      <member refid="structstar_1_1MetadataValue_1a6b7a005945cddc2c501e6a7f53204262" prot="public" virt="non-virtual"><scope>star::MetadataValue</scope><name>size</name></member>
+      <member refid="structstar_1_1MetadataValue_1ace65a6a3238e227334b6c9202128165c" prot="public" virt="non-virtual"><scope>star::MetadataValue</scope><name>try_as</name></member>
+      <member refid="structstar_1_1MetadataValue_1aa405a4a87da006a1243955a325fe39de" prot="public" virt="non-virtual"><scope>star::MetadataValue</scope><name>type_name</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

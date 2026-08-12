@@ -1,0 +1,81 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.17.0" xml:lang="en-US">
+  <compounddef id="namespacestar_1_1shuffle__detail" kind="namespace" language="C++">
+    <compoundname>star::shuffle_detail</compoundname>
+    <sectiondef kind="func">
+      <memberdef kind="function" id="stards_8h_1af04d3e65683714d71eb07574d7798fb6" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void star::shuffle_detail::shuffle_scalar_from</definition>
+        <argsstring>(const char *in, char *out, size_t count, size_t E, size_t from)</argsstring>
+        <name>shuffle_scalar_from</name>
+        <qualifiedname>star::shuffle_detail::shuffle_scalar_from</qualifiedname>
+        <param>
+          <type>const char *</type>
+          <declname>in</declname>
+        </param>
+        <param>
+          <type>char *</type>
+          <declname>out</declname>
+        </param>
+        <param>
+          <type>size_t</type>
+          <declname>count</declname>
+        </param>
+        <param>
+          <type>size_t</type>
+          <declname>E</declname>
+        </param>
+        <param>
+          <type>size_t</type>
+          <declname>from</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="596" column="13" bodyfile="StarDS/include/stards.h" bodystart="596" bodyend="602"/>
+      </memberdef>
+      <memberdef kind="function" id="stards_8h_1a68f122b542a2028a961b19811d640bd1" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void star::shuffle_detail::unshuffle_scalar_from</definition>
+        <argsstring>(const char *in, char *out, size_t count, size_t E, size_t from)</argsstring>
+        <name>unshuffle_scalar_from</name>
+        <qualifiedname>star::shuffle_detail::unshuffle_scalar_from</qualifiedname>
+        <param>
+          <type>const char *</type>
+          <declname>in</declname>
+        </param>
+        <param>
+          <type>char *</type>
+          <declname>out</declname>
+        </param>
+        <param>
+          <type>size_t</type>
+          <declname>count</declname>
+        </param>
+        <param>
+          <type>size_t</type>
+          <declname>E</declname>
+        </param>
+        <param>
+          <type>size_t</type>
+          <declname>from</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="603" column="13" bodyfile="StarDS/include/stards.h" bodystart="603" bodyend="609"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="StarDS/include/stards.h" line="593" column="1"/>
+  </compounddef>
+</doxygen>

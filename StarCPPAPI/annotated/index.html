@@ -1421,7 +1421,68 @@
 
 
 <h1 id="class-list">Class List<a class="headerlink" href="#class-list" title="Permanent link">&para;</a></h1>
-<p>No classes, structs, unions or interfaces found.</p>
+<p>Here are the classes, structs, unions and interfaces with brief descriptions:</p>
+<ul>
+<li><strong>namespace</strong> <a href="../namespacestar/"><strong>star</strong></a>     <ul>
+<li><strong>class</strong> <a href="../classstar_1_1AWSConfigParser/"><strong>AWSConfigParser</strong></a> <em>AWS Configuration file parser.</em>     </li>
+<li><strong>class</strong> <a href="../classstar_1_1AWSTokenCache/"><strong>AWSTokenCache</strong></a> <em>AWS SSO Token Cache reader.</em>     </li>
+<li><strong>class</strong> <a href="../classstar_1_1AWSV4Signer/"><strong>AWSV4Signer</strong></a> <em>AWS Signature Version 4 signer.</em>     </li>
+<li><strong>struct</strong> <a href="../structstar_1_1BlockInfo/"><strong>BlockInfo</strong></a> <em>Metadata for a single compressed block.</em>     </li>
+<li><strong>struct</strong> <a href="../structstar_1_1BlockMap/"><strong>BlockMap</strong></a> <em>Maps logical elements to physical blocks.</em>     </li>
+<li><strong>struct</strong> <a href="../structstar_1_1ByteUnshuffleSpec/"><strong>ByteUnshuffleSpec</strong></a> <em>Describes an in-place byte-unshuffle to fuse into an array's fill.</em>     </li>
+<li><strong>struct</strong> <a href="../structstar_1_1ColdStorage/"><strong>ColdStorage</strong></a> <em>Cold storage - infrequently accessed data.</em>     </li>
+<li><strong>struct</strong> <a href="../structstar_1_1ExtractionPlan/"><strong>ExtractionPlan</strong></a> <em>Describes how to extract elements from blocks.</em>     <ul>
+<li><strong>struct</strong> <a href="../structstar_1_1ExtractionPlan_1_1ElementRange/"><strong>ElementRange</strong></a>     </li>
+</ul>
+</li>
+<li><strong>struct</strong> <a href="../structstar_1_1FileHeader/"><strong>FileHeader</strong></a> <em>File header structure (31 bytes fixed size).</em>     </li>
+<li><strong>struct</strong> <a href="../structstar_1_1FilePathInfo/"><strong>FilePathInfo</strong></a>     </li>
+<li><strong>struct</strong> <a href="../structstar_1_1HotStorage/"><strong>HotStorage</strong></a> <em>Hot storage - frequently accessed data (cache-friendly).</em>     </li>
+<li><strong>class</strong> <a href="../classstar_1_1HttpRangeReader/"><strong>HttpRangeReader</strong></a>     </li>
+<li><strong>struct</strong> <a href="../structstar_1_1IndexEntry/"><strong>IndexEntry</strong></a> <em>Index entry with block compression support and shape information.</em>     </li>
+<li><strong>struct</strong> <a href="../structstar_1_1KeyRegistry/"><strong>KeyRegistry</strong></a> <em>Global key registry using data-oriented design (Structure of Arrays).</em>     </li>
+<li><strong>class</strong> <a href="../classstar_1_1LayerMetadataAccessor/"><strong>LayerMetadataAccessor</strong></a> <em>Metadata accessor for a specific layer with inheritance.</em>     </li>
+<li><strong>struct</strong> <a href="../structstar_1_1LayerMetadataRegistry/"><strong>LayerMetadataRegistry</strong></a> <em>Per-layer metadata registry using data-oriented design (Structure of Arrays).</em>     </li>
+<li><strong>class</strong> <a href="../classstar_1_1LayerView/"><strong>LayerView</strong></a> <em>Lightweight view into a specific layer with inheritance from base.</em>     </li>
+<li><strong>class</strong> <a href="../classstar_1_1LocalRangeReader/"><strong>LocalRangeReader</strong></a>     </li>
+<li><strong>class</strong> <a href="../classstar_1_1MemoryRangeReader/"><strong>MemoryRangeReader</strong></a>     </li>
+<li><strong>class</strong> <a href="../classstar_1_1MetadataAccessor/"><strong>MetadataAccessor</strong></a> <em>Accessor for metadata operations.</em>     </li>
+<li><strong>struct</strong> <a href="../structstar_1_1MetadataValue/"><strong>MetadataValue</strong></a> <em>Type-erased wrapper for metadata values.</em>     </li>
+<li><strong>class</strong> <a href="../classstar_1_1NDArray/"><strong>NDArray</strong></a> <em>Modern n-dimensional array class with xtensor-style API.</em>     </li>
+<li><strong>struct</strong> <a href="../structstar_1_1OpenOptions/"><strong>OpenOptions</strong></a> <em>Read-time options for</em> <a href="../classstar_1_1StarDataset/#function-open-12"><em><strong>StarDataset::open()</strong></em></a> <em>.</em>    </li>
+<li><strong>class</strong> <a href="../classstar_1_1RangeReader/"><strong>RangeReader</strong></a>     </li>
+<li><strong>struct</strong> <a href="../structstar_1_1S3Credentials/"><strong>S3Credentials</strong></a> <em>AWS Credentials with resolution chain.</em>     </li>
+<li><strong>struct</strong> <a href="../structstar_1_1S3EndpointConfig/"><strong>S3EndpointConfig</strong></a> <em>S3 endpoint resolution (default AWS, or an override for S3-compatible services such as MinIO and for local testing).</em>     </li>
+<li><strong>class</strong> <a href="../classstar_1_1S3RangeReader/"><strong>S3RangeReader</strong></a>     </li>
+<li><strong>class</strong> <a href="../classstar_1_1S3Writer/"><strong>S3Writer</strong></a> <em>S3 writer for uploading objects.</em>     <ul>
+<li><strong>struct</strong> <a href="../structstar_1_1S3Writer_1_1HeaderData/"><strong>HeaderData</strong></a>     </li>
+</ul>
+</li>
+<li><strong>struct</strong> <a href="../structstar_1_1Slice/"><strong>Slice</strong></a> <em>Describes a slice along one dimension (Python-style slicing) Plain struct - no methods except helpers, just data.</em>     </li>
+<li><strong>struct</strong> <a href="../structstar_1_1SliceSpec/"><strong>SliceSpec</strong></a> <em>Complete slice specification for n-dimensional array.</em>     </li>
+<li><strong>struct</strong> <a href="../structstar_1_1StarConfig/"><strong>StarConfig</strong></a> <em>Configuration for metadata block optimization.</em>     </li>
+<li><strong>class</strong> <a href="../classstar_1_1StarDataset/"><strong>StarDataset</strong></a> <em>A cloud-optimized binary key-value store for serializable data types.</em>     </li>
+<li><strong>class</strong> <a href="../classstar_1_1ThreadPool/"><strong>ThreadPool</strong></a> <em>Simple thread pool for parallel block operations.</em>     </li>
+<li><strong>struct</strong> <a href="../structstar_1_1TypeToDataType/"><strong>TypeToDataType</strong></a> </li>
+<li><strong>struct</strong> <a href="../structstar_1_1TypeToDataType_3_01double_01_4/"><strong>TypeToDataType&lt; double &gt;</strong></a>     </li>
+<li><strong>struct</strong> <a href="../structstar_1_1TypeToDataType_3_01float_01_4/"><strong>TypeToDataType&lt; float &gt;</strong></a>     </li>
+<li><strong>struct</strong> <a href="../structstar_1_1TypeToDataType_3_01int16__t_01_4/"><strong>TypeToDataType&lt; int16_t &gt;</strong></a>     </li>
+<li><strong>struct</strong> <a href="../structstar_1_1TypeToDataType_3_01int32__t_01_4/"><strong>TypeToDataType&lt; int32_t &gt;</strong></a>     </li>
+<li><strong>struct</strong> <a href="../structstar_1_1TypeToDataType_3_01int64__t_01_4/"><strong>TypeToDataType&lt; int64_t &gt;</strong></a>     </li>
+<li><strong>struct</strong> <a href="../structstar_1_1TypeToDataType_3_01int8__t_01_4/"><strong>TypeToDataType&lt; int8_t &gt;</strong></a>     </li>
+<li><strong>struct</strong> <a href="../structstar_1_1TypeToDataType_3_01std_1_1string_01_4/"><strong>TypeToDataType&lt; std::string &gt;</strong></a>     </li>
+<li><strong>struct</strong> <a href="../structstar_1_1TypeToDataType_3_01uint16__t_01_4/"><strong>TypeToDataType&lt; uint16_t &gt;</strong></a>     </li>
+<li><strong>struct</strong> <a href="../structstar_1_1TypeToDataType_3_01uint32__t_01_4/"><strong>TypeToDataType&lt; uint32_t &gt;</strong></a>     </li>
+<li><strong>struct</strong> <a href="../structstar_1_1TypeToDataType_3_01uint64__t_01_4/"><strong>TypeToDataType&lt; uint64_t &gt;</strong></a>     </li>
+<li><strong>struct</strong> <a href="../structstar_1_1TypeToDataType_3_01uint8__t_01_4/"><strong>TypeToDataType&lt; uint8_t &gt;</strong></a>     </li>
+<li><strong>namespace</strong> <a href="../namespacestar_1_1logger/"><strong>logger</strong></a>     </li>
+<li><strong>namespace</strong> <a href="../namespacestar_1_1s3crypto/"><strong>s3crypto</strong></a>     </li>
+<li><strong>namespace</strong> <a href="../namespacestar_1_1shuffle__detail/"><strong>shuffle_detail</strong></a>     </li>
+</ul>
+</li>
+<li><strong>struct</strong> <a href="../structstar_1_1AWSTokenCache_1_1SSOToken/"><strong>SSOToken</strong></a>     </li>
+<li><strong>namespace</strong> <a href="../namespacestd/"><strong>std</strong></a> </li>
+</ul>
 
 
 

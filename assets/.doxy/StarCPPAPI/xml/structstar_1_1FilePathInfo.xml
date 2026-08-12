@@ -1,0 +1,137 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.17.0" xml:lang="en-US">
+  <compounddef id="structstar_1_1FilePathInfo" kind="struct" language="C++" prot="public">
+    <compoundname>star::FilePathInfo</compoundname>
+    <sectiondef kind="public-type">
+      <memberdef kind="enum" id="structstar_1_1FilePathInfo_1a705e790763b2a193c947e1dba66c8c9b" prot="public" static="no" strong="no">
+        <type></type>
+        <name>Type</name>
+        <qualifiedname>star::FilePathInfo::Type</qualifiedname>
+        <enumvalue id="structstar_1_1FilePathInfo_1a705e790763b2a193c947e1dba66c8c9ba4b5541e68c6bf0b78a19a2706948d853" prot="public">
+          <name>LOCAL</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="structstar_1_1FilePathInfo_1a705e790763b2a193c947e1dba66c8c9bafca0f506cf4248ff236f2b70a2832f27" prot="public">
+          <name>HTTP</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="structstar_1_1FilePathInfo_1a705e790763b2a193c947e1dba66c8c9ba3a1cb1b2fe6dc1a93d51e1581922ef5f" prot="public">
+          <name>S3</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="structstar_1_1FilePathInfo_1a705e790763b2a193c947e1dba66c8c9ba7cf5be6769952d351a23bc5d68860424" prot="public">
+          <name>MEMORY</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1691" column="5" bodyfile="StarDS/include/stards.h" bodystart="1691" bodyend="1691"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structstar_1_1FilePathInfo_1a4432b2983dcfeb6e144384a08adb42bd" prot="public" static="no" mutable="no">
+        <type>Type</type>
+        <definition>Type star::FilePathInfo::type</definition>
+        <argsstring></argsstring>
+        <name>type</name>
+        <qualifiedname>star::FilePathInfo::type</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1692" column="10" bodyfile="StarDS/include/stards.h" bodystart="1692" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structstar_1_1FilePathInfo_1a27d998ff7190248ecc530b7ec4cc6ed2" prot="public" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string star::FilePathInfo::path</definition>
+        <argsstring></argsstring>
+        <name>path</name>
+        <qualifiedname>star::FilePathInfo::path</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1693" column="17" bodyfile="StarDS/include/stards.h" bodystart="1693" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structstar_1_1FilePathInfo_1a0abb48bd40bfd18f0cea57f015ba9774" prot="public" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string star::FilePathInfo::bucket</definition>
+        <argsstring></argsstring>
+        <name>bucket</name>
+        <qualifiedname>star::FilePathInfo::bucket</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1694" column="17" bodyfile="StarDS/include/stards.h" bodystart="1694" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structstar_1_1FilePathInfo_1ad2b837cba47c8003dd539744003a320b" prot="public" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string star::FilePathInfo::key</definition>
+        <argsstring></argsstring>
+        <name>key</name>
+        <qualifiedname>star::FilePathInfo::key</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1695" column="17" bodyfile="StarDS/include/stards.h" bodystart="1695" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structstar_1_1FilePathInfo_1a6cb8048d1f8d83fd15cda5babe7019c9" prot="public" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string star::FilePathInfo::region</definition>
+        <argsstring></argsstring>
+        <name>region</name>
+        <qualifiedname>star::FilePathInfo::region</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1696" column="17" bodyfile="StarDS/include/stards.h" bodystart="1696" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="StarDS/include/stards.h" line="1688" column="1" bodyfile="StarDS/include/stards.h" bodystart="1688" bodyend="1697"/>
+    <listofallmembers>
+      <member refid="structstar_1_1FilePathInfo_1a0abb48bd40bfd18f0cea57f015ba9774" prot="public" virt="non-virtual"><scope>star::FilePathInfo</scope><name>bucket</name></member>
+      <member refid="structstar_1_1FilePathInfo_1a705e790763b2a193c947e1dba66c8c9bafca0f506cf4248ff236f2b70a2832f27" prot="public" virt="non-virtual"><scope>star::FilePathInfo</scope><name>HTTP</name></member>
+      <member refid="structstar_1_1FilePathInfo_1ad2b837cba47c8003dd539744003a320b" prot="public" virt="non-virtual"><scope>star::FilePathInfo</scope><name>key</name></member>
+      <member refid="structstar_1_1FilePathInfo_1a705e790763b2a193c947e1dba66c8c9ba4b5541e68c6bf0b78a19a2706948d853" prot="public" virt="non-virtual"><scope>star::FilePathInfo</scope><name>LOCAL</name></member>
+      <member refid="structstar_1_1FilePathInfo_1a705e790763b2a193c947e1dba66c8c9ba7cf5be6769952d351a23bc5d68860424" prot="public" virt="non-virtual"><scope>star::FilePathInfo</scope><name>MEMORY</name></member>
+      <member refid="structstar_1_1FilePathInfo_1a27d998ff7190248ecc530b7ec4cc6ed2" prot="public" virt="non-virtual"><scope>star::FilePathInfo</scope><name>path</name></member>
+      <member refid="structstar_1_1FilePathInfo_1a6cb8048d1f8d83fd15cda5babe7019c9" prot="public" virt="non-virtual"><scope>star::FilePathInfo</scope><name>region</name></member>
+      <member refid="structstar_1_1FilePathInfo_1a705e790763b2a193c947e1dba66c8c9ba3a1cb1b2fe6dc1a93d51e1581922ef5f" prot="public" virt="non-virtual"><scope>star::FilePathInfo</scope><name>S3</name></member>
+      <member refid="structstar_1_1FilePathInfo_1a705e790763b2a193c947e1dba66c8c9b" prot="public" virt="non-virtual"><scope>star::FilePathInfo</scope><name>Type</name></member>
+      <member refid="structstar_1_1FilePathInfo_1a4432b2983dcfeb6e144384a08adb42bd" prot="public" virt="non-virtual"><scope>star::FilePathInfo</scope><name>type</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

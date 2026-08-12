@@ -1,0 +1,1646 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.17.0" xml:lang="en-US">
+  <compounddef id="namespacestar" kind="namespace" language="C++">
+    <compoundname>star</compoundname>
+    <innerclass refid="structstar_1_1FileHeader" prot="public">star::FileHeader</innerclass>
+    <innerclass refid="structstar_1_1ByteUnshuffleSpec" prot="public">star::ByteUnshuffleSpec</innerclass>
+    <innerclass refid="structstar_1_1KeyRegistry" prot="public">star::KeyRegistry</innerclass>
+    <innerclass refid="structstar_1_1LayerMetadataRegistry" prot="public">star::LayerMetadataRegistry</innerclass>
+    <innerclass refid="structstar_1_1TypeToDataType" prot="public">star::TypeToDataType</innerclass>
+    <innerclass refid="structstar_1_1TypeToDataType_3_01int8__t_01_4" prot="public">star::TypeToDataType&lt; int8_t &gt;</innerclass>
+    <innerclass refid="structstar_1_1TypeToDataType_3_01int16__t_01_4" prot="public">star::TypeToDataType&lt; int16_t &gt;</innerclass>
+    <innerclass refid="structstar_1_1TypeToDataType_3_01int32__t_01_4" prot="public">star::TypeToDataType&lt; int32_t &gt;</innerclass>
+    <innerclass refid="structstar_1_1TypeToDataType_3_01int64__t_01_4" prot="public">star::TypeToDataType&lt; int64_t &gt;</innerclass>
+    <innerclass refid="structstar_1_1TypeToDataType_3_01uint8__t_01_4" prot="public">star::TypeToDataType&lt; uint8_t &gt;</innerclass>
+    <innerclass refid="structstar_1_1TypeToDataType_3_01uint16__t_01_4" prot="public">star::TypeToDataType&lt; uint16_t &gt;</innerclass>
+    <innerclass refid="structstar_1_1TypeToDataType_3_01uint32__t_01_4" prot="public">star::TypeToDataType&lt; uint32_t &gt;</innerclass>
+    <innerclass refid="structstar_1_1TypeToDataType_3_01uint64__t_01_4" prot="public">star::TypeToDataType&lt; uint64_t &gt;</innerclass>
+    <innerclass refid="structstar_1_1TypeToDataType_3_01float_01_4" prot="public">star::TypeToDataType&lt; float &gt;</innerclass>
+    <innerclass refid="structstar_1_1TypeToDataType_3_01double_01_4" prot="public">star::TypeToDataType&lt; double &gt;</innerclass>
+    <innerclass refid="structstar_1_1TypeToDataType_3_01std_1_1string_01_4" prot="public">star::TypeToDataType&lt; std::string &gt;</innerclass>
+    <innerclass refid="structstar_1_1BlockInfo" prot="public">star::BlockInfo</innerclass>
+    <innerclass refid="structstar_1_1Slice" prot="public">star::Slice</innerclass>
+    <innerclass refid="structstar_1_1SliceSpec" prot="public">star::SliceSpec</innerclass>
+    <innerclass refid="structstar_1_1BlockMap" prot="public">star::BlockMap</innerclass>
+    <innerclass refid="structstar_1_1ExtractionPlan" prot="public">star::ExtractionPlan</innerclass>
+    <innerclass refid="structstar_1_1IndexEntry" prot="public">star::IndexEntry</innerclass>
+    <innerclass refid="structstar_1_1FilePathInfo" prot="public">star::FilePathInfo</innerclass>
+    <innerclass refid="structstar_1_1S3EndpointConfig" prot="public">star::S3EndpointConfig</innerclass>
+    <innerclass refid="classstar_1_1AWSV4Signer" prot="public">star::AWSV4Signer</innerclass>
+    <innerclass refid="classstar_1_1AWSConfigParser" prot="public">star::AWSConfigParser</innerclass>
+    <innerclass refid="classstar_1_1AWSTokenCache" prot="public">star::AWSTokenCache</innerclass>
+    <innerclass refid="structstar_1_1S3Credentials" prot="public">star::S3Credentials</innerclass>
+    <innerclass refid="classstar_1_1S3Writer" prot="public">star::S3Writer</innerclass>
+    <innerclass refid="classstar_1_1RangeReader" prot="public">star::RangeReader</innerclass>
+    <innerclass refid="classstar_1_1LocalRangeReader" prot="public">star::LocalRangeReader</innerclass>
+    <innerclass refid="classstar_1_1MemoryRangeReader" prot="public">star::MemoryRangeReader</innerclass>
+    <innerclass refid="classstar_1_1HttpRangeReader" prot="public">star::HttpRangeReader</innerclass>
+    <innerclass refid="classstar_1_1S3RangeReader" prot="public">star::S3RangeReader</innerclass>
+    <innerclass refid="classstar_1_1NDArray" prot="public">star::NDArray</innerclass>
+    <innerclass refid="classstar_1_1ThreadPool" prot="public">star::ThreadPool</innerclass>
+    <innerclass refid="structstar_1_1StarConfig" prot="public">star::StarConfig</innerclass>
+    <innerclass refid="structstar_1_1OpenOptions" prot="public">star::OpenOptions</innerclass>
+    <innerclass refid="structstar_1_1HotStorage" prot="public">star::HotStorage</innerclass>
+    <innerclass refid="structstar_1_1ColdStorage" prot="public">star::ColdStorage</innerclass>
+    <innerclass refid="structstar_1_1MetadataValue" prot="public">star::MetadataValue</innerclass>
+    <innerclass refid="classstar_1_1MetadataAccessor" prot="public">star::MetadataAccessor</innerclass>
+    <innerclass refid="classstar_1_1LayerMetadataAccessor" prot="public">star::LayerMetadataAccessor</innerclass>
+    <innerclass refid="classstar_1_1LayerView" prot="public">star::LayerView</innerclass>
+    <innerclass refid="classstar_1_1StarDataset" prot="public">star::StarDataset</innerclass>
+    <innernamespace refid="namespacestar_1_1logger">star::logger</innernamespace>
+    <innernamespace refid="namespacestar_1_1shuffle__detail">star::shuffle_detail</innernamespace>
+    <innernamespace refid="namespacestar_1_1s3crypto">star::s3crypto</innernamespace>
+    <sectiondef kind="enum">
+      <memberdef kind="enum" id="stards_8h_1a8871b3979c7ab7ca4689ee6f2030c589" prot="public" static="no" strong="yes">
+        <type>uint8_t</type>
+        <name>DataType</name>
+        <qualifiedname>star::DataType</qualifiedname>
+        <enumvalue id="stards_8h_1a8871b3979c7ab7ca4689ee6f2030c589aee9d73311ff0658494edfff14c3ec1e3" prot="public">
+          <name>INT8</name>
+          <initializer>= 0</initializer>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="stards_8h_1a8871b3979c7ab7ca4689ee6f2030c589a5f90af42814c0a419d715d43ae54fd7a" prot="public">
+          <name>INT16</name>
+          <initializer>= 1</initializer>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="stards_8h_1a8871b3979c7ab7ca4689ee6f2030c589a6495adba09844fac8eeb0aba86e6f1bf" prot="public">
+          <name>INT32</name>
+          <initializer>= 2</initializer>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="stards_8h_1a8871b3979c7ab7ca4689ee6f2030c589a4e866b275c85fbb439f6484251cfb31c" prot="public">
+          <name>INT64</name>
+          <initializer>= 3</initializer>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="stards_8h_1a8871b3979c7ab7ca4689ee6f2030c589aecfc091ed2a607335524c8389cfa41b5" prot="public">
+          <name>UINT8</name>
+          <initializer>= 4</initializer>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="stards_8h_1a8871b3979c7ab7ca4689ee6f2030c589a48d8f1a723d44ff4a87db1bb6c551c62" prot="public">
+          <name>UINT16</name>
+          <initializer>= 5</initializer>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="stards_8h_1a8871b3979c7ab7ca4689ee6f2030c589a17266551181f69a1b4a3ad5c9e270afc" prot="public">
+          <name>UINT32</name>
+          <initializer>= 6</initializer>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="stards_8h_1a8871b3979c7ab7ca4689ee6f2030c589a6de7acf711860176ba606e9aa2b85d5f" prot="public">
+          <name>UINT64</name>
+          <initializer>= 7</initializer>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="stards_8h_1a8871b3979c7ab7ca4689ee6f2030c589a967d280b5c16d95f2947647dd2ca6cc2" prot="public">
+          <name>FLOAT32</name>
+          <initializer>= 8</initializer>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="stards_8h_1a8871b3979c7ab7ca4689ee6f2030c589a139882c654db8a57f7c3092de1dd0b02" prot="public">
+          <name>FLOAT64</name>
+          <initializer>= 9</initializer>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="stards_8h_1a8871b3979c7ab7ca4689ee6f2030c589a63b588d5559f64f89a416e656880b949" prot="public">
+          <name>STRING</name>
+          <initializer>= 10</initializer>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="497" column="1" bodyfile="StarDS/include/stards.h" bodystart="497" bodyend="514"/>
+      </memberdef>
+      <memberdef kind="enum" id="stards_8h_1ae35d072348103b839a05d6381e5f1d87" prot="public" static="no" strong="yes">
+        <type>uint8_t</type>
+        <name>CompressionAlgorithm</name>
+        <qualifiedname>star::CompressionAlgorithm</qualifiedname>
+        <enumvalue id="stards_8h_1ae35d072348103b839a05d6381e5f1d87ab50339a10e1de285ac99d4c3990b8693" prot="public">
+          <name>NONE</name>
+          <initializer>= 0</initializer>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="stards_8h_1ae35d072348103b839a05d6381e5f1d87af1cd28417b03cfab3a8e16d66e34e18a" prot="public">
+          <name>GZIP</name>
+          <initializer>= 1</initializer>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="stards_8h_1ae35d072348103b839a05d6381e5f1d87a8406cc2302e19183037b61249546b234" prot="public">
+          <name>ZSTD</name>
+          <initializer>= 2</initializer>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="stards_8h_1ae35d072348103b839a05d6381e5f1d87aca0c64c0de8f56bc573828ea6d764594" prot="public">
+          <name>LZ4</name>
+          <initializer>= 3</initializer>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="stards_8h_1ae35d072348103b839a05d6381e5f1d87ae5a3c00af85c575810ad5ed8345662d1" prot="public">
+          <name>GZIP_SHUFFLE</name>
+          <initializer>= 4</initializer>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="stards_8h_1ae35d072348103b839a05d6381e5f1d87a3d943ae2582ae7f2003c42e90f02b598" prot="public">
+          <name>LZ4_SHUFFLE</name>
+          <initializer>= 5</initializer>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="stards_8h_1ae35d072348103b839a05d6381e5f1d87a945400bd780c6abdfad67860c2d0854d" prot="public">
+          <name>GZIP_SHUFFLE_BLOCK</name>
+          <initializer>= 6</initializer>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="stards_8h_1ae35d072348103b839a05d6381e5f1d87a8604a8efe242f57ebd68d5bca9e3f0ae" prot="public">
+          <name>LZ4_SHUFFLE_BLOCK</name>
+          <initializer>= 7</initializer>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="516" column="1" bodyfile="StarDS/include/stards.h" bodystart="516" bodyend="542"/>
+      </memberdef>
+      <memberdef kind="enum" id="stards_8h_1a0fed662fd1d718de166ae717fe854821" prot="public" static="no" strong="yes">
+        <type></type>
+        <name>FileMode</name>
+        <qualifiedname>star::FileMode</qualifiedname>
+        <enumvalue id="stards_8h_1a0fed662fd1d718de166ae717fe854821aa7b843fb734e3b3fea8e5f902d3f4144" prot="public">
+          <name>READ_WRITE</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="stards_8h_1a0fed662fd1d718de166ae717fe854821a47c7e7cb36a953a8c47e02000036bb44" prot="public">
+          <name>READ_ONLY</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1671" column="1" bodyfile="StarDS/include/stards.h" bodystart="1671" bodyend="1674"/>
+      </memberdef>
+      <memberdef kind="enum" id="stards_8h_1afbba80b68079b69fa574e7440bb5cbfd" prot="public" static="no" strong="yes">
+        <type></type>
+        <name>StorageClass</name>
+        <qualifiedname>star::StorageClass</qualifiedname>
+        <enumvalue id="stards_8h_1afbba80b68079b69fa574e7440bb5cbfda134d025e41cca2200425dbb3e11294da" prot="public">
+          <name>METADATA_BLOCK</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="stards_8h_1afbba80b68079b69fa574e7440bb5cbfda7cdf6dc49ffacacf8c352e1608ea9d22" prot="public">
+          <name>SEPARATE_ARRAY</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="stards_8h_1afbba80b68079b69fa574e7440bb5cbfda4cec1503f78a5a101ab450607358163b" prot="public">
+          <name>FORCE_SEPARATE</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <briefdescription>
+<para>Storage classification for values (DEPRECATED - use StorageLocation). </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="4891" column="1" bodyfile="StarDS/include/stards.h" bodystart="4891" bodyend="4895"/>
+      </memberdef>
+      <memberdef kind="enum" id="stards_8h_1a5e1d2e6b6994707b18e829a5360570b5" prot="public" static="no" strong="yes">
+        <type></type>
+        <name>StorageLocation</name>
+        <qualifiedname>star::StorageLocation</qualifiedname>
+        <enumvalue id="stards_8h_1a5e1d2e6b6994707b18e829a5360570b5ac69f06e1a9b016d133907b4e5f5864d2" prot="public">
+          <name>PENDING</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="stards_8h_1a5e1d2e6b6994707b18e829a5360570b5a4a813ce01aaea55db7b1e7d6bdf21faf" prot="public">
+          <name>PERSISTED</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="stards_8h_1a5e1d2e6b6994707b18e829a5360570b5aaa1b42b00b0251dbf8ad3de215c9e0d5" prot="public">
+          <name>CACHED</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <briefdescription>
+<para>Storage location state for unified storage model. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="4900" column="1" bodyfile="StarDS/include/stards.h" bodystart="4900" bodyend="4904"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="typedef">
+      <memberdef kind="typedef" id="stards_8h_1ac2784868caee4ec866eba533eeba1156" prot="public" static="no">
+        <type>std::variant&lt; <ref refid="classstar_1_1NDArray" kindref="compound">NDArray</ref>&lt; int8_t &gt;, <ref refid="classstar_1_1NDArray" kindref="compound">NDArray</ref>&lt; int16_t &gt;, <ref refid="classstar_1_1NDArray" kindref="compound">NDArray</ref>&lt; int32_t &gt;, <ref refid="classstar_1_1NDArray" kindref="compound">NDArray</ref>&lt; int64_t &gt;, <ref refid="classstar_1_1NDArray" kindref="compound">NDArray</ref>&lt; uint8_t &gt;, <ref refid="classstar_1_1NDArray" kindref="compound">NDArray</ref>&lt; uint16_t &gt;, <ref refid="classstar_1_1NDArray" kindref="compound">NDArray</ref>&lt; uint32_t &gt;, <ref refid="classstar_1_1NDArray" kindref="compound">NDArray</ref>&lt; uint64_t &gt;, <ref refid="classstar_1_1NDArray" kindref="compound">NDArray</ref>&lt; float &gt;, <ref refid="classstar_1_1NDArray" kindref="compound">NDArray</ref>&lt; double &gt;, <ref refid="classstar_1_1NDArray" kindref="compound">NDArray</ref>&lt; std::string &gt; &gt;</type>
+        <definition>using star::ValueVariant =  std::variant&lt;
+    NDArray&lt;int8_t&gt;, NDArray&lt;int16_t&gt;, NDArray&lt;int32_t&gt;, NDArray&lt;int64_t&gt;,
+    NDArray&lt;uint8_t&gt;, NDArray&lt;uint16_t&gt;, NDArray&lt;uint32_t&gt;, NDArray&lt;uint64_t&gt;,
+    NDArray&lt;float&gt;, NDArray&lt;double&gt;,
+    NDArray&lt;std::string&gt;
+&gt;</definition>
+        <argsstring></argsstring>
+        <name>ValueVariant</name>
+        <qualifiedname>star::ValueVariant</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="4067" column="1" bodyfile="StarDS/include/stards.h" bodystart="4067" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="var">
+      <memberdef kind="variable" id="stards_8h_1add104888f5d61a464c13a632010978d5" prot="public" static="no" mutable="no">
+        <type>const std::string</type>
+        <definition>const std::string star::PROJECT_NAME</definition>
+        <argsstring></argsstring>
+        <name>PROJECT_NAME</name>
+        <qualifiedname>star::PROJECT_NAME</qualifiedname>
+        <initializer>= &quot;STARDS &quot; STAR_VERSION_STRING</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="189" column="26" bodyfile="StarDS/include/stards.h" bodystart="189" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="stards_8h_1ad476f8ea0799df8b45ba1cfcf1667f84" prot="public" static="no" mutable="no">
+        <type>const char *</type>
+        <definition>const char* star::MAGIC_STRING</definition>
+        <argsstring></argsstring>
+        <name>MAGIC_STRING</name>
+        <qualifiedname>star::MAGIC_STRING</qualifiedname>
+        <initializer>= &quot;STARDS&quot;</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="190" column="19" bodyfile="StarDS/include/stards.h" bodystart="190" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="stards_8h_1ab71457f5da9118ae98e41f6116e48107" prot="public" static="no" mutable="no">
+        <type>const size_t</type>
+        <definition>const size_t star::MAGIC_STRING_LENGTH</definition>
+        <argsstring></argsstring>
+        <name>MAGIC_STRING_LENGTH</name>
+        <qualifiedname>star::MAGIC_STRING_LENGTH</qualifiedname>
+        <initializer>= 6</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="191" column="21" bodyfile="StarDS/include/stards.h" bodystart="191" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="stards_8h_1adbe805b3d2489228f2b2758de2c2a08f" prot="public" static="no" mutable="no">
+        <type>size_t</type>
+        <definition>size_t star::g_num_threads</definition>
+        <argsstring></argsstring>
+        <name>g_num_threads</name>
+        <qualifiedname>star::g_num_threads</qualifiedname>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="257" column="15" bodyfile="StarDS/include/stards.h" bodystart="257" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="stards_8h_1a55d43c249486a0271c8316749ec66bc3" prot="public" static="no" mutable="no">
+        <type>size_t</type>
+        <definition>size_t star::g_min_blocks_for_threading</definition>
+        <argsstring></argsstring>
+        <name>g_min_blocks_for_threading</name>
+        <qualifiedname>star::g_min_blocks_for_threading</qualifiedname>
+        <initializer>= 4</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="258" column="15" bodyfile="StarDS/include/stards.h" bodystart="258" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="stards_8h_1a5414cef91eaaa70055f19e1b566505c4" prot="public" static="no" mutable="no">
+        <type>size_t</type>
+        <definition>size_t star::g_min_bytes_for_threading</definition>
+        <argsstring></argsstring>
+        <name>g_min_bytes_for_threading</name>
+        <qualifiedname>star::g_min_bytes_for_threading</qualifiedname>
+        <initializer>= 256 * 1024</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="259" column="15" bodyfile="StarDS/include/stards.h" bodystart="259" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="stards_8h_1acfbe176f53097f0381340532c4531728" prot="public" static="no" mutable="no">
+        <type>std::atomic&lt; uint64_t &gt;</type>
+        <definition>std::atomic&lt;uint64_t&gt; star::g_network_request_count</definition>
+        <argsstring></argsstring>
+        <name>g_network_request_count</name>
+        <qualifiedname>star::g_network_request_count</qualifiedname>
+        <initializer>{0}</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="300" column="20" bodyfile="StarDS/include/stards.h" bodystart="300" bodyend="300"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="func">
+      <memberdef kind="function" id="stards_8h_1a1ab7593647b3cbb031a4ed7589961ef3" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename UInt</type>
+          </param>
+        </templateparamlist>
+        <type>void</type>
+        <definition>void star::write_le</definition>
+        <argsstring>(std::ostream &amp;os, UInt value)</argsstring>
+        <name>write_le</name>
+        <qualifiedname>star::write_le</qualifiedname>
+        <param>
+          <type>std::ostream &amp;</type>
+          <declname>os</declname>
+        </param>
+        <param>
+          <type>UInt</type>
+          <declname>value</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="219" column="13" bodyfile="StarDS/include/stards.h" bodystart="219" bodyend="226"/>
+      </memberdef>
+      <memberdef kind="function" id="stards_8h_1a1a3fb3d3587b4aad3cdb565ec3e88c37" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename UInt</type>
+          </param>
+        </templateparamlist>
+        <type>UInt</type>
+        <definition>UInt star::read_le</definition>
+        <argsstring>(std::istream &amp;is)</argsstring>
+        <name>read_le</name>
+        <qualifiedname>star::read_le</qualifiedname>
+        <param>
+          <type>std::istream &amp;</type>
+          <declname>is</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="230" column="13" bodyfile="StarDS/include/stards.h" bodystart="230" bodyend="239"/>
+      </memberdef>
+      <memberdef kind="function" id="stards_8h_1a6b532e4df1ad7c3ad2a1c9e237c2ddcf" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void star::write_u64</definition>
+        <argsstring>(std::ostream &amp;os, uint64_t v)</argsstring>
+        <name>write_u64</name>
+        <qualifiedname>star::write_u64</qualifiedname>
+        <param>
+          <type>std::ostream &amp;</type>
+          <declname>os</declname>
+        </param>
+        <param>
+          <type>uint64_t</type>
+          <declname>v</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="243" column="13" bodyfile="StarDS/include/stards.h" bodystart="243" bodyend="243"/>
+      </memberdef>
+      <memberdef kind="function" id="stards_8h_1a0fc3d6b656aee624fc5cd3def9272e0e" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void star::write_u32</definition>
+        <argsstring>(std::ostream &amp;os, uint32_t v)</argsstring>
+        <name>write_u32</name>
+        <qualifiedname>star::write_u32</qualifiedname>
+        <param>
+          <type>std::ostream &amp;</type>
+          <declname>os</declname>
+        </param>
+        <param>
+          <type>uint32_t</type>
+          <declname>v</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="244" column="13" bodyfile="StarDS/include/stards.h" bodystart="244" bodyend="244"/>
+      </memberdef>
+      <memberdef kind="function" id="stards_8h_1a82295d45ddad8456ee0a5c8d88547182" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void star::write_u16</definition>
+        <argsstring>(std::ostream &amp;os, uint16_t v)</argsstring>
+        <name>write_u16</name>
+        <qualifiedname>star::write_u16</qualifiedname>
+        <param>
+          <type>std::ostream &amp;</type>
+          <declname>os</declname>
+        </param>
+        <param>
+          <type>uint16_t</type>
+          <declname>v</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="245" column="13" bodyfile="StarDS/include/stards.h" bodystart="245" bodyend="245"/>
+      </memberdef>
+      <memberdef kind="function" id="stards_8h_1a29318048c3f3da2ad3241a1557b81e91" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void star::write_u8</definition>
+        <argsstring>(std::ostream &amp;os, uint8_t v)</argsstring>
+        <name>write_u8</name>
+        <qualifiedname>star::write_u8</qualifiedname>
+        <param>
+          <type>std::ostream &amp;</type>
+          <declname>os</declname>
+        </param>
+        <param>
+          <type>uint8_t</type>
+          <declname>v</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="246" column="13" bodyfile="StarDS/include/stards.h" bodystart="246" bodyend="246"/>
+      </memberdef>
+      <memberdef kind="function" id="stards_8h_1ac0cb3156bec6000ea986417f2028ecd0" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>uint64_t</type>
+        <definition>uint64_t star::read_u64</definition>
+        <argsstring>(std::istream &amp;is)</argsstring>
+        <name>read_u64</name>
+        <qualifiedname>star::read_u64</qualifiedname>
+        <param>
+          <type>std::istream &amp;</type>
+          <declname>is</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="248" column="17" bodyfile="StarDS/include/stards.h" bodystart="248" bodyend="248"/>
+      </memberdef>
+      <memberdef kind="function" id="stards_8h_1a025a0c99b5f856b05e5b1f104902d127" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>uint32_t</type>
+        <definition>uint32_t star::read_u32</definition>
+        <argsstring>(std::istream &amp;is)</argsstring>
+        <name>read_u32</name>
+        <qualifiedname>star::read_u32</qualifiedname>
+        <param>
+          <type>std::istream &amp;</type>
+          <declname>is</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="249" column="17" bodyfile="StarDS/include/stards.h" bodystart="249" bodyend="249"/>
+      </memberdef>
+      <memberdef kind="function" id="stards_8h_1af794a9065512f6b084be52c82892355c" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>uint16_t</type>
+        <definition>uint16_t star::read_u16</definition>
+        <argsstring>(std::istream &amp;is)</argsstring>
+        <name>read_u16</name>
+        <qualifiedname>star::read_u16</qualifiedname>
+        <param>
+          <type>std::istream &amp;</type>
+          <declname>is</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="250" column="17" bodyfile="StarDS/include/stards.h" bodystart="250" bodyend="250"/>
+      </memberdef>
+      <memberdef kind="function" id="stards_8h_1a877c1a657e8d8de50604a870f93d77bc" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>uint8_t</type>
+        <definition>uint8_t star::read_u8</definition>
+        <argsstring>(std::istream &amp;is)</argsstring>
+        <name>read_u8</name>
+        <qualifiedname>star::read_u8</qualifiedname>
+        <param>
+          <type>std::istream &amp;</type>
+          <declname>is</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="251" column="17" bodyfile="StarDS/include/stards.h" bodystart="251" bodyend="251"/>
+      </memberdef>
+      <memberdef kind="function" id="stards_8h_1a35d2c76daf2a1dbf8a50f215002adb78" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void star::setNumThreads</definition>
+        <argsstring>(size_t num_threads)</argsstring>
+        <name>setNumThreads</name>
+        <qualifiedname>star::setNumThreads</qualifiedname>
+        <param>
+          <type>size_t</type>
+          <declname>num_threads</declname>
+        </param>
+        <briefdescription>
+<para>Set number of threads for parallel operations (all datasets). </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>num_threads</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Number of threads (0 = auto-detect, 1 = single-threaded) </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="265" column="13" bodyfile="StarDS/include/stards.h" bodystart="265" bodyend="267"/>
+      </memberdef>
+      <memberdef kind="function" id="stards_8h_1a456a083efd6d9a5281918fa770521803" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void star::setMinBlocksForThreading</definition>
+        <argsstring>(size_t min_blocks)</argsstring>
+        <name>setMinBlocksForThreading</name>
+        <qualifiedname>star::setMinBlocksForThreading</qualifiedname>
+        <param>
+          <type>size_t</type>
+          <declname>min_blocks</declname>
+        </param>
+        <briefdescription>
+<para>Set minimum blocks threshold for using threading. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>min_blocks</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Minimum number of blocks (default: 4) </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="273" column="13" bodyfile="StarDS/include/stards.h" bodystart="273" bodyend="275"/>
+      </memberdef>
+      <memberdef kind="function" id="stards_8h_1ada1aeda45775defc1d35699c33baf8ac" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void star::setMinBytesForThreading</definition>
+        <argsstring>(size_t min_bytes)</argsstring>
+        <name>setMinBytesForThreading</name>
+        <qualifiedname>star::setMinBytesForThreading</qualifiedname>
+        <param>
+          <type>size_t</type>
+          <declname>min_bytes</declname>
+        </param>
+        <briefdescription>
+<para>Set minimum data size threshold for using threading. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>min_bytes</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Minimum data size in bytes (default: 256KB) </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="281" column="13" bodyfile="StarDS/include/stards.h" bodystart="281" bodyend="283"/>
+      </memberdef>
+      <memberdef kind="function" id="stards_8h_1a6051c002c138ae3ba61a44946607253e" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>size_t</type>
+        <definition>size_t star::getNumThreads</definition>
+        <argsstring>()</argsstring>
+        <name>getNumThreads</name>
+        <qualifiedname>star::getNumThreads</qualifiedname>
+        <briefdescription>
+<para>Get current thread count setting. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="288" column="15" bodyfile="StarDS/include/stards.h" bodystart="288" bodyend="290"/>
+      </memberdef>
+      <memberdef kind="function" id="stards_8h_1a735ea57ff4a7c73633a1eec6badf7a9e" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>uint64_t</type>
+        <definition>uint64_t star::getNetworkRequestCount</definition>
+        <argsstring>()</argsstring>
+        <name>getNetworkRequestCount</name>
+        <qualifiedname>star::getNetworkRequestCount</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="303" column="17" bodyfile="StarDS/include/stards.h" bodystart="303" bodyend="305"/>
+      </memberdef>
+      <memberdef kind="function" id="stards_8h_1a9b6e4436248eedd09f4cf846f4987ad1" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void star::resetNetworkRequestCount</definition>
+        <argsstring>()</argsstring>
+        <name>resetNetworkRequestCount</name>
+        <qualifiedname>star::resetNetworkRequestCount</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="308" column="13" bodyfile="StarDS/include/stards.h" bodystart="308" bodyend="310"/>
+      </memberdef>
+      <memberdef kind="function" id="stards_8h_1a24f0a26068f52d4a5a7c43338be1e199" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::string</type>
+        <definition>std::string star::getLibraryVersion</definition>
+        <argsstring>()</argsstring>
+        <name>getLibraryVersion</name>
+        <qualifiedname>star::getLibraryVersion</qualifiedname>
+        <briefdescription>
+<para>Get library version string. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>Version string (e.g., &quot;1.0.0&quot;) </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="389" column="20" bodyfile="StarDS/include/stards.h" bodystart="389" bodyend="393"/>
+      </memberdef>
+      <memberdef kind="function" id="stards_8h_1a906532b2a20e4f0d7f77e4de0a651b38" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>CompressionAlgorithm</type>
+        <definition>CompressionAlgorithm star::base_compression</definition>
+        <argsstring>(CompressionAlgorithm c)</argsstring>
+        <name>base_compression</name>
+        <qualifiedname>star::base_compression</qualifiedname>
+        <param>
+          <type>CompressionAlgorithm</type>
+          <declname>c</declname>
+        </param>
+        <briefdescription>
+<para>The underlying block codec for a (possibly shuffle-prefiltered) algorithm. </para>
+        </briefdescription>
+        <detaileddescription>
+<para>The block (de)compressor only understands the base codecs; the shuffle variants differ only in a byte-reordering prefilter applied around it. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="550" column="29" bodyfile="StarDS/include/stards.h" bodystart="550" bodyend="558"/>
+      </memberdef>
+      <memberdef kind="function" id="stards_8h_1abdf4d4ec22cd0e35eacbc7de219bddea" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool star::uses_shuffle</definition>
+        <argsstring>(CompressionAlgorithm c)</argsstring>
+        <name>uses_shuffle</name>
+        <qualifiedname>star::uses_shuffle</qualifiedname>
+        <param>
+          <type>CompressionAlgorithm</type>
+          <declname>c</declname>
+        </param>
+        <briefdescription>
+<para>Whether a compression algorithm uses the byte-shuffle prefilter (either the legacy global variant or the per-block variant). </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="564" column="13" bodyfile="StarDS/include/stards.h" bodystart="564" bodyend="567"/>
+      </memberdef>
+      <memberdef kind="function" id="stards_8h_1a4150c52a6a05f0c151652322998a7a36" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool star::uses_global_shuffle</definition>
+        <argsstring>(CompressionAlgorithm c)</argsstring>
+        <name>uses_global_shuffle</name>
+        <qualifiedname>star::uses_global_shuffle</qualifiedname>
+        <param>
+          <type>CompressionAlgorithm</type>
+          <declname>c</declname>
+        </param>
+        <briefdescription>
+<para>Whether the shuffle prefilter is applied across the WHOLE array (legacy layout). Such arrays are not sliceable. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="573" column="13" bodyfile="StarDS/include/stards.h" bodystart="573" bodyend="575"/>
+      </memberdef>
+      <memberdef kind="function" id="stards_8h_1a170693a68990dc51168850ca97f9d388" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool star::uses_block_shuffle</definition>
+        <argsstring>(CompressionAlgorithm c)</argsstring>
+        <name>uses_block_shuffle</name>
+        <qualifiedname>star::uses_block_shuffle</qualifiedname>
+        <param>
+          <type>CompressionAlgorithm</type>
+          <declname>c</declname>
+        </param>
+        <briefdescription>
+<para>Whether the shuffle prefilter is applied PER BLOCK (self-contained blocks). Such arrays are sliceable. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="581" column="13" bodyfile="StarDS/include/stards.h" bodystart="581" bodyend="583"/>
+      </memberdef>
+      <memberdef kind="function" id="stards_8h_1a93bb8ed692f59fb89e9fa4f464f93acc" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void star::byte_shuffle</definition>
+        <argsstring>(const char *in, char *out, size_t count, size_t elem_size)</argsstring>
+        <name>byte_shuffle</name>
+        <qualifiedname>star::byte_shuffle</qualifiedname>
+        <param>
+          <type>const char *</type>
+          <declname>in</declname>
+        </param>
+        <param>
+          <type>char *</type>
+          <declname>out</declname>
+        </param>
+        <param>
+          <type>size_t</type>
+          <declname>count</declname>
+        </param>
+        <param>
+          <type>size_t</type>
+          <declname>elem_size</declname>
+        </param>
+        <briefdescription>
+<para>Byte-shuffle: reorder <computeroutput>count</computeroutput> elements of <computeroutput>elem_size</computeroutput> bytes so that byte plane 0 of every element comes first, then plane 1, etc. </para>
+        </briefdescription>
+        <detaileddescription>
+<para>Splits an array-of-structs byte layout into a struct-of-byte-planes layout. A no-op for elem_size &lt;= 1. <computeroutput>out</computeroutput> must hold <computeroutput>count * elem_size</computeroutput> bytes. SIMD-accelerated on NEON for elem_size {2,4,8}; scalar everywhere else (the scalar tail below is bit-identical to the historical loop). </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="901" column="13" bodyfile="StarDS/include/stards.h" bodystart="901" bodyend="910"/>
+      </memberdef>
+      <memberdef kind="function" id="stards_8h_1a76a9c679ed5ed7002233d2a4721cdd94" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void star::byte_unshuffle</definition>
+        <argsstring>(const char *in, char *out, size_t count, size_t elem_size)</argsstring>
+        <name>byte_unshuffle</name>
+        <qualifiedname>star::byte_unshuffle</qualifiedname>
+        <param>
+          <type>const char *</type>
+          <declname>in</declname>
+        </param>
+        <param>
+          <type>char *</type>
+          <declname>out</declname>
+        </param>
+        <param>
+          <type>size_t</type>
+          <declname>count</declname>
+        </param>
+        <param>
+          <type>size_t</type>
+          <declname>elem_size</declname>
+        </param>
+        <briefdescription>
+<para>Inverse of byte_shuffle(): reassemble byte planes back into elements. </para>
+        </briefdescription>
+        <detaileddescription>
+<para>This is the read hot path. SIMD-accelerated for elem_size {2,4,8} on NEON (arm64) and SSE2 (x86-64); scalar everywhere else. The scalar tail is bit-identical to the historical loop, so decoded bytes never change. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="919" column="13" bodyfile="StarDS/include/stards.h" bodystart="919" bodyend="942"/>
+      </memberdef>
+      <memberdef kind="function" id="stards_8h_1a1e31ad6d5cd28fda7577955b90f7607f" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void star::byte_shuffle_blocked</definition>
+        <argsstring>(const char *in, char *out, size_t data_size, size_t elem_size, size_t block_size)</argsstring>
+        <name>byte_shuffle_blocked</name>
+        <qualifiedname>star::byte_shuffle_blocked</qualifiedname>
+        <param>
+          <type>const char *</type>
+          <declname>in</declname>
+        </param>
+        <param>
+          <type>char *</type>
+          <declname>out</declname>
+        </param>
+        <param>
+          <type>size_t</type>
+          <declname>data_size</declname>
+        </param>
+        <param>
+          <type>size_t</type>
+          <declname>elem_size</declname>
+        </param>
+        <param>
+          <type>size_t</type>
+          <declname>block_size</declname>
+        </param>
+        <briefdescription>
+<para>Per-block byte-shuffle: apply byte_shuffle() independently within each <computeroutput>block_size</computeroutput>-byte chunk of a <computeroutput>data_size</computeroutput>-byte buffer. </para>
+        </briefdescription>
+        <detaileddescription>
+<para>This is the prefilter for the BLOCK-shuffle codecs. Because the buffer is later cut into blocks at the SAME <computeroutput>block_size</computeroutput> boundaries by compressBlocksBuffered(), each compression block ends up holding exactly one self-contained shuffled chunk, so it can be un-shuffled on its own (enabling slicing) — unlike the global variant, whose byte planes span the whole array.</para>
+<para>Each chunk is shuffled over its whole-element prefix (chunk_size / elem_size elements); any trailing bytes that don&apos;t form a complete element (only possible when block_size is not a multiple of elem_size) are copied through verbatim, and byte_unshuffle_blocked() reverses this exactly. <computeroutput>out</computeroutput> must hold <computeroutput>data_size</computeroutput> bytes. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="959" column="13" bodyfile="StarDS/include/stards.h" bodystart="959" bodyend="970"/>
+      </memberdef>
+      <memberdef kind="function" id="stards_8h_1a247aa4a7a0047c15d0a136f4a8943941" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void star::byte_unshuffle_blocked</definition>
+        <argsstring>(const char *in, char *out, size_t data_size, size_t elem_size, size_t block_size)</argsstring>
+        <name>byte_unshuffle_blocked</name>
+        <qualifiedname>star::byte_unshuffle_blocked</qualifiedname>
+        <param>
+          <type>const char *</type>
+          <declname>in</declname>
+        </param>
+        <param>
+          <type>char *</type>
+          <declname>out</declname>
+        </param>
+        <param>
+          <type>size_t</type>
+          <declname>data_size</declname>
+        </param>
+        <param>
+          <type>size_t</type>
+          <declname>elem_size</declname>
+        </param>
+        <param>
+          <type>size_t</type>
+          <declname>block_size</declname>
+        </param>
+        <briefdescription>
+<para>Inverse of byte_shuffle_blocked(): un-shuffle each <computeroutput>block_size</computeroutput> chunk. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="975" column="13" bodyfile="StarDS/include/stards.h" bodystart="975" bodyend="986"/>
+      </memberdef>
+      <memberdef kind="function" id="stards_8h_1abbc1f01ad58689b526e003c582f81551" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>uint64_t</type>
+        <definition>uint64_t star::hash_key</definition>
+        <argsstring>(const std::string &amp;key)</argsstring>
+        <name>hash_key</name>
+        <qualifiedname>star::hash_key</qualifiedname>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>key</declname>
+        </param>
+        <briefdescription>
+<para>Hash function for keys in global key registry. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1009" column="17" bodyfile="StarDS/include/stards.h" bodystart="1009" bodyend="1012"/>
+      </memberdef>
+      <memberdef kind="function" id="stards_8h_1a5579dc16eb34115f42697b1f5c06f8a9" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>const char *</type>
+        <definition>const char * star::datatype_to_string</definition>
+        <argsstring>(DataType dtype)</argsstring>
+        <name>datatype_to_string</name>
+        <qualifiedname>star::datatype_to_string</qualifiedname>
+        <param>
+          <type>DataType</type>
+          <declname>dtype</declname>
+        </param>
+        <briefdescription>
+<para>Get string representation of DataType. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>dtype</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>DataType to convert </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>String representation </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1127" column="19" bodyfile="StarDS/include/stards.h" bodystart="1127" bodyend="1142"/>
+      </memberdef>
+      <memberdef kind="function" id="stards_8h_1a410c53616fde29a6487f7f579489aefa" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>size_t</type>
+        <definition>size_t star::datatype_size</definition>
+        <argsstring>(DataType dtype)</argsstring>
+        <name>datatype_size</name>
+        <qualifiedname>star::datatype_size</qualifiedname>
+        <param>
+          <type>DataType</type>
+          <declname>dtype</declname>
+        </param>
+        <briefdescription>
+<para>Get element size in bytes for a DataType. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>dtype</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>DataType to query </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>Size in bytes (0 for variable-length types like STRING) </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1149" column="15" bodyfile="StarDS/include/stards.h" bodystart="1149" bodyend="1164"/>
+      </memberdef>
+      <memberdef kind="function" id="stards_8h_1a37d78623f0f7e4512a36feeea3d23aaa" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="structstar_1_1Slice" kindref="compound">Slice</ref></type>
+        <definition>Slice star::slice_all</definition>
+        <argsstring>(size_t dim_size)</argsstring>
+        <name>slice_all</name>
+        <qualifiedname>star::slice_all</qualifiedname>
+        <param>
+          <type>size_t</type>
+          <declname>dim_size</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1262" column="14" bodyfile="StarDS/include/stards.h" bodystart="1262" bodyend="1264"/>
+      </memberdef>
+      <memberdef kind="function" id="stards_8h_1ae56c84afe3b1985f4ca1e719f66b5ac0" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="structstar_1_1Slice" kindref="compound">Slice</ref></type>
+        <definition>Slice star::slice_range</definition>
+        <argsstring>(size_t start, size_t stop)</argsstring>
+        <name>slice_range</name>
+        <qualifiedname>star::slice_range</qualifiedname>
+        <param>
+          <type>size_t</type>
+          <declname>start</declname>
+        </param>
+        <param>
+          <type>size_t</type>
+          <declname>stop</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1266" column="14" bodyfile="StarDS/include/stards.h" bodystart="1266" bodyend="1268"/>
+      </memberdef>
+      <memberdef kind="function" id="stards_8h_1a21e0e90048002ec4472ba8bc0db04e4c" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>CURLcode</type>
+        <definition>CURLcode star::star_curl_perform</definition>
+        <argsstring>(CURL *handle)</argsstring>
+        <name>star_curl_perform</name>
+        <qualifiedname>star::star_curl_perform</qualifiedname>
+        <param>
+          <type>CURL *</type>
+          <declname>handle</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1657" column="17" bodyfile="StarDS/include/stards.h" bodystart="1657" bodyend="1660"/>
+      </memberdef>
+      <memberdef kind="function" id="stards_8h_1ab7c8b458023c3ab482697d146d57e627" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>FileMode</type>
+        <definition>FileMode star::parseModeString</definition>
+        <argsstring>(const std::string &amp;mode_str)</argsstring>
+        <name>parseModeString</name>
+        <qualifiedname>star::parseModeString</qualifiedname>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>mode_str</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1677" column="17" bodyfile="StarDS/include/stards.h" bodystart="1677" bodyend="1685"/>
+      </memberdef>
+      <memberdef kind="function" id="stards_8h_1aae39a3c1ad4cc87d269dc39e4fa7741a" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::string</type>
+        <definition>std::string star::getS3Region</definition>
+        <argsstring>()</argsstring>
+        <name>getS3Region</name>
+        <qualifiedname>star::getS3Region</qualifiedname>
+        <briefdescription>
+<para>Get S3 region from environment or default. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="2552" column="20" bodyfile="StarDS/include/stards.h" bodystart="2552" bodyend="2555"/>
+      </memberdef>
+      <memberdef kind="function" id="stards_8h_1ac790209e925d9fd6398a4d7ee2455625" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="structstar_1_1FilePathInfo" kindref="compound">FilePathInfo</ref></type>
+        <definition>FilePathInfo star::parseFilePath</definition>
+        <argsstring>(const std::string &amp;filename)</argsstring>
+        <name>parseFilePath</name>
+        <qualifiedname>star::parseFilePath</qualifiedname>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>filename</declname>
+        </param>
+        <briefdescription>
+<para>Parse a file path and determine its type (local, HTTP, or S3). </para>
+        </briefdescription>
+        <detaileddescription>
+<para>Recognizes both the GDAL virtual-filesystem prefixes and the equivalent plain URL/URI forms, so either works interchangeably:<itemizedlist>
+<listitem><para>S3: &quot;/vsis3/bucket/key&quot; OR &quot;s3://bucket/key&quot;</para>
+</listitem><listitem><para>HTTP: &quot;/vsicurl/https://host/path&quot; OR &quot;https://host/path&quot; / &quot;http://...&quot;</para>
+</listitem><listitem><para>anything else -&gt; a local filesystem path. The <computeroutput>/vsi*</computeroutput> prefixes stay supported for GDAL compatibility; the plain forms are the natural way to name a remote object and map to the same handling.</para>
+</listitem></itemizedlist>
+</para>
+<para>Defined unconditionally: <ref refid="classstar_1_1StarDataset_1a7da82ee4803e6302ad903e12e3c4c0c7" kindref="member">StarDataset::open()</ref>/ctor call it for every path, and the LOCAL branch (the common case) has no S3/curl dependency. Only the S3 region-resolution needs <ref refid="classstar_1_1AWSConfigParser" kindref="compound">AWSConfigParser</ref>, so that part is gated on ENABLE_S3; without S3 support an S3 path is rejected with a clear error. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="2861" column="21" bodyfile="StarDS/include/stards.h" bodystart="2861" bodyend="2935"/>
+      </memberdef>
+      <memberdef kind="function" id="stards_8h_1a1a0fb476dc8bf76da88420f3df1feb41" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>size_t</type>
+        <definition>size_t star::estimateCompressedSize</definition>
+        <argsstring>(const char *data, size_t data_size, CompressionAlgorithm algorithm, size_t block_size)</argsstring>
+        <name>estimateCompressedSize</name>
+        <qualifiedname>star::estimateCompressedSize</qualifiedname>
+        <param>
+          <type>const char *</type>
+          <declname>data</declname>
+        </param>
+        <param>
+          <type>size_t</type>
+          <declname>data_size</declname>
+        </param>
+        <param>
+          <type>CompressionAlgorithm</type>
+          <declname>algorithm</declname>
+        </param>
+        <param>
+          <type>size_t</type>
+          <declname>block_size</declname>
+        </param>
+        <briefdescription>
+<para>Estimate compressed size using deflateBound without actually compressing. </para>
+        </briefdescription>
+        <detaileddescription>
+<para>This provides an upper bound on the compressed size, which is useful for pre-calculating file positions before actual compression. The estimate is typically 10-30% larger than actual compressed size.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>data</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Raw uncompressed data </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>data_size</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Size of raw data </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>algorithm</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Compression algorithm to use </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>block_size</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Size of each uncompressed block </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>Estimated upper bound on compressed size </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="4227" column="15" bodyfile="StarDS/include/stards.h" bodystart="4227" bodyend="4252"/>
+      </memberdef>
+      <memberdef kind="function" id="stards_8h_1a49578ed8572073c807f93cceec301dbd" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::vector&lt; <ref refid="structstar_1_1BlockInfo" kindref="compound">BlockInfo</ref> &gt;</type>
+        <definition>std::vector&lt; BlockInfo &gt; star::compressBlocksBuffered</definition>
+        <argsstring>(const char *data, size_t data_size, CompressionAlgorithm algorithm, size_t block_size, std::vector&lt; char &gt; &amp;compressed_output, std::vector&lt; char &gt; &amp;temp_buffer, ThreadPool *thread_pool=nullptr)</argsstring>
+        <name>compressBlocksBuffered</name>
+        <qualifiedname>star::compressBlocksBuffered</qualifiedname>
+        <param>
+          <type>const char *</type>
+          <declname>data</declname>
+        </param>
+        <param>
+          <type>size_t</type>
+          <declname>data_size</declname>
+        </param>
+        <param>
+          <type>CompressionAlgorithm</type>
+          <declname>algorithm</declname>
+        </param>
+        <param>
+          <type>size_t</type>
+          <declname>block_size</declname>
+        </param>
+        <param>
+          <type>std::vector&lt; char &gt; &amp;</type>
+          <declname>compressed_output</declname>
+        </param>
+        <param>
+          <type>std::vector&lt; char &gt; &amp;</type>
+          <declname>temp_buffer</declname>
+        </param>
+        <param>
+          <type><ref refid="classstar_1_1ThreadPool" kindref="compound">ThreadPool</ref> *</type>
+          <declname>thread_pool</declname>
+          <defval>nullptr</defval>
+        </param>
+        <briefdescription>
+<para>Compresses data in blocks using pre-allocated buffer. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>data</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Raw uncompressed data </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>data_size</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Size of raw data </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>algorithm</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Compression algorithm to use </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>block_size</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Size of each uncompressed block </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>compressed_output</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Pre-allocated output buffer (will be cleared and reused) </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>temp_buffer</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Pre-allocated temporary buffer for compression (will be resized as needed) </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>thread_pool</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Optional thread pool for parallel compression (nullptr = single-threaded) </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>Block metadata </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="4266" column="1" bodyfile="StarDS/include/stards.h" bodystart="4266" bodyend="4510"/>
+      </memberdef>
+      <memberdef kind="function" id="stards_8h_1a959a8d088b8da75c42fb70b4af2ac54c" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::pair&lt; std::vector&lt; char &gt;, std::vector&lt; <ref refid="structstar_1_1BlockInfo" kindref="compound">BlockInfo</ref> &gt; &gt;</type>
+        <definition>std::pair&lt; std::vector&lt; char &gt;, std::vector&lt; BlockInfo &gt; &gt; star::compressBlocks</definition>
+        <argsstring>(const char *data, size_t data_size, CompressionAlgorithm algorithm, size_t block_size)</argsstring>
+        <name>compressBlocks</name>
+        <qualifiedname>star::compressBlocks</qualifiedname>
+        <param>
+          <type>const char *</type>
+          <declname>data</declname>
+        </param>
+        <param>
+          <type>size_t</type>
+          <declname>data_size</declname>
+        </param>
+        <param>
+          <type>CompressionAlgorithm</type>
+          <declname>algorithm</declname>
+        </param>
+        <param>
+          <type>size_t</type>
+          <declname>block_size</declname>
+        </param>
+        <briefdescription>
+<para>Compresses data in blocks and returns block metadata (legacy version). </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>data</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Raw uncompressed data </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>data_size</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Size of raw data </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>algorithm</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Compression algorithm to use </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>block_size</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Size of each uncompressed block </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>Pair of compressed data and block metadata </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="4521" column="1" bodyfile="StarDS/include/stards.h" bodystart="4521" bodyend="4529"/>
+      </memberdef>
+      <memberdef kind="function" id="stards_8h_1abe76f55ea15d1fd894f94f53fa556b8f" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::vector&lt; char &gt;</type>
+        <definition>std::vector&lt; char &gt; star::decompressBlocks</definition>
+        <argsstring>(const std::vector&lt; char &gt; &amp;compressed_data, const std::vector&lt; BlockInfo &gt; &amp;blocks, CompressionAlgorithm algorithm, const std::vector&lt; size_t &gt; &amp;block_indices={}, ThreadPool *thread_pool=nullptr)</argsstring>
+        <name>decompressBlocks</name>
+        <qualifiedname>star::decompressBlocks</qualifiedname>
+        <param>
+          <type>const std::vector&lt; char &gt; &amp;</type>
+          <declname>compressed_data</declname>
+        </param>
+        <param>
+          <type>const std::vector&lt; <ref refid="structstar_1_1BlockInfo" kindref="compound">BlockInfo</ref> &gt; &amp;</type>
+          <declname>blocks</declname>
+        </param>
+        <param>
+          <type>CompressionAlgorithm</type>
+          <declname>algorithm</declname>
+        </param>
+        <param>
+          <type>const std::vector&lt; size_t &gt; &amp;</type>
+          <declname>block_indices</declname>
+          <defval>{}</defval>
+        </param>
+        <param>
+          <type><ref refid="classstar_1_1ThreadPool" kindref="compound">ThreadPool</ref> *</type>
+          <declname>thread_pool</declname>
+          <defval>nullptr</defval>
+        </param>
+        <briefdescription>
+<para>Decompresses specific blocks from compressed data. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>compressed_data</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Full compressed data </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>blocks</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Block metadata </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>algorithm</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Compression algorithm used </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>block_indices</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Which blocks to decompress (empty = all) </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>thread_pool</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Optional thread pool for parallel decompression (nullptr = single-threaded) </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>Decompressed data </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="4540" column="20" bodyfile="StarDS/include/stards.h" bodystart="4540" bodyend="4705"/>
+      </memberdef>
+      <memberdef kind="function" id="stards_8h_1a0f459f011a279335dec75d5dd7d6ad19" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void star::decompressBlocksInto</definition>
+        <argsstring>(const std::vector&lt; char &gt; &amp;compressed_data, const std::vector&lt; BlockInfo &gt; &amp;blocks, CompressionAlgorithm algorithm, char *dst, size_t dst_capacity, ThreadPool *thread_pool=nullptr)</argsstring>
+        <name>decompressBlocksInto</name>
+        <qualifiedname>star::decompressBlocksInto</qualifiedname>
+        <param>
+          <type>const std::vector&lt; char &gt; &amp;</type>
+          <declname>compressed_data</declname>
+        </param>
+        <param>
+          <type>const std::vector&lt; <ref refid="structstar_1_1BlockInfo" kindref="compound">BlockInfo</ref> &gt; &amp;</type>
+          <declname>blocks</declname>
+        </param>
+        <param>
+          <type>CompressionAlgorithm</type>
+          <declname>algorithm</declname>
+        </param>
+        <param>
+          <type>char *</type>
+          <declname>dst</declname>
+        </param>
+        <param>
+          <type>size_t</type>
+          <declname>dst_capacity</declname>
+        </param>
+        <param>
+          <type><ref refid="classstar_1_1ThreadPool" kindref="compound">ThreadPool</ref> *</type>
+          <declname>thread_pool</declname>
+          <defval>nullptr</defval>
+        </param>
+        <briefdescription>
+<para>One-pass sibling of decompressBlocks(): decompress every block straight into a caller-owned destination buffer instead of allocating and returning a std::vector. </para>
+        </briefdescription>
+        <detaileddescription>
+<para>decompressBlocks() allocates a full-size buffer, decodes into it, and returns it — the caller then copies that buffer into its final home (e.g. an <ref refid="classstar_1_1NDArray" kindref="compound">NDArray</ref>), so every byte is written twice and a whole extra buffer is allocated. When the on-disk bytes ARE the final element bytes (fixed-width numeric arrays with no byte-shuffle prefilter to undo), that intermediate buffer is pure overhead: this function decodes each block directly to <computeroutput>dst + &lt;block offset&gt;</computeroutput>, giving a single pass over the data with no scratch allocation.</para>
+<para>The per-codec decode calls are identical to decompressBlocks() (same LZ4/zlib entry points, same block layout, same threading gate) so the produced bytes are bit-for-bit the same; only the destination differs. It intentionally does NOT support a block-index subset (the fused path is always a whole-array read) — the slicing paths keep using decompressBlocks(). Left as a separate function rather than refactoring decompressBlocks() to delegate, so the existing return-a-vector path is untouched.</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>dst</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Destination buffer; must hold at least the sum of block uncompressed sizes. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>dst_capacity</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Size of <computeroutput>dst</computeroutput> in bytes (checked; a larger declared shape leaves the trailing bytes untouched, matching the partial memcpy the general path performs). </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="4734" column="13" bodyfile="StarDS/include/stards.h" bodystart="4734" bodyend="4812"/>
+      </memberdef>
+      <memberdef kind="function" id="stards_8h_1a0130b14a0fad270754cea7c19c0b39ac" prot="public" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>DataType</type>
+        <definition>static DataType star::extract_dtype_from_variant</definition>
+        <argsstring>(const ValueVariant &amp;var)</argsstring>
+        <name>extract_dtype_from_variant</name>
+        <qualifiedname>star::extract_dtype_from_variant</qualifiedname>
+        <param>
+          <type>const ValueVariant &amp;</type>
+          <declname>var</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="9402" column="24" bodyfile="StarDS/include/stards.h" bodystart="9402" bodyend="9415"/>
+      </memberdef>
+      <memberdef kind="function" id="stards_8h_1a2767eb5622de6c7d32b5bcafffec295c" prot="public" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::vector&lt; size_t &gt;</type>
+        <definition>static std::vector&lt; size_t &gt; star::extract_shape_from_variant</definition>
+        <argsstring>(const ValueVariant &amp;var)</argsstring>
+        <name>extract_shape_from_variant</name>
+        <qualifiedname>star::extract_shape_from_variant</qualifiedname>
+        <param>
+          <type>const ValueVariant &amp;</type>
+          <declname>var</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="9417" column="27" bodyfile="StarDS/include/stards.h" bodystart="9417" bodyend="9421"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="StarDS/include/stards.h" line="187" column="1"/>
+  </compounddef>
+</doxygen>

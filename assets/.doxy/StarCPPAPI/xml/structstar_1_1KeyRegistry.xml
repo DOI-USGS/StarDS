@@ -1,0 +1,146 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.17.0" xml:lang="en-US">
+  <compounddef id="structstar_1_1KeyRegistry" kind="struct" language="C++" prot="public">
+    <compoundname>star::KeyRegistry</compoundname>
+    <includes refid="stards_8h" local="no">stards.h</includes>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structstar_1_1KeyRegistry_1adc8c8ff9ee63e11bcac605c29a32108a" prot="public" static="no" mutable="no">
+        <type>std::vector&lt; std::string &gt;</type>
+        <definition>std::vector&lt;std::string&gt; star::KeyRegistry::names</definition>
+        <argsstring></argsstring>
+        <name>names</name>
+        <qualifiedname>star::KeyRegistry::names</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1021" column="17" bodyfile="StarDS/include/stards.h" bodystart="1021" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structstar_1_1KeyRegistry_1a68cfe9eef9f179dcf8a2b1d0abeeaad1" prot="public" static="no" mutable="no">
+        <type>std::vector&lt; uint64_t &gt;</type>
+        <definition>std::vector&lt;uint64_t&gt; star::KeyRegistry::hashes</definition>
+        <argsstring></argsstring>
+        <name>hashes</name>
+        <qualifiedname>star::KeyRegistry::hashes</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1022" column="17" bodyfile="StarDS/include/stards.h" bodystart="1022" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structstar_1_1KeyRegistry_1a9da84c383630993f0373842597cad5d4" prot="public" static="no" mutable="no">
+        <type>std::unordered_map&lt; uint64_t, uint16_t &gt;</type>
+        <definition>std::unordered_map&lt;uint64_t, uint16_t&gt; star::KeyRegistry::hash_to_index</definition>
+        <argsstring></argsstring>
+        <name>hash_to_index</name>
+        <qualifiedname>star::KeyRegistry::hash_to_index</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1023" column="24" bodyfile="StarDS/include/stards.h" bodystart="1023" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structstar_1_1KeyRegistry_1a43e4bf93b616117d9dc7d714d2e4de7f" prot="public" static="no" mutable="no">
+        <type>std::unordered_map&lt; std::string, uint16_t &gt;</type>
+        <definition>std::unordered_map&lt;std::string, uint16_t&gt; star::KeyRegistry::name_to_index</definition>
+        <argsstring></argsstring>
+        <name>name_to_index</name>
+        <qualifiedname>star::KeyRegistry::name_to_index</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1024" column="24" bodyfile="StarDS/include/stards.h" bodystart="1024" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="structstar_1_1KeyRegistry_1a835f182f98e84a581065c5a3ae106872" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>uint16_t</type>
+        <definition>uint16_t star::KeyRegistry::get_or_create</definition>
+        <argsstring>(const std::string &amp;key)</argsstring>
+        <name>get_or_create</name>
+        <qualifiedname>star::KeyRegistry::get_or_create</qualifiedname>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>key</declname>
+        </param>
+        <briefdescription>
+<para>Get or create a key index. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>uint16 index into the registry </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1030" column="14" bodyfile="StarDS/include/stards.h" bodystart="1030" bodyend="1049"/>
+      </memberdef>
+      <memberdef kind="function" id="structstar_1_1KeyRegistry_1a000d24c5ee69ae62f6c6aae253ff96b1" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>uint16_t</type>
+        <definition>uint16_t star::KeyRegistry::get_index</definition>
+        <argsstring>(const std::string &amp;key) const</argsstring>
+        <name>get_index</name>
+        <qualifiedname>star::KeyRegistry::get_index</qualifiedname>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>key</declname>
+        </param>
+        <briefdescription>
+<para>Get existing key index (throws if not found). </para>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>uint16 index into the registry </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1055" column="14" bodyfile="StarDS/include/stards.h" bodystart="1055" bodyend="1061"/>
+      </memberdef>
+      <memberdef kind="function" id="structstar_1_1KeyRegistry_1a72bf85eaaaf54ee242491c1f3a837d7d" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool star::KeyRegistry::contains</definition>
+        <argsstring>(const std::string &amp;key) const</argsstring>
+        <name>contains</name>
+        <qualifiedname>star::KeyRegistry::contains</qualifiedname>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>key</declname>
+        </param>
+        <briefdescription>
+<para>Check if key exists in registry. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1066" column="10" bodyfile="StarDS/include/stards.h" bodystart="1066" bodyend="1068"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+<para>Global key registry using data-oriented design (Structure of Arrays). </para>
+    </briefdescription>
+    <detaileddescription>
+<para>Stores all unique keys once with precomputed hashes for O(1) lookups. Keys are referenced by uint16 indices throughout the system. </para>
+    </detaileddescription>
+    <location file="StarDS/include/stards.h" line="1020" column="1" bodyfile="StarDS/include/stards.h" bodystart="1020" bodyend="1069"/>
+    <listofallmembers>
+      <member refid="structstar_1_1KeyRegistry_1a72bf85eaaaf54ee242491c1f3a837d7d" prot="public" virt="non-virtual"><scope>star::KeyRegistry</scope><name>contains</name></member>
+      <member refid="structstar_1_1KeyRegistry_1a000d24c5ee69ae62f6c6aae253ff96b1" prot="public" virt="non-virtual"><scope>star::KeyRegistry</scope><name>get_index</name></member>
+      <member refid="structstar_1_1KeyRegistry_1a835f182f98e84a581065c5a3ae106872" prot="public" virt="non-virtual"><scope>star::KeyRegistry</scope><name>get_or_create</name></member>
+      <member refid="structstar_1_1KeyRegistry_1a9da84c383630993f0373842597cad5d4" prot="public" virt="non-virtual"><scope>star::KeyRegistry</scope><name>hash_to_index</name></member>
+      <member refid="structstar_1_1KeyRegistry_1a68cfe9eef9f179dcf8a2b1d0abeeaad1" prot="public" virt="non-virtual"><scope>star::KeyRegistry</scope><name>hashes</name></member>
+      <member refid="structstar_1_1KeyRegistry_1a43e4bf93b616117d9dc7d714d2e4de7f" prot="public" virt="non-virtual"><scope>star::KeyRegistry</scope><name>name_to_index</name></member>
+      <member refid="structstar_1_1KeyRegistry_1adc8c8ff9ee63e11bcac605c29a32108a" prot="public" virt="non-virtual"><scope>star::KeyRegistry</scope><name>names</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

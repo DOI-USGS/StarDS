@@ -1,0 +1,107 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.17.0" xml:lang="en-US">
+  <compounddef id="structstar_1_1BlockMap" kind="struct" language="C++" prot="public">
+    <compoundname>star::BlockMap</compoundname>
+    <includes refid="stards_8h" local="no">stards.h</includes>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structstar_1_1BlockMap_1a3ee2733ba1c7645d5be2edbf953dd14f" prot="public" static="no" mutable="no">
+        <type>std::vector&lt; size_t &gt;</type>
+        <definition>std::vector&lt;size_t&gt; star::BlockMap::block_indices</definition>
+        <argsstring></argsstring>
+        <name>block_indices</name>
+        <qualifiedname>star::BlockMap::block_indices</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1288" column="17" bodyfile="StarDS/include/stards.h" bodystart="1288" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structstar_1_1BlockMap_1a17e2b1fe22e6b2e87ecfb4c4ccd64b9d" prot="public" static="no" mutable="no">
+        <type>std::vector&lt; size_t &gt;</type>
+        <definition>std::vector&lt;size_t&gt; star::BlockMap::block_offsets</definition>
+        <argsstring></argsstring>
+        <name>block_offsets</name>
+        <qualifiedname>star::BlockMap::block_offsets</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1289" column="17" bodyfile="StarDS/include/stards.h" bodystart="1289" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structstar_1_1BlockMap_1a8de6da72eb66b4b9f9ad958996a45923" prot="public" static="no" mutable="no">
+        <type>std::vector&lt; size_t &gt;</type>
+        <definition>std::vector&lt;size_t&gt; star::BlockMap::block_sizes</definition>
+        <argsstring></argsstring>
+        <name>block_sizes</name>
+        <qualifiedname>star::BlockMap::block_sizes</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1290" column="17" bodyfile="StarDS/include/stards.h" bodystart="1290" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structstar_1_1BlockMap_1a7e6f7e40d79b1c310ac58301b80f3052" prot="public" static="no" mutable="no">
+        <type>size_t</type>
+        <definition>size_t star::BlockMap::total_compressed_bytes</definition>
+        <argsstring></argsstring>
+        <name>total_compressed_bytes</name>
+        <qualifiedname>star::BlockMap::total_compressed_bytes</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1291" column="12" bodyfile="StarDS/include/stards.h" bodystart="1291" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structstar_1_1BlockMap_1a7986354b3bfc64299cdfe2fbd56978f1" prot="public" static="no" mutable="no">
+        <type>bool</type>
+        <definition>bool star::BlockMap::blocks_contiguous</definition>
+        <argsstring></argsstring>
+        <name>blocks_contiguous</name>
+        <qualifiedname>star::BlockMap::blocks_contiguous</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1292" column="10" bodyfile="StarDS/include/stards.h" bodystart="1292" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structstar_1_1BlockMap_1a883626b818429378972f28141a146de2" prot="public" static="no" mutable="no">
+        <type>size_t</type>
+        <definition>size_t star::BlockMap::contiguous_start_offset</definition>
+        <argsstring></argsstring>
+        <name>contiguous_start_offset</name>
+        <qualifiedname>star::BlockMap::contiguous_start_offset</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1293" column="12" bodyfile="StarDS/include/stards.h" bodystart="1293" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+<para>Maps logical elements to physical blocks. </para>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="StarDS/include/stards.h" line="1287" column="1" bodyfile="StarDS/include/stards.h" bodystart="1287" bodyend="1294"/>
+    <listofallmembers>
+      <member refid="structstar_1_1BlockMap_1a3ee2733ba1c7645d5be2edbf953dd14f" prot="public" virt="non-virtual"><scope>star::BlockMap</scope><name>block_indices</name></member>
+      <member refid="structstar_1_1BlockMap_1a17e2b1fe22e6b2e87ecfb4c4ccd64b9d" prot="public" virt="non-virtual"><scope>star::BlockMap</scope><name>block_offsets</name></member>
+      <member refid="structstar_1_1BlockMap_1a8de6da72eb66b4b9f9ad958996a45923" prot="public" virt="non-virtual"><scope>star::BlockMap</scope><name>block_sizes</name></member>
+      <member refid="structstar_1_1BlockMap_1a7986354b3bfc64299cdfe2fbd56978f1" prot="public" virt="non-virtual"><scope>star::BlockMap</scope><name>blocks_contiguous</name></member>
+      <member refid="structstar_1_1BlockMap_1a883626b818429378972f28141a146de2" prot="public" virt="non-virtual"><scope>star::BlockMap</scope><name>contiguous_start_offset</name></member>
+      <member refid="structstar_1_1BlockMap_1a7e6f7e40d79b1c310ac58301b80f3052" prot="public" virt="non-virtual"><scope>star::BlockMap</scope><name>total_compressed_bytes</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

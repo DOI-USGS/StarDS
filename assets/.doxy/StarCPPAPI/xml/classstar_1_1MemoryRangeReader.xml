@@ -1,0 +1,156 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.17.0" xml:lang="en-US">
+  <compounddef id="classstar_1_1MemoryRangeReader" kind="class" language="C++" prot="public">
+    <compoundname>star::MemoryRangeReader</compoundname>
+    <basecompoundref refid="classstar_1_1RangeReader" prot="public" virt="non-virtual">star::RangeReader</basecompoundref>
+    <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classstar_1_1MemoryRangeReader_1a60c2698ebfb92fd3844b27046bdd1b4e" prot="private" static="no" mutable="no">
+        <type>std::vector&lt; char &gt;</type>
+        <definition>std::vector&lt;char&gt; star::MemoryRangeReader::m_bytes</definition>
+        <argsstring></argsstring>
+        <name>m_bytes</name>
+        <qualifiedname>star::MemoryRangeReader::m_bytes</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="3113" column="17" bodyfile="StarDS/include/stards.h" bodystart="3113" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="classstar_1_1MemoryRangeReader_1a951ecc73f0a14a551d046367ac4855be" prot="public" static="no" const="no" explicit="yes" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>star::MemoryRangeReader::MemoryRangeReader</definition>
+        <argsstring>(std::vector&lt; char &gt; bytes)</argsstring>
+        <name>MemoryRangeReader</name>
+        <qualifiedname>star::MemoryRangeReader::MemoryRangeReader</qualifiedname>
+        <param>
+          <type>std::vector&lt; char &gt;</type>
+          <declname>bytes</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="3098" column="14" bodyfile="StarDS/include/stards.h" bodystart="3098" bodyend="3098"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1MemoryRangeReader_1a997cb08d5a0860e6de9ce89d745d6b02" prot="public" static="no" const="no" explicit="no" inline="yes" virt="virtual">
+        <type>size_t</type>
+        <definition>size_t star::MemoryRangeReader::read_at</definition>
+        <argsstring>(size_t offset, size_t len, std::vector&lt; char &gt; &amp;out) override</argsstring>
+        <name>read_at</name>
+        <qualifiedname>star::MemoryRangeReader::read_at</qualifiedname>
+        <reimplements refid="classstar_1_1RangeReader_1aea7e78a3edbd2dc856bcecfb31e60c12">read_at</reimplements>
+        <param>
+          <type>size_t</type>
+          <declname>offset</declname>
+        </param>
+        <param>
+          <type>size_t</type>
+          <declname>len</declname>
+        </param>
+        <param>
+          <type>std::vector&lt; char &gt; &amp;</type>
+          <declname>out</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="3100" column="12" bodyfile="StarDS/include/stards.h" bodystart="3100" bodyend="3105"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1MemoryRangeReader_1ae9eb7bbb4050465f522048e41a199d66" prot="public" static="no" const="no" explicit="no" inline="yes" virt="virtual">
+        <type>size_t</type>
+        <definition>size_t star::MemoryRangeReader::size_or_unknown</definition>
+        <argsstring>() override</argsstring>
+        <name>size_or_unknown</name>
+        <qualifiedname>star::MemoryRangeReader::size_or_unknown</qualifiedname>
+        <reimplements refid="classstar_1_1RangeReader_1a65c6796cbf23bbd06041667b819c2e36">size_or_unknown</reimplements>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="3107" column="12" bodyfile="StarDS/include/stards.h" bodystart="3107" bodyend="3107"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1MemoryRangeReader_1aa9a7aab5a2684aa17579b3f6a9dba3db" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="virtual">
+        <type>bool</type>
+        <definition>bool star::MemoryRangeReader::good</definition>
+        <argsstring>() const override</argsstring>
+        <name>good</name>
+        <qualifiedname>star::MemoryRangeReader::good</qualifiedname>
+        <reimplements refid="classstar_1_1RangeReader_1a1b408fc6cf5816c3faf6718a3a9f35a9">good</reimplements>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="3108" column="10" bodyfile="StarDS/include/stards.h" bodystart="3108" bodyend="3108"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1MemoryRangeReader_1aecd4e2d256a14ae0e9f148d3adcd18d2" prot="public" static="no" const="no" explicit="no" inline="yes" virt="virtual">
+        <type>bool</type>
+        <definition>bool star::MemoryRangeReader::ensure_whole_cached</definition>
+        <argsstring>(size_t) override</argsstring>
+        <name>ensure_whole_cached</name>
+        <qualifiedname>star::MemoryRangeReader::ensure_whole_cached</qualifiedname>
+        <reimplements refid="classstar_1_1RangeReader_1a33457d72df6fc8440d91665d75ec22ba">ensure_whole_cached</reimplements>
+        <param>
+          <type>size_t</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="3110" column="10" bodyfile="StarDS/include/stards.h" bodystart="3110" bodyend="3110"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="1">
+        <label>star::MemoryRangeReader</label>
+        <link refid="classstar_1_1MemoryRangeReader"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>star::RangeReader</label>
+        <link refid="classstar_1_1RangeReader"/>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="1">
+        <label>star::MemoryRangeReader</label>
+        <link refid="classstar_1_1MemoryRangeReader"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>star::RangeReader</label>
+        <link refid="classstar_1_1RangeReader"/>
+      </node>
+    </collaborationgraph>
+    <location file="StarDS/include/stards.h" line="3096" column="1" bodyfile="StarDS/include/stards.h" bodystart="3096" bodyend="3114"/>
+    <listofallmembers>
+      <member refid="classstar_1_1MemoryRangeReader_1aecd4e2d256a14ae0e9f148d3adcd18d2" prot="public" virt="virtual"><scope>star::MemoryRangeReader</scope><name>ensure_whole_cached</name></member>
+      <member refid="classstar_1_1MemoryRangeReader_1aa9a7aab5a2684aa17579b3f6a9dba3db" prot="public" virt="virtual"><scope>star::MemoryRangeReader</scope><name>good</name></member>
+      <member refid="classstar_1_1MemoryRangeReader_1a60c2698ebfb92fd3844b27046bdd1b4e" prot="private" virt="non-virtual"><scope>star::MemoryRangeReader</scope><name>m_bytes</name></member>
+      <member refid="classstar_1_1MemoryRangeReader_1a951ecc73f0a14a551d046367ac4855be" prot="public" virt="non-virtual"><scope>star::MemoryRangeReader</scope><name>MemoryRangeReader</name></member>
+      <member refid="classstar_1_1MemoryRangeReader_1a997cb08d5a0860e6de9ce89d745d6b02" prot="public" virt="virtual"><scope>star::MemoryRangeReader</scope><name>read_at</name></member>
+      <member refid="classstar_1_1MemoryRangeReader_1ae9eb7bbb4050465f522048e41a199d66" prot="public" virt="virtual"><scope>star::MemoryRangeReader</scope><name>size_or_unknown</name></member>
+      <member refid="classstar_1_1RangeReader_1a5ff2bd9d200f10d0542cede7eba2835d" prot="public" virt="virtual"><scope>star::MemoryRangeReader</scope><name>~RangeReader</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

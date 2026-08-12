@@ -1,0 +1,194 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.17.0" xml:lang="en-US">
+  <compounddef id="classstar_1_1LayerMetadataAccessor" kind="class" language="C++" prot="public">
+    <compoundname>star::LayerMetadataAccessor</compoundname>
+    <includes refid="stards_8h" local="no">stards.h</includes>
+    <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classstar_1_1LayerMetadataAccessor_1a1e16886dc2434ef3aabaad9e71ec95c9" prot="private" static="no" mutable="no">
+        <type><ref refid="classstar_1_1StarDataset" kindref="compound">StarDataset</ref> *</type>
+        <definition>StarDataset* star::LayerMetadataAccessor::m_store</definition>
+        <argsstring></argsstring>
+        <name>m_store</name>
+        <qualifiedname>star::LayerMetadataAccessor::m_store</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="5057" column="17" bodyfile="StarDS/include/stards.h" bodystart="5057" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classstar_1_1LayerMetadataAccessor_1a62bb085380f2c9da054194f0ce301074" prot="private" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string star::LayerMetadataAccessor::m_layer_name</definition>
+        <argsstring></argsstring>
+        <name>m_layer_name</name>
+        <qualifiedname>star::LayerMetadataAccessor::m_layer_name</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="5058" column="17" bodyfile="StarDS/include/stards.h" bodystart="5058" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="private-func">
+      <memberdef kind="function" id="classstar_1_1LayerMetadataAccessor_1a051eccf5363ba1760e0686f9e8b636f3" prot="private" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::string</type>
+        <definition>std::string star::LayerMetadataAccessor::make_layer_key</definition>
+        <argsstring>(const std::string &amp;key) const</argsstring>
+        <name>make_layer_key</name>
+        <qualifiedname>star::LayerMetadataAccessor::make_layer_key</qualifiedname>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>key</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="5061" column="17" bodyfile="StarDS/include/stards.h" bodystart="5061" bodyend="5063"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="classstar_1_1LayerMetadataAccessor_1a0a12ebdf9bb4b864fc5cde54a6c55c56" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>star::LayerMetadataAccessor::LayerMetadataAccessor</definition>
+        <argsstring>(StarDataset *store, const std::string &amp;layer_name)</argsstring>
+        <name>LayerMetadataAccessor</name>
+        <qualifiedname>star::LayerMetadataAccessor::LayerMetadataAccessor</qualifiedname>
+        <param>
+          <type><ref refid="classstar_1_1StarDataset" kindref="compound">StarDataset</ref> *</type>
+          <declname>store</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>layer_name</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="5066" column="5" bodyfile="StarDS/include/stards.h" bodystart="5066" bodyend="5067"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1LayerMetadataAccessor_1a2ccac260d0b430e4105cab7eff665912" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename V</type>
+          </param>
+        </templateparamlist>
+        <type>void</type>
+        <definition>void star::LayerMetadataAccessor::put</definition>
+        <argsstring>(const std::string &amp;key, const V &amp;value)</argsstring>
+        <name>put</name>
+        <qualifiedname>star::LayerMetadataAccessor::put</qualifiedname>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>key</declname>
+        </param>
+        <param>
+          <type>const V &amp;</type>
+          <declname>value</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="5071" column="10" bodyfile="StarDS/include/stards.h" bodystart="9618" bodyend="9670"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1LayerMetadataAccessor_1afecd26ee2dba84ee7839b83a4e449334" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::shared_ptr&lt; <ref refid="structstar_1_1MetadataValue" kindref="compound">MetadataValue</ref> &gt;</type>
+        <definition>std::shared_ptr&lt; MetadataValue &gt; star::LayerMetadataAccessor::get</definition>
+        <argsstring>(const std::string &amp;key)</argsstring>
+        <name>get</name>
+        <qualifiedname>star::LayerMetadataAccessor::get</qualifiedname>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>key</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="5073" column="21" bodyfile="StarDS/include/stards.h" bodystart="9672" bodyend="9747"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1LayerMetadataAccessor_1a111474203bc21588363712997b63042e" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool star::LayerMetadataAccessor::contains</definition>
+        <argsstring>(const std::string &amp;key) const</argsstring>
+        <name>contains</name>
+        <qualifiedname>star::LayerMetadataAccessor::contains</qualifiedname>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>key</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="5074" column="10" bodyfile="StarDS/include/stards.h" bodystart="9749" bodyend="9757"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1LayerMetadataAccessor_1a583cd59cb1761c6c0bfbe962813d3f95" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void star::LayerMetadataAccessor::remove</definition>
+        <argsstring>(const std::string &amp;key)</argsstring>
+        <name>remove</name>
+        <qualifiedname>star::LayerMetadataAccessor::remove</qualifiedname>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>key</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="5075" column="10" bodyfile="StarDS/include/stards.h" bodystart="9759" bodyend="9782"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1LayerMetadataAccessor_1a6bd04f129de14a0edbb26bac474c5cc6" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::vector&lt; std::string &gt;</type>
+        <definition>std::vector&lt; std::string &gt; star::LayerMetadataAccessor::keys</definition>
+        <argsstring>() const</argsstring>
+        <name>keys</name>
+        <qualifiedname>star::LayerMetadataAccessor::keys</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="5076" column="17" bodyfile="StarDS/include/stards.h" bodystart="9784" bodyend="9813"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+<para>Metadata accessor for a specific layer with inheritance. </para>
+    </briefdescription>
+    <detaileddescription>
+<para>Provides layer-specific metadata operations with automatic fallback to base layer. When getting metadata, checks layer first, then falls back to base if not found. When putting metadata, stores in layer-specific namespace. </para>
+    </detaileddescription>
+    <location file="StarDS/include/stards.h" line="5055" column="1" bodyfile="StarDS/include/stards.h" bodystart="5055" bodyend="5077"/>
+    <listofallmembers>
+      <member refid="classstar_1_1LayerMetadataAccessor_1a111474203bc21588363712997b63042e" prot="public" virt="non-virtual"><scope>star::LayerMetadataAccessor</scope><name>contains</name></member>
+      <member refid="classstar_1_1LayerMetadataAccessor_1afecd26ee2dba84ee7839b83a4e449334" prot="public" virt="non-virtual"><scope>star::LayerMetadataAccessor</scope><name>get</name></member>
+      <member refid="classstar_1_1LayerMetadataAccessor_1a6bd04f129de14a0edbb26bac474c5cc6" prot="public" virt="non-virtual"><scope>star::LayerMetadataAccessor</scope><name>keys</name></member>
+      <member refid="classstar_1_1LayerMetadataAccessor_1a0a12ebdf9bb4b864fc5cde54a6c55c56" prot="public" virt="non-virtual"><scope>star::LayerMetadataAccessor</scope><name>LayerMetadataAccessor</name></member>
+      <member refid="classstar_1_1LayerMetadataAccessor_1a62bb085380f2c9da054194f0ce301074" prot="private" virt="non-virtual"><scope>star::LayerMetadataAccessor</scope><name>m_layer_name</name></member>
+      <member refid="classstar_1_1LayerMetadataAccessor_1a1e16886dc2434ef3aabaad9e71ec95c9" prot="private" virt="non-virtual"><scope>star::LayerMetadataAccessor</scope><name>m_store</name></member>
+      <member refid="classstar_1_1LayerMetadataAccessor_1a051eccf5363ba1760e0686f9e8b636f3" prot="private" virt="non-virtual"><scope>star::LayerMetadataAccessor</scope><name>make_layer_key</name></member>
+      <member refid="classstar_1_1LayerMetadataAccessor_1a2ccac260d0b430e4105cab7eff665912" prot="public" virt="non-virtual"><scope>star::LayerMetadataAccessor</scope><name>put</name></member>
+      <member refid="classstar_1_1LayerMetadataAccessor_1a583cd59cb1761c6c0bfbe962813d3f95" prot="public" virt="non-virtual"><scope>star::LayerMetadataAccessor</scope><name>remove</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

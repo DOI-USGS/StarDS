@@ -1,0 +1,82 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.17.0" xml:lang="en-US">
+  <compounddef id="structstar_1_1ByteUnshuffleSpec" kind="struct" language="C++" prot="public">
+    <compoundname>star::ByteUnshuffleSpec</compoundname>
+    <includes refid="stards_8h" local="no">stards.h</includes>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structstar_1_1ByteUnshuffleSpec_1a81e09506cf1d6ba54739e5e077148bc8" prot="public" static="no" mutable="no">
+        <type>bool</type>
+        <definition>bool star::ByteUnshuffleSpec::active</definition>
+        <argsstring></argsstring>
+        <name>active</name>
+        <qualifiedname>star::ByteUnshuffleSpec::active</qualifiedname>
+        <initializer>= false</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1000" column="12" bodyfile="StarDS/include/stards.h" bodystart="1000" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structstar_1_1ByteUnshuffleSpec_1a4990904d01cffc68e36ee32373697122" prot="public" static="no" mutable="no">
+        <type>bool</type>
+        <definition>bool star::ByteUnshuffleSpec::blocked</definition>
+        <argsstring></argsstring>
+        <name>blocked</name>
+        <qualifiedname>star::ByteUnshuffleSpec::blocked</qualifiedname>
+        <initializer>= false</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1001" column="12" bodyfile="StarDS/include/stards.h" bodystart="1001" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structstar_1_1ByteUnshuffleSpec_1a0cc1dd76b4a912e45a68a1452631a10e" prot="public" static="no" mutable="no">
+        <type>size_t</type>
+        <definition>size_t star::ByteUnshuffleSpec::elem_size</definition>
+        <argsstring></argsstring>
+        <name>elem_size</name>
+        <qualifiedname>star::ByteUnshuffleSpec::elem_size</qualifiedname>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1002" column="12" bodyfile="StarDS/include/stards.h" bodystart="1002" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structstar_1_1ByteUnshuffleSpec_1a010d0f5d06cb533b1bfb4c2498fe590e" prot="public" static="no" mutable="no">
+        <type>size_t</type>
+        <definition>size_t star::ByteUnshuffleSpec::block_size</definition>
+        <argsstring></argsstring>
+        <name>block_size</name>
+        <qualifiedname>star::ByteUnshuffleSpec::block_size</qualifiedname>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1003" column="12" bodyfile="StarDS/include/stards.h" bodystart="1003" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+<para>Describes an in-place byte-unshuffle to fuse into an array&apos;s fill. </para>
+    </briefdescription>
+    <detaileddescription>
+<para>On the read hot path the decompressed bytes of a shuffle-codec array are byte-planes that must be transposed back to element order before use. Rather than unshuffle into a scratch buffer and then memcpy that buffer into the <ref refid="classstar_1_1NDArray" kindref="compound">NDArray</ref> (two full passes), deserialize_typed_value_bytes() can unshuffle straight into the freshly allocated <ref refid="classstar_1_1NDArray" kindref="compound">NDArray</ref> storage (one pass) when handed one of these. <computeroutput>active == false</computeroutput> means &quot;no shuffle — plain memcpy&quot;, preserving the exact behavior of the non-shuffle codecs. </para>
+    </detaileddescription>
+    <location file="StarDS/include/stards.h" line="999" column="1" bodyfile="StarDS/include/stards.h" bodystart="999" bodyend="1004"/>
+    <listofallmembers>
+      <member refid="structstar_1_1ByteUnshuffleSpec_1a81e09506cf1d6ba54739e5e077148bc8" prot="public" virt="non-virtual"><scope>star::ByteUnshuffleSpec</scope><name>active</name></member>
+      <member refid="structstar_1_1ByteUnshuffleSpec_1a010d0f5d06cb533b1bfb4c2498fe590e" prot="public" virt="non-virtual"><scope>star::ByteUnshuffleSpec</scope><name>block_size</name></member>
+      <member refid="structstar_1_1ByteUnshuffleSpec_1a4990904d01cffc68e36ee32373697122" prot="public" virt="non-virtual"><scope>star::ByteUnshuffleSpec</scope><name>blocked</name></member>
+      <member refid="structstar_1_1ByteUnshuffleSpec_1a0cc1dd76b4a912e45a68a1452631a10e" prot="public" virt="non-virtual"><scope>star::ByteUnshuffleSpec</scope><name>elem_size</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

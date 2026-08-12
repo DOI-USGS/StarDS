@@ -2,6 +2,11 @@
 # Class Member Enums
 
 
-Nothing related to **Class Member Enums** found.
+
+## t
+
+* **Type** ([**star::FilePathInfo**](structstar_1_1FilePathInfo.md))
+
+
 
 

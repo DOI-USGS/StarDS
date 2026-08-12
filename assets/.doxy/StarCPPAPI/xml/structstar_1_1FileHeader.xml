@@ -1,0 +1,215 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.17.0" xml:lang="en-US">
+  <compounddef id="structstar_1_1FileHeader" kind="struct" language="C++" prot="public">
+    <compoundname>star::FileHeader</compoundname>
+    <includes refid="stards_8h" local="no">stards.h</includes>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structstar_1_1FileHeader_1a4f0dbe4b0f8e0ac98e7bf4cef05402ff" prot="public" static="no" mutable="no">
+        <type>char</type>
+        <definition>char star::FileHeader::magic[MAGIC_STRING_LENGTH]</definition>
+        <argsstring>[MAGIC_STRING_LENGTH]</argsstring>
+        <name>magic</name>
+        <qualifiedname>star::FileHeader::magic</qualifiedname>
+        <initializer>= {&apos;S&apos;,&apos;T&apos;,&apos;A&apos;,&apos;R&apos;,&apos;D&apos;,&apos;S&apos;}</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="332" column="10" bodyfile="StarDS/include/stards.h" bodystart="332" bodyend="332"/>
+      </memberdef>
+      <memberdef kind="variable" id="structstar_1_1FileHeader_1a5dd676c90148cb14eb8e5f7bf6a69780" prot="public" static="no" mutable="no">
+        <type>uint8_t</type>
+        <definition>uint8_t star::FileHeader::format_version</definition>
+        <argsstring></argsstring>
+        <name>format_version</name>
+        <qualifiedname>star::FileHeader::format_version</qualifiedname>
+        <initializer>= 1</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="333" column="13" bodyfile="StarDS/include/stards.h" bodystart="333" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structstar_1_1FileHeader_1af36f39dd3128f29f071401ddf161ba64" prot="public" static="no" mutable="no">
+        <type>uint64_t</type>
+        <definition>uint64_t star::FileHeader::header_size</definition>
+        <argsstring></argsstring>
+        <name>header_size</name>
+        <qualifiedname>star::FileHeader::header_size</qualifiedname>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="334" column="14" bodyfile="StarDS/include/stards.h" bodystart="334" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structstar_1_1FileHeader_1ae970e5fa5ddaccbf45a2c00da1ea4836" prot="public" static="no" mutable="no">
+        <type>uint64_t</type>
+        <definition>uint64_t star::FileHeader::entry_count</definition>
+        <argsstring></argsstring>
+        <name>entry_count</name>
+        <qualifiedname>star::FileHeader::entry_count</qualifiedname>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="335" column="14" bodyfile="StarDS/include/stards.h" bodystart="335" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structstar_1_1FileHeader_1a0b59a500d63910f405964bfb6b13e9e0" prot="public" static="no" mutable="no">
+        <type>uint32_t</type>
+        <definition>uint32_t star::FileHeader::layer_count</definition>
+        <argsstring></argsstring>
+        <name>layer_count</name>
+        <qualifiedname>star::FileHeader::layer_count</qualifiedname>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="336" column="14" bodyfile="StarDS/include/stards.h" bodystart="336" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structstar_1_1FileHeader_1aafc92f7e327a54697ea2610d1b34e9b8" prot="public" static="no" mutable="no">
+        <type>uint32_t</type>
+        <definition>uint32_t star::FileHeader::key_registry_count</definition>
+        <argsstring></argsstring>
+        <name>key_registry_count</name>
+        <qualifiedname>star::FileHeader::key_registry_count</qualifiedname>
+        <initializer>= 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="337" column="14" bodyfile="StarDS/include/stards.h" bodystart="337" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="structstar_1_1FileHeader_1ad1be5336d371b47428079330330f142d" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool star::FileHeader::isValid</definition>
+        <argsstring>() const</argsstring>
+        <name>isValid</name>
+        <qualifiedname>star::FileHeader::isValid</qualifiedname>
+        <briefdescription>
+<para>Check if magic string is valid. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="342" column="10" bodyfile="StarDS/include/stards.h" bodystart="342" bodyend="344"/>
+      </memberdef>
+      <memberdef kind="function" id="structstar_1_1FileHeader_1ab14b5fdcf23158435e4e9c145e8a5cf4" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::string</type>
+        <definition>std::string star::FileHeader::getVersionString</definition>
+        <argsstring>() const</argsstring>
+        <name>getVersionString</name>
+        <qualifiedname>star::FileHeader::getVersionString</qualifiedname>
+        <briefdescription>
+<para>Get format version string. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="349" column="17" bodyfile="StarDS/include/stards.h" bodystart="349" bodyend="351"/>
+      </memberdef>
+      <memberdef kind="function" id="structstar_1_1FileHeader_1a49ba68460959dc42f4171d97e1dbd4b6" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void star::FileHeader::write</definition>
+        <argsstring>(std::ostream &amp;os) const</argsstring>
+        <name>write</name>
+        <qualifiedname>star::FileHeader::write</qualifiedname>
+        <param>
+          <type>std::ostream &amp;</type>
+          <declname>os</declname>
+        </param>
+        <briefdescription>
+<para>Write header to stream. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="363" column="10" bodyfile="StarDS/include/stards.h" bodystart="363" bodyend="370"/>
+      </memberdef>
+      <memberdef kind="function" id="structstar_1_1FileHeader_1adf76d75cd9d85a702844e1e8a6efd9dc" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void star::FileHeader::read</definition>
+        <argsstring>(std::istream &amp;is)</argsstring>
+        <name>read</name>
+        <qualifiedname>star::FileHeader::read</qualifiedname>
+        <param>
+          <type>std::istream &amp;</type>
+          <declname>is</declname>
+        </param>
+        <briefdescription>
+<para>Read header from stream. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="375" column="10" bodyfile="StarDS/include/stards.h" bodystart="375" bodyend="382"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-static-func">
+      <memberdef kind="function" id="structstar_1_1FileHeader_1a06dc1c5ab6013f23eba1c1d49cf694be" prot="public" static="yes" constexpr="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>size_t</type>
+        <definition>static constexpr size_t star::FileHeader::size</definition>
+        <argsstring>()</argsstring>
+        <name>size</name>
+        <qualifiedname>star::FileHeader::size</qualifiedname>
+        <briefdescription>
+<para>Get fixed size of <ref refid="structstar_1_1FileHeader" kindref="compound">FileHeader</ref> struct. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="356" column="29" bodyfile="StarDS/include/stards.h" bodystart="356" bodyend="358"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+<para>File header structure (31 bytes fixed size). </para>
+    </briefdescription>
+    <detaileddescription>
+<para>Layout:<itemizedlist>
+<listitem><para>magic[6]: &quot;STARDS&quot; magic string (6 bytes)</para>
+</listitem><listitem><para>format_version: File format version (1 byte, currently 1)</para>
+</listitem><listitem><para>header_size: Total size of header + index section (8 bytes)</para>
+</listitem><listitem><para>entry_count: Number of entries in the index (8 bytes)</para>
+</listitem><listitem><para>layer_count: Number of named layers, excluding <bold>base</bold> (4 bytes)</para>
+</listitem><listitem><para>key_registry_count: Number of keys in the global key registry (4 bytes)</para>
+</listitem></itemizedlist>
+</para>
+<para>Note: Software/library version is NOT stored in the file, only the format version. </para>
+    </detaileddescription>
+    <location file="StarDS/include/stards.h" line="331" column="1" bodyfile="StarDS/include/stards.h" bodystart="331" bodyend="383"/>
+    <listofallmembers>
+      <member refid="structstar_1_1FileHeader_1ae970e5fa5ddaccbf45a2c00da1ea4836" prot="public" virt="non-virtual"><scope>star::FileHeader</scope><name>entry_count</name></member>
+      <member refid="structstar_1_1FileHeader_1a5dd676c90148cb14eb8e5f7bf6a69780" prot="public" virt="non-virtual"><scope>star::FileHeader</scope><name>format_version</name></member>
+      <member refid="structstar_1_1FileHeader_1ab14b5fdcf23158435e4e9c145e8a5cf4" prot="public" virt="non-virtual"><scope>star::FileHeader</scope><name>getVersionString</name></member>
+      <member refid="structstar_1_1FileHeader_1af36f39dd3128f29f071401ddf161ba64" prot="public" virt="non-virtual"><scope>star::FileHeader</scope><name>header_size</name></member>
+      <member refid="structstar_1_1FileHeader_1ad1be5336d371b47428079330330f142d" prot="public" virt="non-virtual"><scope>star::FileHeader</scope><name>isValid</name></member>
+      <member refid="structstar_1_1FileHeader_1aafc92f7e327a54697ea2610d1b34e9b8" prot="public" virt="non-virtual"><scope>star::FileHeader</scope><name>key_registry_count</name></member>
+      <member refid="structstar_1_1FileHeader_1a0b59a500d63910f405964bfb6b13e9e0" prot="public" virt="non-virtual"><scope>star::FileHeader</scope><name>layer_count</name></member>
+      <member refid="structstar_1_1FileHeader_1a4f0dbe4b0f8e0ac98e7bf4cef05402ff" prot="public" virt="non-virtual"><scope>star::FileHeader</scope><name>magic</name></member>
+      <member refid="structstar_1_1FileHeader_1adf76d75cd9d85a702844e1e8a6efd9dc" prot="public" virt="non-virtual"><scope>star::FileHeader</scope><name>read</name></member>
+      <member refid="structstar_1_1FileHeader_1a06dc1c5ab6013f23eba1c1d49cf694be" prot="public" virt="non-virtual"><scope>star::FileHeader</scope><name>size</name></member>
+      <member refid="structstar_1_1FileHeader_1a49ba68460959dc42f4171d97e1dbd4b6" prot="public" virt="non-virtual"><scope>star::FileHeader</scope><name>write</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,81 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.17.0" xml:lang="en-US">
+  <compounddef id="structstar_1_1Slice" kind="struct" language="C++" prot="public">
+    <compoundname>star::Slice</compoundname>
+    <includes refid="stards_8h" local="no">stards.h</includes>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structstar_1_1Slice_1addeb9b03be71fff0a3f0787820512ab3" prot="public" static="no" mutable="no">
+        <type>size_t</type>
+        <definition>size_t star::Slice::start</definition>
+        <argsstring></argsstring>
+        <name>start</name>
+        <qualifiedname>star::Slice::start</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1251" column="12" bodyfile="StarDS/include/stards.h" bodystart="1251" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structstar_1_1Slice_1a3e9c16e88dcdff520ed785dcfd840a4f" prot="public" static="no" mutable="no">
+        <type>size_t</type>
+        <definition>size_t star::Slice::stop</definition>
+        <argsstring></argsstring>
+        <name>stop</name>
+        <qualifiedname>star::Slice::stop</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1252" column="12" bodyfile="StarDS/include/stards.h" bodystart="1252" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structstar_1_1Slice_1ae913cbab6390d1ea35b66ad5621c3ca2" prot="public" static="no" mutable="no">
+        <type>size_t</type>
+        <definition>size_t star::Slice::step</definition>
+        <argsstring></argsstring>
+        <name>step</name>
+        <qualifiedname>star::Slice::step</qualifiedname>
+        <initializer>= 1</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1253" column="12" bodyfile="StarDS/include/stards.h" bodystart="1253" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="structstar_1_1Slice_1a51b695be914a0845aaf774925d15ab52" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>size_t</type>
+        <definition>size_t star::Slice::length</definition>
+        <argsstring>() const</argsstring>
+        <name>length</name>
+        <qualifiedname>star::Slice::length</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1256" column="12" bodyfile="StarDS/include/stards.h" bodystart="1256" bodyend="1259"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+<para>Describes a slice along one dimension (Python-style slicing) Plain struct - no methods except helpers, just data. </para>
+    </briefdescription>
+    <detaileddescription>
+<para>Usage: <ref refid="structstar_1_1Slice" kindref="compound">Slice</ref>{100, 200} // start=100, stop=200, step=1 (default) <ref refid="structstar_1_1Slice" kindref="compound">Slice</ref>{100, 200, 2} // start=100, stop=200, step=2 (every other) </para>
+    </detaileddescription>
+    <location file="StarDS/include/stards.h" line="1250" column="1" bodyfile="StarDS/include/stards.h" bodystart="1250" bodyend="1260"/>
+    <listofallmembers>
+      <member refid="structstar_1_1Slice_1a51b695be914a0845aaf774925d15ab52" prot="public" virt="non-virtual"><scope>star::Slice</scope><name>length</name></member>
+      <member refid="structstar_1_1Slice_1addeb9b03be71fff0a3f0787820512ab3" prot="public" virt="non-virtual"><scope>star::Slice</scope><name>start</name></member>
+      <member refid="structstar_1_1Slice_1ae913cbab6390d1ea35b66ad5621c3ca2" prot="public" virt="non-virtual"><scope>star::Slice</scope><name>step</name></member>
+      <member refid="structstar_1_1Slice_1a3e9c16e88dcdff520ed785dcfd840a4f" prot="public" virt="non-virtual"><scope>star::Slice</scope><name>stop</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

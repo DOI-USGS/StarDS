@@ -1,0 +1,345 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.17.0" xml:lang="en-US">
+  <compounddef id="classstar_1_1ThreadPool" kind="class" language="C++" prot="public">
+    <compoundname>star::ThreadPool</compoundname>
+    <includes refid="stards_8h" local="no">stards.h</includes>
+    <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classstar_1_1ThreadPool_1a76b2fd6e671a580b606209114f9d82c5" prot="private" static="no" mutable="no">
+        <type>std::vector&lt; std::thread &gt;</type>
+        <definition>std::vector&lt;std::thread&gt; star::ThreadPool::workers</definition>
+        <argsstring></argsstring>
+        <name>workers</name>
+        <qualifiedname>star::ThreadPool::workers</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="4203" column="17" bodyfile="StarDS/include/stards.h" bodystart="4203" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classstar_1_1ThreadPool_1ab596de65875f99930ae3141b55239a23" prot="private" static="no" mutable="no">
+        <type>std::queue&lt; std::function&lt; void()&gt; &gt;</type>
+        <definition>std::queue&lt;std::function&lt;void()&gt; &gt; star::ThreadPool::tasks</definition>
+        <argsstring></argsstring>
+        <name>tasks</name>
+        <qualifiedname>star::ThreadPool::tasks</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="4204" column="16" bodyfile="StarDS/include/stards.h" bodystart="4204" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classstar_1_1ThreadPool_1ae8666e7ffa45c3a77c262c91b8e573bb" prot="private" static="no" mutable="no">
+        <type>std::mutex</type>
+        <definition>std::mutex star::ThreadPool::queue_mutex</definition>
+        <argsstring></argsstring>
+        <name>queue_mutex</name>
+        <qualifiedname>star::ThreadPool::queue_mutex</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="4205" column="16" bodyfile="StarDS/include/stards.h" bodystart="4205" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classstar_1_1ThreadPool_1a122bdbf6d93d03b4ca58cb45560cb016" prot="private" static="no" mutable="no">
+        <type>std::condition_variable</type>
+        <definition>std::condition_variable star::ThreadPool::condition</definition>
+        <argsstring></argsstring>
+        <name>condition</name>
+        <qualifiedname>star::ThreadPool::condition</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="4206" column="29" bodyfile="StarDS/include/stards.h" bodystart="4206" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classstar_1_1ThreadPool_1a9a121716f1c110d4095bf5ce0cc9a76c" prot="private" static="no" mutable="no">
+        <type>bool</type>
+        <definition>bool star::ThreadPool::stop</definition>
+        <argsstring></argsstring>
+        <name>stop</name>
+        <qualifiedname>star::ThreadPool::stop</qualifiedname>
+        <initializer>= false</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="4207" column="10" bodyfile="StarDS/include/stards.h" bodystart="4207" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="classstar_1_1ThreadPool_1ab5421e3dea6950c267608dcfccdc254e" prot="public" static="no" const="no" explicit="yes" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>star::ThreadPool::ThreadPool</definition>
+        <argsstring>(size_t num_threads=0)</argsstring>
+        <name>ThreadPool</name>
+        <qualifiedname>star::ThreadPool::ThreadPool</qualifiedname>
+        <param>
+          <type>size_t</type>
+          <declname>num_threads</declname>
+          <defval>0</defval>
+        </param>
+        <briefdescription>
+<para>Construct thread pool. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>num_threads</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Number of worker threads (0 = auto-detect) </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="4090" column="14" bodyfile="StarDS/include/stards.h" bodystart="4090" bodyend="4099"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1ThreadPool_1a2a9e6fd15e414dffae69e9a5ebfe42d0" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>star::ThreadPool::~ThreadPool</definition>
+        <argsstring>()</argsstring>
+        <name>~ThreadPool</name>
+        <qualifiedname>star::ThreadPool::~ThreadPool</qualifiedname>
+        <briefdescription>
+<para>Destructor - stops all worker threads. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="4104" column="5" bodyfile="StarDS/include/stards.h" bodystart="4104" bodyend="4115"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1ThreadPool_1a383df2d4ade87fed6d93debff846f8d6" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>star::ThreadPool::ThreadPool</definition>
+        <argsstring>(const ThreadPool &amp;)=delete</argsstring>
+        <name>ThreadPool</name>
+        <qualifiedname>star::ThreadPool::ThreadPool</qualifiedname>
+        <param>
+          <type>const ThreadPool &amp;</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="4118" column="5"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1ThreadPool_1a0081e4c508801510309f7785865b30a5" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type><ref refid="classstar_1_1ThreadPool_1ab5421e3dea6950c267608dcfccdc254e" kindref="member">ThreadPool</ref> &amp;</type>
+        <definition>ThreadPool &amp; star::ThreadPool::operator=</definition>
+        <argsstring>(const ThreadPool &amp;)=delete</argsstring>
+        <name>operator=</name>
+        <qualifiedname>star::ThreadPool::operator=</qualifiedname>
+        <param>
+          <type>const <ref refid="classstar_1_1ThreadPool_1ab5421e3dea6950c267608dcfccdc254e" kindref="member">ThreadPool</ref> &amp;</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="4119" column="16"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1ThreadPool_1a8da1bdfe6bcc8c49a8f0530d6ad20c61" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>star::ThreadPool::ThreadPool</definition>
+        <argsstring>(ThreadPool &amp;&amp;)=delete</argsstring>
+        <name>ThreadPool</name>
+        <qualifiedname>star::ThreadPool::ThreadPool</qualifiedname>
+        <param>
+          <type>ThreadPool &amp;&amp;</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="4120" column="5"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1ThreadPool_1acf2a0b8267ceca1b8dc107626c05c638" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type><ref refid="classstar_1_1ThreadPool_1ab5421e3dea6950c267608dcfccdc254e" kindref="member">ThreadPool</ref> &amp;</type>
+        <definition>ThreadPool &amp; star::ThreadPool::operator=</definition>
+        <argsstring>(ThreadPool &amp;&amp;)=delete</argsstring>
+        <name>operator=</name>
+        <qualifiedname>star::ThreadPool::operator=</qualifiedname>
+        <param>
+          <type><ref refid="classstar_1_1ThreadPool_1ab5421e3dea6950c267608dcfccdc254e" kindref="member">ThreadPool</ref> &amp;&amp;</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="4121" column="16"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1ThreadPool_1a4e5464b540d16d7438f321cbbab287aa" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename Func</type>
+          </param>
+        </templateparamlist>
+        <type>void</type>
+        <definition>void star::ThreadPool::parallel_for</definition>
+        <argsstring>(size_t start, size_t end, Func &amp;&amp;func)</argsstring>
+        <name>parallel_for</name>
+        <qualifiedname>star::ThreadPool::parallel_for</qualifiedname>
+        <param>
+          <type>size_t</type>
+          <declname>start</declname>
+        </param>
+        <param>
+          <type>size_t</type>
+          <declname>end</declname>
+        </param>
+        <param>
+          <type>Func &amp;&amp;</type>
+          <declname>func</declname>
+        </param>
+        <briefdescription>
+<para>Execute function in parallel for range [start, end). </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>start</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Start index (inclusive) </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>end</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>End index (exclusive) </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>func</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Function to execute for each index </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="4130" column="10" bodyfile="StarDS/include/stards.h" bodystart="4130" bodyend="4150"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1ThreadPool_1a8eda89a0062e8ff4d5ac15d8862269b0" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename Func</type>
+          </param>
+        </templateparamlist>
+        <type>std::future&lt; void &gt;</type>
+        <definition>std::future&lt; void &gt; star::ThreadPool::enqueue</definition>
+        <argsstring>(Func &amp;&amp;f)</argsstring>
+        <name>enqueue</name>
+        <qualifiedname>star::ThreadPool::enqueue</qualifiedname>
+        <param>
+          <type>Func &amp;&amp;</type>
+          <declname>f</declname>
+        </param>
+        <briefdescription>
+<para>Enqueue a task for execution. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>f</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Function to execute </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>Future for result </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="4158" column="17" bodyfile="StarDS/include/stards.h" bodystart="4158" bodyend="4172"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1ThreadPool_1afcb6ef96de3891f175867101419191b2" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>size_t</type>
+        <definition>size_t star::ThreadPool::size</definition>
+        <argsstring>() const</argsstring>
+        <name>size</name>
+        <qualifiedname>star::ThreadPool::size</qualifiedname>
+        <briefdescription>
+<para>Get number of worker threads. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="4177" column="12" bodyfile="StarDS/include/stards.h" bodystart="4177" bodyend="4177"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="private-func">
+      <memberdef kind="function" id="classstar_1_1ThreadPool_1a57ce88c659b32742c34d86bf397c6c8c" prot="private" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void star::ThreadPool::worker_thread</definition>
+        <argsstring>()</argsstring>
+        <name>worker_thread</name>
+        <qualifiedname>star::ThreadPool::worker_thread</qualifiedname>
+        <briefdescription>
+<para>Worker thread main loop. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="4183" column="10" bodyfile="StarDS/include/stards.h" bodystart="4183" bodyend="4201"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+<para>Simple thread pool for parallel block operations. </para>
+    </briefdescription>
+    <detaileddescription>
+<para>Provides work-stealing task execution for parallel compression/decompression. Thread-safe and exception-safe. </para>
+    </detaileddescription>
+    <location file="StarDS/include/stards.h" line="4084" column="1" bodyfile="StarDS/include/stards.h" bodystart="4084" bodyend="4208"/>
+    <listofallmembers>
+      <member refid="classstar_1_1ThreadPool_1a122bdbf6d93d03b4ca58cb45560cb016" prot="private" virt="non-virtual"><scope>star::ThreadPool</scope><name>condition</name></member>
+      <member refid="classstar_1_1ThreadPool_1a8eda89a0062e8ff4d5ac15d8862269b0" prot="public" virt="non-virtual"><scope>star::ThreadPool</scope><name>enqueue</name></member>
+      <member refid="classstar_1_1ThreadPool_1a0081e4c508801510309f7785865b30a5" prot="public" virt="non-virtual"><scope>star::ThreadPool</scope><name>operator=</name></member>
+      <member refid="classstar_1_1ThreadPool_1acf2a0b8267ceca1b8dc107626c05c638" prot="public" virt="non-virtual"><scope>star::ThreadPool</scope><name>operator=</name></member>
+      <member refid="classstar_1_1ThreadPool_1a4e5464b540d16d7438f321cbbab287aa" prot="public" virt="non-virtual"><scope>star::ThreadPool</scope><name>parallel_for</name></member>
+      <member refid="classstar_1_1ThreadPool_1ae8666e7ffa45c3a77c262c91b8e573bb" prot="private" virt="non-virtual"><scope>star::ThreadPool</scope><name>queue_mutex</name></member>
+      <member refid="classstar_1_1ThreadPool_1afcb6ef96de3891f175867101419191b2" prot="public" virt="non-virtual"><scope>star::ThreadPool</scope><name>size</name></member>
+      <member refid="classstar_1_1ThreadPool_1a9a121716f1c110d4095bf5ce0cc9a76c" prot="private" virt="non-virtual"><scope>star::ThreadPool</scope><name>stop</name></member>
+      <member refid="classstar_1_1ThreadPool_1ab596de65875f99930ae3141b55239a23" prot="private" virt="non-virtual"><scope>star::ThreadPool</scope><name>tasks</name></member>
+      <member refid="classstar_1_1ThreadPool_1ab5421e3dea6950c267608dcfccdc254e" prot="public" virt="non-virtual"><scope>star::ThreadPool</scope><name>ThreadPool</name></member>
+      <member refid="classstar_1_1ThreadPool_1a383df2d4ade87fed6d93debff846f8d6" prot="public" virt="non-virtual"><scope>star::ThreadPool</scope><name>ThreadPool</name></member>
+      <member refid="classstar_1_1ThreadPool_1a8da1bdfe6bcc8c49a8f0530d6ad20c61" prot="public" virt="non-virtual"><scope>star::ThreadPool</scope><name>ThreadPool</name></member>
+      <member refid="classstar_1_1ThreadPool_1a57ce88c659b32742c34d86bf397c6c8c" prot="private" virt="non-virtual"><scope>star::ThreadPool</scope><name>worker_thread</name></member>
+      <member refid="classstar_1_1ThreadPool_1a76b2fd6e671a580b606209114f9d82c5" prot="private" virt="non-virtual"><scope>star::ThreadPool</scope><name>workers</name></member>
+      <member refid="classstar_1_1ThreadPool_1a2a9e6fd15e414dffae69e9a5ebfe42d0" prot="public" virt="non-virtual"><scope>star::ThreadPool</scope><name>~ThreadPool</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

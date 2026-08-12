@@ -1,0 +1,3171 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="STAR (Simple Tensors Arrays and Rasters) — persistent N-dimensional arrays with compression and cloud storage.">
+      
+      
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Namespace star - StarDS Manual</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+  
+  
+  
+  
+  <style>:root{--md-annotation-icon:url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cpath%20d%3D%22M22%2012a10%2010%200%200%201-10%2010A10%2010%200%200%201%202%2012%2010%2010%200%200%201%2012%202a10%2010%200%200%201%2010%2010m-12%206%206-6-6-6-1.4%201.4%204.6%204.6-4.6%204.6z%22/%3E%3C/svg%3E');}</style>
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="deep-orange">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#namespace-star" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="StarDS Manual" class="md-header__button md-logo" aria-label="StarDS Manual" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            StarDS Manual
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Namespace star
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="deep-orange"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="deep-orange"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/DOI-USGS/StarDS" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../getting-started/installation/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Getting Started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../guides/layers/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Guides
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../python-api/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Python API
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../cpp-api/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  [ C++ API ]
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../cli/stardsls/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  CLI Tools
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../reference/format-spec/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="https://astrogeology.usgs.gov/docs/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  [ USGS Astrogeology Docs ]
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="StarDS Manual" class="md-nav__button md-logo" aria-label="StarDS Manual" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    StarDS Manual
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/DOI-USGS/StarDS" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting Started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quick Start
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/concepts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Concepts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/layers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Layers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/compression/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Compression
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/cloud-storage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cloud Storage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/slicing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Slicing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/threading/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Threading
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../python-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../cpp-api/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    [ C++ API ]
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    [ C++ API ]
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../classes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Classes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../annotated/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Class List
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../namespaces/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Namespaces
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../files/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Files
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI Tools
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    CLI Tools
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cli/stardsls/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    stardsls
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cli/stards-translate/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    stards_translate
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/format-spec/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Format Spec
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/api-updates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Updates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://astrogeology.usgs.gov/docs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    [ USGS Astrogeology Docs ]
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+  
+
+<nav class="md-nav md-nav--secondary" aria-label="On this page">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      On this page
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#namespaces" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Namespaces
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#classes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Classes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#public-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Public Types
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#public-attributes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Public Attributes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#public-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Public Functions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#public-static-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Public Static Functions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#public-types-documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Public Types Documentation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Public Types Documentation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#enum-compressionalgorithm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        enum CompressionAlgorithm
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#enum-datatype" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        enum DataType
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#enum-filemode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        enum FileMode
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#enum-storageclass" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        enum StorageClass
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#enum-storagelocation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        enum StorageLocation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#typedef-valuevariant" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        typedef ValueVariant
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#public-attributes-documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Public Attributes Documentation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Public Attributes Documentation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#variable-magic_string" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        variable MAGIC_STRING
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-magic_string_length" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        variable MAGIC_STRING_LENGTH
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-project_name" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        variable PROJECT_NAME
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-g_min_blocks_for_threading" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        variable g_min_blocks_for_threading
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-g_min_bytes_for_threading" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        variable g_min_bytes_for_threading
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-g_network_request_count" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        variable g_network_request_count
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variable-g_num_threads" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        variable g_num_threads
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#public-functions-documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Public Functions Documentation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Public Functions Documentation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#function-base_compression" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        function base_compression
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-byte_shuffle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        function byte_shuffle
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-byte_shuffle_blocked" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        function byte_shuffle_blocked
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-byte_unshuffle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        function byte_unshuffle
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-byte_unshuffle_blocked" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        function byte_unshuffle_blocked
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-compressblocks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        function compressBlocks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-compressblocksbuffered" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        function compressBlocksBuffered
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-datatype_size" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        function datatype_size
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-datatype_to_string" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        function datatype_to_string
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-decompressblocks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        function decompressBlocks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-decompressblocksinto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        function decompressBlocksInto
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-estimatecompressedsize" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        function estimateCompressedSize
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-getlibraryversion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        function getLibraryVersion
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-getnetworkrequestcount" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        function getNetworkRequestCount
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-getnumthreads" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        function getNumThreads
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-gets3region" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        function getS3Region
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-hash_key" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        function hash_key
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-parsefilepath" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        function parseFilePath
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-parsemodestring" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        function parseModeString
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-read_le" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        function read_le
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-read_u16" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        function read_u16
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-read_u32" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        function read_u32
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-read_u64" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        function read_u64
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-read_u8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        function read_u8
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-resetnetworkrequestcount" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        function resetNetworkRequestCount
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-setminblocksforthreading" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        function setMinBlocksForThreading
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-setminbytesforthreading" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        function setMinBytesForThreading
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-setnumthreads" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        function setNumThreads
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-slice_all" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        function slice_all
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-slice_range" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        function slice_range
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-star_curl_perform" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        function star_curl_perform
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-uses_block_shuffle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        function uses_block_shuffle
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-uses_global_shuffle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        function uses_global_shuffle
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-uses_shuffle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        function uses_shuffle
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-write_le" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        function write_le
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-write_u16" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        function write_u16
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-write_u32" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        function write_u32
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-write_u64" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        function write_u64
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-write_u8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        function write_u8
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#public-static-functions-documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Public Static Functions Documentation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Public Static Functions Documentation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#function-extract_dtype_from_variant" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        function extract_dtype_from_variant
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-extract_shape_from_variant" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        function extract_shape_from_variant
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+                
+
+
+
+  
+
+
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="namespace-star">Namespace star<a class="headerlink" href="#namespace-star" title="Permanent link">&para;</a></h1>
+<p><a href="../namespaces/"><strong>Namespace List</strong></a> <strong>&gt;</strong> <a href="./"><strong>star</strong></a></p>
+<h2 id="namespaces">Namespaces<a class="headerlink" href="#namespaces" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: right;">Type</th>
+<th style="text-align: left;">Name</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;">namespace</td>
+<td style="text-align: left;"><a href="../namespacestar_1_1logger/"><strong>logger</strong></a> <br></td>
+</tr>
+<tr>
+<td style="text-align: right;">namespace</td>
+<td style="text-align: left;"><a href="../namespacestar_1_1s3crypto/"><strong>s3crypto</strong></a> <br></td>
+</tr>
+<tr>
+<td style="text-align: right;">namespace</td>
+<td style="text-align: left;"><a href="../namespacestar_1_1shuffle__detail/"><strong>shuffle_detail</strong></a> <br></td>
+</tr>
+</tbody>
+</table>
+<h2 id="classes">Classes<a class="headerlink" href="#classes" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: right;">Type</th>
+<th style="text-align: left;">Name</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;">class</td>
+<td style="text-align: left;"><a href="../classstar_1_1AWSConfigParser/"><strong>AWSConfigParser</strong></a> <br><em>AWS Configuration file parser.</em></td>
+</tr>
+<tr>
+<td style="text-align: right;">class</td>
+<td style="text-align: left;"><a href="../classstar_1_1AWSTokenCache/"><strong>AWSTokenCache</strong></a> <br><em>AWS SSO Token Cache reader.</em></td>
+</tr>
+<tr>
+<td style="text-align: right;">class</td>
+<td style="text-align: left;"><a href="../classstar_1_1AWSV4Signer/"><strong>AWSV4Signer</strong></a> <br><em>AWS Signature Version 4 signer.</em></td>
+</tr>
+<tr>
+<td style="text-align: right;">struct</td>
+<td style="text-align: left;"><a href="../structstar_1_1BlockInfo/"><strong>BlockInfo</strong></a> <br><em>Metadata for a single compressed block.</em></td>
+</tr>
+<tr>
+<td style="text-align: right;">struct</td>
+<td style="text-align: left;"><a href="../structstar_1_1BlockMap/"><strong>BlockMap</strong></a> <br><em>Maps logical elements to physical blocks.</em></td>
+</tr>
+<tr>
+<td style="text-align: right;">struct</td>
+<td style="text-align: left;"><a href="../structstar_1_1ByteUnshuffleSpec/"><strong>ByteUnshuffleSpec</strong></a> <br><em>Describes an in-place byte-unshuffle to fuse into an array's fill.</em></td>
+</tr>
+<tr>
+<td style="text-align: right;">struct</td>
+<td style="text-align: left;"><a href="../structstar_1_1ColdStorage/"><strong>ColdStorage</strong></a> <br><em>Cold storage - infrequently accessed data.</em></td>
+</tr>
+<tr>
+<td style="text-align: right;">struct</td>
+<td style="text-align: left;"><a href="../structstar_1_1ExtractionPlan/"><strong>ExtractionPlan</strong></a> <br><em>Describes how to extract elements from blocks.</em></td>
+</tr>
+<tr>
+<td style="text-align: right;">struct</td>
+<td style="text-align: left;"><a href="../structstar_1_1FileHeader/"><strong>FileHeader</strong></a> <br><em>File header structure (31 bytes fixed size).</em></td>
+</tr>
+<tr>
+<td style="text-align: right;">struct</td>
+<td style="text-align: left;"><a href="../structstar_1_1FilePathInfo/"><strong>FilePathInfo</strong></a> <br></td>
+</tr>
+<tr>
+<td style="text-align: right;">struct</td>
+<td style="text-align: left;"><a href="../structstar_1_1HotStorage/"><strong>HotStorage</strong></a> <br><em>Hot storage - frequently accessed data (cache-friendly).</em></td>
+</tr>
+<tr>
+<td style="text-align: right;">class</td>
+<td style="text-align: left;"><a href="../classstar_1_1HttpRangeReader/"><strong>HttpRangeReader</strong></a> <br></td>
+</tr>
+<tr>
+<td style="text-align: right;">struct</td>
+<td style="text-align: left;"><a href="../structstar_1_1IndexEntry/"><strong>IndexEntry</strong></a> <br><em>Index entry with block compression support and shape information.</em></td>
+</tr>
+<tr>
+<td style="text-align: right;">struct</td>
+<td style="text-align: left;"><a href="../structstar_1_1KeyRegistry/"><strong>KeyRegistry</strong></a> <br><em>Global key registry using data-oriented design (Structure of Arrays).</em></td>
+</tr>
+<tr>
+<td style="text-align: right;">class</td>
+<td style="text-align: left;"><a href="../classstar_1_1LayerMetadataAccessor/"><strong>LayerMetadataAccessor</strong></a> <br><em>Metadata accessor for a specific layer with inheritance.</em></td>
+</tr>
+<tr>
+<td style="text-align: right;">struct</td>
+<td style="text-align: left;"><a href="../structstar_1_1LayerMetadataRegistry/"><strong>LayerMetadataRegistry</strong></a> <br><em>Per-layer metadata registry using data-oriented design (Structure of Arrays).</em></td>
+</tr>
+<tr>
+<td style="text-align: right;">class</td>
+<td style="text-align: left;"><a href="../classstar_1_1LayerView/"><strong>LayerView</strong></a> <br><em>Lightweight view into a specific layer with inheritance from base.</em></td>
+</tr>
+<tr>
+<td style="text-align: right;">class</td>
+<td style="text-align: left;"><a href="../classstar_1_1LocalRangeReader/"><strong>LocalRangeReader</strong></a> <br></td>
+</tr>
+<tr>
+<td style="text-align: right;">class</td>
+<td style="text-align: left;"><a href="../classstar_1_1MemoryRangeReader/"><strong>MemoryRangeReader</strong></a> <br></td>
+</tr>
+<tr>
+<td style="text-align: right;">class</td>
+<td style="text-align: left;"><a href="../classstar_1_1MetadataAccessor/"><strong>MetadataAccessor</strong></a> <br><em>Accessor for metadata operations.</em></td>
+</tr>
+<tr>
+<td style="text-align: right;">struct</td>
+<td style="text-align: left;"><a href="../structstar_1_1MetadataValue/"><strong>MetadataValue</strong></a> <br><em>Type-erased wrapper for metadata values.</em></td>
+</tr>
+<tr>
+<td style="text-align: right;">class</td>
+<td style="text-align: left;"><a href="../classstar_1_1NDArray/"><strong>NDArray</strong></a> &lt;typename T&gt;<br><em>Modern n-dimensional array class with xtensor-style API.</em></td>
+</tr>
+<tr>
+<td style="text-align: right;">struct</td>
+<td style="text-align: left;"><a href="../structstar_1_1OpenOptions/"><strong>OpenOptions</strong></a> <br><em>Read-time options for</em> <a href="../classstar_1_1StarDataset/#function-open-12"><em><strong>StarDataset::open()</strong></em></a> <em>.</em></td>
+</tr>
+<tr>
+<td style="text-align: right;">class</td>
+<td style="text-align: left;"><a href="../classstar_1_1RangeReader/"><strong>RangeReader</strong></a> <br></td>
+</tr>
+<tr>
+<td style="text-align: right;">struct</td>
+<td style="text-align: left;"><a href="../structstar_1_1S3Credentials/"><strong>S3Credentials</strong></a> <br><em>AWS Credentials with resolution chain.</em></td>
+</tr>
+<tr>
+<td style="text-align: right;">struct</td>
+<td style="text-align: left;"><a href="../structstar_1_1S3EndpointConfig/"><strong>S3EndpointConfig</strong></a> <br><em>S3 endpoint resolution (default AWS, or an override for S3-compatible services such as MinIO and for local testing).</em></td>
+</tr>
+<tr>
+<td style="text-align: right;">class</td>
+<td style="text-align: left;"><a href="../classstar_1_1S3RangeReader/"><strong>S3RangeReader</strong></a> <br></td>
+</tr>
+<tr>
+<td style="text-align: right;">class</td>
+<td style="text-align: left;"><a href="../classstar_1_1S3Writer/"><strong>S3Writer</strong></a> <br><em>S3 writer for uploading objects.</em></td>
+</tr>
+<tr>
+<td style="text-align: right;">struct</td>
+<td style="text-align: left;"><a href="../structstar_1_1Slice/"><strong>Slice</strong></a> <br><em>Describes a slice along one dimension (Python-style slicing) Plain struct - no methods except helpers, just data.</em></td>
+</tr>
+<tr>
+<td style="text-align: right;">struct</td>
+<td style="text-align: left;"><a href="../structstar_1_1SliceSpec/"><strong>SliceSpec</strong></a> <br><em>Complete slice specification for n-dimensional array.</em></td>
+</tr>
+<tr>
+<td style="text-align: right;">struct</td>
+<td style="text-align: left;"><a href="../structstar_1_1StarConfig/"><strong>StarConfig</strong></a> <br><em>Configuration for metadata block optimization.</em></td>
+</tr>
+<tr>
+<td style="text-align: right;">class</td>
+<td style="text-align: left;"><a href="../classstar_1_1StarDataset/"><strong>StarDataset</strong></a> <br><em>A cloud-optimized binary key-value store for serializable data types.</em></td>
+</tr>
+<tr>
+<td style="text-align: right;">class</td>
+<td style="text-align: left;"><a href="../classstar_1_1ThreadPool/"><strong>ThreadPool</strong></a> <br><em>Simple thread pool for parallel block operations.</em></td>
+</tr>
+<tr>
+<td style="text-align: right;">struct</td>
+<td style="text-align: left;"><a href="../structstar_1_1TypeToDataType/"><strong>TypeToDataType</strong></a> &lt;typename T&gt;<br></td>
+</tr>
+<tr>
+<td style="text-align: right;">struct</td>
+<td style="text-align: left;"><a href="../structstar_1_1TypeToDataType_3_01double_01_4/"><strong>TypeToDataType&lt; double &gt;</strong></a> &lt;&gt;<br></td>
+</tr>
+<tr>
+<td style="text-align: right;">struct</td>
+<td style="text-align: left;"><a href="../structstar_1_1TypeToDataType_3_01float_01_4/"><strong>TypeToDataType&lt; float &gt;</strong></a> &lt;&gt;<br></td>
+</tr>
+<tr>
+<td style="text-align: right;">struct</td>
+<td style="text-align: left;"><a href="../structstar_1_1TypeToDataType_3_01int16__t_01_4/"><strong>TypeToDataType&lt; int16_t &gt;</strong></a> &lt;&gt;<br></td>
+</tr>
+<tr>
+<td style="text-align: right;">struct</td>
+<td style="text-align: left;"><a href="../structstar_1_1TypeToDataType_3_01int32__t_01_4/"><strong>TypeToDataType&lt; int32_t &gt;</strong></a> &lt;&gt;<br></td>
+</tr>
+<tr>
+<td style="text-align: right;">struct</td>
+<td style="text-align: left;"><a href="../structstar_1_1TypeToDataType_3_01int64__t_01_4/"><strong>TypeToDataType&lt; int64_t &gt;</strong></a> &lt;&gt;<br></td>
+</tr>
+<tr>
+<td style="text-align: right;">struct</td>
+<td style="text-align: left;"><a href="../structstar_1_1TypeToDataType_3_01int8__t_01_4/"><strong>TypeToDataType&lt; int8_t &gt;</strong></a> &lt;&gt;<br></td>
+</tr>
+<tr>
+<td style="text-align: right;">struct</td>
+<td style="text-align: left;"><a href="../structstar_1_1TypeToDataType_3_01std_1_1string_01_4/"><strong>TypeToDataType&lt; std::string &gt;</strong></a> &lt;&gt;<br></td>
+</tr>
+<tr>
+<td style="text-align: right;">struct</td>
+<td style="text-align: left;"><a href="../structstar_1_1TypeToDataType_3_01uint16__t_01_4/"><strong>TypeToDataType&lt; uint16_t &gt;</strong></a> &lt;&gt;<br></td>
+</tr>
+<tr>
+<td style="text-align: right;">struct</td>
+<td style="text-align: left;"><a href="../structstar_1_1TypeToDataType_3_01uint32__t_01_4/"><strong>TypeToDataType&lt; uint32_t &gt;</strong></a> &lt;&gt;<br></td>
+</tr>
+<tr>
+<td style="text-align: right;">struct</td>
+<td style="text-align: left;"><a href="../structstar_1_1TypeToDataType_3_01uint64__t_01_4/"><strong>TypeToDataType&lt; uint64_t &gt;</strong></a> &lt;&gt;<br></td>
+</tr>
+<tr>
+<td style="text-align: right;">struct</td>
+<td style="text-align: left;"><a href="../structstar_1_1TypeToDataType_3_01uint8__t_01_4/"><strong>TypeToDataType&lt; uint8_t &gt;</strong></a> &lt;&gt;<br></td>
+</tr>
+</tbody>
+</table>
+<h2 id="public-types">Public Types<a class="headerlink" href="#public-types" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: right;">Type</th>
+<th style="text-align: left;">Name</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;">enum uint8_t</td>
+<td style="text-align: left;"><a href="#enum-compressionalgorithm"><strong>CompressionAlgorithm</strong></a>  <br></td>
+</tr>
+<tr>
+<td style="text-align: right;">enum uint8_t</td>
+<td style="text-align: left;"><a href="#enum-datatype"><strong>DataType</strong></a>  <br></td>
+</tr>
+<tr>
+<td style="text-align: right;">enum</td>
+<td style="text-align: left;"><a href="#enum-filemode"><strong>FileMode</strong></a>  <br></td>
+</tr>
+<tr>
+<td style="text-align: right;">enum</td>
+<td style="text-align: left;"><a href="#enum-storageclass"><strong>StorageClass</strong></a>  <br><em>Storage classification for values (DEPRECATED - use StorageLocation).</em></td>
+</tr>
+<tr>
+<td style="text-align: right;">enum</td>
+<td style="text-align: left;"><a href="#enum-storagelocation"><strong>StorageLocation</strong></a>  <br><em>Storage location state for unified storage model.</em></td>
+</tr>
+<tr>
+<td style="text-align: right;">typedef std::variant&lt; <a href="../classstar_1_1NDArray/"><strong>NDArray</strong></a>&lt; int8_t &gt;, <a href="../classstar_1_1NDArray/"><strong>NDArray</strong></a>&lt; int16_t &gt;, <a href="../classstar_1_1NDArray/"><strong>NDArray</strong></a>&lt; int32_t &gt;, <a href="../classstar_1_1NDArray/"><strong>NDArray</strong></a>&lt; int64_t &gt;, <a href="../classstar_1_1NDArray/"><strong>NDArray</strong></a>&lt; uint8_t &gt;, <a href="../classstar_1_1NDArray/"><strong>NDArray</strong></a>&lt; uint16_t &gt;, <a href="../classstar_1_1NDArray/"><strong>NDArray</strong></a>&lt; uint32_t &gt;, <a href="../classstar_1_1NDArray/"><strong>NDArray</strong></a>&lt; uint64_t &gt;, <a href="../classstar_1_1NDArray/"><strong>NDArray</strong></a>&lt; float &gt;, <a href="../classstar_1_1NDArray/"><strong>NDArray</strong></a>&lt; double &gt;, <a href="../classstar_1_1NDArray/"><strong>NDArray</strong></a>&lt; std::string &gt; &gt;</td>
+<td style="text-align: left;"><a href="#typedef-valuevariant"><strong>ValueVariant</strong></a>  <br></td>
+</tr>
+</tbody>
+</table>
+<h2 id="public-attributes">Public Attributes<a class="headerlink" href="#public-attributes" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: right;">Type</th>
+<th style="text-align: left;">Name</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;">const char *</td>
+<td style="text-align: left;"><a href="#variable-magic_string"><strong>MAGIC_STRING</strong></a>   = <code>"STARDS"</code><br></td>
+</tr>
+<tr>
+<td style="text-align: right;">const size_t</td>
+<td style="text-align: left;"><a href="#variable-magic_string_length"><strong>MAGIC_STRING_LENGTH</strong></a>   = <code>6</code><br></td>
+</tr>
+<tr>
+<td style="text-align: right;">const std::string</td>
+<td style="text-align: left;"><a href="#variable-project_name"><strong>PROJECT_NAME</strong></a>   = <code>"STARDS " STAR\_VERSION\_STRING</code><br></td>
+</tr>
+<tr>
+<td style="text-align: right;">size_t</td>
+<td style="text-align: left;"><a href="#variable-g_min_blocks_for_threading"><strong>g_min_blocks_for_threading</strong></a>   = <code>4</code><br></td>
+</tr>
+<tr>
+<td style="text-align: right;">size_t</td>
+<td style="text-align: left;"><a href="#variable-g_min_bytes_for_threading"><strong>g_min_bytes_for_threading</strong></a>   = <code>256 \* 1024</code><br></td>
+</tr>
+<tr>
+<td style="text-align: right;">std::atomic&lt; uint64_t &gt;</td>
+<td style="text-align: left;"><a href="#variable-g_network_request_count"><strong>g_network_request_count</strong></a>   = <code>{0}</code><br></td>
+</tr>
+<tr>
+<td style="text-align: right;">size_t</td>
+<td style="text-align: left;"><a href="#variable-g_num_threads"><strong>g_num_threads</strong></a>   = <code>0</code><br></td>
+</tr>
+</tbody>
+</table>
+<h2 id="public-functions">Public Functions<a class="headerlink" href="#public-functions" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: right;">Type</th>
+<th style="text-align: left;">Name</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;">CompressionAlgorithm</td>
+<td style="text-align: left;"><a href="#function-base_compression"><strong>base_compression</strong></a> (CompressionAlgorithm c) <br><em>The underlying block codec for a (possibly shuffle-prefiltered) algorithm.</em></td>
+</tr>
+<tr>
+<td style="text-align: right;">void</td>
+<td style="text-align: left;"><a href="#function-byte_shuffle"><strong>byte_shuffle</strong></a> (const char * in, char * out, size_t count, size_t elem_size) <br><em>Byte-shuffle: reorder</em> <code>count</code> <em>elements of</em><code>elem_size</code> <em>bytes so that byte plane 0 of every element comes first, then plane 1, etc.</em></td>
+</tr>
+<tr>
+<td style="text-align: right;">void</td>
+<td style="text-align: left;"><a href="#function-byte_shuffle_blocked"><strong>byte_shuffle_blocked</strong></a> (const char * in, char * out, size_t data_size, size_t elem_size, size_t block_size) <br><em>Per-block byte-shuffle: apply byte_shuffle() independently within each</em> <code>block_size</code> <em>-byte chunk of a</em><code>data_size</code> <em>-byte buffer.</em></td>
+</tr>
+<tr>
+<td style="text-align: right;">void</td>
+<td style="text-align: left;"><a href="#function-byte_unshuffle"><strong>byte_unshuffle</strong></a> (const char * in, char * out, size_t count, size_t elem_size) <br><em>Inverse of byte_shuffle(): reassemble byte planes back into elements.</em></td>
+</tr>
+<tr>
+<td style="text-align: right;">void</td>
+<td style="text-align: left;"><a href="#function-byte_unshuffle_blocked"><strong>byte_unshuffle_blocked</strong></a> (const char * in, char * out, size_t data_size, size_t elem_size, size_t block_size) <br><em>Inverse of byte_shuffle_blocked(): un-shuffle each</em> <code>block_size</code> <em>chunk.</em></td>
+</tr>
+<tr>
+<td style="text-align: right;">std::pair&lt; std::vector&lt; char &gt;, std::vector&lt; <a href="../structstar_1_1BlockInfo/"><strong>BlockInfo</strong></a> &gt; &gt;</td>
+<td style="text-align: left;"><a href="#function-compressblocks"><strong>compressBlocks</strong></a> (const char * data, size_t data_size, CompressionAlgorithm algorithm, size_t block_size) <br><em>Compresses data in blocks and returns block metadata (legacy version).</em></td>
+</tr>
+<tr>
+<td style="text-align: right;">std::vector&lt; <a href="../structstar_1_1BlockInfo/"><strong>BlockInfo</strong></a> &gt;</td>
+<td style="text-align: left;"><a href="#function-compressblocksbuffered"><strong>compressBlocksBuffered</strong></a> (const char * data, size_t data_size, CompressionAlgorithm algorithm, size_t block_size, std::vector&lt; char &gt; &amp; compressed_output, std::vector&lt; char &gt; &amp; temp_buffer, <a href="../classstar_1_1ThreadPool/"><strong>ThreadPool</strong></a> * thread_pool=nullptr) <br><em>Compresses data in blocks using pre-allocated buffer.</em></td>
+</tr>
+<tr>
+<td style="text-align: right;">size_t</td>
+<td style="text-align: left;"><a href="#function-datatype_size"><strong>datatype_size</strong></a> (DataType dtype) <br><em>Get element size in bytes for a DataType.</em></td>
+</tr>
+<tr>
+<td style="text-align: right;">const char *</td>
+<td style="text-align: left;"><a href="#function-datatype_to_string"><strong>datatype_to_string</strong></a> (DataType dtype) <br><em>Get string representation of DataType.</em></td>
+</tr>
+<tr>
+<td style="text-align: right;">std::vector&lt; char &gt;</td>
+<td style="text-align: left;"><a href="#function-decompressblocks"><strong>decompressBlocks</strong></a> (const std::vector&lt; char &gt; &amp; compressed_data, const std::vector&lt; <a href="../structstar_1_1BlockInfo/"><strong>BlockInfo</strong></a> &gt; &amp; blocks, CompressionAlgorithm algorithm, const std::vector&lt; size_t &gt; &amp; block_indices={}, <a href="../classstar_1_1ThreadPool/"><strong>ThreadPool</strong></a> * thread_pool=nullptr) <br><em>Decompresses specific blocks from compressed data.</em></td>
+</tr>
+<tr>
+<td style="text-align: right;">void</td>
+<td style="text-align: left;"><a href="#function-decompressblocksinto"><strong>decompressBlocksInto</strong></a> (const std::vector&lt; char &gt; &amp; compressed_data, const std::vector&lt; <a href="../structstar_1_1BlockInfo/"><strong>BlockInfo</strong></a> &gt; &amp; blocks, CompressionAlgorithm algorithm, char * dst, size_t dst_capacity, <a href="../classstar_1_1ThreadPool/"><strong>ThreadPool</strong></a> * thread_pool=nullptr) <br><em>One-pass sibling of decompressBlocks(): decompress every block straight into a caller-owned destination buffer instead of allocating and returning a std::vector.</em></td>
+</tr>
+<tr>
+<td style="text-align: right;">size_t</td>
+<td style="text-align: left;"><a href="#function-estimatecompressedsize"><strong>estimateCompressedSize</strong></a> (const char * data, size_t data_size, CompressionAlgorithm algorithm, size_t block_size) <br><em>Estimate compressed size using deflateBound without actually compressing.</em></td>
+</tr>
+<tr>
+<td style="text-align: right;">std::string</td>
+<td style="text-align: left;"><a href="#function-getlibraryversion"><strong>getLibraryVersion</strong></a> () <br><em>Get library version string.</em></td>
+</tr>
+<tr>
+<td style="text-align: right;">uint64_t</td>
+<td style="text-align: left;"><a href="#function-getnetworkrequestcount"><strong>getNetworkRequestCount</strong></a> () <br></td>
+</tr>
+<tr>
+<td style="text-align: right;">size_t</td>
+<td style="text-align: left;"><a href="#function-getnumthreads"><strong>getNumThreads</strong></a> () <br><em>Get current thread count setting.</em></td>
+</tr>
+<tr>
+<td style="text-align: right;">std::string</td>
+<td style="text-align: left;"><a href="#function-gets3region"><strong>getS3Region</strong></a> () <br><em>Get S3 region from environment or default.</em></td>
+</tr>
+<tr>
+<td style="text-align: right;">uint64_t</td>
+<td style="text-align: left;"><a href="#function-hash_key"><strong>hash_key</strong></a> (const std::string &amp; key) <br><em>Hash function for keys in global key registry.</em></td>
+</tr>
+<tr>
+<td style="text-align: right;"><a href="../structstar_1_1FilePathInfo/"><strong>FilePathInfo</strong></a></td>
+<td style="text-align: left;"><a href="#function-parsefilepath"><strong>parseFilePath</strong></a> (const std::string &amp; filename) <br><em>Parse a file path and determine its type (local, HTTP, or S3).</em></td>
+</tr>
+<tr>
+<td style="text-align: right;">FileMode</td>
+<td style="text-align: left;"><a href="#function-parsemodestring"><strong>parseModeString</strong></a> (const std::string &amp; mode_str) <br></td>
+</tr>
+<tr>
+<td style="text-align: right;">UInt</td>
+<td style="text-align: left;"><a href="#function-read_le"><strong>read_le</strong></a> (std::istream &amp; is) <br></td>
+</tr>
+<tr>
+<td style="text-align: right;">uint16_t</td>
+<td style="text-align: left;"><a href="#function-read_u16"><strong>read_u16</strong></a> (std::istream &amp; is) <br></td>
+</tr>
+<tr>
+<td style="text-align: right;">uint32_t</td>
+<td style="text-align: left;"><a href="#function-read_u32"><strong>read_u32</strong></a> (std::istream &amp; is) <br></td>
+</tr>
+<tr>
+<td style="text-align: right;">uint64_t</td>
+<td style="text-align: left;"><a href="#function-read_u64"><strong>read_u64</strong></a> (std::istream &amp; is) <br></td>
+</tr>
+<tr>
+<td style="text-align: right;">uint8_t</td>
+<td style="text-align: left;"><a href="#function-read_u8"><strong>read_u8</strong></a> (std::istream &amp; is) <br></td>
+</tr>
+<tr>
+<td style="text-align: right;">void</td>
+<td style="text-align: left;"><a href="#function-resetnetworkrequestcount"><strong>resetNetworkRequestCount</strong></a> () <br></td>
+</tr>
+<tr>
+<td style="text-align: right;">void</td>
+<td style="text-align: left;"><a href="#function-setminblocksforthreading"><strong>setMinBlocksForThreading</strong></a> (size_t min_blocks) <br><em>Set minimum blocks threshold for using threading.</em></td>
+</tr>
+<tr>
+<td style="text-align: right;">void</td>
+<td style="text-align: left;"><a href="#function-setminbytesforthreading"><strong>setMinBytesForThreading</strong></a> (size_t min_bytes) <br><em>Set minimum data size threshold for using threading.</em></td>
+</tr>
+<tr>
+<td style="text-align: right;">void</td>
+<td style="text-align: left;"><a href="#function-setnumthreads"><strong>setNumThreads</strong></a> (size_t num_threads) <br><em>Set number of threads for parallel operations (all datasets).</em></td>
+</tr>
+<tr>
+<td style="text-align: right;"><a href="../structstar_1_1Slice/"><strong>Slice</strong></a></td>
+<td style="text-align: left;"><a href="#function-slice_all"><strong>slice_all</strong></a> (size_t dim_size) <br></td>
+</tr>
+<tr>
+<td style="text-align: right;"><a href="../structstar_1_1Slice/"><strong>Slice</strong></a></td>
+<td style="text-align: left;"><a href="#function-slice_range"><strong>slice_range</strong></a> (size_t start, size_t stop) <br></td>
+</tr>
+<tr>
+<td style="text-align: right;">CURLcode</td>
+<td style="text-align: left;"><a href="#function-star_curl_perform"><strong>star_curl_perform</strong></a> (CURL * handle) <br></td>
+</tr>
+<tr>
+<td style="text-align: right;">bool</td>
+<td style="text-align: left;"><a href="#function-uses_block_shuffle"><strong>uses_block_shuffle</strong></a> (CompressionAlgorithm c) <br><em>Whether the shuffle prefilter is applied PER BLOCK (self-contained blocks). Such arrays are sliceable.</em></td>
+</tr>
+<tr>
+<td style="text-align: right;">bool</td>
+<td style="text-align: left;"><a href="#function-uses_global_shuffle"><strong>uses_global_shuffle</strong></a> (CompressionAlgorithm c) <br><em>Whether the shuffle prefilter is applied across the WHOLE array (legacy layout). Such arrays are not sliceable.</em></td>
+</tr>
+<tr>
+<td style="text-align: right;">bool</td>
+<td style="text-align: left;"><a href="#function-uses_shuffle"><strong>uses_shuffle</strong></a> (CompressionAlgorithm c) <br><em>Whether a compression algorithm uses the byte-shuffle prefilter (either the legacy global variant or the per-block variant).</em></td>
+</tr>
+<tr>
+<td style="text-align: right;">void</td>
+<td style="text-align: left;"><a href="#function-write_le"><strong>write_le</strong></a> (std::ostream &amp; os, UInt value) <br></td>
+</tr>
+<tr>
+<td style="text-align: right;">void</td>
+<td style="text-align: left;"><a href="#function-write_u16"><strong>write_u16</strong></a> (std::ostream &amp; os, uint16_t v) <br></td>
+</tr>
+<tr>
+<td style="text-align: right;">void</td>
+<td style="text-align: left;"><a href="#function-write_u32"><strong>write_u32</strong></a> (std::ostream &amp; os, uint32_t v) <br></td>
+</tr>
+<tr>
+<td style="text-align: right;">void</td>
+<td style="text-align: left;"><a href="#function-write_u64"><strong>write_u64</strong></a> (std::ostream &amp; os, uint64_t v) <br></td>
+</tr>
+<tr>
+<td style="text-align: right;">void</td>
+<td style="text-align: left;"><a href="#function-write_u8"><strong>write_u8</strong></a> (std::ostream &amp; os, uint8_t v) <br></td>
+</tr>
+</tbody>
+</table>
+<h2 id="public-static-functions">Public Static Functions<a class="headerlink" href="#public-static-functions" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: right;">Type</th>
+<th style="text-align: left;">Name</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;">DataType</td>
+<td style="text-align: left;"><a href="#function-extract_dtype_from_variant"><strong>extract_dtype_from_variant</strong></a> (const ValueVariant &amp; var) <br></td>
+</tr>
+<tr>
+<td style="text-align: right;">std::vector&lt; size_t &gt;</td>
+<td style="text-align: left;"><a href="#function-extract_shape_from_variant"><strong>extract_shape_from_variant</strong></a> (const ValueVariant &amp; var) <br></td>
+</tr>
+</tbody>
+</table>
+<h2 id="public-types-documentation">Public Types Documentation<a class="headerlink" href="#public-types-documentation" title="Permanent link">&para;</a></h2>
+<h3 id="enum-compressionalgorithm">enum CompressionAlgorithm<a class="headerlink" href="#enum-compressionalgorithm" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">enum</span><span class="w"> </span><span class="nc">star</span><span class="o">::</span><span class="n">CompressionAlgorithm</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span><span class="n">NONE</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="n">GZIP</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">    </span><span class="n">ZSTD</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">    </span><span class="n">LZ4</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">    </span><span class="n">GZIP_SHUFFLE</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">    </span><span class="n">LZ4_SHUFFLE</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">    </span><span class="n">GZIP_SHUFFLE_BLOCK</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">6</span><span class="p">,</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">    </span><span class="n">LZ4_SHUFFLE_BLOCK</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">7</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="p">};</span>
+</code></pre></div>
+<hr>
+
+<h3 id="enum-datatype">enum DataType<a class="headerlink" href="#enum-datatype" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">enum</span><span class="w"> </span><span class="nc">star</span><span class="o">::</span><span class="n">DataType</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">    </span><span class="n">INT8</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">    </span><span class="n">INT16</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">    </span><span class="n">INT32</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">    </span><span class="n">INT64</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">    </span><span class="n">UINT8</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">    </span><span class="n">UINT16</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">    </span><span class="n">UINT32</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">6</span><span class="p">,</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">    </span><span class="n">UINT64</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">7</span><span class="p">,</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="w">    </span><span class="n">FLOAT32</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">8</span><span class="p">,</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="w">    </span><span class="n">FLOAT64</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">9</span><span class="p">,</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="w">    </span><span class="n">STRING</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">10</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="p">};</span>
+</code></pre></div>
+<hr>
+
+<h3 id="enum-filemode">enum FileMode<a class="headerlink" href="#enum-filemode" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">enum</span><span class="w"> </span><span class="nc">star</span><span class="o">::</span><span class="n">FileMode</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">    </span><span class="n">READ_WRITE</span><span class="p">,</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">    </span><span class="n">READ_ONLY</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="p">};</span>
+</code></pre></div>
+<hr>
+
+<h3 id="enum-storageclass">enum StorageClass<a class="headerlink" href="#enum-storageclass" title="Permanent link">&para;</a></h3>
+<p><em>Storage classification for values (DEPRECATED - use StorageLocation).</em> 
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">enum</span><span class="w"> </span><span class="nc">star</span><span class="o">::</span><span class="n">StorageClass</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">    </span><span class="n">METADATA_BLOCK</span><span class="p">,</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">    </span><span class="n">SEPARATE_ARRAY</span><span class="p">,</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">    </span><span class="n">FORCE_SEPARATE</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="p">};</span>
+</code></pre></div></p>
+<hr>
+
+<h3 id="enum-storagelocation">enum StorageLocation<a class="headerlink" href="#enum-storagelocation" title="Permanent link">&para;</a></h3>
+<p><em>Storage location state for unified storage model.</em> 
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">enum</span><span class="w"> </span><span class="nc">star</span><span class="o">::</span><span class="n">StorageLocation</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">    </span><span class="n">PENDING</span><span class="p">,</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">    </span><span class="n">PERSISTED</span><span class="p">,</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">    </span><span class="n">CACHED</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="p">};</span>
+</code></pre></div></p>
+<hr>
+
+<h3 id="typedef-valuevariant">typedef ValueVariant<a class="headerlink" href="#typedef-valuevariant" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">using</span><span class="w"> </span><span class="n">star</span><span class="o">::</span><span class="n">ValueVariant</span><span class="w"> </span><span class="o">=</span><span class="w">  </span><span class="n">std</span><span class="o">::</span><span class="n">variant</span><span class="o">&lt;</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">    </span><span class="n">NDArray</span><span class="o">&lt;</span><span class="kt">int8_t</span><span class="o">&gt;</span><span class="p">,</span><span class="w"> </span><span class="n">NDArray</span><span class="o">&lt;</span><span class="kt">int16_t</span><span class="o">&gt;</span><span class="p">,</span><span class="w"> </span><span class="n">NDArray</span><span class="o">&lt;</span><span class="kt">int32_t</span><span class="o">&gt;</span><span class="p">,</span><span class="w"> </span><span class="n">NDArray</span><span class="o">&lt;</span><span class="kt">int64_t</span><span class="o">&gt;</span><span class="p">,</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">    </span><span class="n">NDArray</span><span class="o">&lt;</span><span class="kt">uint8_t</span><span class="o">&gt;</span><span class="p">,</span><span class="w"> </span><span class="n">NDArray</span><span class="o">&lt;</span><span class="kt">uint16_t</span><span class="o">&gt;</span><span class="p">,</span><span class="w"> </span><span class="n">NDArray</span><span class="o">&lt;</span><span class="kt">uint32_t</span><span class="o">&gt;</span><span class="p">,</span><span class="w"> </span><span class="n">NDArray</span><span class="o">&lt;</span><span class="kt">uint64_t</span><span class="o">&gt;</span><span class="p">,</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">    </span><span class="n">NDArray</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">,</span><span class="w"> </span><span class="n">NDArray</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span><span class="p">,</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">    </span><span class="n">NDArray</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="o">&gt;</span><span class="p">;</span>
+</code></pre></div>
+<hr>
+<h2 id="public-attributes-documentation">Public Attributes Documentation<a class="headerlink" href="#public-attributes-documentation" title="Permanent link">&para;</a></h2>
+<h3 id="variable-magic_string">variable MAGIC_STRING<a class="headerlink" href="#variable-magic_string" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="n">star</span><span class="o">::</span><span class="n">MAGIC_STRING</span><span class="p">;</span>
+</code></pre></div>
+<hr>
+
+<h3 id="variable-magic_string_length">variable MAGIC_STRING_LENGTH<a class="headerlink" href="#variable-magic_string_length" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="k">const</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">star</span><span class="o">::</span><span class="n">MAGIC_STRING_LENGTH</span><span class="p">;</span>
+</code></pre></div>
+<hr>
+
+<h3 id="variable-project_name">variable PROJECT_NAME<a class="headerlink" href="#variable-project_name" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">star</span><span class="o">::</span><span class="n">PROJECT_NAME</span><span class="p">;</span>
+</code></pre></div>
+<hr>
+
+<h3 id="variable-g_min_blocks_for_threading">variable g_min_blocks_for_threading<a class="headerlink" href="#variable-g_min_blocks_for_threading" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="kt">size_t</span><span class="w"> </span><span class="n">star</span><span class="o">::</span><span class="n">g_min_blocks_for_threading</span><span class="p">;</span>
+</code></pre></div>
+<hr>
+
+<h3 id="variable-g_min_bytes_for_threading">variable g_min_bytes_for_threading<a class="headerlink" href="#variable-g_min_bytes_for_threading" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="kt">size_t</span><span class="w"> </span><span class="n">star</span><span class="o">::</span><span class="n">g_min_bytes_for_threading</span><span class="p">;</span>
+</code></pre></div>
+<hr>
+
+<h3 id="variable-g_network_request_count">variable g_network_request_count<a class="headerlink" href="#variable-g_network_request_count" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="n">std</span><span class="o">::</span><span class="n">atomic</span><span class="o">&lt;</span><span class="kt">uint64_t</span><span class="o">&gt;</span><span class="w"> </span><span class="n">star</span><span class="o">::</span><span class="n">g_network_request_count</span><span class="p">;</span>
+</code></pre></div>
+<hr>
+
+<h3 id="variable-g_num_threads">variable g_num_threads<a class="headerlink" href="#variable-g_num_threads" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="kt">size_t</span><span class="w"> </span><span class="n">star</span><span class="o">::</span><span class="n">g_num_threads</span><span class="p">;</span>
+</code></pre></div>
+<hr>
+<h2 id="public-functions-documentation">Public Functions Documentation<a class="headerlink" href="#public-functions-documentation" title="Permanent link">&para;</a></h2>
+<h3 id="function-base_compression">function base_compression<a class="headerlink" href="#function-base_compression" title="Permanent link">&para;</a></h3>
+<p><em>The underlying block codec for a (possibly shuffle-prefiltered) algorithm.</em> 
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="kr">inline</span><span class="w"> </span><span class="n">CompressionAlgorithm</span><span class="w"> </span><span class="n">star</span><span class="o">::</span><span class="n">base_compression</span><span class="w"> </span><span class="p">(</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="w">    </span><span class="n">CompressionAlgorithm</span><span class="w"> </span><span class="n">c</span>
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="p">)</span><span class="w"> </span>
+</code></pre></div></p>
+<p>The block (de)compressor only understands the base codecs; the shuffle variants differ only in a byte-reordering prefilter applied around it. </p>
+<hr>
+
+<h3 id="function-byte_shuffle">function byte_shuffle<a class="headerlink" href="#function-byte_shuffle" title="Permanent link">&para;</a></h3>
+<p><em>Byte-shuffle: reorder</em> <code>count</code> <em>elements of</em><code>elem_size</code> <em>bytes so that byte plane 0 of every element comes first, then plane 1, etc.</em>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">star</span><span class="o">::</span><span class="n">byte_shuffle</span><span class="w"> </span><span class="p">(</span>
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">in</span><span class="p">,</span>
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="w">    </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">out</span><span class="p">,</span>
+<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">count</span><span class="p">,</span>
+<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">elem_size</span>
+<a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a><span class="p">)</span><span class="w"> </span>
+</code></pre></div></p>
+<p>Splits an array-of-structs byte layout into a struct-of-byte-planes layout. A no-op for elem_size &lt;= 1. <code>out</code> must hold <code>count * elem_size</code> bytes. SIMD-accelerated on NEON for elem_size {2,4,8}; scalar everywhere else (the scalar tail below is bit-identical to the historical loop). </p>
+<hr>
+
+<h3 id="function-byte_shuffle_blocked">function byte_shuffle_blocked<a class="headerlink" href="#function-byte_shuffle_blocked" title="Permanent link">&para;</a></h3>
+<p><em>Per-block byte-shuffle: apply byte_shuffle() independently within each</em> <code>block_size</code> <em>-byte chunk of a</em><code>data_size</code> <em>-byte buffer.</em>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">star</span><span class="o">::</span><span class="n">byte_shuffle_blocked</span><span class="w"> </span><span class="p">(</span>
+<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">in</span><span class="p">,</span>
+<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="w">    </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">out</span><span class="p">,</span>
+<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">data_size</span><span class="p">,</span>
+<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a><span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">elem_size</span><span class="p">,</span>
+<a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a><span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">block_size</span>
+<a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a><span class="p">)</span><span class="w"> </span>
+</code></pre></div></p>
+<p>This is the prefilter for the BLOCK-shuffle codecs. Because the buffer is later cut into blocks at the SAME <code>block_size</code> boundaries by compressBlocksBuffered(), each compression block ends up holding exactly one self-contained shuffled chunk, so it can be un-shuffled on its own (enabling slicing) — unlike the global variant, whose byte planes span the whole array.</p>
+<p>Each chunk is shuffled over its whole-element prefix (chunk_size / elem_size elements); any trailing bytes that don't form a complete element (only possible when block_size is not a multiple of elem_size) are copied through verbatim, and byte_unshuffle_blocked() reverses this exactly. <code>out</code> must hold <code>data_size</code> bytes. </p>
+<hr>
+
+<h3 id="function-byte_unshuffle">function byte_unshuffle<a class="headerlink" href="#function-byte_unshuffle" title="Permanent link">&para;</a></h3>
+<p><em>Inverse of byte_shuffle(): reassemble byte planes back into elements.</em> 
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">star</span><span class="o">::</span><span class="n">byte_unshuffle</span><span class="w"> </span><span class="p">(</span>
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">in</span><span class="p">,</span>
+<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="w">    </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">out</span><span class="p">,</span>
+<a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">count</span><span class="p">,</span>
+<a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a><span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">elem_size</span>
+<a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a><span class="p">)</span><span class="w"> </span>
+</code></pre></div></p>
+<p>This is the read hot path. SIMD-accelerated for elem_size {2,4,8} on NEON (arm64) and SSE2 (x86-64); scalar everywhere else. The scalar tail is bit-identical to the historical loop, so decoded bytes never change. </p>
+<hr>
+
+<h3 id="function-byte_unshuffle_blocked">function byte_unshuffle_blocked<a class="headerlink" href="#function-byte_unshuffle_blocked" title="Permanent link">&para;</a></h3>
+<p><em>Inverse of byte_shuffle_blocked(): un-shuffle each</em> <code>block_size</code> <em>chunk.</em>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">star</span><span class="o">::</span><span class="n">byte_unshuffle_blocked</span><span class="w"> </span><span class="p">(</span>
+<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">in</span><span class="p">,</span>
+<a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="w">    </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">out</span><span class="p">,</span>
+<a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">data_size</span><span class="p">,</span>
+<a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a><span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">elem_size</span><span class="p">,</span>
+<a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a><span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">block_size</span>
+<a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a><span class="p">)</span><span class="w"> </span>
+</code></pre></div></p>
+<hr>
+
+<h3 id="function-compressblocks">function compressBlocks<a class="headerlink" href="#function-compressblocks" title="Permanent link">&para;</a></h3>
+<p><em>Compresses data in blocks and returns block metadata (legacy version).</em> 
+<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="kr">inline</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">pair</span><span class="o">&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">&gt;</span><span class="p">,</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="w"> </span><span class="n">BlockInfo</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">star</span><span class="o">::</span><span class="n">compressBlocks</span><span class="w"> </span><span class="p">(</span>
+<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">data</span><span class="p">,</span>
+<a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a><span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">data_size</span><span class="p">,</span>
+<a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="w">    </span><span class="n">CompressionAlgorithm</span><span class="w"> </span><span class="n">algorithm</span><span class="p">,</span>
+<a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a><span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">block_size</span>
+<a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a><span class="p">)</span><span class="w"> </span>
+</code></pre></div></p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>data</code> Raw uncompressed data </li>
+<li><code>data_size</code> Size of raw data </li>
+<li><code>algorithm</code> Compression algorithm to use </li>
+<li><code>block_size</code> Size of each uncompressed block </li>
+</ul>
+<p><strong>Returns:</strong></p>
+<p>Pair of compressed data and block metadata </p>
+<hr>
+
+<h3 id="function-compressblocksbuffered">function compressBlocksBuffered<a class="headerlink" href="#function-compressblocksbuffered" title="Permanent link">&para;</a></h3>
+<p><em>Compresses data in blocks using pre-allocated buffer.</em> 
+<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="kr">inline</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="w"> </span><span class="n">BlockInfo</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">star</span><span class="o">::</span><span class="n">compressBlocksBuffered</span><span class="w"> </span><span class="p">(</span>
+<a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">data</span><span class="p">,</span>
+<a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">data_size</span><span class="p">,</span>
+<a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a><span class="w">    </span><span class="n">CompressionAlgorithm</span><span class="w"> </span><span class="n">algorithm</span><span class="p">,</span>
+<a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a><span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">block_size</span><span class="p">,</span>
+<a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a><span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">compressed_output</span><span class="p">,</span>
+<a id="__codelineno-19-7" name="__codelineno-19-7" href="#__codelineno-19-7"></a><span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">temp_buffer</span><span class="p">,</span>
+<a id="__codelineno-19-8" name="__codelineno-19-8" href="#__codelineno-19-8"></a><span class="w">    </span><span class="n">ThreadPool</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">thread_pool</span><span class="o">=</span><span class="k">nullptr</span>
+<a id="__codelineno-19-9" name="__codelineno-19-9" href="#__codelineno-19-9"></a><span class="p">)</span><span class="w"> </span>
+</code></pre></div></p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>data</code> Raw uncompressed data </li>
+<li><code>data_size</code> Size of raw data </li>
+<li><code>algorithm</code> Compression algorithm to use </li>
+<li><code>block_size</code> Size of each uncompressed block </li>
+<li><code>compressed_output</code> Pre-allocated output buffer (will be cleared and reused) </li>
+<li><code>temp_buffer</code> Pre-allocated temporary buffer for compression (will be resized as needed) </li>
+<li><code>thread_pool</code> Optional thread pool for parallel compression (nullptr = single-threaded) </li>
+</ul>
+<p><strong>Returns:</strong></p>
+<p>Block metadata </p>
+<hr>
+
+<h3 id="function-datatype_size">function datatype_size<a class="headerlink" href="#function-datatype_size" title="Permanent link">&para;</a></h3>
+<p><em>Get element size in bytes for a DataType.</em> 
+<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="kr">inline</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">star</span><span class="o">::</span><span class="n">datatype_size</span><span class="w"> </span><span class="p">(</span>
+<a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="w">    </span><span class="n">DataType</span><span class="w"> </span><span class="n">dtype</span>
+<a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a><span class="p">)</span><span class="w"> </span>
+</code></pre></div></p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>dtype</code> DataType to query </li>
+</ul>
+<p><strong>Returns:</strong></p>
+<p>Size in bytes (0 for variable-length types like STRING) </p>
+<hr>
+
+<h3 id="function-datatype_to_string">function datatype_to_string<a class="headerlink" href="#function-datatype_to_string" title="Permanent link">&para;</a></h3>
+<p><em>Get string representation of DataType.</em> 
+<div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="kr">inline</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">star</span><span class="o">::</span><span class="n">datatype_to_string</span><span class="w"> </span><span class="p">(</span>
+<a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a><span class="w">    </span><span class="n">DataType</span><span class="w"> </span><span class="n">dtype</span>
+<a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a><span class="p">)</span><span class="w"> </span>
+</code></pre></div></p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>dtype</code> DataType to convert </li>
+</ul>
+<p><strong>Returns:</strong></p>
+<p>String representation </p>
+<hr>
+
+<h3 id="function-decompressblocks">function decompressBlocks<a class="headerlink" href="#function-decompressblocks" title="Permanent link">&para;</a></h3>
+<p><em>Decompresses specific blocks from compressed data.</em> 
+<div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="kr">inline</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">star</span><span class="o">::</span><span class="n">decompressBlocks</span><span class="w"> </span><span class="p">(</span>
+<a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a><span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">compressed_data</span><span class="p">,</span>
+<a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a><span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="w"> </span><span class="n">BlockInfo</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">blocks</span><span class="p">,</span>
+<a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a><span class="w">    </span><span class="n">CompressionAlgorithm</span><span class="w"> </span><span class="n">algorithm</span><span class="p">,</span>
+<a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a><span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">block_indices</span><span class="o">=</span><span class="p">{},</span>
+<a id="__codelineno-22-6" name="__codelineno-22-6" href="#__codelineno-22-6"></a><span class="w">    </span><span class="n">ThreadPool</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">thread_pool</span><span class="o">=</span><span class="k">nullptr</span>
+<a id="__codelineno-22-7" name="__codelineno-22-7" href="#__codelineno-22-7"></a><span class="p">)</span><span class="w"> </span>
+</code></pre></div></p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>compressed_data</code> Full compressed data </li>
+<li><code>blocks</code> Block metadata </li>
+<li><code>algorithm</code> Compression algorithm used </li>
+<li><code>block_indices</code> Which blocks to decompress (empty = all) </li>
+<li><code>thread_pool</code> Optional thread pool for parallel decompression (nullptr = single-threaded) </li>
+</ul>
+<p><strong>Returns:</strong></p>
+<p>Decompressed data </p>
+<hr>
+
+<h3 id="function-decompressblocksinto">function decompressBlocksInto<a class="headerlink" href="#function-decompressblocksinto" title="Permanent link">&para;</a></h3>
+<p><em>One-pass sibling of decompressBlocks(): decompress every block straight into a caller-owned destination buffer instead of allocating and returning a std::vector.</em> 
+<div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">star</span><span class="o">::</span><span class="n">decompressBlocksInto</span><span class="w"> </span><span class="p">(</span>
+<a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a><span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">compressed_data</span><span class="p">,</span>
+<a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a><span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="w"> </span><span class="n">BlockInfo</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">blocks</span><span class="p">,</span>
+<a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a><span class="w">    </span><span class="n">CompressionAlgorithm</span><span class="w"> </span><span class="n">algorithm</span><span class="p">,</span>
+<a id="__codelineno-23-5" name="__codelineno-23-5" href="#__codelineno-23-5"></a><span class="w">    </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">dst</span><span class="p">,</span>
+<a id="__codelineno-23-6" name="__codelineno-23-6" href="#__codelineno-23-6"></a><span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">dst_capacity</span><span class="p">,</span>
+<a id="__codelineno-23-7" name="__codelineno-23-7" href="#__codelineno-23-7"></a><span class="w">    </span><span class="n">ThreadPool</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">thread_pool</span><span class="o">=</span><span class="k">nullptr</span>
+<a id="__codelineno-23-8" name="__codelineno-23-8" href="#__codelineno-23-8"></a><span class="p">)</span><span class="w"> </span>
+</code></pre></div></p>
+<p>decompressBlocks() allocates a full-size buffer, decodes into it, and returns it — the caller then copies that buffer into its final home (e.g. an <a href="../classstar_1_1NDArray/"><strong>NDArray</strong></a>), so every byte is written twice and a whole extra buffer is allocated. When the on-disk bytes ARE the final element bytes (fixed-width numeric arrays with no byte-shuffle prefilter to undo), that intermediate buffer is pure overhead: this function decodes each block directly to <code>dst + &lt;block offset&gt;</code>, giving a single pass over the data with no scratch allocation.</p>
+<p>The per-codec decode calls are identical to decompressBlocks() (same LZ4/zlib entry points, same block layout, same threading gate) so the produced bytes are bit-for-bit the same; only the destination differs. It intentionally does NOT support a block-index subset (the fused path is always a whole-array read) — the slicing paths keep using decompressBlocks(). Left as a separate function rather than refactoring decompressBlocks() to delegate, so the existing return-a-vector path is untouched.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>dst</code> Destination buffer; must hold at least the sum of block uncompressed sizes. </li>
+<li><code>dst_capacity</code> Size of <code>dst</code> in bytes (checked; a larger declared shape leaves the trailing bytes untouched, matching the partial memcpy the general path performs). </li>
+</ul>
+<hr>
+
+<h3 id="function-estimatecompressedsize">function estimateCompressedSize<a class="headerlink" href="#function-estimatecompressedsize" title="Permanent link">&para;</a></h3>
+<p><em>Estimate compressed size using deflateBound without actually compressing.</em> 
+<div class="highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a><span class="kr">inline</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">star</span><span class="o">::</span><span class="n">estimateCompressedSize</span><span class="w"> </span><span class="p">(</span>
+<a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a><span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">data</span><span class="p">,</span>
+<a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a><span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">data_size</span><span class="p">,</span>
+<a id="__codelineno-24-4" name="__codelineno-24-4" href="#__codelineno-24-4"></a><span class="w">    </span><span class="n">CompressionAlgorithm</span><span class="w"> </span><span class="n">algorithm</span><span class="p">,</span>
+<a id="__codelineno-24-5" name="__codelineno-24-5" href="#__codelineno-24-5"></a><span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">block_size</span>
+<a id="__codelineno-24-6" name="__codelineno-24-6" href="#__codelineno-24-6"></a><span class="p">)</span><span class="w"> </span>
+</code></pre></div></p>
+<p>This provides an upper bound on the compressed size, which is useful for pre-calculating file positions before actual compression. The estimate is typically 10-30% larger than actual compressed size.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>data</code> Raw uncompressed data </li>
+<li><code>data_size</code> Size of raw data </li>
+<li><code>algorithm</code> Compression algorithm to use </li>
+<li><code>block_size</code> Size of each uncompressed block </li>
+</ul>
+<p><strong>Returns:</strong></p>
+<p>Estimated upper bound on compressed size </p>
+<hr>
+
+<h3 id="function-getlibraryversion">function getLibraryVersion<a class="headerlink" href="#function-getlibraryversion" title="Permanent link">&para;</a></h3>
+<p><em>Get library version string.</em> 
+<div class="highlight"><pre><span></span><code><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a><span class="kr">inline</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">star</span><span class="o">::</span><span class="n">getLibraryVersion</span><span class="w"> </span><span class="p">()</span><span class="w"> </span>
+</code></pre></div></p>
+<p><strong>Returns:</strong></p>
+<p>Version string (e.g., "1.0.0") </p>
+<hr>
+
+<h3 id="function-getnetworkrequestcount">function getNetworkRequestCount<a class="headerlink" href="#function-getnetworkrequestcount" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a><span class="kr">inline</span><span class="w"> </span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">star</span><span class="o">::</span><span class="n">getNetworkRequestCount</span><span class="w"> </span><span class="p">()</span><span class="w"> </span>
+</code></pre></div>
+<hr>
+
+<h3 id="function-getnumthreads">function getNumThreads<a class="headerlink" href="#function-getnumthreads" title="Permanent link">&para;</a></h3>
+<p><em>Get current thread count setting.</em> 
+<div class="highlight"><pre><span></span><code><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a><span class="kr">inline</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">star</span><span class="o">::</span><span class="n">getNumThreads</span><span class="w"> </span><span class="p">()</span><span class="w"> </span>
+</code></pre></div></p>
+<hr>
+
+<h3 id="function-gets3region">function getS3Region<a class="headerlink" href="#function-gets3region" title="Permanent link">&para;</a></h3>
+<p><em>Get S3 region from environment or default.</em> 
+<div class="highlight"><pre><span></span><code><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a><span class="kr">inline</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">star</span><span class="o">::</span><span class="n">getS3Region</span><span class="w"> </span><span class="p">()</span><span class="w"> </span>
+</code></pre></div></p>
+<hr>
+
+<h3 id="function-hash_key">function hash_key<a class="headerlink" href="#function-hash_key" title="Permanent link">&para;</a></h3>
+<p><em>Hash function for keys in global key registry.</em> 
+<div class="highlight"><pre><span></span><code><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a><span class="kr">inline</span><span class="w"> </span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">star</span><span class="o">::</span><span class="n">hash_key</span><span class="w"> </span><span class="p">(</span>
+<a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a><span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">key</span>
+<a id="__codelineno-29-3" name="__codelineno-29-3" href="#__codelineno-29-3"></a><span class="p">)</span><span class="w"> </span>
+</code></pre></div></p>
+<hr>
+
+<h3 id="function-parsefilepath">function parseFilePath<a class="headerlink" href="#function-parsefilepath" title="Permanent link">&para;</a></h3>
+<p><em>Parse a file path and determine its type (local, HTTP, or S3).</em> 
+<div class="highlight"><pre><span></span><code><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a><span class="kr">inline</span><span class="w"> </span><span class="n">FilePathInfo</span><span class="w"> </span><span class="n">star</span><span class="o">::</span><span class="n">parseFilePath</span><span class="w"> </span><span class="p">(</span>
+<a id="__codelineno-30-2" name="__codelineno-30-2" href="#__codelineno-30-2"></a><span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">filename</span>
+<a id="__codelineno-30-3" name="__codelineno-30-3" href="#__codelineno-30-3"></a><span class="p">)</span><span class="w"> </span>
+</code></pre></div></p>
+<p>Recognizes both the GDAL virtual-filesystem prefixes and the equivalent plain URL/URI forms, so either works interchangeably:
+* S3: "/vsis3/bucket/key" OR "s3://bucket/key"
+* HTTP: "/vsicurl/https://host/path" OR "https://host/path" / "http://..."
+* anything else -&gt; a local filesystem path. The <code>/vsi*</code> prefixes stay supported for GDAL compatibility; the plain forms are the natural way to name a remote object and map to the same handling.</p>
+<p>Defined unconditionally: <a href="../classstar_1_1StarDataset/#function-open-12"><strong>StarDataset::open()</strong></a>/ctor call it for every path, and the LOCAL branch (the common case) has no S3/curl dependency. Only the S3 region-resolution needs <a href="../classstar_1_1AWSConfigParser/"><strong>AWSConfigParser</strong></a>, so that part is gated on ENABLE_S3; without S3 support an S3 path is rejected with a clear error. </p>
+<hr>
+
+<h3 id="function-parsemodestring">function parseModeString<a class="headerlink" href="#function-parsemodestring" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a><span class="kr">inline</span><span class="w"> </span><span class="n">FileMode</span><span class="w"> </span><span class="n">star</span><span class="o">::</span><span class="n">parseModeString</span><span class="w"> </span><span class="p">(</span>
+<a id="__codelineno-31-2" name="__codelineno-31-2" href="#__codelineno-31-2"></a><span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">mode_str</span>
+<a id="__codelineno-31-3" name="__codelineno-31-3" href="#__codelineno-31-3"></a><span class="p">)</span><span class="w"> </span>
+</code></pre></div>
+<hr>
+
+<h3 id="function-read_le">function read_le<a class="headerlink" href="#function-read_le" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a><span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span><span class="w"> </span><span class="nc">UInt</span><span class="o">&gt;</span>
+<a id="__codelineno-32-2" name="__codelineno-32-2" href="#__codelineno-32-2"></a><span class="kr">inline</span><span class="w"> </span><span class="n">UInt</span><span class="w"> </span><span class="n">star</span><span class="o">::</span><span class="n">read_le</span><span class="w"> </span><span class="p">(</span>
+<a id="__codelineno-32-3" name="__codelineno-32-3" href="#__codelineno-32-3"></a><span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">istream</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">is</span>
+<a id="__codelineno-32-4" name="__codelineno-32-4" href="#__codelineno-32-4"></a><span class="p">)</span><span class="w"> </span>
+</code></pre></div>
+<hr>
+
+<h3 id="function-read_u16">function read_u16<a class="headerlink" href="#function-read_u16" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-33-1" name="__codelineno-33-1" href="#__codelineno-33-1"></a><span class="kr">inline</span><span class="w"> </span><span class="kt">uint16_t</span><span class="w"> </span><span class="n">star</span><span class="o">::</span><span class="n">read_u16</span><span class="w"> </span><span class="p">(</span>
+<a id="__codelineno-33-2" name="__codelineno-33-2" href="#__codelineno-33-2"></a><span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">istream</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">is</span>
+<a id="__codelineno-33-3" name="__codelineno-33-3" href="#__codelineno-33-3"></a><span class="p">)</span><span class="w"> </span>
+</code></pre></div>
+<hr>
+
+<h3 id="function-read_u32">function read_u32<a class="headerlink" href="#function-read_u32" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a><span class="kr">inline</span><span class="w"> </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">star</span><span class="o">::</span><span class="n">read_u32</span><span class="w"> </span><span class="p">(</span>
+<a id="__codelineno-34-2" name="__codelineno-34-2" href="#__codelineno-34-2"></a><span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">istream</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">is</span>
+<a id="__codelineno-34-3" name="__codelineno-34-3" href="#__codelineno-34-3"></a><span class="p">)</span><span class="w"> </span>
+</code></pre></div>
+<hr>
+
+<h3 id="function-read_u64">function read_u64<a class="headerlink" href="#function-read_u64" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-35-1" name="__codelineno-35-1" href="#__codelineno-35-1"></a><span class="kr">inline</span><span class="w"> </span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">star</span><span class="o">::</span><span class="n">read_u64</span><span class="w"> </span><span class="p">(</span>
+<a id="__codelineno-35-2" name="__codelineno-35-2" href="#__codelineno-35-2"></a><span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">istream</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">is</span>
+<a id="__codelineno-35-3" name="__codelineno-35-3" href="#__codelineno-35-3"></a><span class="p">)</span><span class="w"> </span>
+</code></pre></div>
+<hr>
+
+<h3 id="function-read_u8">function read_u8<a class="headerlink" href="#function-read_u8" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-36-1" name="__codelineno-36-1" href="#__codelineno-36-1"></a><span class="kr">inline</span><span class="w"> </span><span class="kt">uint8_t</span><span class="w"> </span><span class="n">star</span><span class="o">::</span><span class="n">read_u8</span><span class="w"> </span><span class="p">(</span>
+<a id="__codelineno-36-2" name="__codelineno-36-2" href="#__codelineno-36-2"></a><span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">istream</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">is</span>
+<a id="__codelineno-36-3" name="__codelineno-36-3" href="#__codelineno-36-3"></a><span class="p">)</span><span class="w"> </span>
+</code></pre></div>
+<hr>
+
+<h3 id="function-resetnetworkrequestcount">function resetNetworkRequestCount<a class="headerlink" href="#function-resetnetworkrequestcount" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-37-1" name="__codelineno-37-1" href="#__codelineno-37-1"></a><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">star</span><span class="o">::</span><span class="n">resetNetworkRequestCount</span><span class="w"> </span><span class="p">()</span><span class="w"> </span>
+</code></pre></div>
+<hr>
+
+<h3 id="function-setminblocksforthreading">function setMinBlocksForThreading<a class="headerlink" href="#function-setminblocksforthreading" title="Permanent link">&para;</a></h3>
+<p><em>Set minimum blocks threshold for using threading.</em> 
+<div class="highlight"><pre><span></span><code><a id="__codelineno-38-1" name="__codelineno-38-1" href="#__codelineno-38-1"></a><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">star</span><span class="o">::</span><span class="n">setMinBlocksForThreading</span><span class="w"> </span><span class="p">(</span>
+<a id="__codelineno-38-2" name="__codelineno-38-2" href="#__codelineno-38-2"></a><span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">min_blocks</span>
+<a id="__codelineno-38-3" name="__codelineno-38-3" href="#__codelineno-38-3"></a><span class="p">)</span><span class="w"> </span>
+</code></pre></div></p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>min_blocks</code> Minimum number of blocks (default: 4) </li>
+</ul>
+<hr>
+
+<h3 id="function-setminbytesforthreading">function setMinBytesForThreading<a class="headerlink" href="#function-setminbytesforthreading" title="Permanent link">&para;</a></h3>
+<p><em>Set minimum data size threshold for using threading.</em> 
+<div class="highlight"><pre><span></span><code><a id="__codelineno-39-1" name="__codelineno-39-1" href="#__codelineno-39-1"></a><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">star</span><span class="o">::</span><span class="n">setMinBytesForThreading</span><span class="w"> </span><span class="p">(</span>
+<a id="__codelineno-39-2" name="__codelineno-39-2" href="#__codelineno-39-2"></a><span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">min_bytes</span>
+<a id="__codelineno-39-3" name="__codelineno-39-3" href="#__codelineno-39-3"></a><span class="p">)</span><span class="w"> </span>
+</code></pre></div></p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>min_bytes</code> Minimum data size in bytes (default: 256KB) </li>
+</ul>
+<hr>
+
+<h3 id="function-setnumthreads">function setNumThreads<a class="headerlink" href="#function-setnumthreads" title="Permanent link">&para;</a></h3>
+<p><em>Set number of threads for parallel operations (all datasets).</em> 
+<div class="highlight"><pre><span></span><code><a id="__codelineno-40-1" name="__codelineno-40-1" href="#__codelineno-40-1"></a><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">star</span><span class="o">::</span><span class="n">setNumThreads</span><span class="w"> </span><span class="p">(</span>
+<a id="__codelineno-40-2" name="__codelineno-40-2" href="#__codelineno-40-2"></a><span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">num_threads</span>
+<a id="__codelineno-40-3" name="__codelineno-40-3" href="#__codelineno-40-3"></a><span class="p">)</span><span class="w"> </span>
+</code></pre></div></p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>num_threads</code> Number of threads (0 = auto-detect, 1 = single-threaded) </li>
+</ul>
+<hr>
+
+<h3 id="function-slice_all">function slice_all<a class="headerlink" href="#function-slice_all" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-41-1" name="__codelineno-41-1" href="#__codelineno-41-1"></a><span class="kr">inline</span><span class="w"> </span><span class="n">Slice</span><span class="w"> </span><span class="n">star</span><span class="o">::</span><span class="n">slice_all</span><span class="w"> </span><span class="p">(</span>
+<a id="__codelineno-41-2" name="__codelineno-41-2" href="#__codelineno-41-2"></a><span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">dim_size</span>
+<a id="__codelineno-41-3" name="__codelineno-41-3" href="#__codelineno-41-3"></a><span class="p">)</span><span class="w"> </span>
+</code></pre></div>
+<hr>
+
+<h3 id="function-slice_range">function slice_range<a class="headerlink" href="#function-slice_range" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-42-1" name="__codelineno-42-1" href="#__codelineno-42-1"></a><span class="kr">inline</span><span class="w"> </span><span class="n">Slice</span><span class="w"> </span><span class="n">star</span><span class="o">::</span><span class="n">slice_range</span><span class="w"> </span><span class="p">(</span>
+<a id="__codelineno-42-2" name="__codelineno-42-2" href="#__codelineno-42-2"></a><span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">start</span><span class="p">,</span>
+<a id="__codelineno-42-3" name="__codelineno-42-3" href="#__codelineno-42-3"></a><span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">stop</span>
+<a id="__codelineno-42-4" name="__codelineno-42-4" href="#__codelineno-42-4"></a><span class="p">)</span><span class="w"> </span>
+</code></pre></div>
+<hr>
+
+<h3 id="function-star_curl_perform">function star_curl_perform<a class="headerlink" href="#function-star_curl_perform" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-43-1" name="__codelineno-43-1" href="#__codelineno-43-1"></a><span class="kr">inline</span><span class="w"> </span><span class="n">CURLcode</span><span class="w"> </span><span class="n">star</span><span class="o">::</span><span class="n">star_curl_perform</span><span class="w"> </span><span class="p">(</span>
+<a id="__codelineno-43-2" name="__codelineno-43-2" href="#__codelineno-43-2"></a><span class="w">    </span><span class="n">CURL</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">handle</span>
+<a id="__codelineno-43-3" name="__codelineno-43-3" href="#__codelineno-43-3"></a><span class="p">)</span><span class="w"> </span>
+</code></pre></div>
+<hr>
+
+<h3 id="function-uses_block_shuffle">function uses_block_shuffle<a class="headerlink" href="#function-uses_block_shuffle" title="Permanent link">&para;</a></h3>
+<p><em>Whether the shuffle prefilter is applied PER BLOCK (self-contained blocks). Such arrays are sliceable.</em> 
+<div class="highlight"><pre><span></span><code><a id="__codelineno-44-1" name="__codelineno-44-1" href="#__codelineno-44-1"></a><span class="kr">inline</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">star</span><span class="o">::</span><span class="n">uses_block_shuffle</span><span class="w"> </span><span class="p">(</span>
+<a id="__codelineno-44-2" name="__codelineno-44-2" href="#__codelineno-44-2"></a><span class="w">    </span><span class="n">CompressionAlgorithm</span><span class="w"> </span><span class="n">c</span>
+<a id="__codelineno-44-3" name="__codelineno-44-3" href="#__codelineno-44-3"></a><span class="p">)</span><span class="w"> </span>
+</code></pre></div></p>
+<hr>
+
+<h3 id="function-uses_global_shuffle">function uses_global_shuffle<a class="headerlink" href="#function-uses_global_shuffle" title="Permanent link">&para;</a></h3>
+<p><em>Whether the shuffle prefilter is applied across the WHOLE array (legacy layout). Such arrays are not sliceable.</em> 
+<div class="highlight"><pre><span></span><code><a id="__codelineno-45-1" name="__codelineno-45-1" href="#__codelineno-45-1"></a><span class="kr">inline</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">star</span><span class="o">::</span><span class="n">uses_global_shuffle</span><span class="w"> </span><span class="p">(</span>
+<a id="__codelineno-45-2" name="__codelineno-45-2" href="#__codelineno-45-2"></a><span class="w">    </span><span class="n">CompressionAlgorithm</span><span class="w"> </span><span class="n">c</span>
+<a id="__codelineno-45-3" name="__codelineno-45-3" href="#__codelineno-45-3"></a><span class="p">)</span><span class="w"> </span>
+</code></pre></div></p>
+<hr>
+
+<h3 id="function-uses_shuffle">function uses_shuffle<a class="headerlink" href="#function-uses_shuffle" title="Permanent link">&para;</a></h3>
+<p><em>Whether a compression algorithm uses the byte-shuffle prefilter (either the legacy global variant or the per-block variant).</em> 
+<div class="highlight"><pre><span></span><code><a id="__codelineno-46-1" name="__codelineno-46-1" href="#__codelineno-46-1"></a><span class="kr">inline</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">star</span><span class="o">::</span><span class="n">uses_shuffle</span><span class="w"> </span><span class="p">(</span>
+<a id="__codelineno-46-2" name="__codelineno-46-2" href="#__codelineno-46-2"></a><span class="w">    </span><span class="n">CompressionAlgorithm</span><span class="w"> </span><span class="n">c</span>
+<a id="__codelineno-46-3" name="__codelineno-46-3" href="#__codelineno-46-3"></a><span class="p">)</span><span class="w"> </span>
+</code></pre></div></p>
+<hr>
+
+<h3 id="function-write_le">function write_le<a class="headerlink" href="#function-write_le" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-47-1" name="__codelineno-47-1" href="#__codelineno-47-1"></a><span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span><span class="w"> </span><span class="nc">UInt</span><span class="o">&gt;</span>
+<a id="__codelineno-47-2" name="__codelineno-47-2" href="#__codelineno-47-2"></a><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">star</span><span class="o">::</span><span class="n">write_le</span><span class="w"> </span><span class="p">(</span>
+<a id="__codelineno-47-3" name="__codelineno-47-3" href="#__codelineno-47-3"></a><span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">ostream</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">os</span><span class="p">,</span>
+<a id="__codelineno-47-4" name="__codelineno-47-4" href="#__codelineno-47-4"></a><span class="w">    </span><span class="n">UInt</span><span class="w"> </span><span class="n">value</span>
+<a id="__codelineno-47-5" name="__codelineno-47-5" href="#__codelineno-47-5"></a><span class="p">)</span><span class="w"> </span>
+</code></pre></div>
+<hr>
+
+<h3 id="function-write_u16">function write_u16<a class="headerlink" href="#function-write_u16" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-48-1" name="__codelineno-48-1" href="#__codelineno-48-1"></a><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">star</span><span class="o">::</span><span class="n">write_u16</span><span class="w"> </span><span class="p">(</span>
+<a id="__codelineno-48-2" name="__codelineno-48-2" href="#__codelineno-48-2"></a><span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">ostream</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">os</span><span class="p">,</span>
+<a id="__codelineno-48-3" name="__codelineno-48-3" href="#__codelineno-48-3"></a><span class="w">    </span><span class="kt">uint16_t</span><span class="w"> </span><span class="n">v</span>
+<a id="__codelineno-48-4" name="__codelineno-48-4" href="#__codelineno-48-4"></a><span class="p">)</span><span class="w"> </span>
+</code></pre></div>
+<hr>
+
+<h3 id="function-write_u32">function write_u32<a class="headerlink" href="#function-write_u32" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-49-1" name="__codelineno-49-1" href="#__codelineno-49-1"></a><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">star</span><span class="o">::</span><span class="n">write_u32</span><span class="w"> </span><span class="p">(</span>
+<a id="__codelineno-49-2" name="__codelineno-49-2" href="#__codelineno-49-2"></a><span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">ostream</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">os</span><span class="p">,</span>
+<a id="__codelineno-49-3" name="__codelineno-49-3" href="#__codelineno-49-3"></a><span class="w">    </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">v</span>
+<a id="__codelineno-49-4" name="__codelineno-49-4" href="#__codelineno-49-4"></a><span class="p">)</span><span class="w"> </span>
+</code></pre></div>
+<hr>
+
+<h3 id="function-write_u64">function write_u64<a class="headerlink" href="#function-write_u64" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-50-1" name="__codelineno-50-1" href="#__codelineno-50-1"></a><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">star</span><span class="o">::</span><span class="n">write_u64</span><span class="w"> </span><span class="p">(</span>
+<a id="__codelineno-50-2" name="__codelineno-50-2" href="#__codelineno-50-2"></a><span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">ostream</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">os</span><span class="p">,</span>
+<a id="__codelineno-50-3" name="__codelineno-50-3" href="#__codelineno-50-3"></a><span class="w">    </span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">v</span>
+<a id="__codelineno-50-4" name="__codelineno-50-4" href="#__codelineno-50-4"></a><span class="p">)</span><span class="w"> </span>
+</code></pre></div>
+<hr>
+
+<h3 id="function-write_u8">function write_u8<a class="headerlink" href="#function-write_u8" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-51-1" name="__codelineno-51-1" href="#__codelineno-51-1"></a><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">star</span><span class="o">::</span><span class="n">write_u8</span><span class="w"> </span><span class="p">(</span>
+<a id="__codelineno-51-2" name="__codelineno-51-2" href="#__codelineno-51-2"></a><span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">ostream</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">os</span><span class="p">,</span>
+<a id="__codelineno-51-3" name="__codelineno-51-3" href="#__codelineno-51-3"></a><span class="w">    </span><span class="kt">uint8_t</span><span class="w"> </span><span class="n">v</span>
+<a id="__codelineno-51-4" name="__codelineno-51-4" href="#__codelineno-51-4"></a><span class="p">)</span><span class="w"> </span>
+</code></pre></div>
+<hr>
+<h2 id="public-static-functions-documentation">Public Static Functions Documentation<a class="headerlink" href="#public-static-functions-documentation" title="Permanent link">&para;</a></h2>
+<h3 id="function-extract_dtype_from_variant">function extract_dtype_from_variant<a class="headerlink" href="#function-extract_dtype_from_variant" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-52-1" name="__codelineno-52-1" href="#__codelineno-52-1"></a><span class="k">static</span><span class="w"> </span><span class="kr">inline</span><span class="w"> </span><span class="n">DataType</span><span class="w"> </span><span class="n">star</span><span class="o">::</span><span class="n">extract_dtype_from_variant</span><span class="w"> </span><span class="p">(</span>
+<a id="__codelineno-52-2" name="__codelineno-52-2" href="#__codelineno-52-2"></a><span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">ValueVariant</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">var</span>
+<a id="__codelineno-52-3" name="__codelineno-52-3" href="#__codelineno-52-3"></a><span class="p">)</span><span class="w"> </span>
+</code></pre></div>
+<hr>
+
+<h3 id="function-extract_shape_from_variant">function extract_shape_from_variant<a class="headerlink" href="#function-extract_shape_from_variant" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-53-1" name="__codelineno-53-1" href="#__codelineno-53-1"></a><span class="k">static</span><span class="w"> </span><span class="kr">inline</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">star</span><span class="o">::</span><span class="n">extract_shape_from_variant</span><span class="w"> </span><span class="p">(</span>
+<a id="__codelineno-53-2" name="__codelineno-53-2" href="#__codelineno-53-2"></a><span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">ValueVariant</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">var</span>
+<a id="__codelineno-53-3" name="__codelineno-53-3" href="#__codelineno-53-3"></a><span class="p">)</span><span class="w"> </span>
+</code></pre></div>
+<hr>
+
+<hr />
+<p>The documentation for this class was generated from the following file <code>StarDS/include/stards.h</code></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+      <div class="md-progress" data-md-component="progress" role="progressbar"></div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.path", "navigation.indexes", "navigation.sections", "navigation.top", "navigation.footer", "navigation.instant", "navigation.instant.progress", "toc.follow", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate", "content.tabs.link"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

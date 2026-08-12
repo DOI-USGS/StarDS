@@ -1,0 +1,108 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.17.0" xml:lang="en-US">
+  <compounddef id="structstar_1_1HotStorage" kind="struct" language="C++" prot="public">
+    <compoundname>star::HotStorage</compoundname>
+    <includes refid="stards_8h" local="no">stards.h</includes>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structstar_1_1HotStorage_1a56da3d15edfe5e1778010334f83aa3d9" prot="public" static="no" mutable="no">
+        <type>std::vector&lt; std::string &gt;</type>
+        <definition>std::vector&lt;std::string&gt; star::HotStorage::keys</definition>
+        <argsstring></argsstring>
+        <name>keys</name>
+        <qualifiedname>star::HotStorage::keys</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="4914" column="17" bodyfile="StarDS/include/stards.h" bodystart="4914" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structstar_1_1HotStorage_1a1170f7234af9ddac9ac49857ab64c743" prot="public" static="no" mutable="no">
+        <type>std::vector&lt; DataType &gt;</type>
+        <definition>std::vector&lt;DataType&gt; star::HotStorage::dtypes</definition>
+        <argsstring></argsstring>
+        <name>dtypes</name>
+        <qualifiedname>star::HotStorage::dtypes</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="4915" column="17" bodyfile="StarDS/include/stards.h" bodystart="4915" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structstar_1_1HotStorage_1aa59c0b2a2ca708d58c7ce3ef6a5ec7b8" prot="public" static="no" mutable="no">
+        <type>std::vector&lt; StorageLocation &gt;</type>
+        <definition>std::vector&lt;StorageLocation&gt; star::HotStorage::locations</definition>
+        <argsstring></argsstring>
+        <name>locations</name>
+        <qualifiedname>star::HotStorage::locations</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="4916" column="17" bodyfile="StarDS/include/stards.h" bodystart="4916" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structstar_1_1HotStorage_1acf88236bb676fa26eaf3e13bc96c318c" prot="public" static="no" mutable="no">
+        <type>std::vector&lt; bool &gt;</type>
+        <definition>std::vector&lt;bool&gt; star::HotStorage::dirty_flags</definition>
+        <argsstring></argsstring>
+        <name>dirty_flags</name>
+        <qualifiedname>star::HotStorage::dirty_flags</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="4917" column="17" bodyfile="StarDS/include/stards.h" bodystart="4917" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structstar_1_1HotStorage_1ad6c9391a9bc170f852f11c85cb1c5fe6" prot="public" static="no" mutable="no">
+        <type>std::vector&lt; bool &gt;</type>
+        <definition>std::vector&lt;bool&gt; star::HotStorage::loaded_flags</definition>
+        <argsstring></argsstring>
+        <name>loaded_flags</name>
+        <qualifiedname>star::HotStorage::loaded_flags</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="4918" column="17" bodyfile="StarDS/include/stards.h" bodystart="4918" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structstar_1_1HotStorage_1a3f1b6e9e16fb8923201d29d272a71788" prot="public" static="no" mutable="no">
+        <type>std::vector&lt; size_t &gt;</type>
+        <definition>std::vector&lt;size_t&gt; star::HotStorage::data_indices</definition>
+        <argsstring></argsstring>
+        <name>data_indices</name>
+        <qualifiedname>star::HotStorage::data_indices</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="4919" column="17" bodyfile="StarDS/include/stards.h" bodystart="4919" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+<para>Hot storage - frequently accessed data (cache-friendly). </para>
+    </briefdescription>
+    <detaileddescription>
+<para>These fields are accessed during every get/put/contains operation. Packed together for better cache locality. </para>
+    </detaileddescription>
+    <location file="StarDS/include/stards.h" line="4913" column="1" bodyfile="StarDS/include/stards.h" bodystart="4913" bodyend="4920"/>
+    <listofallmembers>
+      <member refid="structstar_1_1HotStorage_1a3f1b6e9e16fb8923201d29d272a71788" prot="public" virt="non-virtual"><scope>star::HotStorage</scope><name>data_indices</name></member>
+      <member refid="structstar_1_1HotStorage_1acf88236bb676fa26eaf3e13bc96c318c" prot="public" virt="non-virtual"><scope>star::HotStorage</scope><name>dirty_flags</name></member>
+      <member refid="structstar_1_1HotStorage_1a1170f7234af9ddac9ac49857ab64c743" prot="public" virt="non-virtual"><scope>star::HotStorage</scope><name>dtypes</name></member>
+      <member refid="structstar_1_1HotStorage_1a56da3d15edfe5e1778010334f83aa3d9" prot="public" virt="non-virtual"><scope>star::HotStorage</scope><name>keys</name></member>
+      <member refid="structstar_1_1HotStorage_1ad6c9391a9bc170f852f11c85cb1c5fe6" prot="public" virt="non-virtual"><scope>star::HotStorage</scope><name>loaded_flags</name></member>
+      <member refid="structstar_1_1HotStorage_1aa59c0b2a2ca708d58c7ce3ef6a5ec7b8" prot="public" virt="non-virtual"><scope>star::HotStorage</scope><name>locations</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

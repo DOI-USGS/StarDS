@@ -1,0 +1,169 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.17.0" xml:lang="en-US">
+  <compounddef id="classstar_1_1AWSConfigParser" kind="class" language="C++" prot="public">
+    <compoundname>star::AWSConfigParser</compoundname>
+    <includes refid="stards_8h" local="no">stards.h</includes>
+    <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classstar_1_1AWSConfigParser_1a42bbad487f492abe100ecdd6d72bbead" prot="private" static="no" mutable="no">
+        <type>std::map&lt; std::string, std::map&lt; std::string, std::string &gt; &gt;</type>
+        <definition>std::map&lt;std::string, std::map&lt;std::string, std::string&gt; &gt; star::AWSConfigParser::m_profiles</definition>
+        <argsstring></argsstring>
+        <name>m_profiles</name>
+        <qualifiedname>star::AWSConfigParser::m_profiles</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="2039" column="14" bodyfile="StarDS/include/stards.h" bodystart="2039" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="private-static-func">
+      <memberdef kind="function" id="classstar_1_1AWSConfigParser_1a7ae9cc8b715d20b68b0550f30b4a98d8" prot="private" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::string</type>
+        <definition>static std::string star::AWSConfigParser::getHomeDir</definition>
+        <argsstring>()</argsstring>
+        <name>getHomeDir</name>
+        <qualifiedname>star::AWSConfigParser::getHomeDir</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="2041" column="24" bodyfile="StarDS/include/stards.h" bodystart="2041" bodyend="2047"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1AWSConfigParser_1ae22b7dc53cdd379a96e8c6ab5f41c119" prot="private" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::string</type>
+        <definition>static std::string star::AWSConfigParser::trim</definition>
+        <argsstring>(const std::string &amp;str)</argsstring>
+        <name>trim</name>
+        <qualifiedname>star::AWSConfigParser::trim</qualifiedname>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>str</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="2049" column="24" bodyfile="StarDS/include/stards.h" bodystart="2049" bodyend="2054"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="classstar_1_1AWSConfigParser_1a030af99bbf3f57a109be3ea37b9f658e" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>star::AWSConfigParser::AWSConfigParser</definition>
+        <argsstring>(const std::string &amp;config_file)</argsstring>
+        <name>AWSConfigParser</name>
+        <qualifiedname>star::AWSConfigParser::AWSConfigParser</qualifiedname>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>config_file</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="2057" column="5" bodyfile="StarDS/include/stards.h" bodystart="2057" bodyend="2097"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1AWSConfigParser_1af253e659b1831cda66f7bda82bffe2f1" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool star::AWSConfigParser::hasProfile</definition>
+        <argsstring>(const std::string &amp;profile) const</argsstring>
+        <name>hasProfile</name>
+        <qualifiedname>star::AWSConfigParser::hasProfile</qualifiedname>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>profile</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="2099" column="10" bodyfile="StarDS/include/stards.h" bodystart="2099" bodyend="2101"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1AWSConfigParser_1a06d1bbc2256fc3288ed66378d2ec4f90" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::string</type>
+        <definition>std::string star::AWSConfigParser::getValue</definition>
+        <argsstring>(const std::string &amp;profile, const std::string &amp;key, const std::string &amp;default_value=&quot;&quot;) const</argsstring>
+        <name>getValue</name>
+        <qualifiedname>star::AWSConfigParser::getValue</qualifiedname>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>profile</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>key</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>default_value</declname>
+          <defval>&quot;&quot;</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="2103" column="17" bodyfile="StarDS/include/stards.h" bodystart="2103" bodyend="2116"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-static-func">
+      <memberdef kind="function" id="classstar_1_1AWSConfigParser_1a135923fe21a3196ba2e32410228934ce" prot="public" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::string</type>
+        <definition>static std::string star::AWSConfigParser::getConfigPath</definition>
+        <argsstring>()</argsstring>
+        <name>getConfigPath</name>
+        <qualifiedname>star::AWSConfigParser::getConfigPath</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="2118" column="24" bodyfile="StarDS/include/stards.h" bodystart="2118" bodyend="2122"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1AWSConfigParser_1ae63dc14ea20541f92e483d3d6430141d" prot="public" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::string</type>
+        <definition>static std::string star::AWSConfigParser::getCredentialsPath</definition>
+        <argsstring>()</argsstring>
+        <name>getCredentialsPath</name>
+        <qualifiedname>star::AWSConfigParser::getCredentialsPath</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="2124" column="24" bodyfile="StarDS/include/stards.h" bodystart="2124" bodyend="2128"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+<para>AWS Configuration file parser. </para>
+    </briefdescription>
+    <detaileddescription>
+<para>Parses INI-style configuration files like ~/.aws/config and ~/.aws/credentials </para>
+    </detaileddescription>
+    <location file="StarDS/include/stards.h" line="2037" column="1" bodyfile="StarDS/include/stards.h" bodystart="2037" bodyend="2129"/>
+    <listofallmembers>
+      <member refid="classstar_1_1AWSConfigParser_1a030af99bbf3f57a109be3ea37b9f658e" prot="public" virt="non-virtual"><scope>star::AWSConfigParser</scope><name>AWSConfigParser</name></member>
+      <member refid="classstar_1_1AWSConfigParser_1a135923fe21a3196ba2e32410228934ce" prot="public" virt="non-virtual"><scope>star::AWSConfigParser</scope><name>getConfigPath</name></member>
+      <member refid="classstar_1_1AWSConfigParser_1ae63dc14ea20541f92e483d3d6430141d" prot="public" virt="non-virtual"><scope>star::AWSConfigParser</scope><name>getCredentialsPath</name></member>
+      <member refid="classstar_1_1AWSConfigParser_1a7ae9cc8b715d20b68b0550f30b4a98d8" prot="private" virt="non-virtual"><scope>star::AWSConfigParser</scope><name>getHomeDir</name></member>
+      <member refid="classstar_1_1AWSConfigParser_1a06d1bbc2256fc3288ed66378d2ec4f90" prot="public" virt="non-virtual"><scope>star::AWSConfigParser</scope><name>getValue</name></member>
+      <member refid="classstar_1_1AWSConfigParser_1af253e659b1831cda66f7bda82bffe2f1" prot="public" virt="non-virtual"><scope>star::AWSConfigParser</scope><name>hasProfile</name></member>
+      <member refid="classstar_1_1AWSConfigParser_1a42bbad487f492abe100ecdd6d72bbead" prot="private" virt="non-virtual"><scope>star::AWSConfigParser</scope><name>m_profiles</name></member>
+      <member refid="classstar_1_1AWSConfigParser_1ae22b7dc53cdd379a96e8c6ab5f41c119" prot="private" virt="non-virtual"><scope>star::AWSConfigParser</scope><name>trim</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

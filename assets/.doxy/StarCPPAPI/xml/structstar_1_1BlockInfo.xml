@@ -1,0 +1,102 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.17.0" xml:lang="en-US">
+  <compounddef id="structstar_1_1BlockInfo" kind="struct" language="C++" prot="public">
+    <compoundname>star::BlockInfo</compoundname>
+    <includes refid="stards_8h" local="no">stards.h</includes>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structstar_1_1BlockInfo_1acdc8bdbd7a7ce873a9e2ee1076f67764" prot="public" static="no" mutable="no">
+        <type>uint64_t</type>
+        <definition>uint64_t star::BlockInfo::offset</definition>
+        <argsstring></argsstring>
+        <name>offset</name>
+        <qualifiedname>star::BlockInfo::offset</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1218" column="14" bodyfile="StarDS/include/stards.h" bodystart="1218" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structstar_1_1BlockInfo_1af4ba491104187b20bedac009e1f7a13e" prot="public" static="no" mutable="no">
+        <type>uint64_t</type>
+        <definition>uint64_t star::BlockInfo::compressed_size</definition>
+        <argsstring></argsstring>
+        <name>compressed_size</name>
+        <qualifiedname>star::BlockInfo::compressed_size</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1219" column="14" bodyfile="StarDS/include/stards.h" bodystart="1219" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structstar_1_1BlockInfo_1a68e05ddfc85c26881e8e0eec1241808f" prot="public" static="no" mutable="no">
+        <type>uint64_t</type>
+        <definition>uint64_t star::BlockInfo::uncompressed_size</definition>
+        <argsstring></argsstring>
+        <name>uncompressed_size</name>
+        <qualifiedname>star::BlockInfo::uncompressed_size</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1220" column="14" bodyfile="StarDS/include/stards.h" bodystart="1220" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="structstar_1_1BlockInfo_1a85b90ea55f678c257dfd28db1f6248b0" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void star::BlockInfo::write</definition>
+        <argsstring>(std::ostream &amp;os) const</argsstring>
+        <name>write</name>
+        <qualifiedname>star::BlockInfo::write</qualifiedname>
+        <param>
+          <type>std::ostream &amp;</type>
+          <declname>os</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1225" column="10" bodyfile="StarDS/include/stards.h" bodystart="1225" bodyend="1229"/>
+      </memberdef>
+      <memberdef kind="function" id="structstar_1_1BlockInfo_1a35ea0e2195b925b2bbcbbc180d21ba7b" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void star::BlockInfo::read</definition>
+        <argsstring>(std::istream &amp;is)</argsstring>
+        <name>read</name>
+        <qualifiedname>star::BlockInfo::read</qualifiedname>
+        <param>
+          <type>std::istream &amp;</type>
+          <declname>is</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1231" column="10" bodyfile="StarDS/include/stards.h" bodystart="1231" bodyend="1235"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+<para>Metadata for a single compressed block. </para>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="StarDS/include/stards.h" line="1217" column="1" bodyfile="StarDS/include/stards.h" bodystart="1217" bodyend="1236"/>
+    <listofallmembers>
+      <member refid="structstar_1_1BlockInfo_1af4ba491104187b20bedac009e1f7a13e" prot="public" virt="non-virtual"><scope>star::BlockInfo</scope><name>compressed_size</name></member>
+      <member refid="structstar_1_1BlockInfo_1acdc8bdbd7a7ce873a9e2ee1076f67764" prot="public" virt="non-virtual"><scope>star::BlockInfo</scope><name>offset</name></member>
+      <member refid="structstar_1_1BlockInfo_1a35ea0e2195b925b2bbcbbc180d21ba7b" prot="public" virt="non-virtual"><scope>star::BlockInfo</scope><name>read</name></member>
+      <member refid="structstar_1_1BlockInfo_1a68e05ddfc85c26881e8e0eec1241808f" prot="public" virt="non-virtual"><scope>star::BlockInfo</scope><name>uncompressed_size</name></member>
+      <member refid="structstar_1_1BlockInfo_1a85b90ea55f678c257dfd28db1f6248b0" prot="public" virt="non-virtual"><scope>star::BlockInfo</scope><name>write</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

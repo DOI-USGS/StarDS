@@ -1,0 +1,295 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.17.0" xml:lang="en-US">
+  <compounddef id="classstar_1_1LayerView" kind="class" language="C++" prot="public">
+    <compoundname>star::LayerView</compoundname>
+    <includes refid="stards_8h" local="no">stards.h</includes>
+    <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classstar_1_1LayerView_1a6627e9e6172f54af1ad99fa5f15b5bc5" prot="private" static="no" mutable="no">
+        <type>std::shared_ptr&lt; <ref refid="classstar_1_1StarDataset" kindref="compound">StarDataset</ref> &gt;</type>
+        <definition>std::shared_ptr&lt;StarDataset&gt; star::LayerView::m_base</definition>
+        <argsstring></argsstring>
+        <name>m_base</name>
+        <qualifiedname>star::LayerView::m_base</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="5097" column="21" bodyfile="StarDS/include/stards.h" bodystart="5097" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classstar_1_1LayerView_1a88a79927ef3113a9f3bf9be1e6b30ace" prot="private" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string star::LayerView::m_layer_name</definition>
+        <argsstring></argsstring>
+        <name>m_layer_name</name>
+        <qualifiedname>star::LayerView::m_layer_name</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="5098" column="17" bodyfile="StarDS/include/stards.h" bodystart="5098" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classstar_1_1LayerView_1ade5608a367ac5867e714de80af48b1d8" prot="public" static="no" mutable="no">
+        <type><ref refid="classstar_1_1LayerMetadataAccessor" kindref="compound">LayerMetadataAccessor</ref></type>
+        <definition>LayerMetadataAccessor star::LayerView::meta</definition>
+        <argsstring></argsstring>
+        <name>meta</name>
+        <qualifiedname>star::LayerView::meta</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="5102" column="27" bodyfile="StarDS/include/stards.h" bodystart="5102" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="classstar_1_1LayerView_1af5195edcc81f9200d274b893c481175f" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>star::LayerView::LayerView</definition>
+        <argsstring>(std::shared_ptr&lt; StarDataset &gt; base, const std::string &amp;layer_name)</argsstring>
+        <name>LayerView</name>
+        <qualifiedname>star::LayerView::LayerView</qualifiedname>
+        <param>
+          <type>std::shared_ptr&lt; <ref refid="classstar_1_1StarDataset" kindref="compound">StarDataset</ref> &gt;</type>
+          <declname>base</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>layer_name</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="5104" column="5" bodyfile="StarDS/include/stards.h" bodystart="5104" bodyend="5105"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1LayerView_1a5e5295e01e36c52f6b8cabb00c3794a3" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool star::LayerView::contains</definition>
+        <argsstring>(const std::string &amp;key) const</argsstring>
+        <name>contains</name>
+        <qualifiedname>star::LayerView::contains</qualifiedname>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>key</declname>
+        </param>
+        <briefdescription>
+<para>Check if key exists in this layer or base (with inheritance). </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>key</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Key to check </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>true if key exists in layer or base </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="5112" column="10" bodyfile="StarDS/include/stards.h" bodystart="9819" bodyend="9824"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1LayerView_1adf5f341bfc20359f17598f84b0e03d17" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::vector&lt; std::string &gt;</type>
+        <definition>std::vector&lt; std::string &gt; star::LayerView::keys</definition>
+        <argsstring>() const</argsstring>
+        <name>keys</name>
+        <qualifiedname>star::LayerView::keys</qualifiedname>
+        <briefdescription>
+<para>Get all keys in this layer (local + inherited). </para>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>Vector of key names </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="5118" column="17" bodyfile="StarDS/include/stards.h" bodystart="9826" bodyend="9864"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1LayerView_1a83ef65cf7e248ab827dda5ead2f3296f" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::string</type>
+        <definition>std::string star::LayerView::name</definition>
+        <argsstring>() const</argsstring>
+        <name>name</name>
+        <qualifiedname>star::LayerView::name</qualifiedname>
+        <briefdescription>
+<para>Get layer name. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>Layer name </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="5124" column="17" bodyfile="StarDS/include/stards.h" bodystart="5124" bodyend="5124"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1LayerView_1a72d7406f3284c4d0ddc674ea063f06e9" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::shared_ptr&lt; <ref refid="classstar_1_1StarDataset" kindref="compound">StarDataset</ref> &gt;</type>
+        <definition>std::shared_ptr&lt; StarDataset &gt; star::LayerView::base</definition>
+        <argsstring>() const</argsstring>
+        <name>base</name>
+        <qualifiedname>star::LayerView::base</qualifiedname>
+        <briefdescription>
+<para>Get parent dataset. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>Shared pointer to base <ref refid="classstar_1_1StarDataset" kindref="compound">StarDataset</ref> </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="5130" column="21" bodyfile="StarDS/include/stards.h" bodystart="5130" bodyend="5130"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1LayerView_1a22c564ef52d303033054b29c71028a4e" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+        </templateparamlist>
+        <type><ref refid="classstar_1_1NDArray" kindref="compound">NDArray</ref>&lt; T &gt;</type>
+        <definition>NDArray&lt; T &gt; star::LayerView::get</definition>
+        <argsstring>(const std::string &amp;key)</argsstring>
+        <name>get</name>
+        <qualifiedname>star::LayerView::get</qualifiedname>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>key</declname>
+        </param>
+        <briefdescription>
+<para>Get array from this layer with inheritance. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="templateparam"><parameteritem>
+<parameternamelist>
+<parametername>T</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Element type </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>key</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Key to retrieve </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para><ref refid="classstar_1_1NDArray" kindref="compound">NDArray</ref> with data from layer or base </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="5139" column="13" bodyfile="StarDS/include/stards.h" bodystart="9335" bodyend="9368"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1LayerView_1a581bcd0480cc3d104ac2fdcefc0d30fb" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+        </templateparamlist>
+        <type>void</type>
+        <definition>void star::LayerView::put</definition>
+        <argsstring>(const std::string &amp;key, NDArray&lt; T &gt; &amp;&amp;value)</argsstring>
+        <name>put</name>
+        <qualifiedname>star::LayerView::put</qualifiedname>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>key</declname>
+        </param>
+        <param>
+          <type><ref refid="classstar_1_1NDArray" kindref="compound">NDArray</ref>&lt; T &gt; &amp;&amp;</type>
+          <declname>value</declname>
+        </param>
+        <briefdescription>
+<para>Store array in this layer. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="templateparam"><parameteritem>
+<parameternamelist>
+<parametername>T</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Element type </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>key</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Key to store </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>value</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Data to store </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="5148" column="10" bodyfile="StarDS/include/stards.h" bodystart="9371" bodyend="9395"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+<para>Lightweight view into a specific layer with inheritance from base. </para>
+    </briefdescription>
+    <detaileddescription>
+<para><ref refid="classstar_1_1LayerView" kindref="compound">LayerView</ref> provides the same API as <ref refid="classstar_1_1StarDataset" kindref="compound">StarDataset</ref> but operates on a specific layer. Keys not found in the layer automatically fall back to the base layer.</para>
+<para>Example: auto ds = <ref refid="classstar_1_1StarDataset_1a7da82ee4803e6302ad903e12e3c4c0c7" kindref="member">StarDataset::open</ref>(&quot;file.stards&quot;); auto layer1 = ds-&gt;create_layer(&quot;band_0&quot;); layer1-&gt;meta.put(&quot;wavelength&quot;, <ref refid="classstar_1_1NDArray" kindref="compound">NDArray&lt;double&gt;</ref>({}, 450.5)); // Layer-specific auto inst = layer1-&gt;meta.get(&quot;instrument&quot;); // Falls back to base </para>
+    </detaileddescription>
+    <collaborationgraph>
+      <node id="2">
+        <label>star::LayerMetadataAccessor</label>
+        <link refid="classstar_1_1LayerMetadataAccessor"/>
+      </node>
+      <node id="1">
+        <label>star::LayerView</label>
+        <link refid="classstar_1_1LayerView"/>
+        <childnode refid="2" relation="usage">
+          <edgelabel>meta</edgelabel>
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="StarDS/include/stards.h" line="5095" column="1" bodyfile="StarDS/include/stards.h" bodystart="5095" bodyend="5149"/>
+    <listofallmembers>
+      <member refid="classstar_1_1LayerView_1a72d7406f3284c4d0ddc674ea063f06e9" prot="public" virt="non-virtual"><scope>star::LayerView</scope><name>base</name></member>
+      <member refid="classstar_1_1LayerView_1a5e5295e01e36c52f6b8cabb00c3794a3" prot="public" virt="non-virtual"><scope>star::LayerView</scope><name>contains</name></member>
+      <member refid="classstar_1_1LayerView_1a22c564ef52d303033054b29c71028a4e" prot="public" virt="non-virtual"><scope>star::LayerView</scope><name>get</name></member>
+      <member refid="classstar_1_1LayerView_1adf5f341bfc20359f17598f84b0e03d17" prot="public" virt="non-virtual"><scope>star::LayerView</scope><name>keys</name></member>
+      <member refid="classstar_1_1LayerView_1af5195edcc81f9200d274b893c481175f" prot="public" virt="non-virtual"><scope>star::LayerView</scope><name>LayerView</name></member>
+      <member refid="classstar_1_1LayerView_1a6627e9e6172f54af1ad99fa5f15b5bc5" prot="private" virt="non-virtual"><scope>star::LayerView</scope><name>m_base</name></member>
+      <member refid="classstar_1_1LayerView_1a88a79927ef3113a9f3bf9be1e6b30ace" prot="private" virt="non-virtual"><scope>star::LayerView</scope><name>m_layer_name</name></member>
+      <member refid="classstar_1_1LayerView_1ade5608a367ac5867e714de80af48b1d8" prot="public" virt="non-virtual"><scope>star::LayerView</scope><name>meta</name></member>
+      <member refid="classstar_1_1LayerView_1a83ef65cf7e248ab827dda5ead2f3296f" prot="public" virt="non-virtual"><scope>star::LayerView</scope><name>name</name></member>
+      <member refid="classstar_1_1LayerView_1a581bcd0480cc3d104ac2fdcefc0d30fb" prot="public" virt="non-virtual"><scope>star::LayerView</scope><name>put</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

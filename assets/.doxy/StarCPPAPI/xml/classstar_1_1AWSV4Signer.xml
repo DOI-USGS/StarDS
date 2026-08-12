@@ -1,0 +1,356 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.17.0" xml:lang="en-US">
+  <compounddef id="classstar_1_1AWSV4Signer" kind="class" language="C++" prot="public">
+    <compoundname>star::AWSV4Signer</compoundname>
+    <includes refid="stards_8h" local="no">stards.h</includes>
+    <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classstar_1_1AWSV4Signer_1af395cd771783a25d7524c955ab0f8353" prot="private" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string star::AWSV4Signer::m_access_key</definition>
+        <argsstring></argsstring>
+        <name>m_access_key</name>
+        <qualifiedname>star::AWSV4Signer::m_access_key</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1877" column="17" bodyfile="StarDS/include/stards.h" bodystart="1877" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classstar_1_1AWSV4Signer_1acf6b18d4f7673498e977e589931fa5c8" prot="private" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string star::AWSV4Signer::m_secret_key</definition>
+        <argsstring></argsstring>
+        <name>m_secret_key</name>
+        <qualifiedname>star::AWSV4Signer::m_secret_key</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1878" column="17" bodyfile="StarDS/include/stards.h" bodystart="1878" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classstar_1_1AWSV4Signer_1a308449f50e0c6a298092c56943074d99" prot="private" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string star::AWSV4Signer::m_session_token</definition>
+        <argsstring></argsstring>
+        <name>m_session_token</name>
+        <qualifiedname>star::AWSV4Signer::m_session_token</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1879" column="17" bodyfile="StarDS/include/stards.h" bodystart="1879" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classstar_1_1AWSV4Signer_1ac13f6df4bf1c39b558d2a022443de835" prot="private" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string star::AWSV4Signer::m_region</definition>
+        <argsstring></argsstring>
+        <name>m_region</name>
+        <qualifiedname>star::AWSV4Signer::m_region</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1880" column="17" bodyfile="StarDS/include/stards.h" bodystart="1880" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="friend">
+      <memberdef kind="friend" id="classstar_1_1AWSV4Signer_1a63fd45c9c3826f553867677f216bc1bc" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>class</type>
+        <definition>friend class S3Writer</definition>
+        <argsstring></argsstring>
+        <name>S3Writer</name>
+        <qualifiedname>star::AWSV4Signer::S3Writer</qualifiedname>
+        <param>
+          <type>S3Writer</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1882" column="18" bodyfile="StarDS/include/stards.h" bodystart="1882" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="private-static-func">
+      <memberdef kind="function" id="classstar_1_1AWSV4Signer_1ad97bd143161d3c4b5c636a38a9361c89" prot="private" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::string</type>
+        <definition>static std::string star::AWSV4Signer::sha256</definition>
+        <argsstring>(const std::string &amp;data)</argsstring>
+        <name>sha256</name>
+        <qualifiedname>star::AWSV4Signer::sha256</qualifiedname>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>data</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1885" column="24" bodyfile="StarDS/include/stards.h" bodystart="1885" bodyend="1888"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1AWSV4Signer_1a438cf88b62e5475253ca76c093cdde84" prot="private" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::string</type>
+        <definition>static std::string star::AWSV4Signer::hmacSha256</definition>
+        <argsstring>(const std::string &amp;key, const std::string &amp;data)</argsstring>
+        <name>hmacSha256</name>
+        <qualifiedname>star::AWSV4Signer::hmacSha256</qualifiedname>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>key</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>data</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1891" column="24" bodyfile="StarDS/include/stards.h" bodystart="1891" bodyend="1894"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="private-func">
+      <memberdef kind="function" id="classstar_1_1AWSV4Signer_1ad6214ae1a5521998168fdd47a50f8b26" prot="private" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::string</type>
+        <definition>std::string star::AWSV4Signer::createCanonicalHeaders</definition>
+        <argsstring>(const std::map&lt; std::string, std::string &gt; &amp;headers) const</argsstring>
+        <name>createCanonicalHeaders</name>
+        <qualifiedname>star::AWSV4Signer::createCanonicalHeaders</qualifiedname>
+        <param>
+          <type>const std::map&lt; std::string, std::string &gt; &amp;</type>
+          <declname>headers</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1897" column="17" bodyfile="StarDS/include/stards.h" bodystart="1897" bodyend="1905"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1AWSV4Signer_1a1bc503612125e94312ceca1026c8d6d5" prot="private" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::string</type>
+        <definition>std::string star::AWSV4Signer::createSignedHeaders</definition>
+        <argsstring>(const std::map&lt; std::string, std::string &gt; &amp;headers) const</argsstring>
+        <name>createSignedHeaders</name>
+        <qualifiedname>star::AWSV4Signer::createSignedHeaders</qualifiedname>
+        <param>
+          <type>const std::map&lt; std::string, std::string &gt; &amp;</type>
+          <declname>headers</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1908" column="17" bodyfile="StarDS/include/stards.h" bodystart="1908" bodyend="1919"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="classstar_1_1AWSV4Signer_1aba8a8b4db839d282797112006f576015" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>star::AWSV4Signer::AWSV4Signer</definition>
+        <argsstring>(const std::string &amp;access_key, const std::string &amp;secret_key, const std::string &amp;region, const std::string &amp;session_token=&quot;&quot;)</argsstring>
+        <name>AWSV4Signer</name>
+        <qualifiedname>star::AWSV4Signer::AWSV4Signer</qualifiedname>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>access_key</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>secret_key</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>region</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>session_token</declname>
+          <defval>&quot;&quot;</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1922" column="5" bodyfile="StarDS/include/stards.h" bodystart="1922" bodyend="1929"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1AWSV4Signer_1a1dfdded7b88210738da7c6a5880b2f98" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::string</type>
+        <definition>std::string star::AWSV4Signer::signRequest</definition>
+        <argsstring>(const std::string &amp;method, const std::string &amp;bucket, const std::string &amp;key, const std::string &amp;content_hash, const std::map&lt; std::string, std::string &gt; &amp;headers) const</argsstring>
+        <name>signRequest</name>
+        <qualifiedname>star::AWSV4Signer::signRequest</qualifiedname>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>method</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>bucket</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>key</declname>
+        </param>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>content_hash</declname>
+        </param>
+        <param>
+          <type>const std::map&lt; std::string, std::string &gt; &amp;</type>
+          <declname>headers</declname>
+        </param>
+        <briefdescription>
+<para>Sign an S3 request using AWS Signature Version 4. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>method</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>HTTP method (GET, PUT, etc.) </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>bucket</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>S3 bucket name </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>key</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>S3 object key </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>content_hash</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>SHA256 hash of request body (hex-encoded) </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>headers</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Request headers (must include host and x-amz-date) </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>Authorization header value </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1973" column="17" bodyfile="StarDS/include/stards.h" bodystart="1973" bodyend="2027"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1AWSV4Signer_1a6bdb89c88d08afe49f012169ab46750a" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>const std::string &amp;</type>
+        <definition>const std::string &amp; star::AWSV4Signer::getSessionToken</definition>
+        <argsstring>() const</argsstring>
+        <name>getSessionToken</name>
+        <qualifiedname>star::AWSV4Signer::getSessionToken</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="2029" column="23" bodyfile="StarDS/include/stards.h" bodystart="2029" bodyend="2029"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-static-func">
+      <memberdef kind="function" id="classstar_1_1AWSV4Signer_1a4c044ec1410563622d1f294df24a85a2" prot="public" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::string</type>
+        <definition>static std::string star::AWSV4Signer::hexEncode</definition>
+        <argsstring>(const unsigned char *data, size_t len)</argsstring>
+        <name>hexEncode</name>
+        <qualifiedname>star::AWSV4Signer::hexEncode</qualifiedname>
+        <param>
+          <type>const unsigned char *</type>
+          <declname>data</declname>
+        </param>
+        <param>
+          <type>size_t</type>
+          <declname>len</declname>
+        </param>
+        <briefdescription>
+<para>Convert binary data to hex string (public utility). </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1934" column="24" bodyfile="StarDS/include/stards.h" bodystart="1934" bodyend="1941"/>
+      </memberdef>
+      <memberdef kind="function" id="classstar_1_1AWSV4Signer_1abddb250a54ac4cc60d5f1d5bcca822c1" prot="public" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::string</type>
+        <definition>static std::string star::AWSV4Signer::urlEncode</definition>
+        <argsstring>(const std::string &amp;value)</argsstring>
+        <name>urlEncode</name>
+        <qualifiedname>star::AWSV4Signer::urlEncode</qualifiedname>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>value</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="StarDS/include/stards.h" line="1946" column="24" bodyfile="StarDS/include/stards.h" bodystart="1946" bodyend="1961"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+<para>AWS Signature Version 4 signer. </para>
+    </briefdescription>
+    <detaileddescription>
+<para>Implements AWS SigV4 authentication for S3 requests. Uses OpenSSL for the SHA-256 / HMAC-SHA256 primitives on native builds and mbedTLS under WebAssembly (see the s3crypto shim above). This provides authentication without requiring the full AWS SDK. </para>
+    </detaileddescription>
+    <location file="StarDS/include/stards.h" line="1875" column="1" bodyfile="StarDS/include/stards.h" bodystart="1875" bodyend="2030"/>
+    <listofallmembers>
+      <member refid="classstar_1_1AWSV4Signer_1aba8a8b4db839d282797112006f576015" prot="public" virt="non-virtual"><scope>star::AWSV4Signer</scope><name>AWSV4Signer</name></member>
+      <member refid="classstar_1_1AWSV4Signer_1ad6214ae1a5521998168fdd47a50f8b26" prot="private" virt="non-virtual"><scope>star::AWSV4Signer</scope><name>createCanonicalHeaders</name></member>
+      <member refid="classstar_1_1AWSV4Signer_1a1bc503612125e94312ceca1026c8d6d5" prot="private" virt="non-virtual"><scope>star::AWSV4Signer</scope><name>createSignedHeaders</name></member>
+      <member refid="classstar_1_1AWSV4Signer_1a6bdb89c88d08afe49f012169ab46750a" prot="public" virt="non-virtual"><scope>star::AWSV4Signer</scope><name>getSessionToken</name></member>
+      <member refid="classstar_1_1AWSV4Signer_1a4c044ec1410563622d1f294df24a85a2" prot="public" virt="non-virtual"><scope>star::AWSV4Signer</scope><name>hexEncode</name></member>
+      <member refid="classstar_1_1AWSV4Signer_1a438cf88b62e5475253ca76c093cdde84" prot="private" virt="non-virtual"><scope>star::AWSV4Signer</scope><name>hmacSha256</name></member>
+      <member refid="classstar_1_1AWSV4Signer_1af395cd771783a25d7524c955ab0f8353" prot="private" virt="non-virtual"><scope>star::AWSV4Signer</scope><name>m_access_key</name></member>
+      <member refid="classstar_1_1AWSV4Signer_1ac13f6df4bf1c39b558d2a022443de835" prot="private" virt="non-virtual"><scope>star::AWSV4Signer</scope><name>m_region</name></member>
+      <member refid="classstar_1_1AWSV4Signer_1acf6b18d4f7673498e977e589931fa5c8" prot="private" virt="non-virtual"><scope>star::AWSV4Signer</scope><name>m_secret_key</name></member>
+      <member refid="classstar_1_1AWSV4Signer_1a308449f50e0c6a298092c56943074d99" prot="private" virt="non-virtual"><scope>star::AWSV4Signer</scope><name>m_session_token</name></member>
+      <member refid="classstar_1_1AWSV4Signer_1a63fd45c9c3826f553867677f216bc1bc" prot="private" virt="non-virtual"><scope>star::AWSV4Signer</scope><name>S3Writer</name></member>
+      <member refid="classstar_1_1AWSV4Signer_1ad97bd143161d3c4b5c636a38a9361c89" prot="private" virt="non-virtual"><scope>star::AWSV4Signer</scope><name>sha256</name></member>
+      <member refid="classstar_1_1AWSV4Signer_1a1dfdded7b88210738da7c6a5880b2f98" prot="public" virt="non-virtual"><scope>star::AWSV4Signer</scope><name>signRequest</name></member>
+      <member refid="classstar_1_1AWSV4Signer_1abddb250a54ac4cc60d5f1d5bcca822c1" prot="public" virt="non-virtual"><scope>star::AWSV4Signer</scope><name>urlEncode</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

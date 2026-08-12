@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.17.0" xml:lang="en-US">
+  <compounddef id="dir_7b9276b290ca3533ce90423fcc5f6188" kind="dir">
+    <compoundname>StarDS</compoundname>
+    <innerdir refid="dir_b0f4f9828a575b9faf4f13364a06fab6">StarDS/include</innerdir>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="StarDS/"/>
+  </compounddef>
+</doxygen>
