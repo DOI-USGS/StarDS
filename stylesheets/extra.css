@@ -530,6 +530,68 @@
   line-height: 1.4;
 }
 
+/* --- Controls, gated behind a toggle button -------------------------------- */
+
+/* Small round button, top-right of the hero. The only control visible at rest;
+   clicking it adds .is-controls-open to the hero, which reveals the zoom slider,
+   the orbit pad and the opacity sliders (hero.js owns the class). */
+.ms-hero__toggle {
+  position: absolute;
+  right: 0.75rem;
+  top: 0.75rem;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.85);
+  cursor: pointer;
+  opacity: 0.42;
+  transition: opacity 0.2s ease, background 0.2s ease;
+}
+
+.ms-hero:hover .ms-hero__toggle,
+.ms-hero__toggle:hover,
+.ms-hero__toggle:focus-visible {
+  opacity: 1;
+}
+
+.ms-hero.is-controls-open .ms-hero__toggle {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.ms-hero__toggle svg {
+  width: 17px;
+  height: 17px;
+  display: block;
+}
+
+/* Everything the toggle gates: laid out and styled as usual (the per-control rules
+   below), but hidden and inert until the hero carries .is-controls-open.
+   `visibility` — not just opacity — is what keeps them out of the tab order and
+   pointer-inert while closed; the rest-state opacity in each control's own rule
+   only matters once they're visible. */
+.ms-hero__zoom,
+.ms-hero__pad,
+.ms-hero__opacity {
+  visibility: hidden;
+}
+
+/* Two classes deep on the hero, so these win over each control's rest opacity
+   below: once the user has asked for the controls, show them plainly. */
+.ms-hero.is-controls-open .ms-hero__zoom,
+.ms-hero.is-controls-open .ms-hero__pad,
+.ms-hero.is-controls-open .ms-hero__opacity {
+  visibility: visible;
+  opacity: 0.85;
+}
+
 /* Very subtle vertical zoom slider on the hero's right edge. Drives CONFIG.zoom
    (camera dolly) live. Faint at rest so it doesn't compete with the globe;
    brightens when the hero (or the control itself) is hovered/focused. The native
@@ -550,10 +612,9 @@
   transition: opacity 0.2s ease;
 }
 
-.ms-hero:hover .ms-hero__zoom,
-.ms-hero__zoom:hover,
-.ms-hero__zoom:focus-within {
-  opacity: 0.9;
+.ms-hero.is-controls-open .ms-hero__zoom:hover,
+.ms-hero.is-controls-open .ms-hero__zoom:focus-within {
+  opacity: 1;
 }
 
 .ms-hero__zoom input[type="range"] {
@@ -618,9 +679,9 @@
   justify-content: center;
 }
 
-.ms-hero:hover .ms-hero__pad,
-.ms-hero__pad.is-active {
-  opacity: 0.92;
+.ms-hero.is-controls-open .ms-hero__pad:hover,
+.ms-hero.is-controls-open .ms-hero__pad.is-active {
+  opacity: 1;
 }
 
 .ms-hero__pad.is-active {
@@ -644,6 +705,86 @@
   -webkit-mask-image: radial-gradient(ellipse at center, #000 55%, transparent 100%);
   mask-image: radial-gradient(ellipse at center, #000 55%, transparent 100%);
   opacity: 0.85;
+}
+
+/* Layer-opacity sliders, stacked under the toggle button on the right edge. One
+   row per data layer ("Points" = the streamed cloud, "Overview" = the coarse
+   stand-in); hero.js drives CONFIG.dotOpacity / lineOpacity / gmmOpacity live. */
+.ms-hero__opacity {
+  position: absolute;
+  right: 0.75rem;
+  top: 3.1rem;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  transition: opacity 0.2s ease;
+}
+
+.ms-hero.is-controls-open .ms-hero__opacity:hover,
+.ms-hero.is-controls-open .ms-hero__opacity:focus-within {
+  opacity: 1;
+}
+
+/* Label and slider side by side, so the whole panel stays ~40px tall and clears the
+   centred zoom slider below it even on a short hero. */
+.ms-hero__opacity-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+}
+
+.ms-hero__opacity-label {
+  flex: 0 0 3.6rem;
+}
+
+/* Matches the counter/caption type so the hero has one voice for its chrome. */
+.ms-hero__opacity-label {
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.7);
+  user-select: none;
+}
+
+.ms-hero__opacity input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 78px;
+  height: 2px;
+  margin: 0;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 2px;
+  outline: none;
+  cursor: ew-resize;
+}
+
+.ms-hero__opacity input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.75);
+  border: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.ms-hero__opacity input[type="range"]::-moz-range-thumb {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.75);
+  border: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.ms-hero__opacity input[type="range"]::-moz-range-track {
+  height: 2px;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 2px;
 }
 
 .ms-hero__eyebrow {

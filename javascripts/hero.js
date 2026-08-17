@@ -1,22 +1,22 @@
 /**
  * StarDS docs — Three.js hero banner (streaming point-cloud globe).
  *
- * Ported verbatim from the Miniset docs (docs/javascripts/hero.js there); the
- * only StarDS-side change is how the WASM module is located — see WASM_JS_URL
- * below. Kept as one file so it can be re-synced from upstream by diffing.
+ * The renderer began as a port of the Miniset docs hero (docs/javascripts/hero.js
+ * there); the data layer is now StarDS's own WASM build (see WASM_JS_URL and
+ * makeNetApi below), so the whole page runs on this repo's code.
  *
  * Renders real control-network points (POINTS, not measures) from a normalized
  * StarDS net as a rotating globe of 3D circles behind the hero text. The points
- * are PARSED BY MINISET ITSELF, streamed straight from the REMOTE net over
- * /vsicurl/: the page loads the miniset WASM module and opens a StarDS handle on
- * the S3 URL, which reads only the byte ranges it needs — the header/index on
- * open, then the covering compressed blocks per batch — so the ~2 GB file is
- * never downloaded whole. Points stream in over time (batch by batch) as the
- * globe turns; each batch fades in (rather than blinking into place) via a
- * per-point "birth time" the shader ramps to full opacity.
+ * are PARSED BY StarDS ITSELF, streamed straight from the REMOTE net over
+ * /vsicurl/: the page loads StarDS's WASM module and opens a dataset on the S3
+ * URL, which reads only the byte ranges it needs — the header/index on open, then
+ * the covering compressed blocks per windowed read — so the ~2 GB file is never
+ * downloaded whole. Points stream in over time (batch by batch) as the globe
+ * turns; each batch fades in (rather than blinking into place) via a per-point
+ * "birth time" the shader ramps to full opacity.
  *
- * The WASM module is built with -sASYNCIFY, so the StarDS calls that fetch
- * (openPointsXYZ / pointsCount / pointsReadXYZ) SUSPEND and return Promises — they
+ * The WASM module is built with -sASYNCIFY, so the StarDS reads that fetch
+ * (Dataset.get / getSlice / getSliceXYZ) SUSPEND and return Promises — they
  * are awaited here. The read loop keeps one batch in flight at a time and applies
  * it when it resolves, so the render/rotation never blocks on the network.
  *
@@ -188,32 +188,27 @@ const CONFIG = {
   clearAlpha: 0.0,     // 0 = transparent (the CSS gradient shows through)
 };
 
-// The miniset WASM module and the .stards net.
+// StarDS's own WASM build and the .stards net.
 //
-// INTERIM BACKEND. The renderer needs a point-cloud API — openPointsXYZ /
-// pointsCount / pointsReadXYZ, plus the optional openLines / openSummary
-// overview layers — built with -sASYNCIFY so the ranged reads can suspend.
-// StarDS's own embind module (StarDS/tests/wasm/stards_embind.cpp) currently
-// exports a generic Dataset class only (keys/dtype/shape/get), so it is not yet
-// a drop-in substitute. Until those entry points exist in the StarDS build, the
-// hero runs on miniset's module, vendored under docs/assets/wasm/.
-//
-// TO SWAP IN A PURE-StarDS BACKEND: add the point-cloud bindings to
-// stards_embind.cpp, build with -sASYNCIFY, drop stards.js/.wasm into
-// docs/assets/wasm/, and change the two module filenames below. Every call site
-// goes through the `Miniset` handle returned by loadMiniset(), so nothing else
-// in this file needs to move. See docs-site/WASM_HERO_ASSETS.md for the full
-// procedure and why the vendored module is there.
+// The module is StarDS/tests/wasm/stards_embind.cpp compiled with -sASYNCIFY (so
+// the ranged /vsicurl/ reads can suspend and hand JS a Promise) and checked in
+// under docs/assets/wasm/ — see docs-site/WASM_HERO_ASSETS.md for the build
+// command and how to refresh it. It exposes StarDS itself, not a hero API: a
+// `Dataset` class with keys / dtype / shape / metaString / get / getSlice /
+// getSliceXYZ. Everything cnet-shaped — which keys hold the points, how the
+// polyline overview's quantized (lon,lat) become XYZ — is assembled here in JS by
+// makeNetApi(), so the C++ binding stays a general StarDS surface.
 //
 // `window.STARDS_HERO_WASM_BASE` overrides the location (e.g. to serve the
 // module from a CDN instead of the docs origin). If the module fails to load,
-// loadMiniset() rejects; the render is never gated on it, so the hero keeps
+// loadStards() rejects; the render is never gated on it, so the hero keeps
 // spinning its placeholder globe over the gradient + text — just without the
 // streamed points — and boot() retries on the next navigation.
 const WASM_BASE =
   (typeof window !== "undefined" && window.STARDS_HERO_WASM_BASE) ||
   new URL("../assets/wasm/", import.meta.url).href;
-const WASM_JS_URL = new URL("miniset.js", WASM_BASE).href;
+const WASM_JS_URL = new URL("stards.mjs", WASM_BASE).href;
+const WASM_BINARY_URL = new URL("stards.wasm", WASM_BASE).href;
 // Remote control net, read over /vsicurl/ — the module fetches only the byte
 // ranges it needs (header + the covering blocks per batch), never the whole
 // ~2 GB file. Requires the bucket to serve CORS (Allow-Origin + Range /
@@ -221,64 +216,369 @@ const WASM_JS_URL = new URL("miniset.js", WASM_BASE).href;
 const STARDS_URL =
   "/vsicurl/https://asc-isisdata.s3.us-west-2.amazonaws.com/cnf_test_data/largenet_lines.stards";
 
-let minisetPromise = null;
-function loadMiniset() {
-  if (minisetPromise) return minisetPromise;
-  minisetPromise = import(/* webpackIgnore: true */ WASM_JS_URL)
-    .then(({ default: MinisetFactory }) =>
-      MinisetFactory({
-        locateFile: (p) =>
-          p.endsWith(".wasm") ? new URL("miniset.wasm", WASM_BASE).href : p,
-        print: () => {},
-        printErr: () => {},
-      })
+/* --------------------------------------------------------------------------
+   WASM binary caching.
+
+   The binary is ~720 KB (~215 KB gzipped on the wire). GitHub Pages serves it
+   with `cache-control: max-age=600`, so ten minutes after a visit the browser's
+   HTTP cache treats it as stale and a returning visitor pays for the whole
+   transfer again — and that short TTL also keeps V8's own compiled-code cache
+   from surviving. We can't set headers on Pages, so we keep our own copy in
+   Cache Storage and REVALIDATE it with an ETag instead:
+
+     * first visit          — plain fetch, streamed straight into the compiler,
+                              a clone stored in Cache Storage. Same cost as before.
+     * later visits         — conditional GET with `If-None-Match`. GitHub Pages
+                              answers 304 (empty body, one round trip) and we
+                              instantiate from the cached bytes.
+     * changed deploy       — the ETag differs, so the 200 response streams in
+                              and replaces the cached entry.
+     * offline / 5xx        — fall back to the cached copy if we have one.
+
+   Compilation itself is NOT cached: it measures a few ms on a module this size
+   (V8 tiers it lazily), so an IndexedDB compiled-module cache would add real
+   complexity for no measurable gain.
+
+   This mattered far more when the hero ran on miniset's 36 MB module; at ~215 KB
+   the saving is one small transfer per visit. It is kept because it costs one
+   conditional GET and keeps the first frame's bandwidth for Three.js.
+
+   Note for a cross-origin `window.STARDS_HERO_WASM_BASE`: `If-None-Match` is not
+   a CORS-safelisted header, so the revalidation would need a preflight (and the
+   server would have to allow it). Everything degrades to the plain refetch path
+   below if that fails, but a CDN base is better off served with a long/immutable
+   `cache-control`, which makes this cache redundant anyway.
+   -------------------------------------------------------------------------- */
+
+// Bump the suffix to force every client to re-download (e.g. if a build is
+// published under an unchanged ETag).
+const WASM_CACHE_NAME = "stards-hero-wasm-v2";
+
+// Cache Storage is absent in insecure contexts and in Safari private browsing;
+// every caller treats null as "no cache" and just goes to the network.
+async function openWasmCache() {
+  if (typeof caches === "undefined") return null;
+  try {
+    return await caches.open(WASM_CACHE_NAME);
+  } catch (_) {
+    return null;
+  }
+}
+
+/**
+ * Resolve the WASM binary to a Response whose body can be handed to
+ * instantiateStreaming — from Cache Storage when our copy is still current.
+ * @returns {Promise<Response>}
+ */
+async function fetchWasmBinary() {
+  const cache = await openWasmCache();
+  const cached = cache ? await cache.match(WASM_BINARY_URL) : null;
+  const etag = cached && cached.headers.get("ETag");
+
+  // `priority: "low"` (Fetch Priority; ignored where unsupported) keeps this
+  // multi-MB transfer from competing with the Three.js build that the first
+  // frame actually needs — see the load-order note below.
+  const res = await fetch(WASM_BINARY_URL, {
+    credentials: "same-origin",
+    priority: "low",
+    headers: etag ? { "If-None-Match": etag } : undefined,
+  });
+
+  // Not modified: our cached bytes are current.
+  if (res.status === 304 && cached) return cached;
+  // Server trouble (or offline): a stale-but-working copy beats no hero points.
+  if (!res.ok) {
+    if (cached) return cached;
+    throw new Error(`wasm fetch failed: ${res.status} ${res.statusText}`);
+  }
+
+  // Store a clone for next time. NOT awaited: cache.put() resolves only once it
+  // has read the whole body, and awaiting it would serialize the download ahead
+  // of compilation — exactly the streaming overlap we want to keep. The clone
+  // and the returned response drain the same stream concurrently.
+  if (cache) {
+    cache.put(WASM_BINARY_URL, res.clone()).catch(() => {});
+  }
+  return res;
+}
+
+/**
+ * Emscripten's `instantiateWasm` hook: takes over locating/compiling the binary
+ * so the cache path above is used instead of the loader's own unconditional
+ * fetch. Returning `{}` tells the loader the work is asynchronous and that the
+ * instance will arrive via `receiveInstance`.
+ *
+ * `onFatal` is the escape hatch for a total failure. The loader only rejects its
+ * own promise if this hook throws SYNCHRONOUSLY, so an async failure would
+ * otherwise leave the factory promise pending forever — and the hero would never
+ * learn the module was gone (no `src.failed`, no retry on the next navigation).
+ */
+function makeInstantiateWasm(onFatal) {
+  return (imports, receiveInstance) => {
+    (async () => {
+      try {
+        const res = await fetchWasmBinary();
+        const { instance, module } = await WebAssembly.instantiateStreaming(res, imports);
+        receiveInstance(instance, module);
+        return;
+      } catch (err) {
+        // Streaming compilation also lands here if a custom WASM_BASE serves the
+        // binary without `content-type: application/wasm`.
+        console.warn("[StarDS hero] cached WASM load failed, refetching:", err);
+      }
+      const res = await fetch(WASM_BINARY_URL, { credentials: "same-origin" });
+      if (!res.ok) throw new Error(`wasm refetch failed: ${res.status}`);
+      const { instance, module } = await WebAssembly.instantiate(await res.arrayBuffer(), imports);
+      receiveInstance(instance, module);
+    })().catch(onFatal);
+    return {};
+  };
+}
+
+let stardsPromise = null;
+function loadStards() {
+  if (stardsPromise) return stardsPromise;
+  // `fatal` is how an async instantiate failure reaches this promise (see
+  // makeInstantiateWasm): racing it against the factory turns a would-be
+  // forever-pending module into a rejection the hero can recover from.
+  let onFatal;
+  const fatal = new Promise((_, reject) => { onFatal = reject; });
+  stardsPromise = import(/* webpackIgnore: true */ WASM_JS_URL)
+    .then(({ default: StardsFactory }) =>
+      Promise.race([
+        StardsFactory({
+          locateFile: (p) => (p.endsWith(".wasm") ? WASM_BINARY_URL : p),
+          instantiateWasm: makeInstantiateWasm(onFatal),
+          print: () => {},
+          printErr: () => {},
+        }),
+        fatal,
+      ])
     )
-    .catch((err) => { minisetPromise = null; throw err; });
-  return minisetPromise;
+    .then(makeNetApi)
+    .catch((err) => { stardsPromise = null; throw err; });
+  return stardsPromise;
 }
 
 // Kick BOTH loads off here, at module-evaluation time (rather than waiting for
-// boot()), with Three.js FIRST and the WASM module chained after it.
+// boot()), and IN PARALLEL.
 //
-// The order is deliberate. Three.js is all the placeholder globe needs, and the
-// placeholder is the thing that must appear immediately — so it must not have to
-// share the link with a ~36 MB download. Chaining costs the module nothing relative
-// to before: the old top-level *static* `import` of Three.js blocked this whole
-// module's body, so the WASM load already started after Three.js — only now the
-// render starts the moment Three.js lands instead of waiting for the module too.
+// Three.js is all the placeholder globe needs, and the placeholder is what must
+// appear immediately — so it must not have to share the link with a ~36 MB
+// download. This used to be enforced by CHAINING the WASM load behind Three.js,
+// which also put the whole Three.js round trip (cross-origin CDN: DNS + TLS +
+// ~600 KB) on the WASM module's critical path. Priority does that job better:
+// the binary is fetched with `priority: "low"` (see fetchWasmBinary), so the
+// browser lets Three.js win the bandwidth while the big transfer still gets to
+// start now rather than one round trip later. home.html's `preconnect` /
+// `modulepreload` hints shorten the other end of the same path.
 //
 // Both loaders are memoized, so boot()/openStream() reuse these exact promises.
 // The .catch()es merely mark rejections as observed (no unhandled-rejection noise);
 // each failure is reported and handled at its real use site.
-loadThree()
-  .catch(() => {})
-  .then(() => { loadMiniset().catch(() => {}); });
+loadThree().catch(() => {});
+loadStards().catch(() => {});
+
+/* --------------------------------------------------------------------------
+   The cnet layer: StarDS keys -> what the renderer wants.
+
+   The WASM module hands us plain StarDS (`Dataset`), so this is where the
+   control-net conventions live:
+
+     * POINTS — body-centred body-fixed metres in three float64 columns
+       (`p.adjustedX/Y/Z` in a normalized net, `adjX/adjY/adjZ` in a compact
+       XYZ-only one). A batch is one getSliceXYZ call: three windowed reads,
+       interleaved into Float32 XYZ inside WASM. Only the compressed blocks that
+       cover the window are fetched, which is what makes streaming a ~2 GB file
+       from a static bucket possible at all.
+
+     * OVERVIEW — the optional "lines" layer, a coarse polyline sketch of the
+       cloud written as quantized on-ellipsoid (lon,lat) int16 pairs plus a CSR
+       vertex offset array, and per-line [rangeStart,rangeCount) windows into the
+       point arrays for the drill-down. It is small enough to read whole, and it
+       is what the hero shows while the real points stream in behind it. The
+       quantization is a fixed int16 code over the full angular range; heights are
+       dropped (the sketch sits on the ellipsoid), whose radii come from the net's
+       own header when it carries them.
+
+   Both are handed back through the same three-call handle shape the renderer
+   uses — open / count / read — so the pumps stay unaware of any of this.
+   -------------------------------------------------------------------------- */
+
+// Layer-qualified key prefix used by StarDS for a named layer's arrays.
+const LINES_LAYER = "__layer_lines__:";
+// int16 code <-> radians, matching the writer: the full lon range spans the whole
+// 65535-code space, latitude likewise over its (half-as-wide) range.
+const LON_SCALE = 65535 / (2 * Math.PI);
+const LAT_SCALE = 65535 / Math.PI;
 
 /**
- * Open a streaming point source over the net, PARSED BY MINISET (WASM StarDS).
- * The module opens the net BY URL over /vsicurl/ and reads only the byte ranges
- * it needs — opening pulls just the header/index (one ranged GET); each later
- * pointsReadXYZ pulls only the covering blocks. The ~2 GB file is never
- * downloaded whole. (No local copy is fetched here.)
+ * Wrap the raw StarDS module in the point/overview API the renderer consumes.
+ *
+ * Every method that touches the file is async: under -sASYNCIFY a StarDS read
+ * suspends into JS's fetch() and returns a Promise. ASYNCIFY permits only ONE
+ * suspension in flight, so callers must not overlap these — openStream() and the
+ * pumps already serialize them.
+ *
+ * @param {any} Module the instantiated Emscripten module (embind `Dataset`)
+ */
+function makeNetApi(Module) {
+  // One open Dataset per URL: opening costs a ranged GET for the header/index, and
+  // the overview read and the point stream both want the same file. Handles below
+  // are plain objects referring back to this entry.
+  const datasets = new Map();
+
+  async function dataset(url) {
+    let entry = datasets.get(url);
+    if (!entry) {
+      const ds = await new Module.Dataset(url);
+      entry = { ds, keys: new Set(ds.keys()) };
+      datasets.set(url, entry);
+    }
+    return entry;
+  }
+
+  function dispose(url) {
+    const entry = datasets.get(url);
+    if (!entry) return;
+    datasets.delete(url);
+    try { entry.ds.delete(); } catch (_) {}
+  }
+
+  // The two column-naming conventions for adjusted body-fixed positions.
+  const POINT_KEYS = [
+    ["p.adjustedX", "p.adjustedY", "p.adjustedZ"],
+    ["adjX", "adjY", "adjZ"],
+  ];
+
+  return {
+    // --- Points --------------------------------------------------------------
+    async openPointsXYZ(url) {
+      const { ds, keys } = await dataset(url);
+      const xyz = POINT_KEYS.find((k) => k.every((key) => keys.has(key)));
+      if (!xyz) throw new Error("no adjusted XYZ columns in this net");
+      const total = (ds.shape(xyz[0])[0] | 0) || 0;
+      return { url, ds, xyz, total };
+    },
+
+    // Synchronous (the count came from the index at open time), but every caller
+    // awaits it — the renderer treats the whole API as async.
+    pointsCount(h) {
+      return h.total;
+    },
+
+    // Window [start, start+count) as { positions: Float32Array(n*3), count, radius }.
+    // `radius` is the largest |p| in the batch: the renderer frames the camera off
+    // the first batch it receives, and on a whole-globe cloud that is already the
+    // body radius.
+    async pointsReadXYZ(h, start, count) {
+      const positions = await h.ds.getSliceXYZ(h.xyz[0], h.xyz[1], h.xyz[2], start, count);
+      const n = (positions.length / 3) | 0;
+      let r2 = 0;
+      for (let i = 0; i < n; i++) {
+        const x = positions[i * 3], y = positions[i * 3 + 1], z = positions[i * 3 + 2];
+        const d = x * x + y * y + z * z;
+        if (d > r2) r2 = d;
+      }
+      return { positions, count: n, radius: Math.sqrt(r2) };
+    },
+
+    // The renderer closes the point stream when it tears the scene down, and it is
+    // the last reader — so this is where the shared Dataset is actually released.
+    closePointsXYZ(h) {
+      if (h && h.url) dispose(h.url);
+    },
+
+    // --- Polyline overview ---------------------------------------------------
+    async openLines(url) {
+      const { ds, keys } = await dataset(url);
+      const k = {
+        qlon: LINES_LAYER + "lines.qlon",
+        qlat: LINES_LAYER + "lines.qlat",
+        voff: LINES_LAYER + "lines.voff",
+        rangeStart: LINES_LAYER + "lines.rangeStart",
+        rangeCount: LINES_LAYER + "lines.rangeCount",
+      };
+      // No layer (or a partial one) is normal: the caller falls back to streaming
+      // without an overview.
+      for (const key of Object.values(k)) {
+        if (!keys.has(key)) throw new Error(`net has no lines overview (${key} missing)`);
+      }
+      return { url, ds, k, count: (ds.shape(k.rangeStart)[0] | 0) || 0 };
+    },
+
+    linesCount(h) {
+      return h.count;
+    },
+
+    // Read the whole overview — it is a few MB at most — as
+    //   { positions: Float32Array(V*3), voff: Uint32Array(L+1),
+    //     rangeStart, rangeCount: Uint32Array(L), count: L }
+    async linesReadAll(h) {
+      const { ds, k } = h;
+      const voff = await ds.get(k.voff);
+      const rangeStart = await ds.get(k.rangeStart);
+      const rangeCount = await ds.get(k.rangeCount);
+      const qlon = await ds.get(k.qlon);
+      const qlat = await ds.get(k.qlat);
+
+      // Ellipsoid: the net's own header if it has one, else the configured
+      // (Mars) defaults the placeholder globe already uses.
+      const num = (key, fallback) => {
+        const v = parseFloat(ds.metaString(key));
+        return Number.isFinite(v) && v > 0 ? v : fallback;
+      };
+      const a = num("h.linesRadiusA", CONFIG.placeholderRadiusA);
+      const c = num("h.linesRadiusC", CONFIG.placeholderRadiusC);
+      const e2 = 1 - (c * c) / (a * a);
+
+      // Dequantize each vertex to body-fixed XYZ on the ellipsoid surface.
+      const V = Math.min(qlon.length, qlat.length);
+      const positions = new Float32Array(V * 3);
+      for (let i = 0; i < V; i++) {
+        const lon = qlon[i] / LON_SCALE;
+        const lat = qlat[i] / LAT_SCALE;
+        const sinLat = Math.sin(lat), cosLat = Math.cos(lat);
+        const N = a / Math.sqrt(1 - e2 * sinLat * sinLat);   // prime vertical radius
+        positions[i * 3] = N * cosLat * Math.cos(lon);
+        positions[i * 3 + 1] = N * cosLat * Math.sin(lon);
+        positions[i * 3 + 2] = N * (1 - e2) * sinLat;
+      }
+
+      return { positions, voff, rangeStart, rangeCount, count: rangeStart.length };
+    },
+
+    // Deliberately a no-op: the Dataset is shared with the point stream, which is
+    // opened next and owns the release (see closePointsXYZ).
+    closeLines() {},
+  };
+}
+
+/**
+ * Open a streaming point source over the net, PARSED BY StarDS ITSELF (its WASM
+ * build, wrapped by makeNetApi). The module opens the net BY URL over /vsicurl/
+ * and reads only the byte ranges it needs — opening pulls just the header/index
+ * (one ranged GET); each later pointsReadXYZ pulls only the covering blocks. The
+ * ~2 GB file is never downloaded whole. (No local copy is fetched here.)
  *
  * SYNCHRONOUS BY DESIGN — it returns the source object immediately and does NOT
  * await the WASM module. That is what lets initScene() start on the first frame:
- * `Miniset` starts out null and is filled in on this same object the moment the
+ * `net` starts out null and is filled in on this same object the moment the
  * module resolves, and both opens are handed back as PROMISES. Every consumer of
- * `src.Miniset` (the two read pumps, dispose) is gated on `pointHandle` / awaits
+ * `src.net` (the two read pumps, dispose) is gated on `pointHandle` / awaits
  * `src.ready`, and both of those are chained AFTER the module load — so nothing can
- * dereference `Miniset` while it is still null.
+ * dereference `net` while it is still null.
  *
- * @returns {{Miniset: any, overviewReady: Promise<{lines,summary}>, ready: Promise<{handle,total}>}}
+ * @returns {{net: any, overviewReady: Promise<{lines,summary}>, ready: Promise<{handle,total}>}}
  */
 function openStream() {
   // `failed` is set if the module never loads, so boot() can retry on a later
   // document$ emit instead of leaving a permanently point-less globe.
-  const src = { Miniset: null, overviewReady: null, ready: null, failed: false };
+  const src = { net: null, overviewReady: null, ready: null, failed: false };
 
-  // The module fetch was already kicked off at module-eval time; loadMiniset() is
+  // The module fetch was already kicked off at module-eval time; loadStards() is
   // memoized, so this just latches onto that in-flight promise.
-  const moduleReady = loadMiniset().then((M) => { src.Miniset = M; return M; });
+  const moduleReady = loadStards().then((M) => { src.net = M; return M; });
   // Marks the rejection observed (no unhandled-rejection noise — the overviewReady
   // chain below reports it) and flags the src as retryable.
   moduleReady.catch(() => { src.failed = true; });
@@ -296,29 +596,29 @@ function openStream() {
   // exists (and both reject, harmlessly, if it never loads).
 
   // --- Overview (preferred: polyline "lines" layer; fallback: GMM "summary"). --
-  src.overviewReady = moduleReady.then(async (Miniset) => {
+  src.overviewReady = moduleReady.then(async (net) => {
     let lines = null, summary = null;
     try {
-      if (typeof Miniset.openLines === "function") {
-        const lh = await Miniset.openLines(STARDS_URL);
-        const L = await Miniset.linesCount(lh);
-        if (L > 0) lines = await Miniset.linesReadAll(lh);
-        await Miniset.closeLines(lh);
+      if (typeof net.openLines === "function") {
+        const lh = await net.openLines(STARDS_URL);
+        const L = await net.linesCount(lh);
+        if (L > 0) lines = await net.linesReadAll(lh);
+        await net.closeLines(lh);
       }
     } catch (err) {
-      console.warn("[Miniset hero] lines layer unavailable:", err);
+      console.warn("[StarDS hero] lines layer unavailable:", err);
       lines = null;
     }
     if (!lines) {
       try {
-        if (typeof Miniset.openSummary === "function") {
-          const sh = await Miniset.openSummary(STARDS_URL);
-          const k = await Miniset.summaryCount(sh);
-          if (k > 0) summary = await Miniset.summaryReadSplats(sh);
-          await Miniset.closeSummary(sh);
+        if (typeof net.openSummary === "function") {
+          const sh = await net.openSummary(STARDS_URL);
+          const k = await net.summaryCount(sh);
+          if (k > 0) summary = await net.summaryReadSplats(sh);
+          await net.closeSummary(sh);
         }
       } catch (err) {
-        console.warn("[Miniset hero] summary unavailable, streaming without LOD:", err);
+        console.warn("[StarDS hero] summary unavailable, streaming without LOD:", err);
         summary = null;
       }
     }
@@ -328,9 +628,9 @@ function openStream() {
   // --- Point stream: opened AFTER the overview open completes (single-suspension),
   // handed back as a promise so the pump can await it before its first read.
   src.ready = src.overviewReady.then(async () => {
-    const Miniset = src.Miniset;   // resolved: overviewReady is chained off moduleReady
-    const handle = await Miniset.openPointsXYZ(STARDS_URL);
-    const total = await Miniset.pointsCount(handle);
+    const net = src.net;   // resolved: overviewReady is chained off moduleReady
+    const handle = await net.openPointsXYZ(STARDS_URL);
+    const total = await net.pointsCount(handle);
     return { handle, total };
   });
 
@@ -836,13 +1136,13 @@ function makeGmmCloud(splats, pixelRatio) {
  * point cloud in from `src` over time.
  *
  * Called as soon as Three.js is available — the WASM module is typically STILL
- * LOADING at this point, so `src.Miniset` may be null on entry and is filled in
+ * LOADING at this point, so `src.net` may be null on entry and is filled in
  * later (see openStream). It is only ever read once `pointHandle` is set or from
  * inside a `src.ready` continuation, both of which imply the module has resolved.
  *
  * @param {HTMLCanvasElement} canvas
  * @param {HTMLElement} host
- * @param {{Miniset: any, overviewReady: Promise<{lines,summary}>, ready: Promise<{handle,total}>}} src
+ * @param {{net: any, overviewReady: Promise<{lines,summary}>, ready: Promise<{handle,total}>}} src
  */
 function initScene(canvas, host, src) {
   const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
@@ -1032,6 +1332,37 @@ function initScene(canvas, host, src) {
     "Real-time streaming of an MRO CTX control network from a .stards file over /vsicurl/";
   host.appendChild(captionEl);
 
+  // --- Controls toggle (top-right) -------------------------------------------
+  // The interactive controls (zoom, orbit pad, opacity) stay out of the way until
+  // asked for: this button flips `is-controls-open` on the hero, and CSS reveals
+  // the whole group off that one class (see .ms-hero__toggle / the
+  // .ms-hero.is-controls-open rules in extra.css). The button itself is the only
+  // control visible at rest, so a first-time visitor sees an uncluttered globe.
+  const toggleEl = document.createElement("button");
+  toggleEl.type = "button";
+  toggleEl.className = "ms-hero__toggle";
+  toggleEl.title = "View controls";
+  // Three horizontal sliders — the conventional "adjust the view" affordance.
+  toggleEl.innerHTML =
+    '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">' +
+    '<path d="M4 7h10M18 7h2M4 12h3M11 12h9M4 17h9M17 17h3" ' +
+    'fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>' +
+    '<circle cx="16" cy="7" r="2" fill="currentColor"/>' +
+    '<circle cx="9" cy="12" r="2" fill="currentColor"/>' +
+    '<circle cx="15" cy="17" r="2" fill="currentColor"/></svg>';
+  host.appendChild(toggleEl);
+
+  let controlsOpen = false;
+  function setControlsOpen(open) {
+    controlsOpen = open;
+    host.classList.toggle("is-controls-open", open);
+    toggleEl.setAttribute("aria-expanded", String(open));
+    toggleEl.setAttribute("aria-label", open ? "Hide view controls" : "Show view controls");
+  }
+  const onToggle = () => setControlsOpen(!controlsOpen);
+  toggleEl.addEventListener("click", onToggle);
+  setControlsOpen(false);
+
   // --- Subtle zoom slider (right edge) ---------------------------------------
   // A native range input (styled + rotated to vertical in extra.css) that drives
   // CONFIG.zoom live via frame(). Dragging up zooms IN. Bounds bracket the default
@@ -1114,6 +1445,69 @@ function initScene(canvas, host, src) {
   // Never scroll/gesture the page while dragging on touch.
   padWrap.style.touchAction = "none";
 
+  // --- Layer opacity sliders (top-right, under the toggle) --------------------
+  // Two horizontal sliders fading the two data layers independently:
+  //
+  //   "Points"   -> CONFIG.dotOpacity, the streamed point cloud.
+  //   "Overview" -> CONFIG.lineOpacity + CONFIG.gmmOpacity, the coarse layer that
+  //                 stands in for the cloud while it loads (sampled line points and
+  //                 the GMM splats are one visual layer, so one slider drives both;
+  //                 the slider carries the line opacity and the GMM tracks it at the
+  //                 ratio of their tuned defaults, so their relative weighting holds).
+  //
+  // Each slider is the layer's opacity outright, 0..1, and starts at the value tuned
+  // in CONFIG — so a layer that ships at less than full opacity can be pushed up as
+  // well as down, rather than starting pinned at the top of its range.
+  //
+  // Both write CONFIG and call applyLayerOpacity(), which pokes the live shader
+  // uniforms directly — the same values msHero.apply() writes, so console tweaks
+  // and the sliders can't fight each other.
+  const GMM_OPACITY_RATIO = CONFIG.lineOpacity ? CONFIG.gmmOpacity / CONFIG.lineOpacity : 1;
+  const clamp01 = (v) => Math.min(1, Math.max(0, v));
+
+  function applyLayerOpacity() {
+    material.uniforms.uOpacity.value = CONFIG.dotOpacity;
+    if (lineOverlay) lineOverlay.mat.uniforms.uOpacity.value = CONFIG.lineOpacity;
+    if (gmm) gmm.mat.uniforms.uOpacity.value = CONFIG.gmmOpacity;
+  }
+
+  const opacityWrap = document.createElement("div");
+  opacityWrap.className = "ms-hero__opacity";
+
+  function makeOpacitySlider(label, initial, onValue) {
+    const row = document.createElement("label");
+    row.className = "ms-hero__opacity-row";
+    const text = document.createElement("span");
+    text.className = "ms-hero__opacity-label";
+    text.textContent = label;
+    const input = document.createElement("input");
+    input.type = "range";
+    input.min = "0";
+    input.max = "1";
+    input.step = "0.01";
+    input.value = String(initial);
+    input.setAttribute("aria-label", `${label} layer opacity`);
+    const handler = () => {
+      onValue(parseFloat(input.value));
+      applyLayerOpacity();
+      frame();
+    };
+    input.addEventListener("input", handler);
+    row.appendChild(text);
+    row.appendChild(input);
+    opacityWrap.appendChild(row);
+    return { input, handler };
+  }
+
+  const dotOpacityCtl = makeOpacitySlider("Points", clamp01(CONFIG.dotOpacity), (v) => {
+    CONFIG.dotOpacity = v;
+  });
+  const overviewOpacityCtl = makeOpacitySlider("Overview", clamp01(CONFIG.lineOpacity), (v) => {
+    CONFIG.lineOpacity = v;
+    CONFIG.gmmOpacity = clamp01(v * GMM_OPACITY_RATIO);
+  });
+  host.appendChild(opacityWrap);
+
   const numFmt = new Intl.NumberFormat();
   // Sample the load rate on a fixed interval and smooth it (EMA) so the readout
   // shows a steady points/second rather than per-frame jitter.
@@ -1172,7 +1566,7 @@ function initScene(canvas, host, src) {
     const start = loaded;
     const want = Math.min(CONFIG.streamBatchSize, targetLoaded - loaded);
     inFlight = true;
-    Promise.resolve(src.Miniset.pointsReadXYZ(pointHandle, start, want))
+    Promise.resolve(src.net.pointsReadXYZ(pointHandle, start, want))
       .then((batch) => {
         const got = batch.count | 0;
         if (got <= 0) { done = true; return; }
@@ -1205,7 +1599,7 @@ function initScene(canvas, host, src) {
         // view, so fade it out now that real points are arriving.
         if (placeholder) placeholder.fadeOut(now);
       })
-      .catch((err) => { done = true; console.warn("[Miniset hero] stream read failed:", err); })
+      .catch((err) => { done = true; console.warn("[StarDS hero] stream read failed:", err); })
       .finally(() => { inFlight = false; });
   }
 
@@ -1283,7 +1677,7 @@ function initScene(canvas, host, src) {
     if (want <= 0) { itemCursor = iEnd; return; }
 
     inFlight = true;
-    Promise.resolve(src.Miniset.pointsReadXYZ(pointHandle, start, want))
+    Promise.resolve(src.net.pointsReadXYZ(pointHandle, start, want))
       .then((batch) => {
         const got = batch.count | 0;
         if (got > 0) {
@@ -1308,7 +1702,7 @@ function initScene(canvas, host, src) {
         // round-trips); the small first reads already gave a quick first paint.
         curBatch = Math.min(CONFIG.streamBatchMax, Math.ceil(curBatch * CONFIG.streamBatchGrow));
       })
-      .catch((err) => { done = true; console.warn("[Miniset hero] overview stream failed:", err); })
+      .catch((err) => { done = true; console.warn("[StarDS hero] overview stream failed:", err); })
       .finally(() => { inFlight = false; });
   }
 
@@ -1355,7 +1749,7 @@ function initScene(canvas, host, src) {
       overviewSettled = true;   // no overview → let the plain pump take over
       // Do NOT fade the placeholder here: with no overview it's the fallback view
       // (it fades once real points stream in, if they do).
-      console.warn("[Miniset hero] overview build failed:", err);
+      console.warn("[StarDS hero] overview build failed:", err);
     });
 
   // Resolve the background point-stream open (chained AFTER the overview open, so
@@ -1366,7 +1760,7 @@ function initScene(canvas, host, src) {
       pointHandle = r.handle;
       realTotal = r.total || realTotal;
     })
-    .catch((err) => { console.warn("[Miniset hero] point stream open failed:", err); });
+    .catch((err) => { console.warn("[StarDS hero] point stream open failed:", err); });
 
   let raf = 0;
   let lastFrameMs = 0;
@@ -1461,6 +1855,9 @@ function initScene(canvas, host, src) {
       // Keep the slider in sync if zoom was changed from the console.
       zoomInput.value = String(Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, CONFIG.zoom)));
       padWrap.style.display = CONFIG.trackpad ? "" : "none";
+      // Same for the opacity sliders (each is its layer's opacity outright).
+      dotOpacityCtl.input.value = String(clamp01(CONFIG.dotOpacity));
+      overviewOpacityCtl.input.value = String(clamp01(CONFIG.lineOpacity));
       frame();
     },
     dispose() {
@@ -1475,6 +1872,13 @@ function initScene(canvas, host, src) {
       padWrap.removeEventListener("pointerup", onPadUp);
       padWrap.removeEventListener("pointercancel", onPadUp);
       padWrap.remove();
+      toggleEl.removeEventListener("click", onToggle);
+      toggleEl.remove();
+      for (const ctl of [dotOpacityCtl, overviewOpacityCtl]) {
+        ctl.input.removeEventListener("input", ctl.handler);
+      }
+      opacityWrap.remove();
+      host.classList.remove("is-controls-open");
       geom.dispose();
       material.dispose();
       if (gmm) { gmm.points.geometry.dispose(); gmm.mat.dispose(); }
@@ -1482,8 +1886,8 @@ function initScene(canvas, host, src) {
       if (placeholder) { placeholder.points.geometry.dispose(); placeholder.mat.dispose(); }
       renderer.dispose();
       // Close the point handle if it (or its pending open) resolved.
-      if (pointHandle) { try { src.Miniset.closePointsXYZ(pointHandle); } catch (_) {} }
-      else { src.ready.then((r) => { try { src.Miniset.closePointsXYZ(r.handle); } catch (_) {} }).catch(() => {}); }
+      if (pointHandle) { try { src.net.closePointsXYZ(pointHandle); } catch (_) {} }
+      else { src.ready.then((r) => { try { src.net.closePointsXYZ(r.handle); } catch (_) {} }).catch(() => {}); }
     },
   };
 }
@@ -1521,7 +1925,7 @@ async function boot() {
   // placeholder-only globe with no points coming. Before initScene stopped waiting
   // on the module, a failed load left heroCanvas null and the next document$ emit
   // retried the whole thing; keep that recovery by rebuilding in exactly that case
-  // (loadMiniset() clears its memo on failure, so this genuinely re-fetches).
+  // (loadStards() clears its memo on failure, so this genuinely re-fetches).
   if (heroCanvas === canvas && !(heroSrc && heroSrc.failed)) return;
 
   // A genuinely new canvas (real content swap), or a retry after a failed module
@@ -1546,9 +1950,14 @@ async function boot() {
   } catch (err) {
     if (heroCanvas === canvas) { heroCanvas = null; heroSrc = null; }   // let a later emit retry
     // Non-fatal: the hero still shows its gradient + text without the render.
-    console.warn("[Miniset hero] point render unavailable:", err);
+    console.warn("[StarDS hero] point render unavailable:", err);
   }
 }
+
+// Exported for the node-side smoke test (docs-site/tests/hero_net_smoke.mjs),
+// which drives the data layer against the real net without a browser. The page
+// loads this file with <script type="module" src=...>, which ignores exports.
+export { makeNetApi };
 
 if (typeof document$ !== "undefined" && document$.subscribe) {
   document$.subscribe(boot);
