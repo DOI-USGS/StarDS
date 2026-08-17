@@ -2,7 +2,7 @@
 
 <!--
   Custom homepage template for StarDS.
-  Renders the Miniset-style hero banner — a streaming point-cloud globe drawn by
+  Renders the hero banner — a streaming point-cloud globe drawn by
   docs/javascripts/hero.js (Three.js) behind the title/CTAs — followed by the
   normal Markdown body from docs/index.md.
   Selected per-page via `template: home.html` front matter in docs/index.md.
@@ -14,10 +14,28 @@
   hero.js is loaded HERE rather than via mkdocs.yml's `extra_javascript` so the
   module (and the ~600 KB Three.js build it imports) is fetched on the homepage
   only, not on every page of the site.
+
+  The two resource hints below shave the connection/queueing latency off the
+  hero's critical path (see the load-order notes in hero.js):
+
+    * preconnect to unpkg — Three.js is a cross-origin CDN import, so its first
+      byte otherwise waits on a fresh DNS + TLS handshake. The placeholder globe
+      cannot draw until Three.js lands, so this is the hint that shortens
+      time-to-first-render.
+    * modulepreload for stards.mjs — StarDS's WASM loader (~120 KB), which
+      hero.js dynamic-imports. Starting it here overlaps it with Three.js.
+
+  Deliberately NOT preloaded: stards.wasm. hero.js serves it from Cache Storage
+  with an ETag revalidation on repeat visits, and a static <link rel="preload">
+  cannot know about that cache — it would issue its own unconditional download and
+  duplicate the transfer for returning visitors. hero.js starts that fetch itself,
+  at low priority, instead.
 -->
 
 {% block extrahead %}
   {{ super() }}
+  <link rel="preconnect" href="https://unpkg.com" crossorigin>
+  <link rel="modulepreload" href="{{ 'assets/wasm/stards.mjs' | url }}">
   <script type="module" src="{{ 'javascripts/hero.js' | url }}"></script>
 {% endblock %}
 
