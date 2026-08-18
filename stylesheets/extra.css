@@ -534,7 +534,8 @@
 
 /* Small round button, top-right of the hero. The only control visible at rest;
    clicking it adds .is-controls-open to the hero, which reveals the zoom slider,
-   the orbit pad and the opacity sliders (hero.js owns the class). */
+   the orbit pad, the opacity sliders and the "load all points" button (hero.js owns
+   the class). */
 .ms-hero__toggle {
   position: absolute;
   right: 0.75rem;
@@ -579,7 +580,8 @@
    only matters once they're visible. */
 .ms-hero__zoom,
 .ms-hero__pad,
-.ms-hero__opacity {
+.ms-hero__opacity,
+.ms-hero__loadall {
   visibility: hidden;
 }
 
@@ -587,7 +589,8 @@
    below: once the user has asked for the controls, show them plainly. */
 .ms-hero.is-controls-open .ms-hero__zoom,
 .ms-hero.is-controls-open .ms-hero__pad,
-.ms-hero.is-controls-open .ms-hero__opacity {
+.ms-hero.is-controls-open .ms-hero__opacity,
+.ms-hero.is-controls-open .ms-hero__loadall {
   visibility: visible;
   opacity: 0.85;
 }
@@ -785,6 +788,48 @@
   height: 2px;
   background: rgba(255, 255, 255, 0.25);
   border-radius: 2px;
+}
+
+/* "Load all points" — sits under the opacity sliders on the same right rail. Lifts
+   hero.js's CONFIG.maxPoints / loadTurns caps and streams the rest of the cloud, so
+   it's deliberately an explicit opt-in (that's ~100 MB of point data). Disabled once
+   the cap is lifted, when it becomes a plain progress label. */
+.ms-hero__loadall {
+  position: absolute;
+  right: 0.75rem;
+  top: 6rem;
+  z-index: 1;
+  padding: 0.28rem 0.6rem;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: opacity 0.2s ease, background 0.2s ease;
+}
+
+.ms-hero.is-controls-open .ms-hero__loadall:hover,
+.ms-hero.is-controls-open .ms-hero__loadall:focus-visible {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.16);
+}
+
+/* Post-click / pre-open state: still readable (it's the progress readout now) but
+   plainly not actionable. */
+.ms-hero__loadall:disabled {
+  cursor: default;
+  border-color: rgba(255, 255, 255, 0.12);
+  background: transparent;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.ms-hero.is-controls-open .ms-hero__loadall:disabled:hover {
+  background: transparent;
 }
 
 .ms-hero__eyebrow {

@@ -122,6 +122,8 @@ const CONFIG = {
                            //   stream STOPS once this many have loaded (source
                            //   holds ~9.4M). Bounds memory + fetching; regions past
                            //   the cap keep the line overview instead of real points.
+                           //   The "Load all points" control lifts this on request
+                           //   (msHero.loadAllPoints()), regrowing the buffers.
   // ADAPTIVE batch size: every read costs 3 fixed HTTP round-trips (one per X/Y/Z
   // array) regardless of batch size, so per-point cost falls sharply as the batch
   // grows (~134µs/pt at 30k → ~34µs/pt at 240k). But a huge first read stalls the
@@ -143,6 +145,7 @@ const CONFIG = {
   // (in addition to the maxPoints cap), so a user who never zooms doesn't pay to
   // fetch the whole ~9.4M cloud. 0 = unlimited (fill until maxPoints).
   loadTurns: 3.0,          // stop the point stream after this many globe turns
+                           //   (also lifted by "Load all points")
 
   // Polyline LOD (cnet/3 "lines" layer) — the preferred track overview. The net's
   // geometric filaments are drawn as ribbons IMMEDIATELY (from a compact
@@ -838,7 +841,13 @@ function makePlaceholderGlobe(pixelRatio) {
         float fog = pow(1.0 - vDepth, uFogFalloff) * uFogStrength;
         vec3 rgb = mix(uColor, uFogColor, fog);
         float bright = uOpacity * vis * (1.0 - 0.85 * fog);
-        gl_FragColor = vec4(rgb * bright, 1.0);  // additive (premultiplied)
+        if (bright <= 0.0) discard;
+        // ALPHA MUST TRACK BRIGHTNESS. The canvas is transparent (clearAlpha 0) over
+        // the CSS gradient, and additive blending adds alpha as well as colour — so a
+        // hard-coded 1.0 makes every covered pixel fully opaque even when the colour
+        // contribution is ~0, painting a black disc over the gradient. Premultiplied
+        // (rgb*bright, bright) keeps colour identical and leaves dim points sheer.
+        gl_FragColor = vec4(rgb * bright, bright);
       }
     `,
   });
@@ -946,6 +955,10 @@ function makeLineMesh(lines, pixelRatio) {
       uColor: { value: new THREE.Color(CONFIG.lineColor) },
       uOpacity: { value: CONFIG.lineOpacity },
       uFadeOut: { value: CONFIG.lineFadeOutMs / 1000 },
+      // 1 = ignore the arrival fade and show every line, even ones whose real points
+      // already landed. Set while the point cloud isn't being drawn (see
+      // applyLayerOpacity) — there's nothing to hand off to, so nothing should hide.
+      uShowArrived: { value: 0 },
       uSize: { value: CONFIG.lineDotSize },
       uPixelRatio: { value: pixelRatio },
       uFogColor: { value: new THREE.Color(CONFIG.fogColor) },
@@ -956,14 +969,15 @@ function makeLineMesh(lines, pixelRatio) {
     },
     vertexShader: /* glsl */ `
       attribute float aArrival;
-      uniform float uTime, uFadeOut, uSize, uPixelRatio, uNearZ, uFarZ;
+      uniform float uTime, uFadeOut, uSize, uPixelRatio, uNearZ, uFarZ, uShowArrived;
       varying float vVis;
       varying float vDepth;            // 0 = back of shell, 1 = front (near camera)
       void main() {
         vec4 mv = modelViewMatrix * vec4(position, 1.0);
         gl_Position = projectionMatrix * mv;
         float vis = 1.0;
-        if (aArrival >= 0.0) vis = 1.0 - clamp((uTime - aArrival) / uFadeOut, 0.0, 1.0);
+        if (aArrival >= 0.0 && uShowArrived < 0.5)
+          vis = 1.0 - clamp((uTime - aArrival) / uFadeOut, 0.0, 1.0);
         vVis = vis;
         vDepth = clamp((mv.z - uFarZ) / max(uNearZ - uFarZ, 1e-3), 0.0, 1.0);
         float depthSize = 0.85 + 0.15 * vDepth;   // front points a touch larger
@@ -984,7 +998,11 @@ function makeLineMesh(lines, pixelRatio) {
         float fog = pow(1.0 - vDepth, uFogFalloff) * uFogStrength;
         vec3 rgb = mix(uColor, uFogColor, fog);
         float bright = uOpacity * vVis * (1.0 - 0.85 * fog);   // back dims out
-        gl_FragColor = vec4(rgb * bright, 1.0);  // additive (premultiplied)
+        if (bright <= 0.0) discard;
+        // Premultiplied, with alpha = brightness: additive blending adds alpha too, so
+        // writing 1.0 here turned a dimmed (or slider-faded) overview into an opaque
+        // black shell over the page's gradient instead of making it disappear.
+        gl_FragColor = vec4(rgb * bright, bright);
       }
     `,
   });
@@ -1088,16 +1106,18 @@ function makeGmmCloud(splats, pixelRatio) {
       uColor: { value: new THREE.Color(CONFIG.gmmColor) },
       uOpacity: { value: CONFIG.gmmOpacity },
       uFadeOut: { value: CONFIG.gmmFadeOutMs / 1000 },
+      uShowArrived: { value: 0 },   // 1 = keep faded-out splats on screen (see the lines shader)
     },
     vertexShader: /* glsl */ `
       attribute float aArrival;             // seconds real points arrived; <0 = not yet
-      uniform float uTime, uSize, uPixelRatio, uFadeOut;
+      uniform float uTime, uSize, uPixelRatio, uFadeOut, uShowArrived;
       varying float vVis;
       void main() {
         gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
         // Full brightness until this splat's real points arrive, then fade out.
         float vis = 1.0;
-        if (aArrival >= 0.0) vis = 1.0 - clamp((uTime - aArrival) / uFadeOut, 0.0, 1.0);
+        if (aArrival >= 0.0 && uShowArrived < 0.5)
+          vis = 1.0 - clamp((uTime - aArrival) / uFadeOut, 0.0, 1.0);
         vVis = vis;
         gl_PointSize = vis <= 0.0 ? 0.0 : uSize * uPixelRatio;
       }
@@ -1109,7 +1129,11 @@ function makeGmmCloud(splats, pixelRatio) {
         vec2 d = gl_PointCoord - vec2(0.5);
         if (dot(d, d) > 0.25) discard;      // round sprite
         if (vVis <= 0.0) discard;
-        gl_FragColor = vec4(uColor * (uOpacity * vVis), 1.0);  // additive
+        float bright = uOpacity * vVis;
+        if (bright <= 0.0) discard;
+        // Premultiplied, alpha = brightness (see the lines shader): additive blending
+        // adds alpha, so a fixed 1.0 would darken the gradient wherever a splat is dim.
+        gl_FragColor = vec4(uColor * bright, bright);
       }
     `,
   });
@@ -1162,12 +1186,17 @@ function initScene(canvas, host, src) {
   // target = min(total, maxPoints)); `target` is tightened once the overview lands.
   let pointHandle = null;
   let target = CONFIG.maxPoints;
+  // Highest point index the overview's windows reach (its coverage bound). Set when
+  // the overview lands; the "load all" button can't ask for more than this, since
+  // points past it are never referenced by any window.
+  let coveredPoints = Infinity;
 
-  // Preallocate the GPU buffers once; batches fill regions of them over time.
-  const positions = new Float32Array(target * 3);
-  const births = new Float32Array(target).fill(-1); // -1 = not yet spawned
-  const posAttr = new THREE.BufferAttribute(positions, 3).setUsage(THREE.DynamicDrawUsage);
-  const birthAttr = new THREE.BufferAttribute(births, 1).setUsage(THREE.DynamicDrawUsage);
+  // Preallocate the GPU buffers; batches fill regions of them over time. Not const:
+  // the "load all points" button lifts the cap, which regrows them (growPointBuffers).
+  let positions = new Float32Array(target * 3);
+  let births = new Float32Array(target).fill(-1); // -1 = not yet spawned
+  let posAttr = new THREE.BufferAttribute(positions, 3).setUsage(THREE.DynamicDrawUsage);
+  let birthAttr = new THREE.BufferAttribute(births, 1).setUsage(THREE.DynamicDrawUsage);
 
   const geom = new THREE.BufferGeometry();
   geom.setAttribute("position", posAttr);
@@ -1465,10 +1494,31 @@ function initScene(canvas, host, src) {
   const GMM_OPACITY_RATIO = CONFIG.lineOpacity ? CONFIG.gmmOpacity / CONFIG.lineOpacity : 1;
   const clamp01 = (v) => Math.min(1, Math.max(0, v));
 
+  // The point cloud is OPAQUE (depth-tested, so the front of the globe can't be
+  // painted over by its back), so it has no alpha to turn down: its uOpacity dims by
+  // mixing toward uFogColor. That leaves a flat fog-coloured ghost of the cloud at
+  // opacity 0 — visible against the hero's GRADIENT backdrop, and thick enough to
+  // hide the overview behind it. So at 0 we stop DRAWING it entirely (visible =
+  // false). The buffers, births and stream all stay exactly as they are — nothing is
+  // freed or re-fetched, and raising the slider shows the same points instantly.
+  //
+  // While the cloud is hidden, the overview also suspends its per-line arrival
+  // fade-out (uShowArrived): that crossfade only makes sense as a handoff TO the real
+  // points, so with them not drawn the overview would otherwise be invisible too —
+  // every line it already handed off to has faded, which is the whole layer once the
+  // full network is loaded.
   function applyLayerOpacity() {
     material.uniforms.uOpacity.value = CONFIG.dotOpacity;
-    if (lineOverlay) lineOverlay.mat.uniforms.uOpacity.value = CONFIG.lineOpacity;
-    if (gmm) gmm.mat.uniforms.uOpacity.value = CONFIG.gmmOpacity;
+    const showPoints = CONFIG.dotOpacity > 0;
+    cloud.visible = showPoints;
+    if (lineOverlay) {
+      lineOverlay.mat.uniforms.uOpacity.value = CONFIG.lineOpacity;
+      lineOverlay.mat.uniforms.uShowArrived.value = showPoints ? 0 : 1;
+    }
+    if (gmm) {
+      gmm.mat.uniforms.uOpacity.value = CONFIG.gmmOpacity;
+      gmm.mat.uniforms.uShowArrived.value = showPoints ? 0 : 1;
+    }
   }
 
   const opacityWrap = document.createElement("div");
@@ -1526,10 +1576,108 @@ function initScene(canvas, host, src) {
     }
     // Once fully loaded, the rate is meaningless — drop it.
     const rateStr = loaded >= target || rate < 1 ? "" : ` · ${numFmt.format(Math.round(rate))}p/s`;
-    const text = `${numFmt.format(loaded)} points (capped to 3m) ${rateStr}`;
+    // The cap is no longer a constant — the "load all points" button lifts it — so
+    // say what the current target actually is rather than hard-coding it.
+    // "capped" only while a cap is actually holding points back. Compare against the
+    // reachable count, not the file total: with a lines overview the stream can only
+    // reach the points its windows cover, and calling that a cap would be wrong.
+    const full = fullPointCount();
+    const text = !full || target >= full
+      ? `${numFmt.format(loaded)} of ${fmtCount(full || loaded)} points${rateStr}`
+      : `${numFmt.format(loaded)} points (capped to ${fmtCount(target)})${rateStr}`;
+    refreshLoadAll();
     if (text === lastText) return;   // only touch the DOM when it changes
     lastText = text;
     counterEl.textContent = text;
+  }
+
+  // --- "Load all points" button (top-right, under the opacity sliders) ---------
+  // CONFIG caps the stream two ways: maxPoints (GPU buffer + fetch bound) and
+  // loadTurns (stop after N rotations), so a visitor who just reads the page never
+  // downloads the whole ~9.4M-point cloud. This button opts INTO the full cloud:
+  // it lifts both limits, regrows the buffers, and restarts the pumps where they
+  // stopped. It's one-way on purpose — points already on the GPU stay there.
+  const loadAllEl = document.createElement("button");
+  loadAllEl.type = "button";
+  loadAllEl.className = "ms-hero__loadall";
+  loadAllEl.disabled = true;
+  loadAllEl.textContent = "Load all points";
+
+  /** Compact count for labels: 9,393,443 -> "9.4m", small nets stay exact. */
+  function fmtCount(n) {
+    if (!(n > 0)) return "0";
+    if (!Number.isFinite(n)) return "all";
+    return n >= 1e6 ? `${(n / 1e6).toFixed(1).replace(/\.0$/, "")}m` : numFmt.format(n);
+  }
+
+  /** The full point count actually reachable: the file's total, bounded by the
+   *  overview's coverage (Infinity until the overview lands, so this is `realTotal`
+   *  in the no-overview case). */
+  function fullPointCount() {
+    return Math.min(realTotal || 0, coveredPoints);
+  }
+
+  /** Regrow the streaming buffers to hold `n` points, preserving what's loaded.
+   *  Typed arrays can't resize, so this allocates, copies, and swaps the geometry's
+   *  attributes. geom.dispose() first releases the OLD GPU buffers (the geometry
+   *  itself stays usable and three.js re-uploads the new attributes on next draw);
+   *  without it the previous multi-MB buffers would leak for the page's lifetime. */
+  function growPointBuffers(n) {
+    if (n <= positions.length / 3) return;
+    const nextPositions = new Float32Array(n * 3);
+    nextPositions.set(positions);
+    const nextBirths = new Float32Array(n).fill(-1);
+    nextBirths.set(births);
+    positions = nextPositions;
+    births = nextBirths;
+    posAttr = new THREE.BufferAttribute(positions, 3).setUsage(THREE.DynamicDrawUsage);
+    birthAttr = new THREE.BufferAttribute(births, 1).setUsage(THREE.DynamicDrawUsage);
+    geom.dispose();
+    geom.setAttribute("position", posAttr);
+    geom.setAttribute("aBirth", birthAttr);
+    geom.setDrawRange(0, Math.max(drawHigh, loaded));   // keep what's already drawn
+  }
+
+  /** Lift both caps and resume streaming to the end of the file. */
+  function unlockAllPoints() {
+    const full = fullPointCount();
+    if (!pointHandle || !(full > target)) return false;
+    // Write CONFIG too, so a later msHero.apply() (or a console reader) sees the
+    // lifted limits instead of silently reinstating the cap's intent.
+    CONFIG.maxPoints = full;
+    CONFIG.loadTurns = 0;            // 0 = unlimited: no rotation budget
+    growPointBuffers(full);
+    target = full;
+    // The pumps latched `done` when they hit the cap (or the turn budget); clearing
+    // it restarts them at itemCursor/loaded, which is exactly where they stopped.
+    done = false;
+    return true;
+  }
+
+  const onLoadAll = () => { if (unlockAllPoints()) refreshLoadAll(); };
+  loadAllEl.addEventListener("click", onLoadAll);
+  host.appendChild(loadAllEl);
+
+  /** Keep the button's label/enabled state in step with the stream (called from
+   *  updateCounter, so it tracks the same values the readout shows). */
+  function refreshLoadAll() {
+    const full = fullPointCount();
+    let label, disabled;
+    if (!pointHandle) {
+      label = "Load all points";            // total unknown until the handle opens
+      disabled = true;
+    } else if (target < full) {
+      label = `Load all ${fmtCount(full)} points`;
+      disabled = false;
+    } else if (loaded >= target) {
+      label = `All ${fmtCount(target)} points loaded`;
+      disabled = true;
+    } else {
+      label = `Loading all ${fmtCount(full)} points…`;
+      disabled = true;
+    }
+    if (loadAllEl.textContent !== label) loadAllEl.textContent = label;
+    if (loadAllEl.disabled !== disabled) loadAllEl.disabled = disabled;
   }
 
   // --- Streaming, paced by rotation ------------------------------------------
@@ -1721,6 +1869,7 @@ function initScene(canvas, host, src) {
         // buffers were sized to maxPoints, so this only shrinks the draw target.
         const L = lines.count | 0;
         const covered = (lines.rangeStart[L - 1] >>> 0) + (lines.rangeCount[L - 1] >>> 0);
+        coveredPoints = covered;   // the ceiling "load all points" can raise to
         target = Math.min(target, covered);
         lineOverlay = makeLineMesh(lines, pixelRatio);
         lineOverlay.points.renderOrder = -1;   // draw before the real points
@@ -1817,6 +1966,9 @@ function initScene(canvas, host, src) {
     CONFIG,
     get loaded() { return loaded; },
     get total() { return realTotal; },
+    // Same thing the "Load all points" button does: lift the maxPoints/loadTurns
+    // caps and stream to the end. Returns false if there was nothing left to lift.
+    loadAllPoints() { const ok = unlockAllPoints(); refreshLoadAll(); return ok; },
     apply() {
       material.uniforms.uSize.value = CONFIG.dotSize;
       material.uniforms.uOpacity.value = CONFIG.dotOpacity;
@@ -1826,6 +1978,9 @@ function initScene(canvas, host, src) {
       material.uniforms.uFogFalloff.value = CONFIG.fogFalloff;
       material.uniforms.uFade.value = CONFIG.fadeDurationMs / 1000;
       renderer.setClearAlpha(CONFIG.clearAlpha);
+      // Draw-or-not for the cloud + the overview's fade suspension (see
+      // applyLayerOpacity for why zero opacity means "don't draw" here).
+      applyLayerOpacity();
       if (gmm) {
         gmm.mat.uniforms.uColor.value.set(CONFIG.gmmColor);
         gmm.mat.uniforms.uOpacity.value = CONFIG.gmmOpacity;
@@ -1878,6 +2033,8 @@ function initScene(canvas, host, src) {
         ctl.input.removeEventListener("input", ctl.handler);
       }
       opacityWrap.remove();
+      loadAllEl.removeEventListener("click", onLoadAll);
+      loadAllEl.remove();
       host.classList.remove("is-controls-open");
       geom.dispose();
       material.dispose();
