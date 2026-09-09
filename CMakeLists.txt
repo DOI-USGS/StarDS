@@ -203,77 +203,77 @@ if(EMSCRIPTEN)
 
 else()  # ---- native (non-emscripten) build ----
 
-if(STARDS_ENABLE_CURL)
-  add_definitions(-DENABLE_CURL)
-  # Find curl package if needed
-  find_package(CURL REQUIRED)
-  target_link_libraries(StarDS INTERFACE ${CURL_LIBRARIES})
-  target_include_directories(StarDS INTERFACE ${CURL_INCLUDE_DIRS})
-endif()
-
-# Option to enable zlib support
-if(STARDS_ENABLE_ZLIB)
-  add_definitions(-DENABLE_ZLIB)
-  find_package(ZLIB REQUIRED)
-  target_include_directories(StarDS INTERFACE ${ZLIB_INCLUDE_DIRS})
-  target_link_libraries(StarDS INTERFACE ${ZLIB_LIBRARIES})
-endif()
-
-# Option to enable LZ4 support
-if(STARDS_ENABLE_LZ4)
-  add_definitions(-DENABLE_LZ4)
-
-  # Try pkg-config first, then manual search
-  find_package(PkgConfig QUIET)
-  if(PKG_CONFIG_FOUND)
-    pkg_check_modules(LZ4 QUIET liblz4)
+  if(STARDS_ENABLE_CURL)
+    add_definitions(-DENABLE_CURL)
+    # Find curl package if needed
+    find_package(CURL REQUIRED)
+    target_link_libraries(StarDS INTERFACE ${CURL_LIBRARIES})
+    target_include_directories(StarDS INTERFACE ${CURL_INCLUDE_DIRS})
   endif()
 
-  # Fallback to manual search if pkg-config didn't find it. NAMES is a superset of
-  # the historical list — it can only find MORE than before (adds the conda-forge /
-  # MSVC import- and static-lib spellings so Windows resolves lz4-c reliably).
-  if(NOT LZ4_FOUND)
-    find_path(LZ4_INCLUDE_DIR lz4.h)
-    find_library(LZ4_LIBRARY NAMES lz4 liblz4 lz4_static liblz4_static)
+  # Option to enable zlib support
+  if(STARDS_ENABLE_ZLIB)
+    add_definitions(-DENABLE_ZLIB)
+    find_package(ZLIB REQUIRED)
+    target_include_directories(StarDS INTERFACE ${ZLIB_INCLUDE_DIRS})
+    target_link_libraries(StarDS INTERFACE ${ZLIB_LIBRARIES})
+  endif()
 
-    if(LZ4_INCLUDE_DIR AND LZ4_LIBRARY)
-      set(LZ4_FOUND TRUE)
-      set(LZ4_INCLUDE_DIRS ${LZ4_INCLUDE_DIR})
-      set(LZ4_LIBRARIES ${LZ4_LIBRARY})
+  # Option to enable LZ4 support
+  if(STARDS_ENABLE_LZ4)
+    add_definitions(-DENABLE_LZ4)
+
+    # Try pkg-config first, then manual search
+    find_package(PkgConfig QUIET)
+    if(PKG_CONFIG_FOUND)
+      pkg_check_modules(LZ4 QUIET liblz4)
+    endif()
+
+    # Fallback to manual search if pkg-config didn't find it. NAMES is a superset of
+    # the historical list — it can only find MORE than before (adds the conda-forge /
+    # MSVC import- and static-lib spellings so Windows resolves lz4-c reliably).
+    if(NOT LZ4_FOUND)
+      find_path(LZ4_INCLUDE_DIR lz4.h)
+      find_library(LZ4_LIBRARY NAMES lz4 liblz4 lz4_static liblz4_static)
+
+      if(LZ4_INCLUDE_DIR AND LZ4_LIBRARY)
+        set(LZ4_FOUND TRUE)
+        set(LZ4_INCLUDE_DIRS ${LZ4_INCLUDE_DIR})
+        set(LZ4_LIBRARIES ${LZ4_LIBRARY})
+      endif()
+    endif()
+
+    if(LZ4_FOUND)
+      message(STATUS "Found LZ4: ${LZ4_LIBRARIES}")
+      target_include_directories(StarDS INTERFACE ${LZ4_INCLUDE_DIRS})
+      target_link_libraries(StarDS INTERFACE ${LZ4_LIBRARIES})
+    else()
+      message(WARNING "LZ4 library not found. Disabling LZ4 support.")
+      remove_definitions(-DENABLE_LZ4)
     endif()
   endif()
 
-  if(LZ4_FOUND)
-    message(STATUS "Found LZ4: ${LZ4_LIBRARIES}")
-    target_include_directories(StarDS INTERFACE ${LZ4_INCLUDE_DIRS})
-    target_link_libraries(StarDS INTERFACE ${LZ4_LIBRARIES})
+  # Option to enable S3 support
+  if(STARDS_ENABLE_S3)
+    # S3 requires CURL for HTTP and OpenSSL for signing
+    if(NOT STARDS_ENABLE_CURL)
+      message(FATAL_ERROR "S3 support requires CURL. Enable STARDS_ENABLE_CURL.")
+    endif()
+
+    # Find OpenSSL for SHA256 and HMAC-SHA256
+    find_package(OpenSSL REQUIRED)
+
+    # Add preprocessor definition
+    add_definitions(-DENABLE_S3)
+
+    # Link OpenSSL
+    target_link_libraries(StarDS INTERFACE ${OPENSSL_LIBRARIES})
+    target_include_directories(StarDS INTERFACE ${OPENSSL_INCLUDE_DIR})
+
+    message(STATUS "S3 support: enabled (requires CURL and OpenSSL)")
   else()
-    message(WARNING "LZ4 library not found. Disabling LZ4 support.")
-    remove_definitions(-DENABLE_LZ4)
+    message(STATUS "S3 support: disabled")
   endif()
-endif()
-
-# Option to enable S3 support
-if(STARDS_ENABLE_S3)
-  # S3 requires CURL for HTTP and OpenSSL for signing
-  if(NOT STARDS_ENABLE_CURL)
-    message(FATAL_ERROR "S3 support requires CURL. Enable STARDS_ENABLE_CURL.")
-  endif()
-
-  # Find OpenSSL for SHA256 and HMAC-SHA256
-  find_package(OpenSSL REQUIRED)
-
-  # Add preprocessor definition
-  add_definitions(-DENABLE_S3)
-
-  # Link OpenSSL
-  target_link_libraries(StarDS INTERFACE ${OPENSSL_LIBRARIES})
-  target_include_directories(StarDS INTERFACE ${OPENSSL_INCLUDE_DIR})
-
-  message(STATUS "S3 support: enabled (requires CURL and OpenSSL)")
-else()
-  message(STATUS "S3 support: disabled")
-endif()
 
 endif()  # EMSCRIPTEN / native feature-detection branch
 
@@ -339,6 +339,7 @@ endif()
 # Bindings Build #
 ##################
 
+# Python Bindings
 cmake_dependent_option(STARDS_BUILD_PYTHON_BINDINGS
     "Build Python bindings using SWIG" ON
     "STARDS_BUILD_LIB" OFF)
@@ -347,4 +348,11 @@ if(STARDS_BUILD_PYTHON_BINDINGS)
   add_subdirectory(bindings/python)
 else()
   message(STATUS "Skipping Python bindings")
+endif()
+
+# Wasm Bindings
+if(EMSCRIPTEN)
+  add_subdirectory(bindings/wasm)
+else()
+  message(STATUS "Skipping Wasm Bindings")
 endif()
