@@ -149,6 +149,14 @@ if(EMSCRIPTEN)
   # ===========================================================================
   message(STATUS "Configuring StarDS for WebAssembly (emscripten)")
 
+  # Clear inherited flags that may be incompatible with wasm-ld
+  set(CMAKE_C_FLAGS "")
+  set(CMAKE_CXX_FLAGS "")
+  set(CMAKE_EXE_LINKER_FLAGS "")
+  set(CMAKE_SHARED_LINKER_FLAGS "")
+  set(CMAKE_MODULE_LINKER_FLAGS "")
+  message(STATUS "Cleared conda host compiler/linker flags for WebAssembly")
+
   if(STARDS_ENABLE_CURL)
     add_definitions(-DENABLE_CURL)
     # The header's WASM network backend is EM_ASYNC_JS + await fetch() (the JS
@@ -275,39 +283,39 @@ else()  # ---- native (non-emscripten) build ----
     message(STATUS "S3 support: disabled")
   endif()
 
+  # Install the (header-only INTERFACE) target as an export set so a matching
+  # STARDSTargets.cmake is generated for find_package(STARDS).
+  install(TARGETS StarDS EXPORT StarDSTargets
+          LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
+
+  # Generate/install STARDSTargets.cmake with the STARDS:: namespace that
+  # config.cmake.in expects (STARDS::StarDS).
+  install(EXPORT StarDSTargets
+          FILE ${PROJECT_NAME}Targets.cmake
+          NAMESPACE ${PROJECT_NAME}::
+          DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
+
+  # Generate the package config
+  configure_file(cmake/config.cmake.in
+                ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.cmake
+                @ONLY)
+
+  # Install the package config
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.cmake
+                DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
+
 endif()  # EMSCRIPTEN / native feature-detection branch
-
-
-# Install the (header-only INTERFACE) target as an export set so a matching
-# STARDSTargets.cmake is generated for find_package(STARDS).
-install(TARGETS StarDS EXPORT StarDSTargets
-        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
-
-# Generate/install STARDSTargets.cmake with the STARDS:: namespace that
-# config.cmake.in expects (STARDS::StarDS).
-install(EXPORT StarDSTargets
-        FILE ${PROJECT_NAME}Targets.cmake
-        NAMESPACE ${PROJECT_NAME}::
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
-
-# Generate the package config
-configure_file(cmake/config.cmake.in
-              ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.cmake
-              @ONLY)
-
-# Install the package config
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.cmake
-              DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
 
 # Install the headers
 install(FILES ${STARDS_HEADER_FILES} DESTINATION ${STARDS_INSTALL_INCLUDE_DIR})
-
 
 ###############
 # Tools Build #
 ###############
 
-cmake_dependent_option (STARDS_BUILD_TOOLS "Build the StarDS Command-Line Tools" ON STARDS_BUILD_LIB OFF)
+cmake_dependent_option (STARDS_BUILD_TOOLS 
+    "Build the StarDS Command-Line Tools" ON
+    "STARDS_BUILD_LIB;NOT EMSCRIPTEN" OFF)
 
 # Built before the tests so the conversion-parity test can reference the
 # stards_translate target (via $<TARGET_FILE:...> and add_dependencies).
@@ -321,7 +329,9 @@ endif()
 # Tests Build #
 ###############
 
-cmake_dependent_option (STARDS_BUILD_TESTS "Build the StarDS Tests" ON STARDS_BUILD_LIB OFF)
+cmake_dependent_option (STARDS_BUILD_TESTS 
+    "Build the StarDS Tests" ON 
+    "STARDS_BUILD_LIB;NOT EMSCRIPTEN" OFF)
 
 if(STARDS_BUILD_TESTS)
   include(GoogleTest)
@@ -342,7 +352,7 @@ endif()
 # Python Bindings
 cmake_dependent_option(STARDS_BUILD_PYTHON_BINDINGS
     "Build Python bindings using SWIG" ON
-    "STARDS_BUILD_LIB" OFF)
+    "STARDS_BUILD_LIB;NOT EMSCRIPTEN" OFF)
 
 if(STARDS_BUILD_PYTHON_BINDINGS)
   add_subdirectory(bindings/python)
@@ -352,7 +362,16 @@ endif()
 
 # Wasm Bindings
 if(EMSCRIPTEN)
-  add_subdirectory(bindings/wasm)
+  add_executable(stards_wasm bindings/wasm/stards_bind.cpp)
+  target_link_libraries(stards_wasm PRIVATE StarDS)
+  target_link_options(stards_wasm PRIVATE
+      -lembind
+      -sMODULARIZE=1
+      -sEXPORT_ES6=1
+      -sEXPORT_NAME=initStarDS
+      -sFETCH=1
+      -sALLOW_MEMORY_GROWTH=1
+  )
 else()
   message(STATUS "Skipping Wasm Bindings")
 endif()
