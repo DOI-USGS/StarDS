@@ -4,8 +4,10 @@
 #include <vector>
 #include <utility>
 #include <limits>
+#include <map>
 #include <memory>
 #include <algorithm>
+#include <type_traits>
 
 #include <emscripten/bind.h>
 #include <emscripten/emscripten.h>
@@ -15,6 +17,7 @@
 using namespace emscripten;
 using star::StarDataset;
 using star::DataType;
+using star::MetadataValue;
 using star::NDArray;
 using star::Slice;
 
@@ -32,6 +35,117 @@ val to_typed_array(const NDArray<T>& arr, const char* js_ctor) {
     return val::global(js_ctor).new_(view);
 }
 
+// The single place the DataType -> (C++ type, JS TypedArray ctor) mapping lives.
+// Resolves `dt` to its element type and invokes fn(T{}, ctor); callers recover the
+// type via decltype(tag). This lets get()/getSlice()/metaGet() share one table
+// instead of each repeating a 10-case switch that must be kept in lockstep.
+// `ctx` names the caller for the error message on an unsupported dtype.
+template <typename F>
+val dispatch_numeric(DataType dt, const char* ctx, F&& fn) {
+    switch (dt) {
+        case DataType::INT8:    return fn(int8_t{},   "Int8Array");
+        case DataType::INT16:   return fn(int16_t{},  "Int16Array");
+        case DataType::INT32:   return fn(int32_t{},  "Int32Array");
+        case DataType::UINT8:   return fn(uint8_t{},  "Uint8Array");
+        case DataType::UINT16:  return fn(uint16_t{}, "Uint16Array");
+        case DataType::UINT32:  return fn(uint32_t{}, "Uint32Array");
+        case DataType::FLOAT32: return fn(float{},    "Float32Array");
+        case DataType::FLOAT64: return fn(double{},   "Float64Array");
+        // 64-bit ints exceed JS Number safe range; expose via BigInt arrays.
+        case DataType::INT64:   return fn(int64_t{},  "BigInt64Array");
+        case DataType::UINT64:  return fn(uint64_t{}, "BigUint64Array");
+        default:
+            throw std::runtime_error(std::string(ctx) + "(): unsupported dtype");
+    }
+}
+
+// Reverse of datatype_to_string: the dtype name the JS side passes to metaPut()
+// (matches what dtype()/metaDtype() report). Throws on an unknown name.
+DataType datatype_from_string(const std::string& s) {
+    if (s == "int8")    return DataType::INT8;
+    if (s == "int16")   return DataType::INT16;
+    if (s == "int32")   return DataType::INT32;
+    if (s == "int64")   return DataType::INT64;
+    if (s == "uint8")   return DataType::UINT8;
+    if (s == "uint16")  return DataType::UINT16;
+    if (s == "uint32")  return DataType::UINT32;
+    if (s == "uint64")  return DataType::UINT64;
+    if (s == "float32") return DataType::FLOAT32;
+    if (s == "float64") return DataType::FLOAT64;
+    if (s == "string")  return DataType::STRING;
+    throw std::runtime_error("unknown dtype: " + s);
+}
+
+// True for a JS Array or TypedArray (anything with a numeric `.length`), false for
+// a bare number/string/null/undefined. Lets the put path accept a scalar or a 1-D
+// sequence from the same argument.
+bool is_array_like(const val& v) {
+    if (v.isString() || v.isNull() || v.isUndefined()) return false;
+    return v["length"].isNumber();
+}
+
+// Read one JS value as C++ T. 64-bit ints arrive as BigInt (needs -sWASM_BIGINT at
+// link time); every other type round-trips through double, exact for all values a
+// JS Number can represent.
+template <typename T>
+T js_to_scalar(const val& v) {
+    if constexpr (std::is_same_v<T, int64_t> || std::is_same_v<T, uint64_t>) {
+        return v.as<T>();
+    } else {
+        return static_cast<T>(v.as<double>());
+    }
+}
+
+// Build an NDArray<T> from a JS scalar (-> empty shape, a scalar entry) or an
+// array-like (-> 1-D). The write counterpart of to_typed_array().
+template <typename T>
+NDArray<T> js_to_ndarray(const val& v) {
+    if (is_array_like(v)) {
+        const unsigned n = v["length"].as<unsigned>();
+        std::vector<T> data;
+        data.reserve(n);
+        for (unsigned i = 0; i < n; ++i) data.push_back(js_to_scalar<T>(v[i]));
+        return NDArray<T>(std::move(data), std::vector<size_t>{n});
+    }
+    return NDArray<T>(std::vector<T>{js_to_scalar<T>(v)}, std::vector<size_t>{});
+}
+
+// String counterpart: a JS string -> scalar entry, a JS array of strings -> 1-D.
+NDArray<std::string> js_to_string_ndarray(const val& v) {
+    if (is_array_like(v)) {
+        const unsigned n = v["length"].as<unsigned>();
+        std::vector<std::string> data;
+        data.reserve(n);
+        for (unsigned i = 0; i < n; ++i) data.push_back(v[i].as<std::string>());
+        return NDArray<std::string>(std::move(data), std::vector<size_t>{n});
+    }
+    return NDArray<std::string>(std::vector<std::string>{v.as<std::string>()},
+                                std::vector<size_t>{});
+}
+
+// Convert a decoded metadata value to its natural JS type: a scalar string/number
+// for scalars, a typed array (numeric) or Array<string> for arrays. 64-bit ints
+// stay BigInt arrays even when scalar (a bare Number would silently lose
+// precision). Shared by metaGet() and metaGetAll().
+val meta_value_to_js(const MetadataValue& mv) {
+    if (mv.dtype == DataType::STRING) {
+        NDArray<std::string> a = mv.as<std::string>();
+        if (mv.is_scalar()) return a.size() ? val(a.flat(0)) : val(std::string());
+        val out = val::array();
+        for (size_t i = 0; i < a.size(); ++i) out.set(i, val(a.flat(i)));
+        return out;
+    }
+    const bool scalar = mv.is_scalar();
+    return dispatch_numeric(mv.dtype, "metaGet", [&](auto tag, const char* ctor) {
+        using T = decltype(tag);
+        NDArray<T> a = mv.as<T>();
+        if constexpr (!std::is_same_v<T, int64_t> && !std::is_same_v<T, uint64_t>) {
+            if (scalar) return val(a.flat(0));
+        }
+        return to_typed_array(a, ctor);
+    });
+}
+
 // A thin JS-facing handle around a StarDataset shared_ptr.
 class JsDataset {
 public:
@@ -39,6 +153,12 @@ public:
     // bare path is a (virtual) local file. Throws on failure -> JS exception.
     explicit JsDataset(const std::string& path)
         : m_ds(StarDataset::open(path, "r")) {}
+
+    // Opens with an explicit mode ("r", "w"/"rw"/"a"). Writable modes are needed
+    // for the metadata writers (metaPut/metaRemove/metaClear) and only make sense
+    // on a local/virtual path — a remote URL is read-only over fetch().
+    JsDataset(const std::string& path, const std::string& mode)
+        : m_ds(StarDataset::open(path, mode)) {}
 
     // Array keys present in the dataset (returned to JS as an Array<string>).
     val keys() const {
@@ -62,21 +182,9 @@ public:
 
     // Return the whole array for `key` as a JS typed array of the right kind.
     val get(const std::string& key) const {
-        switch (m_ds->dtype_of(key)) {
-            case DataType::INT8:    return to_typed_array(m_ds->get<int8_t>(key),   "Int8Array");
-            case DataType::INT16:   return to_typed_array(m_ds->get<int16_t>(key),  "Int16Array");
-            case DataType::INT32:   return to_typed_array(m_ds->get<int32_t>(key),  "Int32Array");
-            case DataType::UINT8:   return to_typed_array(m_ds->get<uint8_t>(key),  "Uint8Array");
-            case DataType::UINT16:  return to_typed_array(m_ds->get<uint16_t>(key), "Uint16Array");
-            case DataType::UINT32:  return to_typed_array(m_ds->get<uint32_t>(key), "Uint32Array");
-            case DataType::FLOAT32: return to_typed_array(m_ds->get<float>(key),    "Float32Array");
-            case DataType::FLOAT64: return to_typed_array(m_ds->get<double>(key),   "Float64Array");
-            // 64-bit ints exceed JS Number safe range; expose via BigInt arrays.
-            case DataType::INT64:   return to_typed_array(m_ds->get<int64_t>(key),  "BigInt64Array");
-            case DataType::UINT64:  return to_typed_array(m_ds->get<uint64_t>(key), "BigUint64Array");
-            default:
-                throw std::runtime_error("get(): unsupported dtype for key " + key);
-        }
+        return dispatch_numeric(m_ds->dtype_of(key), "get", [&](auto tag, const char* ctor) {
+            return to_typed_array(m_ds->get<decltype(tag)>(key), ctor);
+        });
     }
 
     // Read a string-valued entry (header/attribute style) as a plain JS string,
@@ -98,6 +206,73 @@ public:
         return std::string();
     }
 
+    // Read a metadata-block entry `key` and return it as its natural JS type: a
+    // number/string for scalars, a typed array for arrays, or null if the key is
+    // absent (meta.get() yields nullptr for a miss, so we check before deref'ing).
+    //
+    // This is the general form of metaString(): it dispatches on dtype instead of
+    // assuming string, so numeric attributes come back as numbers/typed arrays.
+    val meta_get(const std::string& key) const {
+        std::shared_ptr<MetadataValue> mv = m_ds->meta.get(key);
+        if (!mv) return val::null();
+        return meta_value_to_js(*mv);
+    }
+
+    // Names of all metadata-block entries (Array<string>). Cheap: reads the
+    // registries, decodes no values.
+    val meta_keys() const {
+        std::vector<std::string> k = m_ds->get_metadata_keys();
+        val out = val::array();
+        for (size_t i = 0; i < k.size(); ++i) out.set(i, val(k[i]));
+        return out;
+    }
+
+    bool meta_has(const std::string& key) const { return m_ds->meta.contains(key); }
+
+    // dtype name of a metadata entry ("int32", "float64", "string", ...), or "" if
+    // the key is absent.
+    std::string meta_dtype(const std::string& key) const {
+        std::shared_ptr<MetadataValue> mv = m_ds->meta.get(key);
+        return mv ? mv->type_name() : std::string();
+    }
+
+    // Shape of a metadata entry as Array<number> (empty for a scalar, [] if absent).
+    val meta_shape(const std::string& key) const {
+        val out = val::array();
+        std::shared_ptr<MetadataValue> mv = m_ds->meta.get(key);
+        if (mv) {
+            for (size_t i = 0; i < mv->shape.size(); ++i)
+                out.set(i, val(static_cast<double>(mv->shape[i])));
+        }
+        return out;
+    }
+
+    // All metadata as a plain JS object { key: naturalValue }.
+    val meta_get_all() const {
+        std::map<std::string, MetadataValue> all = m_ds->meta.get_all();
+        val obj = val::object();
+        for (const auto& [k, mv] : all) obj.set(k, meta_value_to_js(mv));
+        return obj;
+    }
+
+    // Write a metadata entry. `dtype` picks the on-disk element type (see
+    // datatype_from_string); `value` may be a scalar (-> scalar entry) or an
+    // array-like (-> 1-D). Requires the dataset opened writable, else meta.put
+    // throws. Overwrites any existing entry for `key`.
+    void meta_put(const std::string& key, val value, const std::string& dtype) {
+        if (dtype == "string") {
+            m_ds->meta.put(key, js_to_string_ndarray(value));
+            return;
+        }
+        dispatch_numeric(datatype_from_string(dtype), "metaPut", [&](auto tag, const char*) {
+            m_ds->meta.put(key, js_to_ndarray<decltype(tag)>(value));
+            return val::undefined();
+        });
+    }
+
+    void meta_remove(const std::string& key) { m_ds->meta.remove(key); }
+    void meta_clear() { m_ds->meta.clear(); }
+
     // True if `key` is stored as blocks and can be windowed with getSlice().
     // Metadata-block arrays are whole-array only (see StarDataset::is_sliceable).
     bool is_sliceable(const std::string& key) const { return m_ds->is_sliceable(key); }
@@ -110,20 +285,9 @@ public:
     // consumers (the docs-site hero, for one) live on this.
     val get_slice(const std::string& key, double start, double count) const {
         const std::vector<Slice> s = {slice_1d(key, start, count)};
-        switch (m_ds->dtype_of(key)) {
-            case DataType::INT8:    return to_typed_array(m_ds->get_slice<int8_t>(key, s),   "Int8Array");
-            case DataType::INT16:   return to_typed_array(m_ds->get_slice<int16_t>(key, s),  "Int16Array");
-            case DataType::INT32:   return to_typed_array(m_ds->get_slice<int32_t>(key, s),  "Int32Array");
-            case DataType::UINT8:   return to_typed_array(m_ds->get_slice<uint8_t>(key, s),  "Uint8Array");
-            case DataType::UINT16:  return to_typed_array(m_ds->get_slice<uint16_t>(key, s), "Uint16Array");
-            case DataType::UINT32:  return to_typed_array(m_ds->get_slice<uint32_t>(key, s), "Uint32Array");
-            case DataType::FLOAT32: return to_typed_array(m_ds->get_slice<float>(key, s),    "Float32Array");
-            case DataType::FLOAT64: return to_typed_array(m_ds->get_slice<double>(key, s),   "Float64Array");
-            case DataType::INT64:   return to_typed_array(m_ds->get_slice<int64_t>(key, s),  "BigInt64Array");
-            case DataType::UINT64:  return to_typed_array(m_ds->get_slice<uint64_t>(key, s), "BigUint64Array");
-            default:
-                throw std::runtime_error("getSlice(): unsupported dtype for key " + key);
-        }
+        return dispatch_numeric(m_ds->dtype_of(key), "getSlice", [&](auto tag, const char* ctor) {
+            return to_typed_array(m_ds->get_slice<decltype(tag)>(key, s), ctor);
+        });
     }
 
     // Read the same window from three 1-D arrays and return it interleaved as one
@@ -193,11 +357,21 @@ private:
 EMSCRIPTEN_BINDINGS(stards) {
     class_<JsDataset>("Dataset")
         .constructor<std::string>()
+        .constructor<std::string, std::string>()
         .function("keys", &JsDataset::keys)
         .function("dtype", &JsDataset::dtype)
         .function("shape", &JsDataset::shape)
         .function("get", &JsDataset::get)
         .function("metaString", &JsDataset::meta_string)
+        .function("metaGet", &JsDataset::meta_get)
+        .function("metaKeys", &JsDataset::meta_keys)
+        .function("metaHas", &JsDataset::meta_has)
+        .function("metaDtype", &JsDataset::meta_dtype)
+        .function("metaShape", &JsDataset::meta_shape)
+        .function("metaGetAll", &JsDataset::meta_get_all)
+        .function("metaPut", &JsDataset::meta_put)
+        .function("metaRemove", &JsDataset::meta_remove)
+        .function("metaClear", &JsDataset::meta_clear)
         .function("isSliceable", &JsDataset::is_sliceable)
         .function("getSlice", &JsDataset::get_slice)
         .function("getSliceXYZ", &JsDataset::get_slice_xyz_f32)

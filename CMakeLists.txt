@@ -364,6 +364,8 @@ endif()
 if(EMSCRIPTEN)
   add_executable(stards_wasm bindings/wasm/stards_bind.cpp)
   target_link_libraries(stards_wasm PRIVATE StarDS)
+  # lets embind surface C++ throws to JS as catchable errors. Used in Stards control flow.
+  target_compile_options(stards_wasm PRIVATE -fexceptions)
   target_link_options(stards_wasm PRIVATE
       -lembind
       -sMODULARIZE=1
@@ -371,6 +373,11 @@ if(EMSCRIPTEN)
       -sEXPORT_NAME=initStarDS
       -sFETCH=1
       -sALLOW_MEMORY_GROWTH=1
+      -fexceptions
+      # int64/uint64 parse as JS BigInt, this marshals them without precision loss.
+      -sWASM_BIGINT
+      # Lets JS `catch (e)` get a C++ exception message instead of just a number.
+      -sEXPORT_EXCEPTION_HANDLING_HELPERS=1
   )
 else()
   message(STATUS "Skipping Wasm Bindings")
