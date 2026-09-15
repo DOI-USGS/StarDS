@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8' standalone='no'?>
-<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.17.0" xml:lang="en-US">
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.18.0" xml:lang="en-US">
   <compounddef id="classstar_1_1LayerMetadataAccessor" kind="class" language="C++" prot="public">
     <compoundname>star::LayerMetadataAccessor</compoundname>
     <includes refid="stards_8h" local="no">stards.h</includes>
@@ -16,7 +16,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="5057" column="17" bodyfile="StarDS/include/stards.h" bodystart="5057" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="5060" column="17" bodyfile="StarDS/include/stards.h" bodystart="5060" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classstar_1_1LayerMetadataAccessor_1a62bb085380f2c9da054194f0ce301074" prot="private" static="no" mutable="no">
         <type>std::string</type>
@@ -30,7 +30,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="5058" column="17" bodyfile="StarDS/include/stards.h" bodystart="5058" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="5061" column="17" bodyfile="StarDS/include/stards.h" bodystart="5061" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="private-func">
@@ -50,7 +50,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="5061" column="17" bodyfile="StarDS/include/stards.h" bodystart="5061" bodyend="5063"/>
+        <location file="StarDS/include/stards.h" line="5064" column="17" bodyfile="StarDS/include/stards.h" bodystart="5064" bodyend="5066"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="public-func">
@@ -74,7 +74,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="5066" column="5" bodyfile="StarDS/include/stards.h" bodystart="5066" bodyend="5067"/>
+        <location file="StarDS/include/stards.h" line="5069" column="5" bodyfile="StarDS/include/stards.h" bodystart="5069" bodyend="5070"/>
       </memberdef>
       <memberdef kind="function" id="classstar_1_1LayerMetadataAccessor_1a2ccac260d0b430e4105cab7eff665912" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <templateparamlist>
@@ -101,7 +101,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="5071" column="10" bodyfile="StarDS/include/stards.h" bodystart="9618" bodyend="9670"/>
+        <location file="StarDS/include/stards.h" line="5074" column="10" bodyfile="StarDS/include/stards.h" bodystart="9621" bodyend="9673"/>
       </memberdef>
       <memberdef kind="function" id="classstar_1_1LayerMetadataAccessor_1afecd26ee2dba84ee7839b83a4e449334" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>std::shared_ptr&lt; <ref refid="structstar_1_1MetadataValue" kindref="compound">MetadataValue</ref> &gt;</type>
@@ -119,7 +119,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="5073" column="21" bodyfile="StarDS/include/stards.h" bodystart="9672" bodyend="9747"/>
+        <location file="StarDS/include/stards.h" line="5076" column="21" bodyfile="StarDS/include/stards.h" bodystart="9675" bodyend="9750"/>
       </memberdef>
       <memberdef kind="function" id="classstar_1_1LayerMetadataAccessor_1a111474203bc21588363712997b63042e" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
         <type>bool</type>
@@ -137,7 +137,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="5074" column="10" bodyfile="StarDS/include/stards.h" bodystart="9749" bodyend="9757"/>
+        <location file="StarDS/include/stards.h" line="5077" column="10" bodyfile="StarDS/include/stards.h" bodystart="9752" bodyend="9760"/>
       </memberdef>
       <memberdef kind="function" id="classstar_1_1LayerMetadataAccessor_1a583cd59cb1761c6c0bfbe962813d3f95" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>void</type>
@@ -155,7 +155,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="5075" column="10" bodyfile="StarDS/include/stards.h" bodystart="9759" bodyend="9782"/>
+        <location file="StarDS/include/stards.h" line="5078" column="10" bodyfile="StarDS/include/stards.h" bodystart="9762" bodyend="9785"/>
       </memberdef>
       <memberdef kind="function" id="classstar_1_1LayerMetadataAccessor_1a6bd04f129de14a0edbb26bac474c5cc6" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
         <type>std::vector&lt; std::string &gt;</type>
@@ -169,7 +169,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="5076" column="17" bodyfile="StarDS/include/stards.h" bodystart="9784" bodyend="9813"/>
+        <location file="StarDS/include/stards.h" line="5079" column="17" bodyfile="StarDS/include/stards.h" bodystart="9787" bodyend="9816"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
@@ -178,7 +178,7 @@
     <detaileddescription>
 <para>Provides layer-specific metadata operations with automatic fallback to base layer. When getting metadata, checks layer first, then falls back to base if not found. When putting metadata, stores in layer-specific namespace. </para>
     </detaileddescription>
-    <location file="StarDS/include/stards.h" line="5055" column="1" bodyfile="StarDS/include/stards.h" bodystart="5055" bodyend="5077"/>
+    <location file="StarDS/include/stards.h" line="5058" column="1" bodyfile="StarDS/include/stards.h" bodystart="5058" bodyend="5080"/>
     <listofallmembers>
       <member refid="classstar_1_1LayerMetadataAccessor_1a111474203bc21588363712997b63042e" prot="public" virt="non-virtual"><scope>star::LayerMetadataAccessor</scope><name>contains</name></member>
       <member refid="classstar_1_1LayerMetadataAccessor_1afecd26ee2dba84ee7839b83a4e449334" prot="public" virt="non-virtual"><scope>star::LayerMetadataAccessor</scope><name>get</name></member>

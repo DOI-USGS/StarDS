@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8' standalone='no'?>
-<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.17.0" xml:lang="en-US">
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.18.0" xml:lang="en-US">
   <compounddef id="classstar_1_1AWSTokenCache" kind="class" language="C++" prot="public">
     <compoundname>star::AWSTokenCache</compoundname>
     <includes refid="stards_8h" local="no">stards.h</includes>
@@ -17,7 +17,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="2166" column="24" bodyfile="StarDS/include/stards.h" bodystart="2166" bodyend="2172"/>
+        <location file="StarDS/include/stards.h" line="2169" column="24" bodyfile="StarDS/include/stards.h" bodystart="2169" bodyend="2175"/>
       </memberdef>
       <memberdef kind="function" id="classstar_1_1AWSTokenCache_1a45b57cf38f8ea90ce66b2092afdef745" prot="private" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>std::string</type>
@@ -31,7 +31,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="2174" column="24" bodyfile="StarDS/include/stards.h" bodystart="2174" bodyend="2178"/>
+        <location file="StarDS/include/stards.h" line="2177" column="24" bodyfile="StarDS/include/stards.h" bodystart="2177" bodyend="2181"/>
       </memberdef>
       <memberdef kind="function" id="classstar_1_1AWSTokenCache_1ab49fb0ad2db4b68cc627a0eef76168dd" prot="private" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>std::string</type>
@@ -49,7 +49,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="2190" column="24" bodyfile="StarDS/include/stards.h" bodystart="2190" bodyend="2194"/>
+        <location file="StarDS/include/stards.h" line="2193" column="24" bodyfile="StarDS/include/stards.h" bodystart="2193" bodyend="2197"/>
       </memberdef>
       <memberdef kind="function" id="classstar_1_1AWSTokenCache_1afa56258ffe5b1bb974554cc8471b8624" prot="private" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>std::optional&lt; SSOToken &gt;</type>
@@ -71,7 +71,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="2199" column="26" bodyfile="StarDS/include/stards.h" bodystart="2199" bodyend="2214"/>
+        <location file="StarDS/include/stards.h" line="2202" column="26" bodyfile="StarDS/include/stards.h" bodystart="2202" bodyend="2217"/>
       </memberdef>
       <memberdef kind="function" id="classstar_1_1AWSTokenCache_1a6b94a918da586b04dd118dc91c1415cf" prot="private" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>std::string</type>
@@ -93,7 +93,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="2217" column="24" bodyfile="StarDS/include/stards.h" bodystart="2217" bodyend="2233"/>
+        <location file="StarDS/include/stards.h" line="2220" column="24" bodyfile="StarDS/include/stards.h" bodystart="2220" bodyend="2236"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="public-static-func">
@@ -139,7 +139,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="2245" column="26" bodyfile="StarDS/include/stards.h" bodystart="2245" bodyend="2332"/>
+        <location file="StarDS/include/stards.h" line="2248" column="26" bodyfile="StarDS/include/stards.h" bodystart="2248" bodyend="2335"/>
       </memberdef>
       <memberdef kind="function" id="classstar_1_1AWSTokenCache_1af92bd1ece2ad7ea57fd11fc84019a541" prot="public" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>std::optional&lt; std::tuple&lt; std::string, std::string, std::string &gt; &gt;</type>
@@ -207,7 +207,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="2346" column="5" bodyfile="StarDS/include/stards.h" bodystart="2346" bodyend="2401"/>
+        <location file="StarDS/include/stards.h" line="2349" column="5" bodyfile="StarDS/include/stards.h" bodystart="2349" bodyend="2404"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
@@ -216,7 +216,7 @@
     <detaileddescription>
 <para>Reads and manages SSO tokens cached by AWS CLI </para>
     </detaileddescription>
-    <location file="StarDS/include/stards.h" line="2136" column="1" bodyfile="StarDS/include/stards.h" bodystart="2136" bodyend="2402"/>
+    <location file="StarDS/include/stards.h" line="2139" column="1" bodyfile="StarDS/include/stards.h" bodystart="2139" bodyend="2405"/>
     <listofallmembers>
       <member refid="classstar_1_1AWSTokenCache_1a6b94a918da586b04dd118dc91c1415cf" prot="private" virt="non-virtual"><scope>star::AWSTokenCache</scope><name>extractJsonValue</name></member>
       <member refid="classstar_1_1AWSTokenCache_1af92bd1ece2ad7ea57fd11fc84019a541" prot="public" virt="non-virtual"><scope>star::AWSTokenCache</scope><name>getCredentialsFromToken</name></member>

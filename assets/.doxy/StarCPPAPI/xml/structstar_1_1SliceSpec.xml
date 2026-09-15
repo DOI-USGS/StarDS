@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8' standalone='no'?>
-<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.17.0" xml:lang="en-US">
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.18.0" xml:lang="en-US">
   <compounddef id="structstar_1_1SliceSpec" kind="struct" language="C++" prot="public">
     <compoundname>star::SliceSpec</compoundname>
     <includes refid="stards_8h" local="no">stards.h</includes>
@@ -16,7 +16,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1274" column="17" bodyfile="StarDS/include/stards.h" bodystart="1274" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="1277" column="17" bodyfile="StarDS/include/stards.h" bodystart="1277" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="structstar_1_1SliceSpec_1a01c184cecc64719790da7e5a8a00c998" prot="public" static="no" mutable="no">
         <type>std::vector&lt; size_t &gt;</type>
@@ -30,7 +30,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1275" column="17" bodyfile="StarDS/include/stards.h" bodystart="1275" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="1278" column="17" bodyfile="StarDS/include/stards.h" bodystart="1278" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="structstar_1_1SliceSpec_1a75fc4e52093208af246586a10b8d4166" prot="public" static="no" mutable="no">
         <type>size_t</type>
@@ -44,7 +44,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1276" column="12" bodyfile="StarDS/include/stards.h" bodystart="1276" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="1279" column="12" bodyfile="StarDS/include/stards.h" bodystart="1279" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="structstar_1_1SliceSpec_1a155667354b0ff589bdcdfa0b15afed2b" prot="public" static="no" mutable="no">
         <type>size_t</type>
@@ -58,7 +58,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1277" column="12" bodyfile="StarDS/include/stards.h" bodystart="1277" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="1280" column="12" bodyfile="StarDS/include/stards.h" bodystart="1280" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="structstar_1_1SliceSpec_1ab96b382b8c126f740a953b9a53e02a3f" prot="public" static="no" mutable="no">
         <type>bool</type>
@@ -72,7 +72,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1280" column="10" bodyfile="StarDS/include/stards.h" bodystart="1280" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="1283" column="10" bodyfile="StarDS/include/stards.h" bodystart="1283" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="structstar_1_1SliceSpec_1a34513b3e767f581c0c1a64152979d0cd" prot="public" static="no" mutable="no">
         <type>bool</type>
@@ -86,7 +86,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1281" column="10" bodyfile="StarDS/include/stards.h" bodystart="1281" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="1284" column="10" bodyfile="StarDS/include/stards.h" bodystart="1284" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
@@ -94,7 +94,7 @@
     </briefdescription>
     <detaileddescription>
     </detaileddescription>
-    <location file="StarDS/include/stards.h" line="1273" column="1" bodyfile="StarDS/include/stards.h" bodystart="1273" bodyend="1282"/>
+    <location file="StarDS/include/stards.h" line="1276" column="1" bodyfile="StarDS/include/stards.h" bodystart="1276" bodyend="1285"/>
     <listofallmembers>
       <member refid="structstar_1_1SliceSpec_1a155667354b0ff589bdcdfa0b15afed2b" prot="public" virt="non-virtual"><scope>star::SliceSpec</scope><name>element_size</name></member>
       <member refid="structstar_1_1SliceSpec_1ab96b382b8c126f740a953b9a53e02a3f" prot="public" virt="non-virtual"><scope>star::SliceSpec</scope><name>is_contiguous</name></member>

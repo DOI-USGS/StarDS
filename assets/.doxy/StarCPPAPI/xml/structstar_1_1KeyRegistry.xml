@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8' standalone='no'?>
-<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.17.0" xml:lang="en-US">
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.18.0" xml:lang="en-US">
   <compounddef id="structstar_1_1KeyRegistry" kind="struct" language="C++" prot="public">
     <compoundname>star::KeyRegistry</compoundname>
     <includes refid="stards_8h" local="no">stards.h</includes>
@@ -16,7 +16,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1021" column="17" bodyfile="StarDS/include/stards.h" bodystart="1021" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="1024" column="17" bodyfile="StarDS/include/stards.h" bodystart="1024" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="structstar_1_1KeyRegistry_1a68cfe9eef9f179dcf8a2b1d0abeeaad1" prot="public" static="no" mutable="no">
         <type>std::vector&lt; uint64_t &gt;</type>
@@ -30,7 +30,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1022" column="17" bodyfile="StarDS/include/stards.h" bodystart="1022" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="1025" column="17" bodyfile="StarDS/include/stards.h" bodystart="1025" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="structstar_1_1KeyRegistry_1a9da84c383630993f0373842597cad5d4" prot="public" static="no" mutable="no">
         <type>std::unordered_map&lt; uint64_t, uint16_t &gt;</type>
@@ -44,7 +44,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1023" column="24" bodyfile="StarDS/include/stards.h" bodystart="1023" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="1026" column="24" bodyfile="StarDS/include/stards.h" bodystart="1026" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="structstar_1_1KeyRegistry_1a43e4bf93b616117d9dc7d714d2e4de7f" prot="public" static="no" mutable="no">
         <type>std::unordered_map&lt; std::string, uint16_t &gt;</type>
@@ -58,7 +58,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1024" column="24" bodyfile="StarDS/include/stards.h" bodystart="1024" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="1027" column="24" bodyfile="StarDS/include/stards.h" bodystart="1027" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="public-func">
@@ -82,7 +82,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1030" column="14" bodyfile="StarDS/include/stards.h" bodystart="1030" bodyend="1049"/>
+        <location file="StarDS/include/stards.h" line="1033" column="14" bodyfile="StarDS/include/stards.h" bodystart="1033" bodyend="1052"/>
       </memberdef>
       <memberdef kind="function" id="structstar_1_1KeyRegistry_1a000d24c5ee69ae62f6c6aae253ff96b1" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
         <type>uint16_t</type>
@@ -104,7 +104,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1055" column="14" bodyfile="StarDS/include/stards.h" bodystart="1055" bodyend="1061"/>
+        <location file="StarDS/include/stards.h" line="1058" column="14" bodyfile="StarDS/include/stards.h" bodystart="1058" bodyend="1064"/>
       </memberdef>
       <memberdef kind="function" id="structstar_1_1KeyRegistry_1a72bf85eaaaf54ee242491c1f3a837d7d" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
         <type>bool</type>
@@ -123,7 +123,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1066" column="10" bodyfile="StarDS/include/stards.h" bodystart="1066" bodyend="1068"/>
+        <location file="StarDS/include/stards.h" line="1069" column="10" bodyfile="StarDS/include/stards.h" bodystart="1069" bodyend="1071"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
@@ -132,7 +132,7 @@
     <detaileddescription>
 <para>Stores all unique keys once with precomputed hashes for O(1) lookups. Keys are referenced by uint16 indices throughout the system. </para>
     </detaileddescription>
-    <location file="StarDS/include/stards.h" line="1020" column="1" bodyfile="StarDS/include/stards.h" bodystart="1020" bodyend="1069"/>
+    <location file="StarDS/include/stards.h" line="1023" column="1" bodyfile="StarDS/include/stards.h" bodystart="1023" bodyend="1072"/>
     <listofallmembers>
       <member refid="structstar_1_1KeyRegistry_1a72bf85eaaaf54ee242491c1f3a837d7d" prot="public" virt="non-virtual"><scope>star::KeyRegistry</scope><name>contains</name></member>
       <member refid="structstar_1_1KeyRegistry_1a000d24c5ee69ae62f6c6aae253ff96b1" prot="public" virt="non-virtual"><scope>star::KeyRegistry</scope><name>get_index</name></member>

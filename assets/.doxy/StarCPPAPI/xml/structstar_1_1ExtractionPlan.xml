@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8' standalone='no'?>
-<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.17.0" xml:lang="en-US">
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.18.0" xml:lang="en-US">
   <compounddef id="structstar_1_1ExtractionPlan" kind="struct" language="C++" prot="public">
     <compoundname>star::ExtractionPlan</compoundname>
     <includes refid="stards_8h" local="no">stards.h</includes>
@@ -17,7 +17,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1307" column="17" bodyfile="StarDS/include/stards.h" bodystart="1307" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="1310" column="17" bodyfile="StarDS/include/stards.h" bodystart="1310" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="structstar_1_1ExtractionPlan_1ab25d5e78bbc361e35d7ac82a65c5bd83" prot="public" static="no" mutable="no">
         <type>size_t</type>
@@ -31,7 +31,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1308" column="12" bodyfile="StarDS/include/stards.h" bodystart="1308" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="1311" column="12" bodyfile="StarDS/include/stards.h" bodystart="1311" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
@@ -39,7 +39,7 @@
     </briefdescription>
     <detaileddescription>
     </detaileddescription>
-    <location file="StarDS/include/stards.h" line="1299" column="1" bodyfile="StarDS/include/stards.h" bodystart="1299" bodyend="1309"/>
+    <location file="StarDS/include/stards.h" line="1302" column="1" bodyfile="StarDS/include/stards.h" bodystart="1302" bodyend="1312"/>
     <listofallmembers>
       <member refid="structstar_1_1ExtractionPlan_1a54ecbcf194f50e3b6a63ec8e53d6a9c9" prot="public" virt="non-virtual"><scope>star::ExtractionPlan</scope><name>ranges</name></member>
       <member refid="structstar_1_1ExtractionPlan_1ab25d5e78bbc361e35d7ac82a65c5bd83" prot="public" virt="non-virtual"><scope>star::ExtractionPlan</scope><name>total_elements</name></member>

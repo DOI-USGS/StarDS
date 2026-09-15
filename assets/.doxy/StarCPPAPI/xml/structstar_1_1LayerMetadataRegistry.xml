@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8' standalone='no'?>
-<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.17.0" xml:lang="en-US">
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.18.0" xml:lang="en-US">
   <compounddef id="structstar_1_1LayerMetadataRegistry" kind="struct" language="C++" prot="public">
     <compoundname>star::LayerMetadataRegistry</compoundname>
     <includes refid="stards_8h" local="no">stards.h</includes>
@@ -16,7 +16,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1078" column="17" bodyfile="StarDS/include/stards.h" bodystart="1078" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="1081" column="17" bodyfile="StarDS/include/stards.h" bodystart="1081" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="structstar_1_1LayerMetadataRegistry_1acb9e3440f969eb23b32312039b652657" prot="public" static="no" mutable="no">
         <type>std::vector&lt; uint64_t &gt;</type>
@@ -30,7 +30,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1079" column="17" bodyfile="StarDS/include/stards.h" bodystart="1079" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="1082" column="17" bodyfile="StarDS/include/stards.h" bodystart="1082" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="structstar_1_1LayerMetadataRegistry_1ae6b5f239cebeab15b9a9236585967272" prot="public" static="no" mutable="no">
         <type>std::vector&lt; uint32_t &gt;</type>
@@ -44,7 +44,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1080" column="17" bodyfile="StarDS/include/stards.h" bodystart="1080" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="1083" column="17" bodyfile="StarDS/include/stards.h" bodystart="1083" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="structstar_1_1LayerMetadataRegistry_1aa5a37c2319812ea7b4527ed6910f00a3" prot="public" static="no" mutable="no">
         <type>std::vector&lt; CompressionAlgorithm &gt;</type>
@@ -58,7 +58,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1081" column="17" bodyfile="StarDS/include/stards.h" bodystart="1081" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="1084" column="17" bodyfile="StarDS/include/stards.h" bodystart="1084" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="structstar_1_1LayerMetadataRegistry_1a8922500131f1b035da2a3f0b6c02db5c" prot="public" static="no" mutable="no">
         <type>std::vector&lt; std::unordered_set&lt; uint16_t &gt; &gt;</type>
@@ -72,7 +72,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1082" column="17" bodyfile="StarDS/include/stards.h" bodystart="1082" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="1085" column="17" bodyfile="StarDS/include/stards.h" bodystart="1085" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="structstar_1_1LayerMetadataRegistry_1a1948e1b5335ad4e13a1fa783fed837f3" prot="public" static="no" mutable="no">
         <type>std::unordered_map&lt; std::string, size_t &gt;</type>
@@ -86,7 +86,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1083" column="24" bodyfile="StarDS/include/stards.h" bodystart="1083" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="1086" column="24" bodyfile="StarDS/include/stards.h" bodystart="1086" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="public-func">
@@ -110,7 +110,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1089" column="12" bodyfile="StarDS/include/stards.h" bodystart="1089" bodyend="1095"/>
+        <location file="StarDS/include/stards.h" line="1092" column="12" bodyfile="StarDS/include/stards.h" bodystart="1092" bodyend="1098"/>
       </memberdef>
       <memberdef kind="function" id="structstar_1_1LayerMetadataRegistry_1a70044f74bccc2fabb604434689b6c68f" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
         <type>bool</type>
@@ -129,7 +129,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1100" column="10" bodyfile="StarDS/include/stards.h" bodystart="1100" bodyend="1102"/>
+        <location file="StarDS/include/stards.h" line="1103" column="10" bodyfile="StarDS/include/stards.h" bodystart="1103" bodyend="1105"/>
       </memberdef>
       <memberdef kind="function" id="structstar_1_1LayerMetadataRegistry_1a1bc2ccba40ab40612907c14253889843" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>size_t</type>
@@ -148,7 +148,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1107" column="12" bodyfile="StarDS/include/stards.h" bodystart="1107" bodyend="1119"/>
+        <location file="StarDS/include/stards.h" line="1110" column="12" bodyfile="StarDS/include/stards.h" bodystart="1110" bodyend="1122"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
@@ -157,7 +157,7 @@
     <detaileddescription>
 <para>Stores metadata about each layer&apos;s metadata block for lazy loading. Each layer has its own independent STARMeta block in the file. </para>
     </detaileddescription>
-    <location file="StarDS/include/stards.h" line="1077" column="1" bodyfile="StarDS/include/stards.h" bodystart="1077" bodyend="1120"/>
+    <location file="StarDS/include/stards.h" line="1080" column="1" bodyfile="StarDS/include/stards.h" bodystart="1080" bodyend="1123"/>
     <listofallmembers>
       <member refid="structstar_1_1LayerMetadataRegistry_1a1bc2ccba40ab40612907c14253889843" prot="public" virt="non-virtual"><scope>star::LayerMetadataRegistry</scope><name>add_layer</name></member>
       <member refid="structstar_1_1LayerMetadataRegistry_1acb9e3440f969eb23b32312039b652657" prot="public" virt="non-virtual"><scope>star::LayerMetadataRegistry</scope><name>block_positions</name></member>

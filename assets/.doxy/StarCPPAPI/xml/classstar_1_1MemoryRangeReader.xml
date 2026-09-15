@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8' standalone='no'?>
-<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.17.0" xml:lang="en-US">
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.18.0" xml:lang="en-US">
   <compounddef id="classstar_1_1MemoryRangeReader" kind="class" language="C++" prot="public">
     <compoundname>star::MemoryRangeReader</compoundname>
     <basecompoundref refid="classstar_1_1RangeReader" prot="public" virt="non-virtual">star::RangeReader</basecompoundref>
@@ -16,7 +16,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="3113" column="17" bodyfile="StarDS/include/stards.h" bodystart="3113" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="3116" column="17" bodyfile="StarDS/include/stards.h" bodystart="3116" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="public-func">
@@ -36,7 +36,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="3098" column="14" bodyfile="StarDS/include/stards.h" bodystart="3098" bodyend="3098"/>
+        <location file="StarDS/include/stards.h" line="3101" column="14" bodyfile="StarDS/include/stards.h" bodystart="3101" bodyend="3101"/>
       </memberdef>
       <memberdef kind="function" id="classstar_1_1MemoryRangeReader_1a997cb08d5a0860e6de9ce89d745d6b02" prot="public" static="no" const="no" explicit="no" inline="yes" virt="virtual">
         <type>size_t</type>
@@ -63,7 +63,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="3100" column="12" bodyfile="StarDS/include/stards.h" bodystart="3100" bodyend="3105"/>
+        <location file="StarDS/include/stards.h" line="3103" column="12" bodyfile="StarDS/include/stards.h" bodystart="3103" bodyend="3108"/>
       </memberdef>
       <memberdef kind="function" id="classstar_1_1MemoryRangeReader_1ae9eb7bbb4050465f522048e41a199d66" prot="public" static="no" const="no" explicit="no" inline="yes" virt="virtual">
         <type>size_t</type>
@@ -78,7 +78,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="3107" column="12" bodyfile="StarDS/include/stards.h" bodystart="3107" bodyend="3107"/>
+        <location file="StarDS/include/stards.h" line="3110" column="12" bodyfile="StarDS/include/stards.h" bodystart="3110" bodyend="3110"/>
       </memberdef>
       <memberdef kind="function" id="classstar_1_1MemoryRangeReader_1aa9a7aab5a2684aa17579b3f6a9dba3db" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="virtual">
         <type>bool</type>
@@ -93,7 +93,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="3108" column="10" bodyfile="StarDS/include/stards.h" bodystart="3108" bodyend="3108"/>
+        <location file="StarDS/include/stards.h" line="3111" column="10" bodyfile="StarDS/include/stards.h" bodystart="3111" bodyend="3111"/>
       </memberdef>
       <memberdef kind="function" id="classstar_1_1MemoryRangeReader_1aecd4e2d256a14ae0e9f148d3adcd18d2" prot="public" static="no" const="no" explicit="no" inline="yes" virt="virtual">
         <type>bool</type>
@@ -111,7 +111,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="3110" column="10" bodyfile="StarDS/include/stards.h" bodystart="3110" bodyend="3110"/>
+        <location file="StarDS/include/stards.h" line="3113" column="10" bodyfile="StarDS/include/stards.h" bodystart="3113" bodyend="3113"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
@@ -142,7 +142,7 @@
         <link refid="classstar_1_1RangeReader"/>
       </node>
     </collaborationgraph>
-    <location file="StarDS/include/stards.h" line="3096" column="1" bodyfile="StarDS/include/stards.h" bodystart="3096" bodyend="3114"/>
+    <location file="StarDS/include/stards.h" line="3099" column="1" bodyfile="StarDS/include/stards.h" bodystart="3099" bodyend="3117"/>
     <listofallmembers>
       <member refid="classstar_1_1MemoryRangeReader_1aecd4e2d256a14ae0e9f148d3adcd18d2" prot="public" virt="virtual"><scope>star::MemoryRangeReader</scope><name>ensure_whole_cached</name></member>
       <member refid="classstar_1_1MemoryRangeReader_1aa9a7aab5a2684aa17579b3f6a9dba3db" prot="public" virt="virtual"><scope>star::MemoryRangeReader</scope><name>good</name></member>

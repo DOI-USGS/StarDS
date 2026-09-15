@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8' standalone='no'?>
-<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.17.0" xml:lang="en-US">
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.18.0" xml:lang="en-US">
   <compounddef id="namespacestar_1_1s3crypto" kind="namespace" language="C++">
     <compoundname>star::s3crypto</compoundname>
     <sectiondef kind="func">
@@ -23,7 +23,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1803" column="19" bodyfile="StarDS/include/stards.h" bodystart="1803" bodyend="1813"/>
+        <location file="StarDS/include/stards.h" line="1806" column="19" bodyfile="StarDS/include/stards.h" bodystart="1806" bodyend="1816"/>
       </memberdef>
       <memberdef kind="function" id="stards_8h_1ac842bcf1160b8da3d81062f4a529f084" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>std::array&lt; unsigned char, 32 &gt;</type>
@@ -41,7 +41,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1815" column="19" bodyfile="StarDS/include/stards.h" bodystart="1815" bodyend="1817"/>
+        <location file="StarDS/include/stards.h" line="1818" column="19" bodyfile="StarDS/include/stards.h" bodystart="1818" bodyend="1820"/>
       </memberdef>
       <memberdef kind="function" id="stards_8h_1adddf18b4b2af23c622fd8bd781e88f78" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>std::array&lt; unsigned char, 32 &gt;</type>
@@ -71,7 +71,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1824" column="19" bodyfile="StarDS/include/stards.h" bodystart="1824" bodyend="1858"/>
+        <location file="StarDS/include/stards.h" line="1827" column="19" bodyfile="StarDS/include/stards.h" bodystart="1827" bodyend="1861"/>
       </memberdef>
       <memberdef kind="function" id="stards_8h_1aae2bd7f3d544ea774d187fa3e8da8d1f" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>std::array&lt; unsigned char, 32 &gt;</type>
@@ -93,13 +93,13 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1860" column="19" bodyfile="StarDS/include/stards.h" bodystart="1860" bodyend="1863"/>
+        <location file="StarDS/include/stards.h" line="1863" column="19" bodyfile="StarDS/include/stards.h" bodystart="1863" bodyend="1866"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
     </briefdescription>
     <detaileddescription>
     </detaileddescription>
-    <location file="StarDS/include/stards.h" line="1800" column="1"/>
+    <location file="StarDS/include/stards.h" line="1803" column="1"/>
   </compounddef>
 </doxygen>

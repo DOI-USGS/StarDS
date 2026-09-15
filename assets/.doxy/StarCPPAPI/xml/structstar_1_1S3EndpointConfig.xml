@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8' standalone='no'?>
-<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.17.0" xml:lang="en-US">
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.18.0" xml:lang="en-US">
   <compounddef id="structstar_1_1S3EndpointConfig" kind="struct" language="C++" prot="public">
     <compoundname>star::S3EndpointConfig</compoundname>
     <includes refid="stards_8h" local="no">stards.h</includes>
@@ -16,7 +16,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1717" column="17" bodyfile="StarDS/include/stards.h" bodystart="1717" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="1720" column="17" bodyfile="StarDS/include/stards.h" bodystart="1720" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="structstar_1_1S3EndpointConfig_1aa8b60dfd4a5ed5fa5a477b79def512cf" prot="public" static="no" mutable="no">
         <type>bool</type>
@@ -31,7 +31,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1718" column="10" bodyfile="StarDS/include/stards.h" bodystart="1718" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="1721" column="10" bodyfile="StarDS/include/stards.h" bodystart="1721" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="structstar_1_1S3EndpointConfig_1a1141e4a712296cd321eb62ac4868d46a" prot="public" static="no" mutable="no">
         <type>bool</type>
@@ -46,7 +46,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1719" column="10" bodyfile="StarDS/include/stards.h" bodystart="1719" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="1722" column="10" bodyfile="StarDS/include/stards.h" bodystart="1722" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="public-static-func">
@@ -66,7 +66,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1721" column="17" bodyfile="StarDS/include/stards.h" bodystart="1721" bodyend="1727"/>
+        <location file="StarDS/include/stards.h" line="1724" column="17" bodyfile="StarDS/include/stards.h" bodystart="1724" bodyend="1730"/>
       </memberdef>
       <memberdef kind="function" id="structstar_1_1S3EndpointConfig_1a12245aa9ed21d606cb0bda0f3ebd7579" prot="public" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type><ref refid="structstar_1_1S3EndpointConfig" kindref="compound">S3EndpointConfig</ref></type>
@@ -80,7 +80,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1729" column="29" bodyfile="StarDS/include/stards.h" bodystart="1729" bodyend="1743"/>
+        <location file="StarDS/include/stards.h" line="1732" column="29" bodyfile="StarDS/include/stards.h" bodystart="1732" bodyend="1746"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="public-func">
@@ -104,7 +104,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1746" column="17" bodyfile="StarDS/include/stards.h" bodystart="1746" bodyend="1751"/>
+        <location file="StarDS/include/stards.h" line="1749" column="17" bodyfile="StarDS/include/stards.h" bodystart="1749" bodyend="1754"/>
       </memberdef>
       <memberdef kind="function" id="structstar_1_1S3EndpointConfig_1a0bcf7b1f9e6980bbde95b6f77c0ac3ee" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
         <type>std::string</type>
@@ -130,7 +130,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1754" column="17" bodyfile="StarDS/include/stards.h" bodystart="1754" bodyend="1762"/>
+        <location file="StarDS/include/stards.h" line="1757" column="17" bodyfile="StarDS/include/stards.h" bodystart="1757" bodyend="1765"/>
       </memberdef>
       <memberdef kind="function" id="structstar_1_1S3EndpointConfig_1a18e28db8d634dddbd8c6f10d588985f7" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
         <type>std::string</type>
@@ -152,7 +152,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1767" column="17" bodyfile="StarDS/include/stards.h" bodystart="1767" bodyend="1771"/>
+        <location file="StarDS/include/stards.h" line="1770" column="17" bodyfile="StarDS/include/stards.h" bodystart="1770" bodyend="1774"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
@@ -168,7 +168,7 @@
 <para>With none set, behavior is byte-identical to the historical &quot;https://&lt;bucket&gt;.s3.&lt;region&gt;.amazonaws.com/&lt;key&gt;&quot; (virtual-hosted, https).</para>
 <para>IMPORTANT: the SigV4 <computeroutput>host</computeroutput> header must equal the actual connection host (including any :port) AND the signed canonical URI must equal the URL path, so host(), url(), and canonical_uri() are all derived here to stay consistent. </para>
     </detaileddescription>
-    <location file="StarDS/include/stards.h" line="1716" column="1" bodyfile="StarDS/include/stards.h" bodystart="1716" bodyend="1772"/>
+    <location file="StarDS/include/stards.h" line="1719" column="1" bodyfile="StarDS/include/stards.h" bodystart="1719" bodyend="1775"/>
     <listofallmembers>
       <member refid="structstar_1_1S3EndpointConfig_1a18e28db8d634dddbd8c6f10d588985f7" prot="public" virt="non-virtual"><scope>star::S3EndpointConfig</scope><name>canonical_uri</name></member>
       <member refid="structstar_1_1S3EndpointConfig_1a4dcac8d5e9130f4cf5b55f9c7976b3b5" prot="public" virt="non-virtual"><scope>star::S3EndpointConfig</scope><name>endpoint</name></member>

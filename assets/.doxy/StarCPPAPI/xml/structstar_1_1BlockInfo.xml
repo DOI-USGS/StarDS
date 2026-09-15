@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8' standalone='no'?>
-<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.17.0" xml:lang="en-US">
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.18.0" xml:lang="en-US">
   <compounddef id="structstar_1_1BlockInfo" kind="struct" language="C++" prot="public">
     <compoundname>star::BlockInfo</compoundname>
     <includes refid="stards_8h" local="no">stards.h</includes>
@@ -16,7 +16,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1218" column="14" bodyfile="StarDS/include/stards.h" bodystart="1218" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="1221" column="14" bodyfile="StarDS/include/stards.h" bodystart="1221" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="structstar_1_1BlockInfo_1af4ba491104187b20bedac009e1f7a13e" prot="public" static="no" mutable="no">
         <type>uint64_t</type>
@@ -30,7 +30,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1219" column="14" bodyfile="StarDS/include/stards.h" bodystart="1219" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="1222" column="14" bodyfile="StarDS/include/stards.h" bodystart="1222" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="structstar_1_1BlockInfo_1a68e05ddfc85c26881e8e0eec1241808f" prot="public" static="no" mutable="no">
         <type>uint64_t</type>
@@ -44,7 +44,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1220" column="14" bodyfile="StarDS/include/stards.h" bodystart="1220" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="1223" column="14" bodyfile="StarDS/include/stards.h" bodystart="1223" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="public-func">
@@ -64,7 +64,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1225" column="10" bodyfile="StarDS/include/stards.h" bodystart="1225" bodyend="1229"/>
+        <location file="StarDS/include/stards.h" line="1228" column="10" bodyfile="StarDS/include/stards.h" bodystart="1228" bodyend="1232"/>
       </memberdef>
       <memberdef kind="function" id="structstar_1_1BlockInfo_1a35ea0e2195b925b2bbcbbc180d21ba7b" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>void</type>
@@ -82,7 +82,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1231" column="10" bodyfile="StarDS/include/stards.h" bodystart="1231" bodyend="1235"/>
+        <location file="StarDS/include/stards.h" line="1234" column="10" bodyfile="StarDS/include/stards.h" bodystart="1234" bodyend="1238"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
@@ -90,7 +90,7 @@
     </briefdescription>
     <detaileddescription>
     </detaileddescription>
-    <location file="StarDS/include/stards.h" line="1217" column="1" bodyfile="StarDS/include/stards.h" bodystart="1217" bodyend="1236"/>
+    <location file="StarDS/include/stards.h" line="1220" column="1" bodyfile="StarDS/include/stards.h" bodystart="1220" bodyend="1239"/>
     <listofallmembers>
       <member refid="structstar_1_1BlockInfo_1af4ba491104187b20bedac009e1f7a13e" prot="public" virt="non-virtual"><scope>star::BlockInfo</scope><name>compressed_size</name></member>
       <member refid="structstar_1_1BlockInfo_1acdc8bdbd7a7ce873a9e2ee1076f67764" prot="public" virt="non-virtual"><scope>star::BlockInfo</scope><name>offset</name></member>

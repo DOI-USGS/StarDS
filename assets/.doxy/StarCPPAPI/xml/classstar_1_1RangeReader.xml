@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8' standalone='no'?>
-<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.17.0" xml:lang="en-US">
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.18.0" xml:lang="en-US">
   <compounddef id="classstar_1_1RangeReader" kind="class" language="C++" prot="public" abstract="yes">
     <compoundname>star::RangeReader</compoundname>
     <derivedcompoundref refid="classstar_1_1HttpRangeReader" prot="public" virt="non-virtual">star::HttpRangeReader</derivedcompoundref>
@@ -19,7 +19,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="2957" column="13"/>
+        <location file="StarDS/include/stards.h" line="2960" column="13"/>
       </memberdef>
       <memberdef kind="function" id="classstar_1_1RangeReader_1aea7e78a3edbd2dc856bcecfb31e60c12" prot="public" static="no" const="no" explicit="no" inline="no" virt="pure-virtual">
         <type>size_t</type>
@@ -49,7 +49,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="2963" column="20"/>
+        <location file="StarDS/include/stards.h" line="2966" column="20"/>
       </memberdef>
       <memberdef kind="function" id="classstar_1_1RangeReader_1a65c6796cbf23bbd06041667b819c2e36" prot="public" static="no" const="no" explicit="no" inline="no" virt="pure-virtual">
         <type>size_t</type>
@@ -67,7 +67,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="2967" column="20"/>
+        <location file="StarDS/include/stards.h" line="2970" column="20"/>
       </memberdef>
       <memberdef kind="function" id="classstar_1_1RangeReader_1a1b408fc6cf5816c3faf6718a3a9f35a9" prot="public" static="no" const="yes" explicit="no" inline="no" virt="pure-virtual">
         <type>bool</type>
@@ -85,7 +85,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="2970" column="18"/>
+        <location file="StarDS/include/stards.h" line="2973" column="18"/>
       </memberdef>
       <memberdef kind="function" id="classstar_1_1RangeReader_1a33457d72df6fc8440d91665d75ec22ba" prot="public" static="no" const="no" explicit="no" inline="yes" virt="virtual">
         <type>bool</type>
@@ -107,7 +107,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="2978" column="18" bodyfile="StarDS/include/stards.h" bodystart="2978" bodyend="2978"/>
+        <location file="StarDS/include/stards.h" line="2981" column="18" bodyfile="StarDS/include/stards.h" bodystart="2981" bodyend="2981"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
@@ -144,7 +144,7 @@
         </childnode>
       </node>
     </inheritancegraph>
-    <location file="StarDS/include/stards.h" line="2955" column="1" bodyfile="StarDS/include/stards.h" bodystart="2955" bodyend="2979"/>
+    <location file="StarDS/include/stards.h" line="2958" column="1" bodyfile="StarDS/include/stards.h" bodystart="2958" bodyend="2982"/>
     <listofallmembers>
       <member refid="classstar_1_1RangeReader_1a33457d72df6fc8440d91665d75ec22ba" prot="public" virt="virtual"><scope>star::RangeReader</scope><name>ensure_whole_cached</name></member>
       <member refid="classstar_1_1RangeReader_1a1b408fc6cf5816c3faf6718a3a9f35a9" prot="public" virt="pure-virtual"><scope>star::RangeReader</scope><name>good</name></member>

@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8' standalone='no'?>
-<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.17.0" xml:lang="en-US">
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.18.0" xml:lang="en-US">
   <compounddef id="structstar_1_1ExtractionPlan_1_1ElementRange" kind="struct" language="C++" prot="public">
     <compoundname>star::ExtractionPlan::ElementRange</compoundname>
     <sectiondef kind="public-attrib">
@@ -15,7 +15,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1301" column="16" bodyfile="StarDS/include/stards.h" bodystart="1301" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="1304" column="16" bodyfile="StarDS/include/stards.h" bodystart="1304" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="structstar_1_1ExtractionPlan_1_1ElementRange_1a1d8c8d92d259a13f4d8c6f02dd1f5e79" prot="public" static="no" mutable="no">
         <type>size_t</type>
@@ -29,7 +29,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1302" column="16" bodyfile="StarDS/include/stards.h" bodystart="1302" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="1305" column="16" bodyfile="StarDS/include/stards.h" bodystart="1305" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="structstar_1_1ExtractionPlan_1_1ElementRange_1a68008e1730cdf4e93871f4cc9a8f35f5" prot="public" static="no" mutable="no">
         <type>size_t</type>
@@ -43,7 +43,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1303" column="16" bodyfile="StarDS/include/stards.h" bodystart="1303" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="1306" column="16" bodyfile="StarDS/include/stards.h" bodystart="1306" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="structstar_1_1ExtractionPlan_1_1ElementRange_1a56514c945e3c6bc00127d55fad3c13b4" prot="public" static="no" mutable="no">
         <type>size_t</type>
@@ -57,14 +57,14 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1304" column="16" bodyfile="StarDS/include/stards.h" bodystart="1304" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="1307" column="16" bodyfile="StarDS/include/stards.h" bodystart="1307" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
     </briefdescription>
     <detaileddescription>
     </detaileddescription>
-    <location file="StarDS/include/stards.h" line="1300" column="5" bodyfile="StarDS/include/stards.h" bodystart="1300" bodyend="1305"/>
+    <location file="StarDS/include/stards.h" line="1303" column="5" bodyfile="StarDS/include/stards.h" bodystart="1303" bodyend="1308"/>
     <listofallmembers>
       <member refid="structstar_1_1ExtractionPlan_1_1ElementRange_1acf428855f7ba0aa1022f0c62fd468935" prot="public" virt="non-virtual"><scope>star::ExtractionPlan::ElementRange</scope><name>block_idx</name></member>
       <member refid="structstar_1_1ExtractionPlan_1_1ElementRange_1a68008e1730cdf4e93871f4cc9a8f35f5" prot="public" virt="non-virtual"><scope>star::ExtractionPlan::ElementRange</scope><name>element_count</name></member>

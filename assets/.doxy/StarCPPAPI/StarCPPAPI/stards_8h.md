@@ -179,12 +179,12 @@
 
 | Type | Name |
 | ---: | :--- |
-| define  | [**LOG\_DEBUG**](stards_8h.md#define-log_debug) (...) `do { if (logger::STARDS\_DEBUG &gt;= logger::current\_log\_level) logger::log\_internal(logger::STARDS\_DEBUG, \_\_LINE\_\_, \_\_func\_\_, \_\_VA\_ARGS\_\_); } while(0)`<br> |
-| define  | [**LOG\_ERROR**](stards_8h.md#define-log_error) (...) `do { if (logger::STARDS\_ERROR &gt;= logger::current\_log\_level) logger::log\_internal(logger::STARDS\_ERROR, \_\_LINE\_\_, \_\_func\_\_, \_\_VA\_ARGS\_\_); } while(0)`<br> |
-| define  | [**LOG\_INFO**](stards_8h.md#define-log_info) (...) `do { if (logger::STARDS\_INFO &gt;= logger::current\_log\_level) logger::log\_internal(logger::STARDS\_INFO, \_\_LINE\_\_, \_\_func\_\_, \_\_VA\_ARGS\_\_); } while(0)`<br> |
-| define  | [**LOG\_TRACE**](stards_8h.md#define-log_trace) (...) `do { if (logger::STARDS\_TRACE &gt;= logger::current\_log\_level) logger::log\_internal(logger::STARDS\_TRACE, \_\_LINE\_\_, \_\_func\_\_, \_\_VA\_ARGS\_\_); } while(0)`<br> |
-| define  | [**LOG\_WARN**](stards_8h.md#define-log_warn) (...) `do { if (logger::STARDS\_WARN &gt;= logger::current\_log\_level) logger::log\_internal(logger::STARDS\_WARN, \_\_LINE\_\_, \_\_func\_\_, \_\_VA\_ARGS\_\_); } while(0)`<br> |
 | define  | [**STARDS\_IS\_BIG\_ENDIAN**](stards_8h.md#define-stards_is_big_endian)  `0`<br> |
+| define  | [**STAR\_LOG\_DEBUG**](stards_8h.md#define-star_log_debug) (...) `do { if (star::logger::STARDS\_DEBUG &gt;= star::logger::current\_log\_level) star::logger::log\_internal(star::logger::STARDS\_DEBUG, \_\_LINE\_\_, \_\_func\_\_, \_\_VA\_ARGS\_\_); } while(0)`<br> |
+| define  | [**STAR\_LOG\_ERROR**](stards_8h.md#define-star_log_error) (...) `do { if (star::logger::STARDS\_ERROR &gt;= star::logger::current\_log\_level) star::logger::log\_internal(star::logger::STARDS\_ERROR, \_\_LINE\_\_, \_\_func\_\_, \_\_VA\_ARGS\_\_); } while(0)`<br> |
+| define  | [**STAR\_LOG\_INFO**](stards_8h.md#define-star_log_info) (...) `do { if (star::logger::STARDS\_INFO &gt;= star::logger::current\_log\_level) star::logger::log\_internal(star::logger::STARDS\_INFO, \_\_LINE\_\_, \_\_func\_\_, \_\_VA\_ARGS\_\_); } while(0)`<br> |
+| define  | [**STAR\_LOG\_TRACE**](stards_8h.md#define-star_log_trace) (...) `do { if (star::logger::STARDS\_TRACE &gt;= star::logger::current\_log\_level) star::logger::log\_internal(star::logger::STARDS\_TRACE, \_\_LINE\_\_, \_\_func\_\_, \_\_VA\_ARGS\_\_); } while(0)`<br> |
+| define  | [**STAR\_LOG\_WARN**](stards_8h.md#define-star_log_warn) (...) `do { if (star::logger::STARDS\_WARN &gt;= star::logger::current\_log\_level) star::logger::log\_internal(star::logger::STARDS\_WARN, \_\_LINE\_\_, \_\_func\_\_, \_\_VA\_ARGS\_\_); } while(0)`<br> |
 | define  | [**STAR\_STRINGIFY**](stards_8h.md#define-star_stringify) (x) `STAR\_STRINGIFY\_IMPL(x)`<br> |
 | define  | [**STAR\_STRINGIFY\_IMPL**](stards_8h.md#define-star_stringify_impl) (x) `#x`<br> |
 | define  | [**STAR\_VERSION\_MAJOR**](stards_8h.md#define-star_version_major)  `1`<br> |
@@ -198,85 +198,85 @@
 
 
 
-### define LOG\_DEBUG 
-
-```C++
-#define LOG_DEBUG (
-    ...
-) `do { if (logger::STARDS_DEBUG >= logger::current_log_level) logger::log_internal(logger::STARDS_DEBUG, __LINE__, __func__, __VA_ARGS__); } while(0)`
-```
-
-
-
-
-<hr>
-
-
-
-### define LOG\_ERROR 
-
-```C++
-#define LOG_ERROR (
-    ...
-) `do { if (logger::STARDS_ERROR >= logger::current_log_level) logger::log_internal(logger::STARDS_ERROR, __LINE__, __func__, __VA_ARGS__); } while(0)`
-```
-
-
-
-
-<hr>
-
-
-
-### define LOG\_INFO 
-
-```C++
-#define LOG_INFO (
-    ...
-) `do { if (logger::STARDS_INFO >= logger::current_log_level) logger::log_internal(logger::STARDS_INFO, __LINE__, __func__, __VA_ARGS__); } while(0)`
-```
-
-
-
-
-<hr>
-
-
-
-### define LOG\_TRACE 
-
-```C++
-#define LOG_TRACE (
-    ...
-) `do { if (logger::STARDS_TRACE >= logger::current_log_level) logger::log_internal(logger::STARDS_TRACE, __LINE__, __func__, __VA_ARGS__); } while(0)`
-```
-
-
-
-
-<hr>
-
-
-
-### define LOG\_WARN 
-
-```C++
-#define LOG_WARN (
-    ...
-) `do { if (logger::STARDS_WARN >= logger::current_log_level) logger::log_internal(logger::STARDS_WARN, __LINE__, __func__, __VA_ARGS__); } while(0)`
-```
-
-
-
-
-<hr>
-
-
-
 ### define STARDS\_IS\_BIG\_ENDIAN 
 
 ```C++
 #define STARDS_IS_BIG_ENDIAN `0`
+```
+
+
+
+
+<hr>
+
+
+
+### define STAR\_LOG\_DEBUG 
+
+```C++
+#define STAR_LOG_DEBUG (
+    ...
+) `do { if (star::logger::STARDS_DEBUG >= star::logger::current_log_level) star::logger::log_internal(star::logger::STARDS_DEBUG, __LINE__, __func__, __VA_ARGS__); } while(0)`
+```
+
+
+
+
+<hr>
+
+
+
+### define STAR\_LOG\_ERROR 
+
+```C++
+#define STAR_LOG_ERROR (
+    ...
+) `do { if (star::logger::STARDS_ERROR >= star::logger::current_log_level) star::logger::log_internal(star::logger::STARDS_ERROR, __LINE__, __func__, __VA_ARGS__); } while(0)`
+```
+
+
+
+
+<hr>
+
+
+
+### define STAR\_LOG\_INFO 
+
+```C++
+#define STAR_LOG_INFO (
+    ...
+) `do { if (star::logger::STARDS_INFO >= star::logger::current_log_level) star::logger::log_internal(star::logger::STARDS_INFO, __LINE__, __func__, __VA_ARGS__); } while(0)`
+```
+
+
+
+
+<hr>
+
+
+
+### define STAR\_LOG\_TRACE 
+
+```C++
+#define STAR_LOG_TRACE (
+    ...
+) `do { if (star::logger::STARDS_TRACE >= star::logger::current_log_level) star::logger::log_internal(star::logger::STARDS_TRACE, __LINE__, __func__, __VA_ARGS__); } while(0)`
+```
+
+
+
+
+<hr>
+
+
+
+### define STAR\_LOG\_WARN 
+
+```C++
+#define STAR_LOG_WARN (
+    ...
+) `do { if (star::logger::STARDS_WARN >= star::logger::current_log_level) star::logger::log_internal(star::logger::STARDS_WARN, __LINE__, __func__, __VA_ARGS__); } while(0)`
 ```
 
 

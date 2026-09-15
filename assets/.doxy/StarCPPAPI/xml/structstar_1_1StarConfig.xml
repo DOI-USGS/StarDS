@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8' standalone='no'?>
-<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.17.0" xml:lang="en-US">
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.18.0" xml:lang="en-US">
   <compounddef id="structstar_1_1StarConfig" kind="struct" language="C++" prot="public">
     <compoundname>star::StarConfig</compoundname>
     <includes refid="stards_8h" local="no">stards.h</includes>
@@ -19,7 +19,7 @@ CompressionAlgorithm::LZ4_SHUFFLE_BLOCK</initializer>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="4835" column="26" bodyfile="StarDS/include/stards.h" bodystart="4835" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="4838" column="26" bodyfile="StarDS/include/stards.h" bodystart="4838" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="structstar_1_1StarConfig_1a5a1b1688d34ac19a5c3e6492496fe6b1" prot="public" static="no" mutable="no">
         <type>size_t</type>
@@ -34,7 +34,7 @@ CompressionAlgorithm::LZ4_SHUFFLE_BLOCK</initializer>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="4841" column="12" bodyfile="StarDS/include/stards.h" bodystart="4841" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="4844" column="12" bodyfile="StarDS/include/stards.h" bodystart="4844" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="structstar_1_1StarConfig_1a8950c615a6b88afb650fb05628a2e761" prot="public" static="no" mutable="no">
         <type>bool</type>
@@ -49,7 +49,7 @@ CompressionAlgorithm::LZ4_SHUFFLE_BLOCK</initializer>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="4846" column="10" bodyfile="StarDS/include/stards.h" bodystart="4846" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="4849" column="10" bodyfile="StarDS/include/stards.h" bodystart="4849" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="structstar_1_1StarConfig_1a70c8149ee0487b5caf8eeac945117f4d" prot="public" static="no" mutable="no">
         <type>size_t</type>
@@ -64,7 +64,7 @@ CompressionAlgorithm::LZ4_SHUFFLE_BLOCK</initializer>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="4847" column="12" bodyfile="StarDS/include/stards.h" bodystart="4847" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="4850" column="12" bodyfile="StarDS/include/stards.h" bodystart="4850" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="structstar_1_1StarConfig_1a00e2ea145c5935d061adc35c1ebe29b0" prot="public" static="no" mutable="no">
         <type>CompressionAlgorithm</type>
@@ -81,7 +81,7 @@ CompressionAlgorithm::LZ4</initializer>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="4848" column="26" bodyfile="StarDS/include/stards.h" bodystart="4848" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="4851" column="26" bodyfile="StarDS/include/stards.h" bodystart="4851" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="structstar_1_1StarConfig_1a9b4b61bfe6d61afccc82c4f0090f6029" prot="public" static="no" mutable="no">
         <type>std::set&lt; std::string &gt;</type>
@@ -95,7 +95,7 @@ CompressionAlgorithm::LZ4</initializer>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="4854" column="14" bodyfile="StarDS/include/stards.h" bodystart="4854" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="4857" column="14" bodyfile="StarDS/include/stards.h" bodystart="4857" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="structstar_1_1StarConfig_1ac5c66be6035adc00917353eb2cd384a9" prot="public" static="no" mutable="no">
         <type>size_t</type>
@@ -110,7 +110,7 @@ CompressionAlgorithm::LZ4</initializer>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="4857" column="12" bodyfile="StarDS/include/stards.h" bodystart="4857" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="4860" column="12" bodyfile="StarDS/include/stards.h" bodystart="4860" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="structstar_1_1StarConfig_1a1c2e0f0caeab25c6ae4636cbe02e1972" prot="public" static="no" mutable="no">
         <type>size_t</type>
@@ -125,7 +125,7 @@ CompressionAlgorithm::LZ4</initializer>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="4860" column="12" bodyfile="StarDS/include/stards.h" bodystart="4860" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="4863" column="12" bodyfile="StarDS/include/stards.h" bodystart="4863" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
@@ -134,7 +134,7 @@ CompressionAlgorithm::LZ4</initializer>
     <detaileddescription>
 <para>The metadata block system groups small scalar/array values into a single compressed block to reduce overhead and cloud access requests. </para>
     </detaileddescription>
-    <location file="StarDS/include/stards.h" line="4824" column="1" bodyfile="StarDS/include/stards.h" bodystart="4824" bodyend="4861"/>
+    <location file="StarDS/include/stards.h" line="4827" column="1" bodyfile="StarDS/include/stards.h" bodystart="4827" bodyend="4864"/>
     <listofallmembers>
       <member refid="structstar_1_1StarConfig_1a1c2e0f0caeab25c6ae4636cbe02e1972" prot="public" virt="non-virtual"><scope>star::StarConfig</scope><name>arena_chunk_size</name></member>
       <member refid="structstar_1_1StarConfig_1a5a1b1688d34ac19a5c3e6492496fe6b1" prot="public" virt="non-virtual"><scope>star::StarConfig</scope><name>block_size</name></member>

@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8' standalone='no'?>
-<doxygenindex xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="index.xsd" version="1.17.0" xml:lang="en-US">
+<doxygenindex xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="index.xsd" version="1.18.0" xml:lang="en-US">
   <compound refid="classstar_1_1AWSConfigParser" kind="class"><name>star::AWSConfigParser</name>
     <member refid="classstar_1_1AWSConfigParser_1a42bbad487f492abe100ecdd6d72bbead" kind="variable"><name>m_profiles</name></member>
     <member refid="classstar_1_1AWSConfigParser_1a7ae9cc8b715d20b68b0550f30b4a98d8" kind="function"><name>getHomeDir</name></member>
@@ -685,11 +685,11 @@
     <member refid="stards_8h_1aefa83da2abd1b18bdc4f54aa7c967cf3" kind="define"><name>STAR_STRINGIFY</name></member>
     <member refid="stards_8h_1a010514992d8d3679bea0bc7626fc3bda" kind="define"><name>STAR_VERSION_STRING</name></member>
     <member refid="stards_8h_1a96180b63703073e89a8192b9e962ae74" kind="define"><name>STARDS_IS_BIG_ENDIAN</name></member>
-    <member refid="stards_8h_1a58c994180e09d2f6400133b19b1d7036" kind="define"><name>LOG_TRACE</name></member>
-    <member refid="stards_8h_1a754b3d074e0af4ad3c7b918dd77ecb2d" kind="define"><name>LOG_DEBUG</name></member>
-    <member refid="stards_8h_1a378e28bfcb78d17285210d6bbb70a083" kind="define"><name>LOG_INFO</name></member>
-    <member refid="stards_8h_1add82efa459e0af380b68522c29b9fd44" kind="define"><name>LOG_WARN</name></member>
-    <member refid="stards_8h_1ad4a9117ce894e3319e903142347a0f63" kind="define"><name>LOG_ERROR</name></member>
+    <member refid="stards_8h_1aa0667eac6c2d92a15bfb67c068b6a155" kind="define"><name>STAR_LOG_TRACE</name></member>
+    <member refid="stards_8h_1aaadc5e385ca6d6aa4a982df7cfbec64f" kind="define"><name>STAR_LOG_DEBUG</name></member>
+    <member refid="stards_8h_1aaed06cfc15154efc75c6891b75678d06" kind="define"><name>STAR_LOG_INFO</name></member>
+    <member refid="stards_8h_1ae5850ecd77b3e5c689029ed4e9b0bdd4" kind="define"><name>STAR_LOG_WARN</name></member>
+    <member refid="stards_8h_1ad36a5bd24b805caaa91e23f1a60e22e8" kind="define"><name>STAR_LOG_ERROR</name></member>
   </compound>
   <compound refid="deprecated" kind="page"><name>deprecated</name>
   </compound>
