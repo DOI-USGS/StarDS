@@ -17,9 +17,11 @@
 using namespace emscripten;
 using star::StarDataset;
 using star::DataType;
+using star::CompressionAlgorithm;
 using star::MetadataValue;
 using star::NDArray;
 using star::Slice;
+using star::StarConfig;
 
 namespace {
 
@@ -123,6 +125,107 @@ NDArray<std::string> js_to_string_ndarray(const val& v) {
                                 std::vector<size_t>{});
 }
 
+// a catch for 64 bit bigInts
+// Copy a JS number array (Array or TypedArray) into std::vector<T>. Numeric types
+// go through convertJSArrayToNumberVector (one bulk copy for a TypedArray); 64-bit
+// ints arrive as BigInt so they're read element-wise (needs -sWASM_BIGINT).
+template <typename T>
+std::vector<T> js_numbers_to_vector(const val& v) {
+    if constexpr (std::is_same_v<T, int64_t> || std::is_same_v<T, uint64_t>) {
+        const unsigned n = v["length"].as<unsigned>();
+        std::vector<T> out;
+        out.reserve(n);
+        for (unsigned i = 0; i < n; ++i) out.push_back(v[i].as<T>());
+        return out;
+    } else {
+        return convertJSArrayToNumberVector<T>(v);
+    }
+}
+
+// Resolve the shape argument passed from JS: an array-like -> those dims verbatim
+// (empty array -> a scalar entry); anything else (omitted/undefined) -> 1-D of
+// `total`. NDArray's constructor validates that the dims multiply out to the data
+// length, so a wrong shape surfaces as a catchable error.
+std::vector<size_t> parse_shape(const val& shape_arg, size_t total) {
+    if (is_array_like(shape_arg)) {
+        const unsigned nd = shape_arg["length"].as<unsigned>();
+        std::vector<size_t> shape;
+        shape.reserve(nd);
+        for (unsigned i = 0; i < nd; ++i)
+            shape.push_back(static_cast<size_t>(shape_arg[i].as<double>()));
+        return shape;
+    }
+    return {total};
+}
+
+// Build an NDArray<T> for a put(): bulk-copy the JS values, then apply the shape.
+template <typename T>
+NDArray<T> build_ndarray(const val& value, const val& shape_arg) {
+    std::vector<T> data = js_numbers_to_vector<T>(value);
+    std::vector<size_t> shape = parse_shape(shape_arg, data.size());
+    return NDArray<T>(std::move(data), shape);
+}
+
+// String equivalent of build_ndarray: a bare string is a scalar entry; an array of
+// strings takes the given shape (default 1-D).
+NDArray<std::string> build_string_ndarray(const val& value, const val& shape_arg) {
+    std::vector<std::string> data;
+    if (value.isString()) {
+        data.push_back(value.as<std::string>());
+    } else {
+        const unsigned n = value["length"].as<unsigned>();
+        data.reserve(n);
+        for (unsigned i = 0; i < n; ++i) data.push_back(value[i].as<std::string>());
+    }
+    std::vector<size_t> shape;
+    if (is_array_like(shape_arg)) shape = parse_shape(shape_arg, data.size());
+    else if (!value.isString()) shape = {data.size()};  // else: scalar string
+    return NDArray<std::string>(std::move(data), shape);
+}
+
+// Parse one per-dimension slice window for getSliceND. `startStopStep` is
+// {start,stop,step?} or [start,stop,step?]; start defaults to 0, stop to `dim`,
+// step to 1. Values are clamped into range so a window past the end yields a short
+// (or empty) result rather than an out-of-range throw (matching 1-D getSlice).
+Slice parse_one_slice(const val& startStopStep, size_t dim) {
+    double start = 0, stop = static_cast<double>(dim), step = 1;
+    if (is_array_like(startStopStep)) {
+        const unsigned n = startStopStep["length"].as<unsigned>();
+        if (n > 0) start = startStopStep[0].as<double>();
+        if (n > 1) stop = startStopStep[1].as<double>();
+        if (n > 2) step = startStopStep[2].as<double>();
+    } else {
+        if (!startStopStep["start"].isUndefined()) start = startStopStep["start"].as<double>();
+        if (!startStopStep["stop"].isUndefined()) stop = startStopStep["stop"].as<double>();
+        if (!startStopStep["step"].isUndefined()) step = startStopStep["step"].as<double>();
+    }
+    const size_t s = start <= 0 ? 0 : std::min(static_cast<size_t>(start), dim);
+    size_t e = stop <= 0 ? 0 : std::min(static_cast<size_t>(stop), dim);
+    if (e < s) e = s;
+    const size_t st = step < 1 ? 1 : static_cast<size_t>(step);
+    return Slice{s, e, st};
+}
+
+// Turn the JS windows array into one Slice per dimension of `shape`. Fewer windows
+// than dims is allowed — trailing dims are taken in full — so common cases stay
+// short. More windows than dims is a (catchable) error.
+std::vector<Slice> parse_slices(const std::vector<size_t>& shape, const val& startStopStepSets) {
+    const unsigned nd = shape.size();
+    const unsigned given =
+        is_array_like(startStopStepSets) ? startStopStepSets["length"].as<unsigned>() : 0;
+    if (given > nd) {
+        throw std::runtime_error("getSliceND: more slice windows (" + std::to_string(given) +
+                                 ") than array dimensions (" + std::to_string(nd) + ")");
+    }
+    std::vector<Slice> out;
+    out.reserve(nd);
+    for (unsigned i = 0; i < nd; ++i) {
+        out.push_back(i < given ? parse_one_slice(startStopStepSets[i], shape[i])
+                                : star::slice_all(shape[i]));
+    }
+    return out;
+}
+
 // Convert a decoded metadata value to its natural JS type: a scalar string/number
 // for scalars, a typed array (numeric) or Array<string> for arrays. 64-bit ints
 // stay BigInt arrays even when scalar (a bare Number would silently lose
@@ -160,6 +263,10 @@ public:
     JsDataset(const std::string& path, const std::string& mode)
         : m_ds(StarDataset::open(path, mode)) {}
 
+    // Wrap an already-constructed dataset (used by the create() factory below).
+    // Not registered as a JS constructor.
+    explicit JsDataset(std::shared_ptr<StarDataset> ds) : m_ds(std::move(ds)) {}
+
     // Array keys present in the dataset (returned to JS as an Array<string>).
     val keys() const {
         std::vector<std::string> k = m_ds->get_all_keys();
@@ -180,12 +287,60 @@ public:
         return out;
     }
 
-    // Return the whole array for `key` as a JS typed array of the right kind.
+    // Return the whole array for `key` as a JS typed array
     val get(const std::string& key) const {
-        return dispatch_numeric(m_ds->dtype_of(key), "get", [&](auto tag, const char* ctor) {
+        const DataType dt = m_ds->dtype_of(key);
+        if (dt == DataType::STRING) {
+            NDArray<std::string> a = m_ds->get<std::string>(key);
+            val out = val::array();
+            for (size_t i = 0; i < a.size(); ++i) out.set(i, val(a.flat(i)));
+            return out;
+        }
+        return dispatch_numeric(dt, "get", [&](auto tag, const char* ctor) {
             return to_typed_array(m_ds->get<decltype(tag)>(key), ctor);
         });
     }
+
+    // Write an array entry. `value` is a TypedArray/Array of numbers, or a
+    // string/Array<string> when dtype is "string"; `dtype` names the on-disk
+    // element type (see datatype_from_string); `shape` gives the dims (an
+    // array-like, or omit/[] — [] is a scalar, omitted is 1-D of the data length).
+    // put() itself never checks the open mode — the entry is held in memory and
+    // overwriting an existing key is allowed — so it works even on a read-only
+    // handle. Persisting is where the mode matters: flush() throws in read-only
+    // mode, while writeBytes()/saveTo() serialize any dataset (see below).
+    // TODO: accept nested JS arrays (e.g. [[1,2,3],[4,5,6]]) as `value`?
+    void put(const std::string& key, val value, val shape, const std::string& dtype) {
+        if (dtype == "string") {
+            m_ds->put(key, build_string_ndarray(value, shape));
+            return;
+        }
+        dispatch_numeric(datatype_from_string(dtype), "put", [&](auto tag, const char*) {
+            m_ds->put(key, build_ndarray<decltype(tag)>(value, shape));
+            return val::undefined();
+        });
+    }
+
+    // Persist pending writes to the dataset's backing path. Under WASM that path is
+    // in the virtual filesystem. In browser, prefer writeBytes() to get the image back as bytes.
+    void flush() { m_ds->flush(); }
+
+    // Serialize the dataset to a .stards image and return it as a
+    // Uint8Array. Just returns bytes, doesn't touch the source file.
+    val write_bytes() {
+        std::vector<char> bytes = m_ds->write_bytes();
+        val view(typed_memory_view(bytes.size(),
+                                   reinterpret_cast<const uint8_t*>(bytes.data())));
+        return val::global("Uint8Array").new_(view);
+    }
+
+    // Persist the dataset to `path` in the virtual filesystem.
+    // Makes a second copy, like "Save As..." in many apps.
+    void save_to(const std::string& path) { m_ds->save_to(path); }
+
+    // Best-effort flush + release, mirroring the destructor: a no-op (not an error)
+    // for a read-only dataset. The JS handle itself must still be .delete()'d.
+    void close() { m_ds->close(); }
 
     // Read a string-valued entry (header/attribute style) as a plain JS string,
     // from the metadata block or from a 1-element string column. Returns "" if the
@@ -290,6 +445,30 @@ public:
         });
     }
 
+    // N-dimensional strided slice (1-D/2-D/3-D — the ranks the store slices). `windows`
+    // is an array of per-dimension {start,stop,step?} / [start,stop,step?] specs (see
+    // parse_slices: windows clamp, fields default, and omitted trailing dims are taken
+    // in full). Like getSlice, only the covering compressed blocks are read.
+    //
+    // Returns an OBJECT { data, shape }: `data` is the flat (row-major) typed array, 
+    // `shape` its dims. (unlike getSlice/get, which return a bare typed array).
+    val get_slice_nd(const std::string& key, val windows) const {
+        const std::vector<size_t> full_shape = m_ds->shape_of(key);
+        // sub-slice calculation (with helper)
+        const std::vector<Slice> slices = parse_slices(full_shape, windows);
+        return dispatch_numeric(m_ds->dtype_of(key), "getSliceND", [&](auto tag, const char* ctor) {
+            NDArray<decltype(tag)> arr = m_ds->get_slice<decltype(tag)>(key, slices);
+            // Create and fill `out` object. { data, shape }
+            val out = val::object();
+            out.set("data", to_typed_array(arr, ctor));
+            val out_shape = val::array();
+            const std::vector<size_t>& os = arr.shape();
+            for (size_t i = 0; i < os.size(); ++i) out_shape.set(i, val(static_cast<double>(os[i])));
+            out.set("shape", out_shape);
+            return out;
+        });
+    }
+
     // Read the same window from three 1-D arrays and return it interleaved as one
     // Float32Array [x0,y0,z0, x1,y1,z1, ...].
     //
@@ -326,6 +505,50 @@ public:
         return static_cast<double>(star::g_network_request_count.load());
     }
 
+    // --- introspection --------------------------------------------------------
+
+    // True if `key` exists in EITHER namespace — a stored array or a metadata-block
+    // value. (For an array-only or metadata-only test, use keys()/metaHas.)
+    bool has(const std::string& key) const { return m_ds->contains(key); }
+
+    // Length of array `key` along its FIRST dimension (like len() of a numpy array —
+    // rows, not total elements). Use shape() for the full dims / element count.
+    double array_length(const std::string& key) const {
+        return static_cast<double>(m_ds->array_length(key));
+    }
+
+    // Number of array entries / of metadata-block entries.
+    double size() const { return static_cast<double>(m_ds->size()); }
+    double meta_count() const { return static_cast<double>(m_ds->get_metadata_count()); }
+
+    bool is_read_only() const { return m_ds->is_read_only(); }
+    std::string filename() const { return m_ds->get_filename(); }
+
+    // Parsed file header as a plain JS object.
+    val file_header() const {
+        const star::FileHeader& h = m_ds->get_file_header();
+        val out = val::object();
+        out.set("magic", std::string(h.magic, sizeof(h.magic)));
+        out.set("formatVersion", static_cast<double>(h.format_version));
+        out.set("headerSize", static_cast<double>(h.header_size));
+        out.set("entryCount", static_cast<double>(h.entry_count));
+        out.set("layerCount", static_cast<double>(h.layer_count));
+        out.set("keyRegistryCount", static_cast<double>(h.key_registry_count));
+        out.set("versionString", h.getVersionString());
+        return out;
+    }
+
+    // Warm the cache for `keys` (an array of key names) in one batch. Over a remote
+    // source this issues the covering ranged GETs up front (parallel where possible)
+    // instead of lazily on first access. Throws if any key is unknown.
+    void prefetch(val keys) {
+        std::vector<std::string> ks;
+        const unsigned n = keys["length"].as<unsigned>();
+        ks.reserve(n);
+        for (unsigned i = 0; i < n; ++i) ks.push_back(keys[i].as<std::string>());
+        m_ds->prefetch(ks);
+    }
+
 private:
     // Clamp a [start, count) request to the array's actual length, so a caller that
     // asks for one batch past the end gets a short (or empty) result rather than an
@@ -352,6 +575,40 @@ private:
     std::shared_ptr<StarDataset> m_ds;
 };
 
+// Create a NEW writable dataset at `path` with an explicit StarConfig (compression,
+// block size, metadata-block options), returning the JS handle. Unlike the
+// Dataset(path,"w") constructor — which creates on flush with DEFAULT config —
+// create() lets the caller pick the write-time codec. An existing file at `path` is
+// overwritten. Note: on WASM only NONE and the GZIP* codecs are runnable, no ZLIB.
+JsDataset create_dataset(const std::string& path, const StarConfig& config) {
+    return JsDataset(StarDataset::create(path, config));
+}
+
+// Open a READ-ONLY dataset from a complete .stards image already in memory —
+// `bytes` is a JS Uint8Array (or any numeric TypedArray/Array of byte values). No
+// filesystem or network is touched: the bytes are copied into the Wasm heap and
+// parsed. Round-trips with writeBytes() — openBytes(ds.writeBytes()) reconstructs
+// the dataset. Throws if the bytes are not a valid STAR image. (An ArrayBuffer has
+// no length/indexing, so wrap it first: new Uint8Array(buf).)
+JsDataset open_bytes_dataset(val bytes) {
+    std::vector<uint8_t> buf = convertJSArrayToNumberVector<uint8_t>(bytes);
+    return JsDataset(StarDataset::open_bytes(buf.data(), buf.size()));
+}
+
+// --- module-level (non-Dataset) helpers ---------------------------------------
+
+std::string library_version() { return star::getLibraryVersion(); }
+
+// Process-wide network-request counter (the same one Dataset.networkRequests()
+// reads). Exposed at module scope so callers can reset it between operations.
+double network_request_count() { return static_cast<double>(star::getNetworkRequestCount()); }
+void reset_network_request_count() { star::resetNetworkRequestCount(); }
+
+// Size in bytes of one element of the named dtype ("int32", "float64", ...).
+double dtype_size(const std::string& name) {
+    return static_cast<double>(star::datatype_size(datatype_from_string(name)));
+}
+
 }  // namespace
 
 EMSCRIPTEN_BINDINGS(stards) {
@@ -362,6 +619,11 @@ EMSCRIPTEN_BINDINGS(stards) {
         .function("dtype", &JsDataset::dtype)
         .function("shape", &JsDataset::shape)
         .function("get", &JsDataset::get)
+        .function("put", &JsDataset::put)
+        .function("flush", &JsDataset::flush)
+        .function("writeBytes", &JsDataset::write_bytes)
+        .function("saveTo", &JsDataset::save_to)
+        .function("close", &JsDataset::close)
         .function("metaString", &JsDataset::meta_string)
         .function("metaGet", &JsDataset::meta_get)
         .function("metaKeys", &JsDataset::meta_keys)
@@ -374,6 +636,58 @@ EMSCRIPTEN_BINDINGS(stards) {
         .function("metaClear", &JsDataset::meta_clear)
         .function("isSliceable", &JsDataset::is_sliceable)
         .function("getSlice", &JsDataset::get_slice)
+        .function("getSliceND", &JsDataset::get_slice_nd)
         .function("getSliceXYZ", &JsDataset::get_slice_xyz_f32)
+        .function("has", &JsDataset::has)
+        .function("arrayLength", &JsDataset::array_length)
+        .function("size", &JsDataset::size)
+        .function("metaCount", &JsDataset::meta_count)
+        .function("isReadOnly", &JsDataset::is_read_only)
+        .function("filename", &JsDataset::filename)
+        .function("fileHeader", &JsDataset::file_header)
+        .function("prefetch", &JsDataset::prefetch)
         .function("networkRequests", &JsDataset::network_requests);
+
+    // Compression codecs for StarConfig.compression / .metadataCompression. Only
+    // codecs this build can actually run are exposed.  On WASM that's NONE + the 
+    // GZIP* variants (zlib). The _BLOCK shuffle variants stay sliceable;
+    // the plain _SHUFFLE ones are legacy whole-array (not sliceable).
+    enum_<CompressionAlgorithm>("Compression")
+        .value("NONE", CompressionAlgorithm::NONE)
+#ifdef ENABLE_ZLIB
+        .value("GZIP", CompressionAlgorithm::GZIP)
+        .value("GZIP_SHUFFLE", CompressionAlgorithm::GZIP_SHUFFLE)
+        .value("GZIP_SHUFFLE_BLOCK", CompressionAlgorithm::GZIP_SHUFFLE_BLOCK)
+#endif
+#ifdef ENABLE_ZSTD
+        .value("ZSTD", CompressionAlgorithm::ZSTD)
+#endif
+#ifdef ENABLE_LZ4
+        .value("LZ4", CompressionAlgorithm::LZ4)
+        .value("LZ4_SHUFFLE", CompressionAlgorithm::LZ4_SHUFFLE)
+        .value("LZ4_SHUFFLE_BLOCK", CompressionAlgorithm::LZ4_SHUFFLE_BLOCK)
+#endif
+        ;
+
+    // Write-time configuration for create(). Constructed with defaults; set only
+    // the fields you want to change. (metadata_force_separate_keys and the buffer/
+    // arena tuning knobs are intentionally not exposed yet.)
+    class_<StarConfig>("StarConfig")
+        .constructor<>()
+        .property("compression", &StarConfig::compression)
+        .property("blockSize", &StarConfig::block_size)
+        .property("metadataBlockEnabled", &StarConfig::metadata_block_enabled)
+        .property("metadataMaxBlockSize", &StarConfig::metadata_max_block_size)
+        .property("metadataCompression", &StarConfig::metadata_compression);
+
+    // Module.create(path, config) -> Dataset. See create_dataset() above.
+    function("create", &create_dataset);
+    // Module.openBytes(uint8Array) -> read-only Dataset. See open_bytes_dataset().
+    function("openBytes", &open_bytes_dataset);
+
+    // Module-level helpers.
+    function("libraryVersion", &library_version);
+    function("networkRequestCount", &network_request_count);
+    function("resetNetworkRequestCount", &reset_network_request_count);
+    function("dtypeSize", &dtype_size);
 }
