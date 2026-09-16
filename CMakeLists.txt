@@ -364,7 +364,8 @@ endif()
 if(EMSCRIPTEN)
   add_executable(stards_wasm bindings/wasm/stards_bind.cpp)
   target_link_libraries(stards_wasm PRIVATE StarDS)
-  # lets embind surface C++ throws to JS as catchable errors. Used in Stards control flow.
+  set_target_properties(stards_wasm PROPERTIES SUFFIX ".mjs")
+  # lets embind surface C++ errors to JS. Used in Stards control flow.
   target_compile_options(stards_wasm PRIVATE -fexceptions)
   target_link_options(stards_wasm PRIVATE
       -lembind
@@ -379,6 +380,34 @@ if(EMSCRIPTEN)
       # Lets JS `catch (e)` get a C++ exception message instead of just a number.
       -sEXPORT_EXCEPTION_HANDLING_HELPERS=1
   )
+  
+  # Copy loader and Wasm Tests to output
+  add_custom_command(TARGET stards_wasm POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy
+          "${CMAKE_CURRENT_SOURCE_DIR}/bindings/wasm/stards.mjs"
+          "${CMAKE_CURRENT_BINARY_DIR}/stards.mjs"
+      COMMAND ${CMAKE_COMMAND} -E copy_directory
+          "${CMAKE_CURRENT_SOURCE_DIR}/bindings/wasm/tests"
+          "${CMAKE_CURRENT_BINARY_DIR}/tests"
+      COMMENT "Staging WASM loader + tests next to the module")
+
+  # `cmake --build <dir> --target wasm_tests` builds + stages (via the dependency)
+  # and runs the suite. emcmake sets CMAKE_CROSSCOMPILING_EMULATOR to node; fall
+  # back to a plain `node` on PATH if it isn't set.
+  set(STARDS_WASM_NODE "${CMAKE_CROSSCOMPILING_EMULATOR}")
+  if(NOT STARDS_WASM_NODE)
+    find_program(STARDS_WASM_NODE node)
+  endif()
+  if(STARDS_WASM_NODE)
+    add_custom_target(wasm_tests
+        COMMAND "${STARDS_WASM_NODE}" "${CMAKE_CURRENT_BINARY_DIR}/tests/run_all.mjs"
+        DEPENDS stards_wasm
+        USES_TERMINAL
+        COMMENT "Running StarDS WASM binding tests")
+  else()
+    message(STATUS "node not found; skipping the wasm_tests target "
+                   "(run: node ${CMAKE_CURRENT_BINARY_DIR}/tests/run_all.mjs)")
+  endif()
 else()
   message(STATUS "Skipping Wasm Bindings")
 endif()
