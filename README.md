@@ -87,19 +87,25 @@ sudo make install
 
 ### Build Wasm Bindings with Emscripten
 
-*You will need `emscripten 3.1.58`:*
+**Prerequisite:** *You will need `emscripten 3.1.58`:*
 ```sh
 conda install emscripten=3.1.58
 ```
 
-*In the base of the repo, with the stards conda env active:*
+**Build/Make:** *In the base of the repo, with the stards conda env active:*
 ```sh
 mkdir build-wasm && cd build-wasm
 emcmake cmake ..
 make
 ```
 
-To run the Wasm tests after build/make:
+**Artifacts:** After build/make, these are the files you need to use in JS:
+
+- `stards_wasm.mjs ` - JS Bindings
+- `stards_wasm.wasm` - Web Assembly Binary
+- `stards.mjs      ` - Convenience Wrapper with Error Parsing
+
+**Wasm Tests:** To run the Wasm tests after build/make:
 
 ```sh
 node tests/run_all.mjs
@@ -165,9 +171,9 @@ int main() {
 These three files should be in the same directory 
 (`./scripts/` in the following example):
 
-- stards_wasm.mjs
-- stards_wasm.wasm
-- stards.mjs
+- `stards_wasm.mjs`
+- `stards_wasm.wasm`
+- `stards.mjs`
 
 #### Import and Usage in JS
 
