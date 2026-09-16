@@ -18,6 +18,7 @@ using namespace emscripten;
 using star::StarDataset;
 using star::DataType;
 using star::CompressionAlgorithm;
+using star::LayerView;
 using star::MetadataValue;
 using star::NDArray;
 using star::Slice;
@@ -248,6 +249,105 @@ val meta_value_to_js(const MetadataValue& mv) {
         return to_typed_array(a, ctor);
     });
 }
+
+// JS handle over a dataset layer (C++ LayerView). Holds a shared_ptr so it keeps
+// the base dataset alive independently of the Dataset handle it came from. get()/
+// put() mirror Dataset's, scoped to this layer (with base-layer fallback when the
+// dataset has inheritance enabled); the meta* methods mirror the dataset metadata
+// methods, scoped to this layer.
+class JsLayer {
+public:
+    explicit JsLayer(std::shared_ptr<LayerView> layer) : m_layer(std::move(layer)) {}
+
+    std::string name() const { return m_layer->name(); }
+
+    // Keys in this layer, as Array<string>. NOTE: reflects LayerView::keys(), which
+    // (per the TODO in stards.h) reports layer metadata + inherited keys but NOT
+    // layer-local ARRAY keys written via put() — those are stored under a prefixed
+    // key the presence check misses. Use get()/metaKeys(); don't rely on keys()/has()
+    // to enumerate arrays you put() into a layer.
+    val keys() const {
+        std::vector<std::string> k = m_layer->keys();
+        val out = val::array();
+        for (size_t i = 0; i < k.size(); ++i) out.set(i, val(k[i]));
+        return out;
+    }
+
+    // Faithful to LayerView::contains — see the keys() note: returns false for a
+    // layer-local array key even though get() would return it.
+    bool has(const std::string& key) const { return m_layer->contains(key); }
+
+    // Read array `key` from this layer. Numeric -> typed array; STRING -> Array<string>.
+    val get(const std::string& key) const {
+        const DataType dt = layer_dtype(key);
+        if (dt == DataType::STRING) {
+            NDArray<std::string> a = m_layer->get<std::string>(key);
+            val out = val::array();
+            for (size_t i = 0; i < a.size(); ++i) out.set(i, val(a.flat(i)));
+            return out;
+        }
+        return dispatch_numeric(dt, "layer.get", [&](auto tag, const char* ctor) {
+            return to_typed_array(m_layer->get<decltype(tag)>(key), ctor);
+        });
+    }
+
+    // Write array `key` into this layer. Same (value, shape, dtype) convention as
+    // Dataset.put; requires the dataset opened writable.
+    void put(const std::string& key, val value, val shape, const std::string& dtype) {
+        if (dtype == "string") {
+            m_layer->put(key, build_string_ndarray(value, shape));
+            return;
+        }
+        dispatch_numeric(datatype_from_string(dtype), "layer.put", [&](auto tag, const char*) {
+            m_layer->put(key, build_ndarray<decltype(tag)>(value, shape));
+            return val::undefined();
+        });
+    }
+
+    // Layer-scoped metadata — same shapes as the Dataset meta* methods.
+    val meta_keys() const {
+        std::vector<std::string> k = m_layer->meta.keys();
+        val out = val::array();
+        for (size_t i = 0; i < k.size(); ++i) out.set(i, val(k[i]));
+        return out;
+    }
+    bool meta_has(const std::string& key) const { return m_layer->meta.contains(key); }
+    val meta_get(const std::string& key) const {
+        std::shared_ptr<MetadataValue> mv = m_layer->meta.get(key);
+        if (!mv) return val::null();
+        return meta_value_to_js(*mv);
+    }
+    void meta_put(const std::string& key, val value, const std::string& dtype) {
+        if (dtype == "string") {
+            m_layer->meta.put(key, js_to_string_ndarray(value));
+            return;
+        }
+        dispatch_numeric(datatype_from_string(dtype), "layer.metaPut", [&](auto tag, const char*) {
+            m_layer->meta.put(key, js_to_ndarray<decltype(tag)>(value));
+            return val::undefined();
+        });
+    }
+    void meta_remove(const std::string& key) { m_layer->meta.remove(key); }
+
+private:
+    // Resolve the dtype of a layer array key. LayerView exposes no dtype accessor,
+    // so we mirror its internal storage-key scheme (see LayerView::get) and ask the
+    // base dataset: the layer-prefixed key if present, else the unprefixed base key
+    // when the dataset has inheritance enabled.
+    DataType layer_dtype(const std::string& key) const {
+        std::shared_ptr<StarDataset> base = m_layer->base();
+        const std::string& lname = m_layer->name();
+        const std::string storage_key =
+            lname == "__base__" ? key : ("__layer_" + lname + "__:" + key);
+        if (base->contains(storage_key)) return base->dtype_of(storage_key);
+        if (lname != "__base__" && base->layer_inheritance() && base->contains(key)) {
+            return base->dtype_of(key);
+        }
+        throw std::runtime_error("Key not found in layer: " + key);
+    }
+
+    std::shared_ptr<LayerView> m_layer;
+};
 
 // A thin JS-facing handle around a StarDataset shared_ptr.
 class JsDataset {
@@ -549,6 +649,28 @@ public:
         m_ds->prefetch(ks);
     }
 
+    // --- layers ---------------------------------------------------------------
+
+    // View an existing layer (throws if absent) / create a new one (throws if it
+    // already exists). Both return a Layer handle the caller must .delete().
+    JsLayer get_layer(const std::string& name) const { return JsLayer(m_ds->get_layer(name)); }
+    JsLayer create_layer(const std::string& name) { return JsLayer(m_ds->create_layer(name)); }
+
+    bool has_layer(const std::string& name) const { return m_ds->has_layer(name); }
+
+    val list_layers() const {
+        std::vector<std::string> ls = m_ds->list_layers();
+        val out = val::array();
+        for (size_t i = 0; i < ls.size(); ++i) out.set(i, val(ls[i]));
+        return out;
+    }
+
+    // Base-layer inheritance for layer lookups (OpenOptions.layer_inheritance; off by
+    // default). When on, a key missing from a layer resolves to the base layer's
+    // value in Layer.get()/keys()/has(); when off, a layer miss stays a miss.
+    bool layer_inheritance() const { return m_ds->layer_inheritance(); }
+    void set_layer_inheritance(bool on) { m_ds->set_layer_inheritance(on); }
+
 private:
     // Clamp a [start, count) request to the array's actual length, so a caller that
     // asks for one batch past the end gets a short (or empty) result rather than an
@@ -646,7 +768,25 @@ EMSCRIPTEN_BINDINGS(stards) {
         .function("filename", &JsDataset::filename)
         .function("fileHeader", &JsDataset::file_header)
         .function("prefetch", &JsDataset::prefetch)
+        .function("getLayer", &JsDataset::get_layer)
+        .function("createLayer", &JsDataset::create_layer)
+        .function("hasLayer", &JsDataset::has_layer)
+        .function("listLayers", &JsDataset::list_layers)
+        .function("layerInheritance", &JsDataset::layer_inheritance)
+        .function("setLayerInheritance", &JsDataset::set_layer_inheritance)
         .function("networkRequests", &JsDataset::network_requests);
+
+    class_<JsLayer>("Layer")
+        .function("name", &JsLayer::name)
+        .function("keys", &JsLayer::keys)
+        .function("has", &JsLayer::has)
+        .function("get", &JsLayer::get)
+        .function("put", &JsLayer::put)
+        .function("metaKeys", &JsLayer::meta_keys)
+        .function("metaHas", &JsLayer::meta_has)
+        .function("metaGet", &JsLayer::meta_get)
+        .function("metaPut", &JsLayer::meta_put)
+        .function("metaRemove", &JsLayer::meta_remove);
 
     // Compression codecs for StarConfig.compression / .metadataCompression. Only
     // codecs this build can actually run are exposed.  On WASM that's NONE + the 
