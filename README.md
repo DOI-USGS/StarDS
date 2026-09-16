@@ -85,6 +85,26 @@ sudo make install
 - NumPy >= 1.20.0
 - SWIG >= 4.0
 
+### Build Wasm Bindings with Emscripten
+
+*You will need `emscripten 3.1.58`:*
+```sh
+conda install emscripten=3.1.58
+```
+
+*In the base of the repo, with the stards conda env active:*
+```sh
+mkdir build-wasm && cd build-wasm
+emcmake cmake ..
+make
+```
+
+To run the Wasm tests after build/make:
+
+```sh
+node tests/run_all.mjs
+```
+
 ---
 
 ## Using in Your Project
@@ -136,6 +156,57 @@ int main() {
 
     return 0;
 }
+```
+
+### Using in Javascript/Wasm
+
+#### Wasm Files
+
+These three files should be in the same directory 
+(`./scripts/` in the following example):
+
+- stards_wasm.mjs
+- stards_wasm.wasm
+- stards.mjs
+
+#### Import and Usage in JS
+
+See [`bindings/wasm/tests/`](https://github.com/DOI-USGS/StarDS/tree/main/bindings/wasm/tests) for more usage examples.
+
+```js
+import { loadStarDS } from './scripts/stards.mjs';
+
+const { Dataset } = await loadStarDS();
+
+const URL =
+  'https://asc-isisdata.s3.us-west-2.amazonaws.com/cnf_test_data/largenet.stards';
+
+// Open the dataset (ranged GETs over fetch()).
+const ds = await new Dataset(URL);
+
+// keys()/shape() return real JS Arrays, so use length/index.
+const keys = ds.keys();
+console.log(`opened OK — ${keys.length} array keys`);
+
+// Print the first few keys with their dtype + shape.
+for (let i = 0; i < Math.min(5, keys.length); i++) {
+  const k = keys[i];
+  const dims = ds.shape(k);
+  console.log(`  ${k}  (${ds.dtype(k)})  shape=[${dims.join(',')}]`);
+}
+
+// Read an array slice back as a JS typed array.
+const key = keys[1];
+// getSlice reads only the covering blocks. Use get(key) to get the whole
+// array instead — but note that it can fetch a lot of data.
+const arr = await ds.getSlice(key, 0, 6);
+console.log(`\nread "${key}": ${arr.constructor.name}(${arr.length}), head =`,
+            Array.from(arr.slice(0, 6)));
+
+console.log(`network requests: ${ds.networkRequests()}`);
+
+// embind objects are manually managed — free them.
+ds.delete();
 ```
 
 ---
