@@ -40,9 +40,9 @@ ok('get string array', j(r.get('names')) === j(['alpha', 'beta', 'gamma']));
 ok('dtype names == string', r.dtype('names') === 'string');
 
 // --- introspection (group 7) --------------------------------------------------
-ok('has present array', r.has('mat') === true);
-ok('has absent', r.has('nope') === false);
-ok('has sees metadata keys too', r.has('title') === true); // contains() spans both namespaces
+ok('contains present array', r.contains('mat') === true);
+ok('contains absent', r.contains('nope') === false);
+ok('contains sees metadata keys too', r.contains('title') === true); // contains() spans both namespaces
 ok('arrayLength mat == 2 (first dim)', r.arrayLength('mat') === 2); // rows, not total
 ok('shape gives full dims', j([...r.shape('mat')]) === j([2, 3]));
 ok('size == 3 arrays', r.size() === 3);

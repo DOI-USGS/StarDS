@@ -1,5 +1,5 @@
 // Metadata test: the metadata-accessor surface (metaPut/metaGet across every dtype,
-// scalar + array; metaKeys/metaHas/metaDtype/metaShape/metaGetAll; metaRemove/
+// scalar + array; metaKeys/metaContains/metaDtype/metaShape/metaGetAll; metaRemove/
 // metaClear; overwrite; int64 BigInt precision; absent-key handling).
 //
 // Build first, then run from the repo root:
@@ -45,8 +45,8 @@ eq('shape uint8 array', [...ds.metaShape('vec')], [4]);
 eq('get string array', ds.metaGet('tags'), ['a', 'bb', 'ccc']);
 
 // --- presence / absent-key handling ------------------------------------------
-eq('has present', ds.metaHas('answer'), true);
-eq('has absent', ds.metaHas('__nope__'), false);
+eq('has present', ds.metaContains('answer'), true);
+eq('has absent', ds.metaContains('__nope__'), false);
 eq('get absent -> null', ds.metaGet('__nope__'), null);
 eq("dtype absent -> ''", ds.metaDtype('__nope__'), '');
 
@@ -59,7 +59,7 @@ eq("dtype absent -> ''", ds.metaDtype('__nope__'), '');
 
 // --- remove / clear -----------------------------------------------------------
 ds.metaRemove('answer');
-eq('after remove has', ds.metaHas('answer'), false);
+eq('after remove has', ds.metaContains('answer'), false);
 eq('after remove count', ds.metaKeys().length, 5);
 ds.metaClear();
 eq('after clear count', ds.metaKeys().length, 0);

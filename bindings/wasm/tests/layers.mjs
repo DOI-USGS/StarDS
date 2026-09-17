@@ -39,7 +39,7 @@ ok('layer name', adjusted.name() === 'adjusted');
 ok('layer array data', str([...adjusted.get('pts')]) === str([9.5, 8.5]));
 // Documented quirk (see stards.h TODO): contains()/keys() don't report layer-local
 // ARRAY keys — get() still returns them. Asserting the faithful behavior here.
-ok('layer has(array key) is false (documented quirk)', adjusted.has('pts') === false);
+ok('layer contains(array key) is false (documented quirk)', adjusted.contains('pts') === false);
 ok('layer keys() omits array key (documented quirk)', ![...adjusted.keys()].includes('pts'));
 ok('layer metaGet string', adjusted.metaGet('note') === 'adjusted points');
 ok('layer metaGet int scalar (bare number)', adjusted.metaGet('iteration') === 3);
@@ -47,7 +47,7 @@ ok('layer metaKeys', [...adjusted.metaKeys()].sort().join(',') === 'iteration,no
 
 // --- inheritance toggle -------------------------------------------------------
 // 'shared' lives in the base layer, not in 'adjusted'. Off (default): a miss.
-ok('inheritance off: layer.has(base key) == false', adjusted.has('shared') === false);
+ok('inheritance off: layer.contains(base key) == false', adjusted.contains('shared') === false);
 try { adjusted.get('shared'); ok('inheritance off: layer.get(base key) throws', false); }
 catch (e) { ok('inheritance off: layer.get(base key) throws', true, '-> ' + e.message); }
 

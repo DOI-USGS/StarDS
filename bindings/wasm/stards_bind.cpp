@@ -275,7 +275,7 @@ public:
 
     // Faithful to LayerView::contains — see the keys() note: returns false for a
     // layer-local array key even though get() would return it.
-    bool has(const std::string& key) const { return m_layer->contains(key); }
+    bool contains(const std::string& key) const { return m_layer->contains(key); }
 
     // Read array `key` from this layer. Numeric -> typed array; STRING -> Array<string>.
     val get(const std::string& key) const {
@@ -311,7 +311,7 @@ public:
         for (size_t i = 0; i < k.size(); ++i) out.set(i, val(k[i]));
         return out;
     }
-    bool meta_has(const std::string& key) const { return m_layer->meta.contains(key); }
+    bool meta_contains(const std::string& key) const { return m_layer->meta.contains(key); }
     val meta_get(const std::string& key) const {
         std::shared_ptr<MetadataValue> mv = m_layer->meta.get(key);
         if (!mv) return val::null();
@@ -482,7 +482,7 @@ public:
         return out;
     }
 
-    bool meta_has(const std::string& key) const { return m_ds->meta.contains(key); }
+    bool meta_contains(const std::string& key) const { return m_ds->meta.contains(key); }
 
     // dtype name of a metadata entry ("int32", "float64", "string", ...), or "" if
     // the key is absent.
@@ -608,8 +608,8 @@ public:
     // --- introspection --------------------------------------------------------
 
     // True if `key` exists in EITHER namespace — a stored array or a metadata-block
-    // value. (For an array-only or metadata-only test, use keys()/metaHas.)
-    bool has(const std::string& key) const { return m_ds->contains(key); }
+    // value. (For an array-only or metadata-only test, use keys()/metaContains.)
+    bool contains(const std::string& key) const { return m_ds->contains(key); }
 
     // Length of array `key` along its FIRST dimension (like len() of a numpy array —
     // rows, not total elements). Use shape() for the full dims / element count.
@@ -749,7 +749,7 @@ EMSCRIPTEN_BINDINGS(stards) {
         .function("metaString", &JsDataset::meta_string)
         .function("metaGet", &JsDataset::meta_get)
         .function("metaKeys", &JsDataset::meta_keys)
-        .function("metaHas", &JsDataset::meta_has)
+        .function("metaContains", &JsDataset::meta_contains)
         .function("metaDtype", &JsDataset::meta_dtype)
         .function("metaShape", &JsDataset::meta_shape)
         .function("metaGetAll", &JsDataset::meta_get_all)
@@ -760,7 +760,7 @@ EMSCRIPTEN_BINDINGS(stards) {
         .function("getSlice", &JsDataset::get_slice)
         .function("getSliceND", &JsDataset::get_slice_nd)
         .function("getSliceXYZ", &JsDataset::get_slice_xyz_f32)
-        .function("has", &JsDataset::has)
+        .function("contains", &JsDataset::contains)
         .function("arrayLength", &JsDataset::array_length)
         .function("size", &JsDataset::size)
         .function("metaCount", &JsDataset::meta_count)
@@ -779,11 +779,11 @@ EMSCRIPTEN_BINDINGS(stards) {
     class_<JsLayer>("Layer")
         .function("name", &JsLayer::name)
         .function("keys", &JsLayer::keys)
-        .function("has", &JsLayer::has)
+        .function("contains", &JsLayer::contains)
         .function("get", &JsLayer::get)
         .function("put", &JsLayer::put)
         .function("metaKeys", &JsLayer::meta_keys)
-        .function("metaHas", &JsLayer::meta_has)
+        .function("metaContains", &JsLayer::meta_contains)
         .function("metaGet", &JsLayer::meta_get)
         .function("metaPut", &JsLayer::meta_put)
         .function("metaRemove", &JsLayer::meta_remove);
