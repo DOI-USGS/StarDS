@@ -391,19 +391,27 @@ if(EMSCRIPTEN)
           "${CMAKE_CURRENT_BINARY_DIR}/tests"
       COMMENT "Staging WASM loader + tests next to the module")
 
-  # `cmake --build <dir> --target wasm_tests` builds + stages (via the dependency)
-  # and runs the suite. emcmake sets CMAKE_CROSSCOMPILING_EMULATOR to node; fall
-  # back to a plain `node` on PATH if it isn't set.
+  # `cmake --build <dir> --target wasm_tests` builds + stages + runs the suite.
+  # It re-stages the loader + tests itself (not only via the POST_BUILD above),
+  # because editing just the .mjs files doesn't relink stards_wasm — so without
+  # this the run could use stale staged copies. emcmake sets
+  # CMAKE_CROSSCOMPILING_EMULATOR to node; fall back to a plain `node` on PATH.
   set(STARDS_WASM_NODE "${CMAKE_CROSSCOMPILING_EMULATOR}")
   if(NOT STARDS_WASM_NODE)
     find_program(STARDS_WASM_NODE node)
   endif()
   if(STARDS_WASM_NODE)
     add_custom_target(wasm_tests
+        COMMAND ${CMAKE_COMMAND} -E copy
+            "${CMAKE_CURRENT_SOURCE_DIR}/bindings/wasm/stards.mjs"
+            "${CMAKE_CURRENT_BINARY_DIR}/stards.mjs"
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${CMAKE_CURRENT_SOURCE_DIR}/bindings/wasm/tests"
+            "${CMAKE_CURRENT_BINARY_DIR}/tests"
         COMMAND "${STARDS_WASM_NODE}" "${CMAKE_CURRENT_BINARY_DIR}/tests/run_all.mjs"
         DEPENDS stards_wasm
         USES_TERMINAL
-        COMMENT "Running StarDS WASM binding tests")
+        COMMENT "Staging + running StarDS WASM binding tests")
   else()
     message(STATUS "node not found; skipping the wasm_tests target "
                    "(run: node ${CMAKE_CURRENT_BINARY_DIR}/tests/run_all.mjs)")
