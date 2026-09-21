@@ -8,6 +8,7 @@
 #include <memory>
 #include <algorithm>
 #include <type_traits>
+#include <variant>
 
 #include <emscripten/bind.h>
 #include <emscripten/emscripten.h>
@@ -23,6 +24,7 @@ using star::MetadataValue;
 using star::NDArray;
 using star::Slice;
 using star::StarConfig;
+using star::ValueVariant;
 
 namespace {
 
@@ -43,8 +45,10 @@ val to_typed_array(const NDArray<T>& arr, const char* js_ctor) {
 // type via decltype(tag). This lets get()/getSlice()/metaGet() share one table
 // instead of each repeating a 10-case switch that must be kept in lockstep.
 // `ctx` names the caller for the error message on an unsupported dtype.
+// Returns whatever `fn` returns (same type across all dtypes) — usually a `val`,
+// but callers also use it to build a ValueVariant or a JsNDArray.
 template <typename F>
-val dispatch_numeric(DataType dt, const char* ctx, F&& fn) {
+auto dispatch_numeric(DataType dt, const char* ctx, F&& fn) -> decltype(fn(int8_t{}, "")) {
     switch (dt) {
         case DataType::INT8:    return fn(int8_t{},   "Int8Array");
         case DataType::INT16:   return fn(int16_t{},  "Int16Array");
@@ -250,6 +254,146 @@ val meta_value_to_js(const MetadataValue& mv) {
     });
 }
 
+// ---- NDArray (first-class, dtype-erased) ---------------------------------
+
+// Read an index/shape argument (a JS array of numbers) into size_t dims.
+std::vector<size_t> to_size_vector(const val& a) {
+    std::vector<size_t> out;
+    if (is_array_like(a)) {
+        const unsigned n = a["length"].as<unsigned>();
+        out.reserve(n);
+        for (unsigned i = 0; i < n; ++i) out.push_back(static_cast<size_t>(a[i].as<double>()));
+    }
+    return out;
+}
+
+// DataType of the NDArray currently held in a ValueVariant.
+DataType variant_dtype(const ValueVariant& var) {
+    return std::visit([](const auto& arr) {
+        return star::TypeToDataType<typename std::decay_t<decltype(arr)>::value_type>::value;
+    }, var);
+}
+
+// Build a ValueVariant (an NDArray<T>) from JS (value, shape, dtype) — same input
+// convention as Dataset.put.
+ValueVariant build_variant(const val& value, const val& shape, const std::string& dtype) {
+    if (dtype == "string") return build_string_ndarray(value, shape);
+    return dispatch_numeric(datatype_from_string(dtype), "NDArray",
+        [&](auto tag, const char*) -> ValueVariant {
+            return build_ndarray<decltype(tag)>(value, shape);
+        });
+}
+
+// Read array `key` from a dataset into a ValueVariant (any dtype, incl. string).
+ValueVariant read_variant(StarDataset& ds, const std::string& key) {
+    const DataType dt = ds.dtype_of(key);
+    if (dt == DataType::STRING) return ds.get<std::string>(key);
+    return dispatch_numeric(dt, "getArray", [&](auto tag, const char*) -> ValueVariant {
+        return ds.get<decltype(tag)>(key);
+    });
+}
+
+// Flat JS view of a variant's data: a typed array (numeric) or Array<string>.
+val variant_to_js_data(const ValueVariant& var, DataType dt) {
+    if (dt == DataType::STRING) {
+        const NDArray<std::string>& arr = std::get<NDArray<std::string>>(var);
+        val out = val::array();
+        for (size_t i = 0; i < arr.size(); ++i) out.set(i, val(arr.flat(i)));
+        return out;
+    }
+    return dispatch_numeric(dt, "NDArray.data", [&](auto tag, const char* ctor) {
+        using T = decltype(tag);
+        return to_typed_array(std::get<NDArray<T>>(var), ctor);
+    });
+}
+
+// First-class N-dimensional array exposed to JS. Dtype-erased: wraps StarDS's
+// ValueVariant (an NDArray<T> for the element type). Build one from JS data, from a
+// factory (zeros/ones/full), or from Dataset/Layer.getArray(); write it with
+// putArray(). The element dtype is a runtime value (query it with .dtype()).
+class JsNDArray {
+public:
+    // new Module.NDArray(value, shape, dtype) — same (value, shape, dtype) convention
+    // as Dataset.put (value: TypedArray/Array/string; shape: array-like, [] = scalar,
+    // or null = 1-D of the data length).
+    JsNDArray(val value, val shape, const std::string& dtype)
+        : m_var(build_variant(value, shape, dtype)), m_dtype(variant_dtype(m_var)) {}
+
+    // Wrap an existing variant (used by getArray/factories); not a JS constructor.
+    explicit JsNDArray(ValueVariant var) : m_var(std::move(var)), m_dtype(variant_dtype(m_var)) {}
+
+    std::string dtype() const { return std::string(star::datatype_to_string(m_dtype)); }
+
+    val shape() const {
+        return std::visit([](const auto& arr) {
+            val out = val::array();
+            const auto& s = arr.shape();
+            for (size_t i = 0; i < s.size(); ++i) out.set(i, val(static_cast<double>(s[i])));
+            return out;
+        }, m_var);
+    }
+
+    double size() const {
+        return std::visit([](const auto& arr) { return static_cast<double>(arr.size()); }, m_var);
+    }
+    double ndim() const {
+        return std::visit([](const auto& arr) { return static_cast<double>(arr.dimension()); }, m_var);
+    }
+
+    // Flat data (row-major) as a typed array (numeric) or Array<string>.
+    val data() const { return variant_to_js_data(m_var, m_dtype); }
+
+    // Single element at `indices` (a JS array, one entry per dim). Numeric comes back
+    // as Number (BigInt for 64-bit ints); strings as string.
+    val at(val indices) const {
+        std::vector<size_t> idx = to_size_vector(indices);
+        return std::visit([&](const auto& arr) -> val {
+            using T = typename std::decay_t<decltype(arr)>::value_type;
+            const T& v = arr.at(idx);
+            if constexpr (std::is_same_v<T, std::string>) return val(v);
+            else if constexpr (std::is_same_v<T, int64_t> || std::is_same_v<T, uint64_t>) return val(v);
+            else return val(static_cast<double>(v));
+        }, m_var);
+    }
+
+    // Reshape in place; total element count must match (else a catchable throw).
+    void reshape(val new_shape) {
+        std::vector<size_t> s = to_size_vector(new_shape);
+        std::visit([&](auto& arr) { arr.reshape(s); }, m_var);
+    }
+
+    // Factories (numeric dtypes only; a string dtype throws "unsupported dtype").
+    static JsNDArray zeros(val shape, const std::string& dtype) {
+        std::vector<size_t> s = to_size_vector(shape);
+        return dispatch_numeric(datatype_from_string(dtype), "NDArray.zeros",
+            [&](auto tag, const char*) -> JsNDArray {
+                return JsNDArray(ValueVariant(NDArray<decltype(tag)>::zeros(s)));
+            });
+    }
+    static JsNDArray ones(val shape, const std::string& dtype) {
+        std::vector<size_t> s = to_size_vector(shape);
+        return dispatch_numeric(datatype_from_string(dtype), "NDArray.ones",
+            [&](auto tag, const char*) -> JsNDArray {
+                return JsNDArray(ValueVariant(NDArray<decltype(tag)>::ones(s)));
+            });
+    }
+    static JsNDArray full(val shape, val value, const std::string& dtype) {
+        std::vector<size_t> s = to_size_vector(shape);
+        return dispatch_numeric(datatype_from_string(dtype), "NDArray.full",
+            [&](auto tag, const char*) -> JsNDArray {
+                using T = decltype(tag);
+                return JsNDArray(ValueVariant(NDArray<T>::full(s, js_to_scalar<T>(value))));
+            });
+    }
+
+    // Move the held variant out (for putArray) — leaves this handle empty.
+    ValueVariant take() { return std::move(m_var); }
+
+private:
+    ValueVariant m_var;
+    DataType m_dtype;
+};
+
 // JS handle over a dataset layer (C++ LayerView). Holds a shared_ptr so it keeps
 // the base dataset alive independently of the Dataset handle it came from. get()/
 // put() mirror Dataset's, scoped to this layer (with base-layer fallback when the
@@ -302,6 +446,19 @@ public:
             m_layer->put(key, build_ndarray<decltype(tag)>(value, shape));
             return val::undefined();
         });
+    }
+
+    // Read array `key` as a first-class NDArray (shape-aware handle, must .delete()).
+    JsNDArray get_array(const std::string& key) const {
+        const DataType dt = layer_dtype(key);
+        if (dt == DataType::STRING) return JsNDArray(ValueVariant(m_layer->get<std::string>(key)));
+        return JsNDArray(dispatch_numeric(dt, "layer.getArray",
+            [&](auto tag, const char*) -> ValueVariant { return m_layer->get<decltype(tag)>(key); }));
+    }
+
+    // Write an NDArray into this layer (moves its data across — no extra copy).
+    void put_array(const std::string& key, JsNDArray arr) {
+        std::visit([&](auto&& a) { m_layer->put(key, std::move(a)); }, arr.take());
     }
 
     // Layer-scoped metadata — same shapes as the Dataset meta* methods.
@@ -419,6 +576,16 @@ public:
             m_ds->put(key, build_ndarray<decltype(tag)>(value, shape));
             return val::undefined();
         });
+    }
+
+    // Read array `key` as a first-class NDArray (a shape-aware handle you must
+    // .delete()). Complements get(), which returns a bare flat typed array.
+    JsNDArray get_array(const std::string& key) const { return JsNDArray(read_variant(*m_ds, key)); }
+
+    // Write an NDArray under `key` (moves its data across — no extra copy). The
+    // counterpart of getArray(); equivalent to put() with the array's dtype/shape.
+    void put_array(const std::string& key, JsNDArray arr) {
+        std::visit([&](auto&& a) { m_ds->put(key, std::move(a)); }, arr.take());
     }
 
     // Persist pending writes to the dataset's backing path. Under WASM that path is
@@ -742,6 +909,8 @@ EMSCRIPTEN_BINDINGS(stards) {
         .function("shape", &JsDataset::shape)
         .function("get", &JsDataset::get)
         .function("put", &JsDataset::put)
+        .function("getArray", &JsDataset::get_array)
+        .function("putArray", &JsDataset::put_array)
         .function("flush", &JsDataset::flush)
         .function("writeBytes", &JsDataset::write_bytes)
         .function("saveTo", &JsDataset::save_to)
@@ -782,11 +951,29 @@ EMSCRIPTEN_BINDINGS(stards) {
         .function("contains", &JsLayer::contains)
         .function("get", &JsLayer::get)
         .function("put", &JsLayer::put)
+        .function("getArray", &JsLayer::get_array)
+        .function("putArray", &JsLayer::put_array)
         .function("metaKeys", &JsLayer::meta_keys)
         .function("metaContains", &JsLayer::meta_contains)
         .function("metaGet", &JsLayer::meta_get)
         .function("metaPut", &JsLayer::meta_put)
         .function("metaRemove", &JsLayer::meta_remove);
+
+    // First-class, dtype-erased N-D array. Construct from JS data
+    // (new Module.NDArray(value, shape, dtype)) or a factory; read it out with
+    // data()/at(); write it into a dataset with Dataset/Layer.putArray().
+    class_<JsNDArray>("NDArray")
+        .constructor<val, val, std::string>()
+        .function("dtype", &JsNDArray::dtype)
+        .function("shape", &JsNDArray::shape)
+        .function("size", &JsNDArray::size)
+        .function("ndim", &JsNDArray::ndim)
+        .function("data", &JsNDArray::data)
+        .function("at", &JsNDArray::at)
+        .function("reshape", &JsNDArray::reshape)
+        .class_function("zeros", &JsNDArray::zeros)
+        .class_function("ones", &JsNDArray::ones)
+        .class_function("full", &JsNDArray::full);
 
     // Compression codecs for StarConfig.compression / .metadataCompression. Only
     // codecs this build can actually run are exposed.  On WASM that's NONE + the 

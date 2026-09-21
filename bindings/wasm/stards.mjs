@@ -127,11 +127,24 @@ export async function loadStarDS() {
     }
   };
 
+  // NDArray(value, shape, dtype) -> a wrapped NDArray handle (decoded errors), with
+  // wrapped .zeros/.ones/.full factories attached. Instances from ds.getArray() are
+  // already wrapped by wrapInstance's return-handling.
+  const NDArray = (value, shape, dtype) =>
+    wrapInstance(Module, (() => {
+      try { return new Module.NDArray(value, shape, dtype); }
+      catch (e) { throw decodeException(Module, e); }
+    })());
+  NDArray.zeros = (shape, dtype) => wrapInstance(Module, wrapFn(() => Module.NDArray.zeros(shape, dtype))());
+  NDArray.ones = (shape, dtype) => wrapInstance(Module, wrapFn(() => Module.NDArray.ones(shape, dtype))());
+  NDArray.full = (shape, value, dtype) => wrapInstance(Module, wrapFn(() => Module.NDArray.full(shape, value, dtype))());
+
   return {
     Module,
     Dataset,
     create,
     openBytes,
+    NDArray,
     libraryVersion: wrapFn(Module.libraryVersion),
     networkRequestCount: wrapFn(Module.networkRequestCount),
     resetNetworkRequestCount: wrapFn(Module.resetNetworkRequestCount),
