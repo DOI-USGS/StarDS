@@ -59,10 +59,56 @@ function inferDtype(value) {
   throw new Error(`cannot infer dtype from value of type ${ctorName ?? typeof value}; pass an explicit dtype`);
 }
 
-// Normalize put(key, value, shape?, dtype?): default an omitted shape to null (C++
-// reads that as 1-D of the data length) and an omitted dtype to inferDtype(value).
+// A nested array is an Array whose first element is itself array-like (Array or
+// TypedArray) — e.g. [[1,2,3],[4,5,6]]. Its shape and flat data are derived from
+// the nesting; a caller-supplied shape is then ignored.
+function isNested(v) {
+  return Array.isArray(v) && v.length > 0 && (Array.isArray(v[0]) || ArrayBuffer.isView(v[0]));
+}
+
+// Descend the first element per axis to get {shape, container, scalar}: `container`
+// is the innermost array-like (used to infer dtype if it's a TypedArray), `scalar`
+// the first leaf value. O(ndim), not O(n).
+function nestedInfo(v) {
+  const shape = [];
+  let cur = v;
+  let container = v;
+  while (Array.isArray(cur) || ArrayBuffer.isView(cur)) {
+    shape.push(cur.length);
+    container = cur;
+    cur = cur[0];
+  }
+  return { shape, container, scalar: cur };
+}
+
+// Flatten a nested array depth-first into `out` (row-major). O(n).
+function flattenInto(v, out) {
+  if (Array.isArray(v) || ArrayBuffer.isView(v)) {
+    for (let i = 0; i < v.length; i++) flattenInto(v[i], out);
+  } else {
+    out.push(v);
+  }
+  return out;
+}
+
+// Resolve (value, shape, dtype) for put()/NDArray(): flatten a nested array (shape
+// derived from nesting, dtype from its innermost container/leaf); otherwise pass the
+// value through with an omitted shape -> null (1-D) and an omitted dtype -> inferred.
+function normalizeData(value, shape, dtype) {
+  if (isNested(value)) {
+    const { shape: derived, container, scalar } = nestedInfo(value);
+    const dt = dtype
+      ?? (ArrayBuffer.isView(container)
+            ? (TYPED_ARRAY_DTYPE[container.constructor.name] ?? 'float64')
+            : inferDtype(scalar));
+    return [flattenInto(value, []), derived, dt];
+  }
+  return [value, shape ?? null, dtype ?? inferDtype(value)];
+}
+
+// Normalize put(key, value, shape?, dtype?) — see normalizeData.
 function normalizePutArgs([key, value, shape, dtype]) {
-  return [key, value, shape ?? null, dtype ?? inferDtype(value)];
+  return [key, ...normalizeData(value, shape, dtype)];
 }
 
 // An embind handle is a JS object exposing a .delete() (e.g. a returned Layer).
@@ -169,10 +215,13 @@ export async function loadStarDS() {
   // NDArray(value, shape?, dtype?) -> a wrapped NDArray handle (decoded errors), with
   // wrapped .zeros/.ones/.full factories attached. `shape` defaults to 1-D of the
   // data length and `dtype` is inferred from `value` when omitted (see inferDtype).
-  // Instances from ds.getArray() are already wrapped by wrapInstance's return-handling.
+  // A nested array (e.g. [[1,2,3],[4,5,6]]) is flattened with its shape derived from
+  // the nesting (any passed shape is ignored). Instances from ds.getArray() are
+  // already wrapped by wrapInstance's return-handling.
   const NDArray = (value, shape, dtype) =>
     wrapInstance(Module, (() => {
-      try { return new Module.NDArray(value, shape ?? null, dtype ?? inferDtype(value)); }
+      const [v, s, dt] = normalizeData(value, shape, dtype);
+      try { return new Module.NDArray(v, s, dt); }
       catch (e) { throw decodeException(Module, e); }
     })());
   // Factories have no data to infer from, so dtype defaults to 'float64'.

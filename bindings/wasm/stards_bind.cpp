@@ -566,7 +566,10 @@ public:
     // overwriting an existing key is allowed — so it works even on a read-only
     // handle. Persisting is where the mode matters: flush() throws in read-only
     // mode, while writeBytes()/saveTo() serialize any dataset (see below).
-    // TODO: accept nested JS arrays (e.g. [[1,2,3],[4,5,6]]) as `value`?
+    // Takes a FLAT value + explicit shape/dtype. The loader (stards.mjs) adds the
+    // conveniences on top: inferring dtype from the value, defaulting shape to 1-D,
+    // and flattening a nested array (e.g. [[1,2,3],[4,5,6]]) into flat data + a
+    // derived shape before it reaches here.
     void put(const std::string& key, val value, val shape, const std::string& dtype) {
         if (dtype == "string") {
             m_ds->put(key, build_string_ndarray(value, shape));

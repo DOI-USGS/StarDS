@@ -64,5 +64,39 @@ r.delete();
   s.delete();
 }
 
+// --- nested (multidimensional) arrays: shape derived from nesting -------------
+{
+  const w2 = await new Dataset('nested.stards', 'w');
+  w2.put('grid', [[1, 2, 3], [4, 5, 6]]);              // -> shape [2,3], float64
+  w2.put('ints', [[1, 2], [3, 4]], null, 'int32');     // explicit dtype override; shape derived
+  w2.put('words', [['a', 'b'], ['c', 'd']]);           // -> shape [2,2], string
+  w2.put('cube', [[[1, 2], [3, 4]], [[5, 6], [7, 8]]]); // 3-D -> [2,2,2]
+  w2.flush();
+  w2.close();
+  w2.delete();
+
+  const r2 = await new Dataset('nested.stards', 'r');
+  ok('nested grid shape', j([...r2.shape('grid')]) === j([2, 3]));
+  ok('nested grid flat data', j([...r2.get('grid')]) === j([1, 2, 3, 4, 5, 6]));
+  ok('nested grid dtype float64', r2.dtype('grid') === 'float64');
+  ok('nested + explicit dtype', r2.dtype('ints') === 'int32' && j([...r2.shape('ints')]) === j([2, 2]));
+  ok('nested strings', r2.dtype('words') === 'string' && j([...r2.shape('words')]) === j([2, 2]));
+  ok('nested 3-D shape', j([...r2.shape('cube')]) === j([2, 2, 2]));
+  ok('nested 3-D data', j([...r2.get('cube')]) === j([1, 2, 3, 4, 5, 6, 7, 8]));
+  r2.delete();
+
+  // NDArray from a nested array + row-major at().
+  const nd = NDArray([[1, 2], [3, 4]]);
+  ok('NDArray nested shape', j([...nd.shape()]) === j([2, 2]));
+  ok('NDArray nested at([1,0])', nd.at([1, 0]) === 3);
+  nd.delete();
+
+  // A ragged nested array can't form a rectangular shape -> catchable throw.
+  const w3 = await new Dataset('ragged.stards', 'w');
+  try { w3.put('bad', [[1, 2], [3]]); ok('ragged nested throws', false); }
+  catch (e) { ok('ragged nested throws', true, '-> ' + e.message); }
+  w3.delete();
+}
+
 console.log(fails ? `\n${fails} FAILURE(S)` : '\nALL PASS');
 process.exit(fails ? 1 : 0);
