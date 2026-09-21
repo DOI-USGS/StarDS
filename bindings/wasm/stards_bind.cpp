@@ -388,6 +388,8 @@ public:
 
     // Move the held variant out (for putArray) — leaves this handle empty.
     ValueVariant take() { return std::move(m_var); }
+    // Borrow the held variant (for metaPutArray, which copies it in).
+    const ValueVariant& variant() const { return m_var; }
 
 private:
     ValueVariant m_var;
@@ -483,6 +485,11 @@ public:
             m_layer->meta.put(key, js_to_ndarray<decltype(tag)>(value));
             return val::undefined();
         });
+    }
+    // Store an NDArray as layer metadata (any shape). meta.put copies it in, so the
+    // caller's NDArray stays valid. The loader routes metaPut(key, ndarray) here.
+    void meta_put_array(const std::string& key, const JsNDArray& arr) {
+        std::visit([&](const auto& a) { m_layer->meta.put(key, a); }, arr.variant());
     }
     void meta_remove(const std::string& key) { m_layer->meta.remove(key); }
 
@@ -693,6 +700,11 @@ public:
             m_ds->meta.put(key, js_to_ndarray<decltype(tag)>(value));
             return val::undefined();
         });
+    }
+    // Store an NDArray as metadata (any shape). meta.put copies it in, so the
+    // caller's NDArray stays valid. The loader routes metaPut(key, ndarray) here.
+    void meta_put_array(const std::string& key, const JsNDArray& arr) {
+        std::visit([&](const auto& a) { m_ds->meta.put(key, a); }, arr.variant());
     }
 
     void meta_remove(const std::string& key) { m_ds->meta.remove(key); }
@@ -926,6 +938,7 @@ EMSCRIPTEN_BINDINGS(stards) {
         .function("metaShape", &JsDataset::meta_shape)
         .function("metaGetAll", &JsDataset::meta_get_all)
         .function("metaPut", &JsDataset::meta_put)
+        .function("metaPutArray", &JsDataset::meta_put_array)
         .function("metaRemove", &JsDataset::meta_remove)
         .function("metaClear", &JsDataset::meta_clear)
         .function("isSliceable", &JsDataset::is_sliceable)
@@ -960,6 +973,7 @@ EMSCRIPTEN_BINDINGS(stards) {
         .function("metaContains", &JsLayer::meta_contains)
         .function("metaGet", &JsLayer::meta_get)
         .function("metaPut", &JsLayer::meta_put)
+        .function("metaPutArray", &JsLayer::meta_put_array)
         .function("metaRemove", &JsLayer::meta_remove);
 
     // First-class, dtype-erased N-D array. Construct from JS data

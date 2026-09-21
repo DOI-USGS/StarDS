@@ -106,9 +106,32 @@ function normalizeData(value, shape, dtype) {
   return [value, shape ?? null, dtype ?? inferDtype(value)];
 }
 
-// Normalize put(key, value, shape?, dtype?) — see normalizeData.
-function normalizePutArgs([key, value, shape, dtype]) {
-  return [key, ...normalizeData(value, shape, dtype)];
+// True if `x` is an NDArray handle (works through the wrapping Proxy — instanceof
+// consults the prototype, which the Proxy doesn't trap).
+function isNDArray(Module, x) {
+  return x instanceof Module.NDArray;
+}
+
+// Polymorphic put(key, value, shape?, dtype?): an NDArray goes straight to the C++
+// putArray; anything else is normalized (dtype inferred, shape defaulted, nested
+// flattened) and sent to the flat put. `target` is the raw (un-proxied) instance.
+function invokePut(Module, target, key, value, shape, dtype) {
+  if (isNDArray(Module, value)) return target.putArray(key, value);
+  const [v, s, dt] = normalizeData(value, shape, dtype);
+  return target.put(key, v, s, dt);
+}
+
+// Polymorphic metaPut(key, value, dtype?). The metadata put path has no shape arg,
+// so an NDArray (or a nested array, via a temporary NDArray) routes to metaPutArray
+// for N-D; a scalar/1-D value uses the flat metaPut.
+function invokeMetaPut(Module, target, key, value, dtype) {
+  if (isNDArray(Module, value)) return target.metaPutArray(key, value);
+  if (isNested(value)) {
+    const [v, s, dt] = normalizeData(value, null, dtype);
+    const nd = new Module.NDArray(v, s, dt);
+    try { return target.metaPutArray(key, nd); } finally { nd.delete(); }
+  }
+  return target.metaPut(key, value, dtype ?? inferDtype(value));
 }
 
 // An embind handle is a JS object exposing a .delete() (e.g. a returned Layer).
@@ -126,13 +149,17 @@ function maybeWrap(Module, x) {
 function wrapInstance(Module, obj) {
   return new Proxy(obj, {
     get(target, prop, receiver) {
+      // The NDArray-only entry points are folded into put()/metaPut(); hide them.
+      if (prop === 'putArray' || prop === 'metaPutArray') return undefined;
       const v = Reflect.get(target, prop, receiver);
       if (typeof v !== 'function') return v;
       return (...args) => {
-        // Dataset.put / Layer.put: fill an omitted shape (->1-D) and dtype (->inferred).
-        if (prop === 'put') args = normalizePutArgs(args);
         try {
-          const r = v.apply(target, args);
+          let r;
+          // put()/metaPut() are polymorphic: they accept raw values or an NDArray.
+          if (prop === 'put') r = invokePut(Module, target, ...args);
+          else if (prop === 'metaPut') r = invokeMetaPut(Module, target, ...args);
+          else r = v.apply(target, args);
           if (r && typeof r.then === 'function') {
             return r.then((x) => maybeWrap(Module, x), (e) => { throw decodeException(Module, e); });
           }

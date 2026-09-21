@@ -9,7 +9,7 @@
 // Runs entirely in MEMFS — no network, nothing left on disk.
 import { loadStarDS } from '../stards.mjs';
 
-const { Dataset } = await loadStarDS();
+const { Dataset, NDArray } = await loadStarDS();
 let fails = 0;
 // bigint-aware stringify so BigInt values compare cleanly.
 const j = (x) => JSON.stringify(x, (k, v) => (typeof v === 'bigint' ? v + 'n' : v));
@@ -69,6 +69,22 @@ ds.metaPut('k', 'first', 'string');
 ds.metaPut('k', 7, 'int16');
 eq('overwrite dtype', ds.metaDtype('k'), 'int16');
 eq('overwrite value', ds.metaGet('k'), 7);
+
+// --- metaPut is polymorphic: it also accepts an NDArray, and nested arrays, so
+//     metadata can be N-D (metaPut has no shape arg — the array carries the shape).
+{
+  const nd = NDArray(new Float64Array([1, 2, 3, 4, 5, 6]), [2, 3], 'float64');
+  ds.metaPut('grid', nd); // NDArray -> N-D metadata
+  nd.delete();
+  eq('meta from NDArray dtype', ds.metaDtype('grid'), 'float64');
+  eq('meta from NDArray shape', [...ds.metaShape('grid')], [2, 3]);
+  eq('meta from NDArray data', [...ds.metaGet('grid')], [1, 2, 3, 4, 5, 6]);
+
+  ds.metaPut('nested', [[1, 2], [3, 4]], 'int32'); // nested array -> N-D metadata
+  eq('meta from nested shape', [...ds.metaShape('nested')], [2, 2]);
+  eq('meta from nested dtype', ds.metaDtype('nested'), 'int32');
+  eq('meta from nested data', [...ds.metaGet('nested')], [1, 2, 3, 4]);
+}
 
 ds.delete();
 console.log(fails ? `\n${fails} FAILURE(S)` : '\nALL PASS');

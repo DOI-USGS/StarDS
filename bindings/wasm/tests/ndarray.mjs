@@ -1,6 +1,6 @@
 // NDArray test: the first-class dtype-erased NDArray — construction, factories,
 // introspection (dtype/shape/size/ndim), data()/at(), reshape, and the
-// getArray()/putArray() roundtrip on a dataset.
+// getArray() + put(NDArray) roundtrip on a dataset.
 //
 // Build first, then run:
 //   emcmake cmake -S . -B build && cmake --build build --target wasm_tests
@@ -69,11 +69,11 @@ const j = (x) => JSON.stringify(x, (k, v) => (typeof v === 'bigint' ? v + 'n' : 
   s.delete();
 }
 
-// --- getArray / putArray roundtrip through a dataset --------------------------
+// --- getArray + put(NDArray) roundtrip through a dataset ----------------------
 {
   const w = await new Dataset('nd.stards', 'w');
   const src = NDArray(new Int32Array([10, 20, 30, 40, 50, 60]), [2, 3], 'int32');
-  w.putArray('grid', src);
+  w.put('grid', src);       // put() accepts an NDArray (putArray is folded in)
   src.delete();
   w.flush();
   w.close();
