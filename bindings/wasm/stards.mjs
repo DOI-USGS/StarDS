@@ -28,6 +28,43 @@ export function decodeException(Module, e) {
   return e;
 }
 
+// TypedArray constructor name -> StarDS dtype. A TypedArray is self-describing (its
+// kind IS its element type), exactly like a numpy array's .dtype in the Python
+// bindings — so we can infer the dtype from it with no ambiguity.
+const TYPED_ARRAY_DTYPE = {
+  Int8Array: 'int8', Int16Array: 'int16', Int32Array: 'int32',
+  Uint8Array: 'uint8', Uint8ClampedArray: 'uint8', Uint16Array: 'uint16', Uint32Array: 'uint32',
+  Float32Array: 'float32', Float64Array: 'float64',
+  BigInt64Array: 'int64', BigUint64Array: 'uint64',
+};
+
+// Infer the on-disk dtype from a JS value when the caller didn't pass one.
+// TypedArrays map exactly; a plain Array (like a Python list) has no element type,
+// so numeric arrays default to 'float64' (exact for integers up to 2^53, no int
+// overflow, and it keeps the fast bulk-copy path) — pass an explicit dtype for a
+// specific integer type, just as numpy needs np.array(list, dtype=...).
+function inferDtype(value) {
+  const ctorName = value?.constructor?.name;
+  if (ctorName && TYPED_ARRAY_DTYPE[ctorName]) return TYPED_ARRAY_DTYPE[ctorName];
+  if (typeof value === 'string') return 'string';
+  if (typeof value === 'bigint') return 'int64';
+  if (typeof value === 'number') return 'float64';
+  if (Array.isArray(value)) {
+    if (value.length === 0) return 'float64';
+    const first = value[0];
+    if (typeof first === 'string') return 'string';
+    if (typeof first === 'bigint') return 'int64';
+    return 'float64'; // numbers
+  }
+  throw new Error(`cannot infer dtype from value of type ${ctorName ?? typeof value}; pass an explicit dtype`);
+}
+
+// Normalize put(key, value, shape?, dtype?): default an omitted shape to null (C++
+// reads that as 1-D of the data length) and an omitted dtype to inferDtype(value).
+function normalizePutArgs([key, value, shape, dtype]) {
+  return [key, value, shape ?? null, dtype ?? inferDtype(value)];
+}
+
 // An embind handle is a JS object exposing a .delete() (e.g. a returned Layer).
 // Wrap those too so their methods get the same error decoding; leave plain values
 // (typed arrays, {data,shape}, fileHeader objects, primitives) untouched.
@@ -46,6 +83,8 @@ function wrapInstance(Module, obj) {
       const v = Reflect.get(target, prop, receiver);
       if (typeof v !== 'function') return v;
       return (...args) => {
+        // Dataset.put / Layer.put: fill an omitted shape (->1-D) and dtype (->inferred).
+        if (prop === 'put') args = normalizePutArgs(args);
         try {
           const r = v.apply(target, args);
           if (r && typeof r.then === 'function') {
@@ -127,17 +166,19 @@ export async function loadStarDS() {
     }
   };
 
-  // NDArray(value, shape, dtype) -> a wrapped NDArray handle (decoded errors), with
-  // wrapped .zeros/.ones/.full factories attached. Instances from ds.getArray() are
-  // already wrapped by wrapInstance's return-handling.
+  // NDArray(value, shape?, dtype?) -> a wrapped NDArray handle (decoded errors), with
+  // wrapped .zeros/.ones/.full factories attached. `shape` defaults to 1-D of the
+  // data length and `dtype` is inferred from `value` when omitted (see inferDtype).
+  // Instances from ds.getArray() are already wrapped by wrapInstance's return-handling.
   const NDArray = (value, shape, dtype) =>
     wrapInstance(Module, (() => {
-      try { return new Module.NDArray(value, shape, dtype); }
+      try { return new Module.NDArray(value, shape ?? null, dtype ?? inferDtype(value)); }
       catch (e) { throw decodeException(Module, e); }
     })());
-  NDArray.zeros = (shape, dtype) => wrapInstance(Module, wrapFn(() => Module.NDArray.zeros(shape, dtype))());
-  NDArray.ones = (shape, dtype) => wrapInstance(Module, wrapFn(() => Module.NDArray.ones(shape, dtype))());
-  NDArray.full = (shape, value, dtype) => wrapInstance(Module, wrapFn(() => Module.NDArray.full(shape, value, dtype))());
+  // Factories have no data to infer from, so dtype defaults to 'float64'.
+  NDArray.zeros = (shape, dtype = 'float64') => wrapInstance(Module, wrapFn(() => Module.NDArray.zeros(shape, dtype))());
+  NDArray.ones = (shape, dtype = 'float64') => wrapInstance(Module, wrapFn(() => Module.NDArray.ones(shape, dtype))());
+  NDArray.full = (shape, value, dtype = 'float64') => wrapInstance(Module, wrapFn(() => Module.NDArray.full(shape, value, dtype))());
 
   return {
     Module,
