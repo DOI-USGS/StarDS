@@ -55,6 +55,20 @@ You can enable it two ways:
     bool on = ds2->layer_inheritance();  // true
     ```
 
+=== "JS"
+
+    ```js
+    // Set at open
+    const opts = { layerInheritance: true };
+    const ds = await new Dataset('ex5.stards', 'w', opts);
+    console.info('Layer Inheritance:', ds.layerInheritance()); // true
+
+    // Or after opening
+    const ds2 = await new Dataset('ex5.stards', 'w');
+    ds2.setLayerInheritance(true);
+    console.info('Layer Inheritance:', ds2.layerInheritance()); // true
+    ```
+
 With inheritance **off** (the default), a layer lookup for a base-only key raises
 (Python `KeyError` / C++ `std::runtime_error`) instead of returning the base
 value. The examples below assume inheritance has been enabled.
