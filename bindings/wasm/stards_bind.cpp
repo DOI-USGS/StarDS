@@ -24,6 +24,7 @@ using star::MetadataValue;
 using star::NDArray;
 using star::Slice;
 using star::StarConfig;
+using star::OpenOptions;
 using star::ValueVariant;
 
 namespace {
@@ -81,6 +82,18 @@ DataType datatype_from_string(const std::string& s) {
     if (s == "float64") return DataType::FLOAT64;
     if (s == "string")  return DataType::STRING;
     throw std::runtime_error("unknown dtype: " + s);
+}
+
+// Build read-time OpenOptions from a plain JS object (or null/undefined -> defaults).
+// Recognized keys: { layerInheritance: bool, prefetchWholeBelowBytes: number }.
+OpenOptions parse_open_options(const val& opts) {
+    OpenOptions o;  // defaults (layer_inheritance=false, prefetch_whole_below_bytes=8MiB)
+    if (opts.isUndefined() || opts.isNull()) return o;
+    const val li = opts["layerInheritance"];
+    if (!li.isUndefined()) o.layer_inheritance = li.as<bool>();
+    const val pw = opts["prefetchWholeBelowBytes"];
+    if (!pw.isUndefined()) o.prefetch_whole_below_bytes = static_cast<size_t>(pw.as<double>());
+    return o;
 }
 
 // True for a JS Array or TypedArray (anything with a numeric `.length`), false for
@@ -527,6 +540,12 @@ public:
     JsDataset(const std::string& path, const std::string& mode)
         : m_ds(StarDataset::open(path, mode)) {}
 
+    // Opens with a mode plus read-time OpenOptions from a JS object, e.g.
+    // new Dataset(url, "r", { layerInheritance: true, prefetchWholeBelowBytes: 0 }).
+    // (layerInheritance can also be toggled after open via setLayerInheritance.)
+    JsDataset(const std::string& path, const std::string& mode, val opts)
+        : m_ds(StarDataset::open(path, mode, parse_open_options(opts))) {}
+
     // Wrap an already-constructed dataset (used by the create() factory below).
     // Not registered as a JS constructor.
     explicit JsDataset(std::shared_ptr<StarDataset> ds) : m_ds(std::move(ds)) {}
@@ -894,9 +913,9 @@ JsDataset create_dataset(const std::string& path, const StarConfig& config) {
 // parsed. Round-trips with writeBytes() — openBytes(ds.writeBytes()) reconstructs
 // the dataset. Throws if the bytes are not a valid STAR image. (An ArrayBuffer has
 // no length/indexing, so wrap it first: new Uint8Array(buf).)
-JsDataset open_bytes_dataset(val bytes) {
+JsDataset open_bytes_dataset(val bytes, val opts) {
     std::vector<uint8_t> buf = convertJSArrayToNumberVector<uint8_t>(bytes);
-    return JsDataset(StarDataset::open_bytes(buf.data(), buf.size()));
+    return JsDataset(StarDataset::open_bytes(buf.data(), buf.size(), parse_open_options(opts)));
 }
 
 // --- module-level (non-Dataset) helpers ---------------------------------------
@@ -919,6 +938,7 @@ EMSCRIPTEN_BINDINGS(stards) {
     class_<JsDataset>("Dataset")
         .constructor<std::string>()
         .constructor<std::string, std::string>()
+        .constructor<std::string, std::string, val>()
         .function("keys", &JsDataset::keys)
         .function("dtype", &JsDataset::dtype)
         .function("shape", &JsDataset::shape)

@@ -211,10 +211,11 @@ export async function loadStarDS() {
     }
   }
 
-  // openBytes(uint8Array) -> a wrapped read-only Dataset (same error decoding).
-  function openBytes(bytes) {
+  // openBytes(uint8Array, opts?) -> a wrapped read-only Dataset (same error
+  // decoding). opts is an optional OpenOptions object, e.g. { layerInheritance: true }.
+  function openBytes(bytes, opts = {}) {
     try {
-      const inst = Module.openBytes(bytes);
+      const inst = Module.openBytes(bytes, opts);
       if (inst && typeof inst.then === 'function') {
         return inst.then(
           (i) => wrapInstance(Module, i),

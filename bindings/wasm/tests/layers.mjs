@@ -64,5 +64,22 @@ try { reader.getLayer('nope'); ok('getLayer(missing) throws', false); }
 catch (e) { ok('getLayer(missing) throws', true, '-> ' + e.message); }
 
 reader.delete();
+
+// --- open-time OpenOptions: set layerInheritance via the constructor ----------
+// new Dataset(path, mode, opts) opens with inheritance on, no post-open setter.
+{
+  const inh = await new Dataset('layers.stards', 'r', { layerInheritance: true });
+  ok('opts constructor: layerInheritance() true', inh.layerInheritance() === true);
+  const layer = inh.getLayer('adjusted');
+  ok('opts constructor: base key resolves in layer', str([...layer.get('shared')]) === str([1, 2, 3]));
+  layer.delete();
+  inh.delete();
+
+  // Default (no opts / inheritance omitted) still starts off.
+  const plain = await new Dataset('layers.stards', 'r', {});
+  ok('opts {} defaults inheritance off', plain.layerInheritance() === false);
+  plain.delete();
+}
+
 console.log(fails ? `\n${fails} FAILURE(S)` : '\nALL PASS');
 process.exit(fails ? 1 : 0);
