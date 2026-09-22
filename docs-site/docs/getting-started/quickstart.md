@@ -5,49 +5,142 @@ Get started with StarDS in 5 minutes. This guide uses the Python bindings; see
 
 ## Your first dataset
 
-```python
-import numpy as np
-from pystards import StarDataset
+=== "C++"
 
-# 1. Create dataset
-ds = StarDataset.create("mydata.stards")
+    ```cpp
+    #include "stards.h"
+    #include <stdio.h>
+    using namespace star;
 
-# 2. Store arrays
-ds["temperatures"] = np.array([20.5, 21.3, 19.8, 22.1])
-ds["measurements"] = np.random.rand(100, 50)
+    void main() {
+         // 1. Create Dataset
+        auto ds = StarDataset::create("data.stards");
 
-# 3. Add metadata
-ds.meta["sensor_id"] = "TEMP-001"
-ds.meta["location"] = "Lab A"
-ds.meta["date"] = "2024-04-21"
+        // 2. Store Arrays
+        ds->put("temperatures", NDArray<double>(std::vector<double>{20.4, 21.3, 19.8, 22.1}, {4}));
+        ds->put("measurements", NDArray<double>::zeros({100, 50}));
 
-# 4. Save
-ds.flush()
-ds.close()
+        // 3. Add Metadata
+        ds->meta.put("sensor_id", NDArray<std::string>({}, "TEMP-001"));
+        ds->meta.put("location", NDArray<std::string>({}, "Lab A"));
+        ds->meta.put("date", NDArray<std::string>({}, "2024-04-21"));
 
-print("✓ Dataset created!")
-```
+        // 4. Save
+        ds->flush();
+        ds->close();
+
+        printf("✓ Dataset created! \n");
+    }
+    ```
+
+=== "Python"
+
+    ```python
+    import numpy as np
+    from pystards import StarDataset
+
+    # 1. Create dataset
+    ds = StarDataset.create("mydata.stards")
+
+    # 2. Store arrays
+    ds["temperatures"] = np.array([20.5, 21.3, 19.8, 22.1])
+    ds["measurements"] = np.random.rand(100, 50)
+
+    # 3. Add metadata
+    ds.meta["sensor_id"] = "TEMP-001"
+    ds.meta["location"] = "Lab A"
+    ds.meta["date"] = "2024-04-21"
+
+    # 4. Save
+    ds.flush()
+    ds.close()
+
+    print("✓ Dataset created!")
+    ```
+
+=== "Node JS"
+
+    ```js
+    // 1. Create dataset
+    const ds = await new Dataset('data.stards', 'w');
+
+    // 2. Store arrays
+    ds.put('temperatures', NDArray(new Float64Array([20.5, 21.3, 19.8, 22.1])));
+    ds.put('measurements', NDArray.zeros([100, 50], 'float64'));
+
+    // 3. Add metadata
+    ds.metaPut('sensor_id', 'TEMP-001');
+    ds.metaPut('location', 'Lab A');
+    ds.metaPut('date', '2024-04-21');
+
+    // 4. Save
+    const dataSetBytes = ds.writeBytes();
+    ds.close();
+
+    console.info("✓ Dataset created!");
+    ```
 
 ## Reading data
 
-```python
-# Open for reading
-ds = StarDataset.open("mydata.stards", mode="r")
+=== "C++"
 
-# Access arrays
-temps = ds["temperatures"]
-print(f"Temperatures: {temps}")
+    ```cpp
+    // Open for reading
+    auto ds = StarDataset::open("data.stards", "r");
 
-# Access metadata
-sensor = ds.meta["sensor_id"]
-print(f"Sensor: {sensor}")
+    // Access Arrays
+    auto temps = ds->get<double>("temperatures");
+    for(int i = 0; i < temps.size(); i++) {
+        printf("Temp %d: %f\n", i, temps(i));
+    }
 
-# List all arrays
-for key in ds:
-    print(f"  - {key}: shape {ds[key].shape}")
+    // Access Metadata
+    auto sensor = ds->meta.get("sensor_id")->as<std::string>().flat(0);
+    printf("Sensor ID: %s\n", sensor.c_str());
 
-ds.close()
-```
+    ds->close();
+    ```
+
+=== "Python"
+
+    ```python
+    # Open for reading
+    ds = StarDataset.open("mydata.stards", mode="r")
+
+    # Access arrays
+    temps = ds["temperatures"]
+    print(f"Temperatures: {temps}")
+
+    # Access metadata
+    sensor = ds.meta["sensor_id"]
+    print(f"Sensor: {sensor}")
+
+    # List all arrays
+    for key in ds:
+        print(f"  - {key}: shape {ds[key].shape}")
+
+    ds.close()
+    ```
+
+=== "JS"
+
+    ```js
+    // Open Dataset from Byte object
+    const ds = await openBytes(dataSetBytes);
+
+    // Access Arrays
+    const temps = ds.getArray('temperatures');
+    console.info('temperatures', temps.data());
+
+    // Access Metadata
+    const sensor = ds.metaGet('sensor_id');
+    console.info('sensor_id', sensor);
+
+    // List all arrays
+    ds.keys().forEach((key, idx, arr) => {
+        console.info(key + ": shape:", ds.shape(key));
+    });
+    ```
 
 ## Common patterns
 
