@@ -155,16 +155,41 @@ with StarDataset.create("data.stards") as ds:
 
 ### Array slicing
 
-```python
-# Store large array
-with StarDataset.create("large.stards") as ds:
-    ds["big_matrix"] = np.random.rand(10000, 10000)
+=== "Python"
 
-# Read only a slice (efficient!)
-with StarDataset.open("large.stards", mode="r") as ds:
-    subset = ds.get_slice("big_matrix", [(0, 100), (0, 100)])
-    print(subset.shape)  # (100, 100)
-```
+    ```python
+    # Store large array
+    with StarDataset.create("large.stards") as ds:
+        ds["big_matrix"] = np.random.rand(10000, 10000)
+
+    # Read only a slice (efficient!)
+    with StarDataset.open("large.stards", mode="r") as ds:
+        subset = ds.get_slice("big_matrix", [(0, 100), (0, 100)])
+        print(subset.shape)  # (100, 100)
+    ```
+
+=== "JS"
+
+    ```js
+    // Open a large Array
+    const URL = 'https://asc-isisdata.s3.us-west-2.amazonaws.com/cnf_test_data/largenet.stards';
+    const linearReader = await new Dataset(URL);
+
+    // Read only a slice (efficient!)
+    console.info('Slice', await linearReader.getSlice('m.sample', 0, 6));
+
+
+    const rectWriter = await new Dataset('data.stards', 'w');
+    rectWriter.put('big-matrix', NDArray.full([512, 512], 3.14, 'float64'));
+    rectWriter.flush();
+    
+    const rectReader = await new Dataset('data.stards', 'r');
+    // 2D Slice from [32, 64] to [48, 96].
+    // at 1/4 resolution (step 4 gets every 4th value, step 1 gets full resolution).
+    console.info('2D Slice', await rectReader.getSliceND('big-matrix', [[32, 48, 4],[64, 96, 4]]));
+
+    // use yourdataset.getSliceNDArray() to get an NDArray instead of a JS Object.
+    ```
 
 See the [Slicing guide](../guides/slicing.md) for more.
 

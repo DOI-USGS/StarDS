@@ -78,12 +78,30 @@ check('mat clamped past end', r, 'mat', mat, [3, 4], [[0, 99, 1], [2, 99, 1]]);
 // 3-D.
 check('vol block', r, 'vol', vol, [2, 3, 4], [[0, 2, 1], [1, 3, 1], [0, 4, 2]]);
 
-// error: more windows than dims.
+// getSliceNDArray: same windowed read, but returns an NDArray handle.
+{
+  const win = [[0, 3, 2], [1, 4, 1]]; // matches 'mat rows{0,3,2} cols{1,4,1}'
+  const flat = r.getSliceND('mat', win);        // { data, shape }
+  const nd = r.getSliceNDArray('mat', win);     // NDArray
+  ok('getSliceNDArray shape matches getSliceND', j([...nd.shape()]) === j([...flat.shape]));
+  ok('getSliceNDArray data matches getSliceND', j([...nd.data()]) === j([...flat.data]));
+  ok('getSliceNDArray dtype', nd.dtype() === 'float64');
+  ok('getSliceNDArray at([0,2])', nd.at([0, 2]) === flat.data[2]); // first row, third selected col
+  nd.delete();
+}
+
+// error: more windows than dims (both variants).
 try {
   r.getSliceND('vec', [[0, 5], [0, 5]]);
   ok('too many windows throws', false);
 } catch (e) {
   ok('too many windows throws', true, '-> ' + e.message);
+}
+try {
+  r.getSliceNDArray('vec', [[0, 5], [0, 5]]);
+  ok('getSliceNDArray too many windows throws', false);
+} catch (e) {
+  ok('getSliceNDArray too many windows throws', true, '-> ' + e.message);
 }
 
 r.delete();

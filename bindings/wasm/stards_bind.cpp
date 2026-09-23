@@ -770,6 +770,18 @@ public:
         });
     }
 
+    // Same windowed strided read as getSliceND, but returns NDArray
+    // (a shape-carrying handle you must .delete()) instead of a { data, shape }
+    // object — the getArray()-style counterpart to getSliceND()'s get()-style result.
+    JsNDArray get_slice_ndarray(const std::string& key, val windows) const {
+        const std::vector<size_t> full_shape = m_ds->shape_of(key);
+        const std::vector<Slice> slices = parse_slices(full_shape, windows);
+        return dispatch_numeric(m_ds->dtype_of(key), "getSliceNDArray",
+            [&](auto tag, const char*) -> JsNDArray {
+                return JsNDArray(ValueVariant(m_ds->get_slice<decltype(tag)>(key, slices)));
+            });
+    }
+
     // Read the same window from three 1-D arrays and return it interleaved as one
     // Float32Array [x0,y0,z0, x1,y1,z1, ...].
     //
@@ -964,6 +976,7 @@ EMSCRIPTEN_BINDINGS(stards) {
         .function("isSliceable", &JsDataset::is_sliceable)
         .function("getSlice", &JsDataset::get_slice)
         .function("getSliceND", &JsDataset::get_slice_nd)
+        .function("getSliceNDArray", &JsDataset::get_slice_ndarray)
         .function("getSliceXYZ", &JsDataset::get_slice_xyz_f32)
         .function("contains", &JsDataset::contains)
         .function("arrayLength", &JsDataset::array_length)
