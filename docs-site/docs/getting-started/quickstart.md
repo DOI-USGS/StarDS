@@ -58,9 +58,12 @@ Get started with StarDS in 5 minutes. This guide uses the Python bindings; see
     print("✓ Dataset created!")
     ```
 
-=== "Node JS"
+=== "JS"
 
     ```js
+    import { loadStarDS } from './stards.mjs';
+    const { Dataset, NDArray, openBytes } = await loadStarDS();
+    
     // 1. Create dataset
     const ds = await new Dataset('data.stards', 'w');
 
@@ -195,18 +198,57 @@ See the [Slicing guide](../guides/slicing.md) for more.
 
 ### Cloud storage (S3)
 
-```python
-import os
-os.environ["AWS_PROFILE"] = "my-profile"
+=== "Python"
 
-# Read from S3 (s3:// URI or the /vsis3/ prefix)
-with StarDataset.open("s3://my-bucket/data.stards", mode="r") as ds:
-    data = ds["array_name"]
+    ```python
+    import os
+    os.environ["AWS_PROFILE"] = "my-profile"
 
-# Write to S3
-with StarDataset.create("s3://my-bucket/output.stards") as ds:
-    ds["results"] = processed_data
-```
+    # Read from S3 (s3:// URI or the /vsis3/ prefix)
+    with StarDataset.open("s3://my-bucket/data.stards", mode="r") as ds:
+        data = ds["array_name"]
+
+    # Write to S3
+    with StarDataset.create("s3://my-bucket/output.stards") as ds:
+        ds["results"] = processed_data
+    ```
+
+=== "JS"
+
+    If a URL is configured for public readability, StarDS should be able to read it:
+
+    ```js title="Web Read"
+    const URL = 's3://asc-isisdata/cnf_test_data/largenet.stards';
+    // Can also read from http://, https://, /vsis3/ prefixes
+    const remoteReader = await new Dataset(URL);
+    console.info('Shape of remote array', remoteReader.shape('m.sample'));
+    ```
+
+    For writing to an S3 bucket, configure your AWS Credentials:
+
+    ```js title="S3 Write"
+    import { loadStarDS } from './stards.mjs';
+
+    const { Dataset } = await loadStarDS({
+    env: {
+        AWS_ACCESS_KEY_ID: '...',
+        AWS_SECRET_ACCESS_KEY: '...',
+        AWS_SESSION_TOKEN: '...',        // only for STS/temporary creds
+        AWS_DEFAULT_REGION: 'us-west-2',
+
+        // Optional — for S3-compatible stores (MinIO, R2, etc.):
+        // ENV.AWS_S3_ENDPOINT     = 'localhost:9000';
+        // ENV.AWS_VIRTUAL_HOSTING = 'FALSE';       // path-style: endpoint/bucket/key
+        // ENV.AWS_HTTPS           = 'NO';          // http:// instead of https://…
+    },
+    });
+
+    const ds = await new Dataset('s3://your-s3-bucket/path/yourfile.stards', 'w');
+    ds.put('elevation', new Float32Array([1,2,3,4,5,6]));
+    await ds.flush();
+    ds.close();
+    ds.delete();
+    ```
 
 See the [Cloud Storage guide](../guides/cloud-storage.md) for authentication details.
 
@@ -220,13 +262,26 @@ See the [Cloud Storage guide](../guides/cloud-storage.md) for authentication det
 Arrays and metadata use **separate namespaces**, so the same key can live in
 both:
 
-```python
-ds["matrix"] = np.random.rand(100, 100)   # store array
-ds.meta["matrix"] = "Covariance matrix"   # store metadata about it
+=== "Python"
 
-print(ds["matrix"].shape)  # (100, 100)
-print(ds.meta["matrix"])   # "Covariance matrix"
-```
+    ```python
+    ds["matrix"] = np.random.rand(100, 100)   # store array
+    ds.meta["matrix"] = "Covariance matrix"   # store metadata about it
+
+    print(ds["matrix"].shape)  # (100, 100)
+    print(ds.meta["matrix"])   # "Covariance matrix"
+    ```
+
+=== "JS"
+
+    ```js
+    const ds = await new Dataset("data.stards", 'w');
+    ds.put('matrix', NDArray.zeros([100, 100], 'float64')); // array
+    ds.metaPut('matrix', 'Covariance Matrix');              // metadata about the array
+
+    console.info(ds.shape('matrix'));   //  Shape of array
+    console.info(ds.metaGet('matrix')); // "Covariance Matrix"
+    ```
 
 See [Concepts](concepts.md) for the full model.
 
@@ -256,6 +311,8 @@ proc_img = proc["image"]          # processed (overridden)
 proc_meta = proc["metadata"]      # inherited from base!
 proc_waves = proc["wavelengths"]  # inherited from base!
 ```
+
+
 
 See the [Layers guide](../guides/layers.md) for a full walkthrough.
 

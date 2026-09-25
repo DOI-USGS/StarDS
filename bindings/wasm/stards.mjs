@@ -14,6 +14,16 @@
 //   const { Dataset, Module, decodeException } = await loadStarDS();
 //   const ds = await Dataset('https://.../foo.stards');   // or new Dataset(...)
 //   try { ds.get('missing'); } catch (e) { console.error(e.message); }
+//
+// Writing to S3 needs AWS credentials in the Emscripten environment. Pass them
+// via the `env` option (installed in preRun, before the runtime reads them):
+//   const { Dataset } = await loadStarDS({
+//     env: { AWS_ACCESS_KEY_ID: '…', AWS_SECRET_ACCESS_KEY: '…',
+//            AWS_DEFAULT_REGION: 'us-east-1' },   // AWS_SESSION_TOKEN for STS
+//   });
+//   const ds = await new Dataset('s3://bucket/key.stards', 'w');
+//   ds.put('a', new Float32Array([1,2,3])); await ds.flush();
+// Any other Module init options (preRun, print, locateFile, …) pass through too.
 import initStarDS from './stards_wasm.mjs';
 
 // Turn whatever embind threw into a real Error. Numbers are exception pointers to
@@ -172,8 +182,32 @@ function wrapInstance(Module, obj) {
   });
 }
 
-export async function loadStarDS() {
-  const Module = await initStarDS();
+// options: an Emscripten Module config object forwarded to the WASM factory
+// (preRun, print, locateFile, wasmBinary, …), plus one extra key:
+//   env — { NAME: value, … } environment variables to set on Module.ENV before
+//         the runtime runs, e.g. AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY /
+//         AWS_SESSION_TOKEN / AWS_DEFAULT_REGION for S3 writes, or
+//         AWS_S3_ENDPOINT / AWS_VIRTUAL_HOSTING / AWS_HTTPS for S3-compatible
+//         stores. Only keys you pass are set; entries whose value is null or
+//         undefined are skipped. NOTE: do NOT pass empty strings for the
+//         credential or region vars — the native resolver treats a *set* var as
+//         "provided" (getenv != null), so a blank AWS_ACCESS_KEY_ID makes it
+//         sign with empty credentials instead of falling back / erroring cleanly.
+export async function loadStarDS(options = {}) {
+  const { env, preRun, ...moduleConfig } = options;
+
+  // Install `env` on Module.ENV in preRun (ENV is initialised by then), ahead of
+  // any preRun the caller also supplied. Credentials are read lazily by getenv at
+  // open/flush time, so this is early enough for the first S3 request.
+  const userPreRun = preRun == null ? [] : (Array.isArray(preRun) ? preRun : [preRun]);
+  const envPreRun = (mod) => {
+    if (!env) return;
+    for (const [k, v] of Object.entries(env)) {
+      if (v != null) mod.ENV[k] = String(v);
+    }
+  };
+
+  const Module = await initStarDS({ ...moduleConfig, preRun: [envPreRun, ...userPreRun] });
   const RawDataset = Module.Dataset;
 
   // A Dataset factory whose instances rethrow decoded Errors. The embind

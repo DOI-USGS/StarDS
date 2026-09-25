@@ -379,6 +379,8 @@ if(EMSCRIPTEN)
       -sWASM_BIGINT
       # Lets JS `catch (e)` get a C++ exception message instead of just a number.
       -sEXPORT_EXCEPTION_HANDLING_HELPERS=1
+      # Expose Module.ENV so the loader can set S3 environment variables.
+      -sEXPORTED_RUNTIME_METHODS=ENV
   )
   
   # Copy loader and Wasm Tests to output
