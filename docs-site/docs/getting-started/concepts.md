@@ -62,6 +62,16 @@ both without conflict:
     auto note = store2->meta.get("matrix")->as<std::string>();
     ```
 
+=== "JS"
+
+    ```js
+    ds.put('matrix', NDArray.zeros([100, 100], 'float64'));
+    ds.metaPut('matrix', 'Covariance Matrix');
+
+    ds.get('matrix').shape(); // [100, 100]
+    ds.metaGet('matrix');     // 'Covariance Matrix'
+    ```
+
 | Namespace | Python | C++ | Best for |
 |-----------|--------|-----|----------|
 | Array | `ds["key"]` | `store.put(key, arr)` | Large / numeric / sliceable data |

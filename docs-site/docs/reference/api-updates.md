@@ -51,6 +51,22 @@ both without conflicts.
     auto metadata = store2->meta.get("matrix")->as<std::string>();
     ```
 
+=== "Node JS"
+
+    ```js
+    import { loadStarDS } from './stards.mjs';
+    const { Dataset, NDArray } = await loadStarDS();
+
+    const ds = await new Dataset('ex6.stards', 'w');
+    ds.put('matrix', NDArray.zeros([100, 100], 'float64'));
+    ds.metaPut('matrix', 'Covariance Matrix from Sensor A');
+    ds.flush()
+
+    const ds2 = await new Dataset('ex6.stards', 'r');
+    console.info('get:', ds2.shape('matrix'));
+    console.info('metaGet:', ds2.metaGet('matrix'));    
+    ```
+
 **Key points**
 
 - Arrays: `ds["key"]` / `store->put(key, data)`
@@ -118,6 +134,33 @@ afterward.
     // Inheritance is off by default; opt in at open time or afterward
     auto store2 = StarDataset::open("data.stards");
     store2->set_layer_inheritance(true);
+    ```
+
+=== "JS"
+
+    ```js
+    const store = new Dataset('data.stards', 'w');
+    store.setLayerInheritance(true);
+
+
+    store.put('image', base_image);        // base_image, wavelengths, etc
+    store.put('wavelengths', wavelengths); // should be previously defined
+                                           // arrays.
+
+    const layer1 = store.createLayer('processed');
+    layer1.put('image', processed_image);  // diferent data.
+                                           // wavelengths inherited from base
+                                           // if layer inheritance is on.
+
+    const layer2 = store.createLayer('calibrated');
+    layer2.put('image', calibrated_image);
+    layer2.put('wavelengths', adjusted_wavelengths);
+
+    store.flush();
+
+    // Inheritance is off by default, you can set it at open time:
+    const store2 = new Dataset('data.stards', 'r', { layerInheritance: true });
+    // or later, with store2.setLayerInheritance(true);
     ```
 
 ### Key features

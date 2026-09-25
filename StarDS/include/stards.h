@@ -6916,8 +6916,9 @@ private:
         // ---------------------------------------------------------------------
 
         // HTTP/vsicurl is read-only — there is no write verb. Fail loudly rather
-        // than silently producing nothing.
-        if (m_path_info.type == FilePathInfo::HTTP) {
+        // than silently producing nothing. But an in-memory capture (write_bytes())
+        // never touches the source, so it is allowed even for an HTTP-backed dataset.
+        if (m_capture_image == nullptr && m_path_info.type == FilePathInfo::HTTP) {
             throw std::runtime_error(
                 "Cannot write to an HTTP (/vsicurl) source: HTTP is read-only. "
                 "Write to a local path or an S3 (/vsis3) URL, or use save_to().");
