@@ -16,7 +16,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="5100" column="21" bodyfile="StarDS/include/stards.h" bodystart="5100" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="5101" column="21" bodyfile="StarDS/include/stards.h" bodystart="5101" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classstar_1_1LayerView_1a88a79927ef3113a9f3bf9be1e6b30ace" prot="private" static="no" mutable="no">
         <type>std::string</type>
@@ -30,7 +30,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="5101" column="17" bodyfile="StarDS/include/stards.h" bodystart="5101" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="5102" column="17" bodyfile="StarDS/include/stards.h" bodystart="5102" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="public-attrib">
@@ -46,7 +46,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="5105" column="27" bodyfile="StarDS/include/stards.h" bodystart="5105" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="5106" column="27" bodyfile="StarDS/include/stards.h" bodystart="5106" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="public-func">
@@ -70,7 +70,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="5107" column="5" bodyfile="StarDS/include/stards.h" bodystart="5107" bodyend="5108"/>
+        <location file="StarDS/include/stards.h" line="5108" column="5" bodyfile="StarDS/include/stards.h" bodystart="5108" bodyend="5109"/>
       </memberdef>
       <memberdef kind="function" id="classstar_1_1LayerView_1a5e5295e01e36c52f6b8cabb00c3794a3" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
         <type>bool</type>
@@ -101,7 +101,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="5115" column="10" bodyfile="StarDS/include/stards.h" bodystart="9822" bodyend="9827"/>
+        <location file="StarDS/include/stards.h" line="5116" column="10" bodyfile="StarDS/include/stards.h" bodystart="9823" bodyend="9828"/>
       </memberdef>
       <memberdef kind="function" id="classstar_1_1LayerView_1adf5f341bfc20359f17598f84b0e03d17" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
         <type>std::vector&lt; std::string &gt;</type>
@@ -119,7 +119,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="5121" column="17" bodyfile="StarDS/include/stards.h" bodystart="9829" bodyend="9867"/>
+        <location file="StarDS/include/stards.h" line="5122" column="17" bodyfile="StarDS/include/stards.h" bodystart="9830" bodyend="9868"/>
       </memberdef>
       <memberdef kind="function" id="classstar_1_1LayerView_1a83ef65cf7e248ab827dda5ead2f3296f" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
         <type>std::string</type>
@@ -137,7 +137,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="5127" column="17" bodyfile="StarDS/include/stards.h" bodystart="5127" bodyend="5127"/>
+        <location file="StarDS/include/stards.h" line="5128" column="17" bodyfile="StarDS/include/stards.h" bodystart="5128" bodyend="5128"/>
       </memberdef>
       <memberdef kind="function" id="classstar_1_1LayerView_1a72d7406f3284c4d0ddc674ea063f06e9" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
         <type>std::shared_ptr&lt; <ref refid="classstar_1_1StarDataset" kindref="compound">StarDataset</ref> &gt;</type>
@@ -155,7 +155,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="5133" column="21" bodyfile="StarDS/include/stards.h" bodystart="5133" bodyend="5133"/>
+        <location file="StarDS/include/stards.h" line="5134" column="21" bodyfile="StarDS/include/stards.h" bodystart="5134" bodyend="5134"/>
       </memberdef>
       <memberdef kind="function" id="classstar_1_1LayerView_1a22c564ef52d303033054b29c71028a4e" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <templateparamlist>
@@ -200,7 +200,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="5142" column="13" bodyfile="StarDS/include/stards.h" bodystart="9338" bodyend="9371"/>
+        <location file="StarDS/include/stards.h" line="5143" column="13" bodyfile="StarDS/include/stards.h" bodystart="9339" bodyend="9372"/>
       </memberdef>
       <memberdef kind="function" id="classstar_1_1LayerView_1a581bcd0480cc3d104ac2fdcefc0d30fb" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <templateparamlist>
@@ -255,7 +255,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="5151" column="10" bodyfile="StarDS/include/stards.h" bodystart="9374" bodyend="9398"/>
+        <location file="StarDS/include/stards.h" line="5152" column="10" bodyfile="StarDS/include/stards.h" bodystart="9375" bodyend="9399"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
@@ -278,7 +278,7 @@
         </childnode>
       </node>
     </collaborationgraph>
-    <location file="StarDS/include/stards.h" line="5098" column="1" bodyfile="StarDS/include/stards.h" bodystart="5098" bodyend="5152"/>
+    <location file="StarDS/include/stards.h" line="5099" column="1" bodyfile="StarDS/include/stards.h" bodystart="5099" bodyend="5153"/>
     <listofallmembers>
       <member refid="classstar_1_1LayerView_1a72d7406f3284c4d0ddc674ea063f06e9" prot="public" virt="non-virtual"><scope>star::LayerView</scope><name>base</name></member>
       <member refid="classstar_1_1LayerView_1a5e5295e01e36c52f6b8cabb00c3794a3" prot="public" virt="non-virtual"><scope>star::LayerView</scope><name>contains</name></member>

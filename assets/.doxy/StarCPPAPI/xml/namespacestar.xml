@@ -149,7 +149,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="500" column="1" bodyfile="StarDS/include/stards.h" bodystart="500" bodyend="517"/>
+        <location file="StarDS/include/stards.h" line="501" column="1" bodyfile="StarDS/include/stards.h" bodystart="501" bodyend="518"/>
       </memberdef>
       <memberdef kind="enum" id="stards_8h_1ae35d072348103b839a05d6381e5f1d87" prot="public" static="no" strong="yes">
         <type>uint8_t</type>
@@ -225,7 +225,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="519" column="1" bodyfile="StarDS/include/stards.h" bodystart="519" bodyend="545"/>
+        <location file="StarDS/include/stards.h" line="520" column="1" bodyfile="StarDS/include/stards.h" bodystart="520" bodyend="546"/>
       </memberdef>
       <memberdef kind="enum" id="stards_8h_1a0fed662fd1d718de166ae717fe854821" prot="public" static="no" strong="yes">
         <type></type>
@@ -251,7 +251,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1674" column="1" bodyfile="StarDS/include/stards.h" bodystart="1674" bodyend="1677"/>
+        <location file="StarDS/include/stards.h" line="1675" column="1" bodyfile="StarDS/include/stards.h" bodystart="1675" bodyend="1678"/>
       </memberdef>
       <memberdef kind="enum" id="stards_8h_1afbba80b68079b69fa574e7440bb5cbfd" prot="public" static="no" strong="yes">
         <type></type>
@@ -285,7 +285,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="4894" column="1" bodyfile="StarDS/include/stards.h" bodystart="4894" bodyend="4898"/>
+        <location file="StarDS/include/stards.h" line="4895" column="1" bodyfile="StarDS/include/stards.h" bodystart="4895" bodyend="4899"/>
       </memberdef>
       <memberdef kind="enum" id="stards_8h_1a5e1d2e6b6994707b18e829a5360570b5" prot="public" static="no" strong="yes">
         <type></type>
@@ -319,7 +319,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="4903" column="1" bodyfile="StarDS/include/stards.h" bodystart="4903" bodyend="4907"/>
+        <location file="StarDS/include/stards.h" line="4904" column="1" bodyfile="StarDS/include/stards.h" bodystart="4904" bodyend="4908"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="typedef">
@@ -340,7 +340,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="4070" column="1" bodyfile="StarDS/include/stards.h" bodystart="4070" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="4071" column="1" bodyfile="StarDS/include/stards.h" bodystart="4071" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="var">
@@ -357,7 +357,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="189" column="26" bodyfile="StarDS/include/stards.h" bodystart="189" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="190" column="26" bodyfile="StarDS/include/stards.h" bodystart="190" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="stards_8h_1ad476f8ea0799df8b45ba1cfcf1667f84" prot="public" static="no" mutable="no">
         <type>const char *</type>
@@ -372,7 +372,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="190" column="19" bodyfile="StarDS/include/stards.h" bodystart="190" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="191" column="19" bodyfile="StarDS/include/stards.h" bodystart="191" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="stards_8h_1ab71457f5da9118ae98e41f6116e48107" prot="public" static="no" mutable="no">
         <type>const size_t</type>
@@ -387,7 +387,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="191" column="21" bodyfile="StarDS/include/stards.h" bodystart="191" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="192" column="21" bodyfile="StarDS/include/stards.h" bodystart="192" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="stards_8h_1adbe805b3d2489228f2b2758de2c2a08f" prot="public" static="no" mutable="no">
         <type>size_t</type>
@@ -402,7 +402,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="257" column="15" bodyfile="StarDS/include/stards.h" bodystart="257" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="258" column="15" bodyfile="StarDS/include/stards.h" bodystart="258" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="stards_8h_1a55d43c249486a0271c8316749ec66bc3" prot="public" static="no" mutable="no">
         <type>size_t</type>
@@ -417,7 +417,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="258" column="15" bodyfile="StarDS/include/stards.h" bodystart="258" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="259" column="15" bodyfile="StarDS/include/stards.h" bodystart="259" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="stards_8h_1a5414cef91eaaa70055f19e1b566505c4" prot="public" static="no" mutable="no">
         <type>size_t</type>
@@ -432,7 +432,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="259" column="15" bodyfile="StarDS/include/stards.h" bodystart="259" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="260" column="15" bodyfile="StarDS/include/stards.h" bodystart="260" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="stards_8h_1acfbe176f53097f0381340532c4531728" prot="public" static="no" mutable="no">
         <type>std::atomic&lt; uint64_t &gt;</type>
@@ -447,7 +447,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="300" column="20" bodyfile="StarDS/include/stards.h" bodystart="300" bodyend="300"/>
+        <location file="StarDS/include/stards.h" line="301" column="20" bodyfile="StarDS/include/stards.h" bodystart="301" bodyend="301"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="func">
@@ -476,7 +476,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="219" column="13" bodyfile="StarDS/include/stards.h" bodystart="219" bodyend="226"/>
+        <location file="StarDS/include/stards.h" line="220" column="13" bodyfile="StarDS/include/stards.h" bodystart="220" bodyend="227"/>
       </memberdef>
       <memberdef kind="function" id="stards_8h_1a1a3fb3d3587b4aad3cdb565ec3e88c37" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <templateparamlist>
@@ -499,7 +499,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="230" column="13" bodyfile="StarDS/include/stards.h" bodystart="230" bodyend="239"/>
+        <location file="StarDS/include/stards.h" line="231" column="13" bodyfile="StarDS/include/stards.h" bodystart="231" bodyend="240"/>
       </memberdef>
       <memberdef kind="function" id="stards_8h_1a6b532e4df1ad7c3ad2a1c9e237c2ddcf" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>void</type>
@@ -521,7 +521,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="243" column="13" bodyfile="StarDS/include/stards.h" bodystart="243" bodyend="243"/>
+        <location file="StarDS/include/stards.h" line="244" column="13" bodyfile="StarDS/include/stards.h" bodystart="244" bodyend="244"/>
       </memberdef>
       <memberdef kind="function" id="stards_8h_1a0fc3d6b656aee624fc5cd3def9272e0e" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>void</type>
@@ -543,7 +543,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="244" column="13" bodyfile="StarDS/include/stards.h" bodystart="244" bodyend="244"/>
+        <location file="StarDS/include/stards.h" line="245" column="13" bodyfile="StarDS/include/stards.h" bodystart="245" bodyend="245"/>
       </memberdef>
       <memberdef kind="function" id="stards_8h_1a82295d45ddad8456ee0a5c8d88547182" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>void</type>
@@ -565,7 +565,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="245" column="13" bodyfile="StarDS/include/stards.h" bodystart="245" bodyend="245"/>
+        <location file="StarDS/include/stards.h" line="246" column="13" bodyfile="StarDS/include/stards.h" bodystart="246" bodyend="246"/>
       </memberdef>
       <memberdef kind="function" id="stards_8h_1a29318048c3f3da2ad3241a1557b81e91" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>void</type>
@@ -587,7 +587,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="246" column="13" bodyfile="StarDS/include/stards.h" bodystart="246" bodyend="246"/>
+        <location file="StarDS/include/stards.h" line="247" column="13" bodyfile="StarDS/include/stards.h" bodystart="247" bodyend="247"/>
       </memberdef>
       <memberdef kind="function" id="stards_8h_1ac0cb3156bec6000ea986417f2028ecd0" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>uint64_t</type>
@@ -605,7 +605,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="248" column="17" bodyfile="StarDS/include/stards.h" bodystart="248" bodyend="248"/>
+        <location file="StarDS/include/stards.h" line="249" column="17" bodyfile="StarDS/include/stards.h" bodystart="249" bodyend="249"/>
       </memberdef>
       <memberdef kind="function" id="stards_8h_1a025a0c99b5f856b05e5b1f104902d127" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>uint32_t</type>
@@ -623,7 +623,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="249" column="17" bodyfile="StarDS/include/stards.h" bodystart="249" bodyend="249"/>
+        <location file="StarDS/include/stards.h" line="250" column="17" bodyfile="StarDS/include/stards.h" bodystart="250" bodyend="250"/>
       </memberdef>
       <memberdef kind="function" id="stards_8h_1af794a9065512f6b084be52c82892355c" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>uint16_t</type>
@@ -641,7 +641,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="250" column="17" bodyfile="StarDS/include/stards.h" bodystart="250" bodyend="250"/>
+        <location file="StarDS/include/stards.h" line="251" column="17" bodyfile="StarDS/include/stards.h" bodystart="251" bodyend="251"/>
       </memberdef>
       <memberdef kind="function" id="stards_8h_1a877c1a657e8d8de50604a870f93d77bc" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>uint8_t</type>
@@ -659,7 +659,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="251" column="17" bodyfile="StarDS/include/stards.h" bodystart="251" bodyend="251"/>
+        <location file="StarDS/include/stards.h" line="252" column="17" bodyfile="StarDS/include/stards.h" bodystart="252" bodyend="252"/>
       </memberdef>
       <memberdef kind="function" id="stards_8h_1a35d2c76daf2a1dbf8a50f215002adb78" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>void</type>
@@ -688,7 +688,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="265" column="13" bodyfile="StarDS/include/stards.h" bodystart="265" bodyend="267"/>
+        <location file="StarDS/include/stards.h" line="266" column="13" bodyfile="StarDS/include/stards.h" bodystart="266" bodyend="268"/>
       </memberdef>
       <memberdef kind="function" id="stards_8h_1a456a083efd6d9a5281918fa770521803" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>void</type>
@@ -717,7 +717,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="273" column="13" bodyfile="StarDS/include/stards.h" bodystart="273" bodyend="275"/>
+        <location file="StarDS/include/stards.h" line="274" column="13" bodyfile="StarDS/include/stards.h" bodystart="274" bodyend="276"/>
       </memberdef>
       <memberdef kind="function" id="stards_8h_1ada1aeda45775defc1d35699c33baf8ac" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>void</type>
@@ -746,7 +746,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="281" column="13" bodyfile="StarDS/include/stards.h" bodystart="281" bodyend="283"/>
+        <location file="StarDS/include/stards.h" line="282" column="13" bodyfile="StarDS/include/stards.h" bodystart="282" bodyend="284"/>
       </memberdef>
       <memberdef kind="function" id="stards_8h_1a6051c002c138ae3ba61a44946607253e" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>size_t</type>
@@ -761,7 +761,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="288" column="15" bodyfile="StarDS/include/stards.h" bodystart="288" bodyend="290"/>
+        <location file="StarDS/include/stards.h" line="289" column="15" bodyfile="StarDS/include/stards.h" bodystart="289" bodyend="291"/>
       </memberdef>
       <memberdef kind="function" id="stards_8h_1a735ea57ff4a7c73633a1eec6badf7a9e" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>uint64_t</type>
@@ -775,7 +775,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="303" column="17" bodyfile="StarDS/include/stards.h" bodystart="303" bodyend="305"/>
+        <location file="StarDS/include/stards.h" line="304" column="17" bodyfile="StarDS/include/stards.h" bodystart="304" bodyend="306"/>
       </memberdef>
       <memberdef kind="function" id="stards_8h_1a9b6e4436248eedd09f4cf846f4987ad1" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>void</type>
@@ -789,7 +789,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="308" column="13" bodyfile="StarDS/include/stards.h" bodystart="308" bodyend="310"/>
+        <location file="StarDS/include/stards.h" line="309" column="13" bodyfile="StarDS/include/stards.h" bodystart="309" bodyend="311"/>
       </memberdef>
       <memberdef kind="function" id="stards_8h_1a24f0a26068f52d4a5a7c43338be1e199" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>std::string</type>
@@ -807,7 +807,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="389" column="20" bodyfile="StarDS/include/stards.h" bodystart="389" bodyend="393"/>
+        <location file="StarDS/include/stards.h" line="390" column="20" bodyfile="StarDS/include/stards.h" bodystart="390" bodyend="394"/>
       </memberdef>
       <memberdef kind="function" id="stards_8h_1a906532b2a20e4f0d7f77e4de0a651b38" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>CompressionAlgorithm</type>
@@ -827,7 +827,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="553" column="29" bodyfile="StarDS/include/stards.h" bodystart="553" bodyend="561"/>
+        <location file="StarDS/include/stards.h" line="554" column="29" bodyfile="StarDS/include/stards.h" bodystart="554" bodyend="562"/>
       </memberdef>
       <memberdef kind="function" id="stards_8h_1abdf4d4ec22cd0e35eacbc7de219bddea" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>bool</type>
@@ -846,7 +846,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="567" column="13" bodyfile="StarDS/include/stards.h" bodystart="567" bodyend="570"/>
+        <location file="StarDS/include/stards.h" line="568" column="13" bodyfile="StarDS/include/stards.h" bodystart="568" bodyend="571"/>
       </memberdef>
       <memberdef kind="function" id="stards_8h_1a4150c52a6a05f0c151652322998a7a36" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>bool</type>
@@ -865,7 +865,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="576" column="13" bodyfile="StarDS/include/stards.h" bodystart="576" bodyend="578"/>
+        <location file="StarDS/include/stards.h" line="577" column="13" bodyfile="StarDS/include/stards.h" bodystart="577" bodyend="579"/>
       </memberdef>
       <memberdef kind="function" id="stards_8h_1a170693a68990dc51168850ca97f9d388" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>bool</type>
@@ -884,7 +884,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="584" column="13" bodyfile="StarDS/include/stards.h" bodystart="584" bodyend="586"/>
+        <location file="StarDS/include/stards.h" line="585" column="13" bodyfile="StarDS/include/stards.h" bodystart="585" bodyend="587"/>
       </memberdef>
       <memberdef kind="function" id="stards_8h_1a93bb8ed692f59fb89e9fa4f464f93acc" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>void</type>
@@ -916,7 +916,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="904" column="13" bodyfile="StarDS/include/stards.h" bodystart="904" bodyend="913"/>
+        <location file="StarDS/include/stards.h" line="905" column="13" bodyfile="StarDS/include/stards.h" bodystart="905" bodyend="914"/>
       </memberdef>
       <memberdef kind="function" id="stards_8h_1a76a9c679ed5ed7002233d2a4721cdd94" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>void</type>
@@ -948,7 +948,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="922" column="13" bodyfile="StarDS/include/stards.h" bodystart="922" bodyend="945"/>
+        <location file="StarDS/include/stards.h" line="923" column="13" bodyfile="StarDS/include/stards.h" bodystart="923" bodyend="946"/>
       </memberdef>
       <memberdef kind="function" id="stards_8h_1a1e31ad6d5cd28fda7577955b90f7607f" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>void</type>
@@ -985,7 +985,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="962" column="13" bodyfile="StarDS/include/stards.h" bodystart="962" bodyend="973"/>
+        <location file="StarDS/include/stards.h" line="963" column="13" bodyfile="StarDS/include/stards.h" bodystart="963" bodyend="974"/>
       </memberdef>
       <memberdef kind="function" id="stards_8h_1a247aa4a7a0047c15d0a136f4a8943941" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>void</type>
@@ -1020,7 +1020,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="978" column="13" bodyfile="StarDS/include/stards.h" bodystart="978" bodyend="989"/>
+        <location file="StarDS/include/stards.h" line="979" column="13" bodyfile="StarDS/include/stards.h" bodystart="979" bodyend="990"/>
       </memberdef>
       <memberdef kind="function" id="stards_8h_1abbc1f01ad58689b526e003c582f81551" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>uint64_t</type>
@@ -1039,7 +1039,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1012" column="17" bodyfile="StarDS/include/stards.h" bodystart="1012" bodyend="1015"/>
+        <location file="StarDS/include/stards.h" line="1013" column="17" bodyfile="StarDS/include/stards.h" bodystart="1013" bodyend="1016"/>
       </memberdef>
       <memberdef kind="function" id="stards_8h_1a5579dc16eb34115f42697b1f5c06f8a9" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>const char *</type>
@@ -1070,7 +1070,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1130" column="19" bodyfile="StarDS/include/stards.h" bodystart="1130" bodyend="1145"/>
+        <location file="StarDS/include/stards.h" line="1131" column="19" bodyfile="StarDS/include/stards.h" bodystart="1131" bodyend="1146"/>
       </memberdef>
       <memberdef kind="function" id="stards_8h_1a410c53616fde29a6487f7f579489aefa" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>size_t</type>
@@ -1101,7 +1101,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1152" column="15" bodyfile="StarDS/include/stards.h" bodystart="1152" bodyend="1167"/>
+        <location file="StarDS/include/stards.h" line="1153" column="15" bodyfile="StarDS/include/stards.h" bodystart="1153" bodyend="1168"/>
       </memberdef>
       <memberdef kind="function" id="stards_8h_1a37d78623f0f7e4512a36feeea3d23aaa" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type><ref refid="structstar_1_1Slice" kindref="compound">Slice</ref></type>
@@ -1119,7 +1119,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1265" column="14" bodyfile="StarDS/include/stards.h" bodystart="1265" bodyend="1267"/>
+        <location file="StarDS/include/stards.h" line="1266" column="14" bodyfile="StarDS/include/stards.h" bodystart="1266" bodyend="1268"/>
       </memberdef>
       <memberdef kind="function" id="stards_8h_1ae56c84afe3b1985f4ca1e719f66b5ac0" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type><ref refid="structstar_1_1Slice" kindref="compound">Slice</ref></type>
@@ -1141,7 +1141,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1269" column="14" bodyfile="StarDS/include/stards.h" bodystart="1269" bodyend="1271"/>
+        <location file="StarDS/include/stards.h" line="1270" column="14" bodyfile="StarDS/include/stards.h" bodystart="1270" bodyend="1272"/>
       </memberdef>
       <memberdef kind="function" id="stards_8h_1a21e0e90048002ec4472ba8bc0db04e4c" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>CURLcode</type>
@@ -1159,7 +1159,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1660" column="17" bodyfile="StarDS/include/stards.h" bodystart="1660" bodyend="1663"/>
+        <location file="StarDS/include/stards.h" line="1661" column="17" bodyfile="StarDS/include/stards.h" bodystart="1661" bodyend="1664"/>
       </memberdef>
       <memberdef kind="function" id="stards_8h_1ab7c8b458023c3ab482697d146d57e627" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>FileMode</type>
@@ -1177,7 +1177,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1680" column="17" bodyfile="StarDS/include/stards.h" bodystart="1680" bodyend="1688"/>
+        <location file="StarDS/include/stards.h" line="1681" column="17" bodyfile="StarDS/include/stards.h" bodystart="1681" bodyend="1689"/>
       </memberdef>
       <memberdef kind="function" id="stards_8h_1aae39a3c1ad4cc87d269dc39e4fa7741a" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>std::string</type>
@@ -1192,7 +1192,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="2555" column="20" bodyfile="StarDS/include/stards.h" bodystart="2555" bodyend="2558"/>
+        <location file="StarDS/include/stards.h" line="2556" column="20" bodyfile="StarDS/include/stards.h" bodystart="2556" bodyend="2559"/>
       </memberdef>
       <memberdef kind="function" id="stards_8h_1ac790209e925d9fd6398a4d7ee2455625" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type><ref refid="structstar_1_1FilePathInfo" kindref="compound">FilePathInfo</ref></type>
@@ -1218,7 +1218,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="2864" column="21" bodyfile="StarDS/include/stards.h" bodystart="2864" bodyend="2938"/>
+        <location file="StarDS/include/stards.h" line="2865" column="21" bodyfile="StarDS/include/stards.h" bodystart="2865" bodyend="2939"/>
       </memberdef>
       <memberdef kind="function" id="stards_8h_1a1a0fb476dc8bf76da88420f3df1feb41" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>size_t</type>
@@ -1286,7 +1286,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="4230" column="15" bodyfile="StarDS/include/stards.h" bodystart="4230" bodyend="4255"/>
+        <location file="StarDS/include/stards.h" line="4231" column="15" bodyfile="StarDS/include/stards.h" bodystart="4231" bodyend="4256"/>
       </memberdef>
       <memberdef kind="function" id="stards_8h_1a49578ed8572073c807f93cceec301dbd" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>std::vector&lt; <ref refid="structstar_1_1BlockInfo" kindref="compound">BlockInfo</ref> &gt;</type>
@@ -1390,7 +1390,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="4269" column="1" bodyfile="StarDS/include/stards.h" bodystart="4269" bodyend="4513"/>
+        <location file="StarDS/include/stards.h" line="4270" column="1" bodyfile="StarDS/include/stards.h" bodystart="4270" bodyend="4514"/>
       </memberdef>
       <memberdef kind="function" id="stards_8h_1a959a8d088b8da75c42fb70b4af2ac54c" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>std::pair&lt; std::vector&lt; char &gt;, std::vector&lt; <ref refid="structstar_1_1BlockInfo" kindref="compound">BlockInfo</ref> &gt; &gt;</type>
@@ -1457,7 +1457,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="4524" column="1" bodyfile="StarDS/include/stards.h" bodystart="4524" bodyend="4532"/>
+        <location file="StarDS/include/stards.h" line="4525" column="1" bodyfile="StarDS/include/stards.h" bodystart="4525" bodyend="4533"/>
       </memberdef>
       <memberdef kind="function" id="stards_8h_1abe76f55ea15d1fd894f94f53fa556b8f" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>std::vector&lt; char &gt;</type>
@@ -1538,7 +1538,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="4543" column="20" bodyfile="StarDS/include/stards.h" bodystart="4543" bodyend="4708"/>
+        <location file="StarDS/include/stards.h" line="4544" column="20" bodyfile="StarDS/include/stards.h" bodystart="4544" bodyend="4709"/>
       </memberdef>
       <memberdef kind="function" id="stards_8h_1a0f459f011a279335dec75d5dd7d6ad19" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>void</type>
@@ -1598,7 +1598,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="4737" column="13" bodyfile="StarDS/include/stards.h" bodystart="4737" bodyend="4815"/>
+        <location file="StarDS/include/stards.h" line="4738" column="13" bodyfile="StarDS/include/stards.h" bodystart="4738" bodyend="4816"/>
       </memberdef>
       <memberdef kind="function" id="stards_8h_1a0130b14a0fad270754cea7c19c0b39ac" prot="public" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>DataType</type>
@@ -1616,7 +1616,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="9405" column="24" bodyfile="StarDS/include/stards.h" bodystart="9405" bodyend="9418"/>
+        <location file="StarDS/include/stards.h" line="9406" column="24" bodyfile="StarDS/include/stards.h" bodystart="9406" bodyend="9419"/>
       </memberdef>
       <memberdef kind="function" id="stards_8h_1a2767eb5622de6c7d32b5bcafffec295c" prot="public" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>std::vector&lt; size_t &gt;</type>
@@ -1634,13 +1634,13 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="9420" column="27" bodyfile="StarDS/include/stards.h" bodystart="9420" bodyend="9424"/>
+        <location file="StarDS/include/stards.h" line="9421" column="27" bodyfile="StarDS/include/stards.h" bodystart="9421" bodyend="9425"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
     </briefdescription>
     <detaileddescription>
     </detaileddescription>
-    <location file="StarDS/include/stards.h" line="187" column="1"/>
+    <location file="StarDS/include/stards.h" line="188" column="1"/>
   </compounddef>
 </doxygen>

@@ -16,7 +16,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1254" column="12" bodyfile="StarDS/include/stards.h" bodystart="1254" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="1255" column="12" bodyfile="StarDS/include/stards.h" bodystart="1255" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="structstar_1_1Slice_1a3e9c16e88dcdff520ed785dcfd840a4f" prot="public" static="no" mutable="no">
         <type>size_t</type>
@@ -30,7 +30,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1255" column="12" bodyfile="StarDS/include/stards.h" bodystart="1255" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="1256" column="12" bodyfile="StarDS/include/stards.h" bodystart="1256" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="structstar_1_1Slice_1ae913cbab6390d1ea35b66ad5621c3ca2" prot="public" static="no" mutable="no">
         <type>size_t</type>
@@ -45,7 +45,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1256" column="12" bodyfile="StarDS/include/stards.h" bodystart="1256" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="1257" column="12" bodyfile="StarDS/include/stards.h" bodystart="1257" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="public-func">
@@ -61,7 +61,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1259" column="12" bodyfile="StarDS/include/stards.h" bodystart="1259" bodyend="1262"/>
+        <location file="StarDS/include/stards.h" line="1260" column="12" bodyfile="StarDS/include/stards.h" bodystart="1260" bodyend="1263"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
@@ -70,7 +70,7 @@
     <detaileddescription>
 <para>Usage: <ref refid="structstar_1_1Slice" kindref="compound">Slice</ref>{100, 200} // start=100, stop=200, step=1 (default) <ref refid="structstar_1_1Slice" kindref="compound">Slice</ref>{100, 200, 2} // start=100, stop=200, step=2 (every other) </para>
     </detaileddescription>
-    <location file="StarDS/include/stards.h" line="1253" column="1" bodyfile="StarDS/include/stards.h" bodystart="1253" bodyend="1263"/>
+    <location file="StarDS/include/stards.h" line="1254" column="1" bodyfile="StarDS/include/stards.h" bodystart="1254" bodyend="1264"/>
     <listofallmembers>
       <member refid="structstar_1_1Slice_1a51b695be914a0845aaf774925d15ab52" prot="public" virt="non-virtual"><scope>star::Slice</scope><name>length</name></member>
       <member refid="structstar_1_1Slice_1addeb9b03be71fff0a3f0787820512ab3" prot="public" virt="non-virtual"><scope>star::Slice</scope><name>start</name></member>

@@ -16,7 +16,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="4952" column="18" bodyfile="StarDS/include/stards.h" bodystart="4952" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="4953" column="18" bodyfile="StarDS/include/stards.h" bodystart="4953" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="structstar_1_1MetadataValue_1a68e6bb65e220045af87c758782bb764b" prot="public" static="no" mutable="no">
         <type>DataType</type>
@@ -30,7 +30,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="4953" column="14" bodyfile="StarDS/include/stards.h" bodystart="4953" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="4954" column="14" bodyfile="StarDS/include/stards.h" bodystart="4954" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="structstar_1_1MetadataValue_1ad7f1896d1f52e07ffe20892c81e1891d" prot="public" static="no" mutable="no">
         <type>std::vector&lt; size_t &gt;</type>
@@ -44,7 +44,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="4954" column="17" bodyfile="StarDS/include/stards.h" bodystart="4954" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="4955" column="17" bodyfile="StarDS/include/stards.h" bodystart="4955" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="public-func">
@@ -60,7 +60,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="4957" column="10" bodyfile="StarDS/include/stards.h" bodystart="4957" bodyend="4959"/>
+        <location file="StarDS/include/stards.h" line="4958" column="10" bodyfile="StarDS/include/stards.h" bodystart="4958" bodyend="4960"/>
       </memberdef>
       <memberdef kind="function" id="structstar_1_1MetadataValue_1a1d1c1ba1f38970cba08d93a1d7e316a4" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
         <type>bool</type>
@@ -74,7 +74,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="4962" column="10" bodyfile="StarDS/include/stards.h" bodystart="4962" bodyend="4964"/>
+        <location file="StarDS/include/stards.h" line="4963" column="10" bodyfile="StarDS/include/stards.h" bodystart="4963" bodyend="4965"/>
       </memberdef>
       <memberdef kind="function" id="structstar_1_1MetadataValue_1a7d847d68a4a701ec900220dfd5edae25" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
         <type>size_t</type>
@@ -88,7 +88,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="4967" column="12" bodyfile="StarDS/include/stards.h" bodystart="4967" bodyend="4969"/>
+        <location file="StarDS/include/stards.h" line="4968" column="12" bodyfile="StarDS/include/stards.h" bodystart="4968" bodyend="4970"/>
       </memberdef>
       <memberdef kind="function" id="structstar_1_1MetadataValue_1a6b7a005945cddc2c501e6a7f53204262" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
         <type>size_t</type>
@@ -102,7 +102,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="4972" column="12" bodyfile="StarDS/include/stards.h" bodystart="4972" bodyend="4979"/>
+        <location file="StarDS/include/stards.h" line="4973" column="12" bodyfile="StarDS/include/stards.h" bodystart="4973" bodyend="4980"/>
       </memberdef>
       <memberdef kind="function" id="structstar_1_1MetadataValue_1a45ab00d6ed58449c1e9ca4b32059a972" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
         <templateparamlist>
@@ -121,7 +121,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="4983" column="13" bodyfile="StarDS/include/stards.h" bodystart="4983" bodyend="4989"/>
+        <location file="StarDS/include/stards.h" line="4984" column="13" bodyfile="StarDS/include/stards.h" bodystart="4984" bodyend="4990"/>
       </memberdef>
       <memberdef kind="function" id="structstar_1_1MetadataValue_1ace65a6a3238e227334b6c9202128165c" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
         <templateparamlist>
@@ -140,7 +140,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="4993" column="21" bodyfile="StarDS/include/stards.h" bodystart="4993" bodyend="4999"/>
+        <location file="StarDS/include/stards.h" line="4994" column="21" bodyfile="StarDS/include/stards.h" bodystart="4994" bodyend="5000"/>
       </memberdef>
       <memberdef kind="function" id="structstar_1_1MetadataValue_1aa405a4a87da006a1243955a325fe39de" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
         <type>std::string</type>
@@ -154,7 +154,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="5002" column="17" bodyfile="StarDS/include/stards.h" bodystart="5002" bodyend="5004"/>
+        <location file="StarDS/include/stards.h" line="5003" column="17" bodyfile="StarDS/include/stards.h" bodystart="5003" bodyend="5005"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
@@ -163,7 +163,7 @@
     <detaileddescription>
 <para>Provides type introspection and safe casting for metadata retrieved without knowing the type ahead of time. Eliminates the need for type guessing loops. </para>
     </detaileddescription>
-    <location file="StarDS/include/stards.h" line="4951" column="1" bodyfile="StarDS/include/stards.h" bodystart="4951" bodyend="5005"/>
+    <location file="StarDS/include/stards.h" line="4952" column="1" bodyfile="StarDS/include/stards.h" bodystart="4952" bodyend="5006"/>
     <listofallmembers>
       <member refid="structstar_1_1MetadataValue_1a45ab00d6ed58449c1e9ca4b32059a972" prot="public" virt="non-virtual"><scope>star::MetadataValue</scope><name>as</name></member>
       <member refid="structstar_1_1MetadataValue_1ae1b137c09f71d4694374c231e7d4bc0b" prot="public" virt="non-virtual"><scope>star::MetadataValue</scope><name>data</name></member>

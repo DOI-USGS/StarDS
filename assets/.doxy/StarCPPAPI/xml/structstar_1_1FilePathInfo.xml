@@ -41,7 +41,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1694" column="5" bodyfile="StarDS/include/stards.h" bodystart="1694" bodyend="1694"/>
+        <location file="StarDS/include/stards.h" line="1695" column="5" bodyfile="StarDS/include/stards.h" bodystart="1695" bodyend="1695"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="public-attrib">
@@ -57,7 +57,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1695" column="10" bodyfile="StarDS/include/stards.h" bodystart="1695" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="1696" column="10" bodyfile="StarDS/include/stards.h" bodystart="1696" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="structstar_1_1FilePathInfo_1a27d998ff7190248ecc530b7ec4cc6ed2" prot="public" static="no" mutable="no">
         <type>std::string</type>
@@ -71,7 +71,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1696" column="17" bodyfile="StarDS/include/stards.h" bodystart="1696" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="1697" column="17" bodyfile="StarDS/include/stards.h" bodystart="1697" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="structstar_1_1FilePathInfo_1a0abb48bd40bfd18f0cea57f015ba9774" prot="public" static="no" mutable="no">
         <type>std::string</type>
@@ -85,7 +85,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1697" column="17" bodyfile="StarDS/include/stards.h" bodystart="1697" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="1698" column="17" bodyfile="StarDS/include/stards.h" bodystart="1698" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="structstar_1_1FilePathInfo_1ad2b837cba47c8003dd539744003a320b" prot="public" static="no" mutable="no">
         <type>std::string</type>
@@ -99,7 +99,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1698" column="17" bodyfile="StarDS/include/stards.h" bodystart="1698" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="1699" column="17" bodyfile="StarDS/include/stards.h" bodystart="1699" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="structstar_1_1FilePathInfo_1a6cb8048d1f8d83fd15cda5babe7019c9" prot="public" static="no" mutable="no">
         <type>std::string</type>
@@ -113,14 +113,14 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1699" column="17" bodyfile="StarDS/include/stards.h" bodystart="1699" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="1700" column="17" bodyfile="StarDS/include/stards.h" bodystart="1700" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
     </briefdescription>
     <detaileddescription>
     </detaileddescription>
-    <location file="StarDS/include/stards.h" line="1691" column="1" bodyfile="StarDS/include/stards.h" bodystart="1691" bodyend="1700"/>
+    <location file="StarDS/include/stards.h" line="1692" column="1" bodyfile="StarDS/include/stards.h" bodystart="1692" bodyend="1701"/>
     <listofallmembers>
       <member refid="structstar_1_1FilePathInfo_1a0abb48bd40bfd18f0cea57f015ba9774" prot="public" virt="non-virtual"><scope>star::FilePathInfo</scope><name>bucket</name></member>
       <member refid="structstar_1_1FilePathInfo_1a705e790763b2a193c947e1dba66c8c9bafca0f506cf4248ff236f2b70a2832f27" prot="public" virt="non-virtual"><scope>star::FilePathInfo</scope><name>HTTP</name></member>

@@ -16,7 +16,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="2042" column="14" bodyfile="StarDS/include/stards.h" bodystart="2042" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="2043" column="14" bodyfile="StarDS/include/stards.h" bodystart="2043" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="private-static-func">
@@ -32,7 +32,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="2044" column="24" bodyfile="StarDS/include/stards.h" bodystart="2044" bodyend="2050"/>
+        <location file="StarDS/include/stards.h" line="2045" column="24" bodyfile="StarDS/include/stards.h" bodystart="2045" bodyend="2051"/>
       </memberdef>
       <memberdef kind="function" id="classstar_1_1AWSConfigParser_1ae22b7dc53cdd379a96e8c6ab5f41c119" prot="private" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>std::string</type>
@@ -50,7 +50,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="2052" column="24" bodyfile="StarDS/include/stards.h" bodystart="2052" bodyend="2057"/>
+        <location file="StarDS/include/stards.h" line="2053" column="24" bodyfile="StarDS/include/stards.h" bodystart="2053" bodyend="2058"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="public-func">
@@ -70,7 +70,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="2060" column="5" bodyfile="StarDS/include/stards.h" bodystart="2060" bodyend="2100"/>
+        <location file="StarDS/include/stards.h" line="2061" column="5" bodyfile="StarDS/include/stards.h" bodystart="2061" bodyend="2101"/>
       </memberdef>
       <memberdef kind="function" id="classstar_1_1AWSConfigParser_1af253e659b1831cda66f7bda82bffe2f1" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
         <type>bool</type>
@@ -88,7 +88,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="2102" column="10" bodyfile="StarDS/include/stards.h" bodystart="2102" bodyend="2104"/>
+        <location file="StarDS/include/stards.h" line="2103" column="10" bodyfile="StarDS/include/stards.h" bodystart="2103" bodyend="2105"/>
       </memberdef>
       <memberdef kind="function" id="classstar_1_1AWSConfigParser_1a06d1bbc2256fc3288ed66378d2ec4f90" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
         <type>std::string</type>
@@ -115,7 +115,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="2106" column="17" bodyfile="StarDS/include/stards.h" bodystart="2106" bodyend="2119"/>
+        <location file="StarDS/include/stards.h" line="2107" column="17" bodyfile="StarDS/include/stards.h" bodystart="2107" bodyend="2120"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="public-static-func">
@@ -131,7 +131,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="2121" column="24" bodyfile="StarDS/include/stards.h" bodystart="2121" bodyend="2125"/>
+        <location file="StarDS/include/stards.h" line="2122" column="24" bodyfile="StarDS/include/stards.h" bodystart="2122" bodyend="2126"/>
       </memberdef>
       <memberdef kind="function" id="classstar_1_1AWSConfigParser_1ae63dc14ea20541f92e483d3d6430141d" prot="public" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>std::string</type>
@@ -145,7 +145,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="2127" column="24" bodyfile="StarDS/include/stards.h" bodystart="2127" bodyend="2131"/>
+        <location file="StarDS/include/stards.h" line="2128" column="24" bodyfile="StarDS/include/stards.h" bodystart="2128" bodyend="2132"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
@@ -154,7 +154,7 @@
     <detaileddescription>
 <para>Parses INI-style configuration files like ~/.aws/config and ~/.aws/credentials </para>
     </detaileddescription>
-    <location file="StarDS/include/stards.h" line="2040" column="1" bodyfile="StarDS/include/stards.h" bodystart="2040" bodyend="2132"/>
+    <location file="StarDS/include/stards.h" line="2041" column="1" bodyfile="StarDS/include/stards.h" bodystart="2041" bodyend="2133"/>
     <listofallmembers>
       <member refid="classstar_1_1AWSConfigParser_1a030af99bbf3f57a109be3ea37b9f658e" prot="public" virt="non-virtual"><scope>star::AWSConfigParser</scope><name>AWSConfigParser</name></member>
       <member refid="classstar_1_1AWSConfigParser_1a135923fe21a3196ba2e32410228934ce" prot="public" virt="non-virtual"><scope>star::AWSConfigParser</scope><name>getConfigPath</name></member>

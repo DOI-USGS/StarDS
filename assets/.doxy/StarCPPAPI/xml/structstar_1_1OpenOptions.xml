@@ -17,7 +17,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="4880" column="10" bodyfile="StarDS/include/stards.h" bodystart="4880" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="4881" column="10" bodyfile="StarDS/include/stards.h" bodystart="4881" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="structstar_1_1OpenOptions_1af9345ed69aecd3d191356f7c90078696" prot="public" static="no" mutable="no">
         <type>size_t</type>
@@ -32,7 +32,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="4888" column="12" bodyfile="StarDS/include/stards.h" bodystart="4888" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="4889" column="12" bodyfile="StarDS/include/stards.h" bodystart="4889" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
@@ -41,7 +41,7 @@
     <detaileddescription>
 <para>Distinct from <ref refid="structstar_1_1StarConfig" kindref="compound">StarConfig</ref>, which configures how a NEW dataset is <emphasis>written</emphasis> by create() (compression, block sizes). <ref refid="structstar_1_1OpenOptions" kindref="compound">OpenOptions</ref> only affects how an existing dataset is <emphasis>read</emphasis>; nothing here is persisted to the .stards file, so it is a per-open setting (and can also be changed after open — see StarDataset::set_layer_inheritance / set_open_options). </para>
     </detaileddescription>
-    <location file="StarDS/include/stards.h" line="4875" column="1" bodyfile="StarDS/include/stards.h" bodystart="4875" bodyend="4889"/>
+    <location file="StarDS/include/stards.h" line="4876" column="1" bodyfile="StarDS/include/stards.h" bodystart="4876" bodyend="4890"/>
     <listofallmembers>
       <member refid="structstar_1_1OpenOptions_1a542af6b09370710da68a85b33722579f" prot="public" virt="non-virtual"><scope>star::OpenOptions</scope><name>layer_inheritance</name></member>
       <member refid="structstar_1_1OpenOptions_1af9345ed69aecd3d191356f7c90078696" prot="public" virt="non-virtual"><scope>star::OpenOptions</scope><name>prefetch_whole_below_bytes</name></member>

@@ -16,7 +16,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1291" column="17" bodyfile="StarDS/include/stards.h" bodystart="1291" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="1292" column="17" bodyfile="StarDS/include/stards.h" bodystart="1292" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="structstar_1_1BlockMap_1a17e2b1fe22e6b2e87ecfb4c4ccd64b9d" prot="public" static="no" mutable="no">
         <type>std::vector&lt; size_t &gt;</type>
@@ -30,7 +30,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1292" column="17" bodyfile="StarDS/include/stards.h" bodystart="1292" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="1293" column="17" bodyfile="StarDS/include/stards.h" bodystart="1293" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="structstar_1_1BlockMap_1a8de6da72eb66b4b9f9ad958996a45923" prot="public" static="no" mutable="no">
         <type>std::vector&lt; size_t &gt;</type>
@@ -44,7 +44,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1293" column="17" bodyfile="StarDS/include/stards.h" bodystart="1293" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="1294" column="17" bodyfile="StarDS/include/stards.h" bodystart="1294" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="structstar_1_1BlockMap_1a7e6f7e40d79b1c310ac58301b80f3052" prot="public" static="no" mutable="no">
         <type>size_t</type>
@@ -58,7 +58,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1294" column="12" bodyfile="StarDS/include/stards.h" bodystart="1294" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="1295" column="12" bodyfile="StarDS/include/stards.h" bodystart="1295" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="structstar_1_1BlockMap_1a7986354b3bfc64299cdfe2fbd56978f1" prot="public" static="no" mutable="no">
         <type>bool</type>
@@ -72,7 +72,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1295" column="10" bodyfile="StarDS/include/stards.h" bodystart="1295" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="1296" column="10" bodyfile="StarDS/include/stards.h" bodystart="1296" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="structstar_1_1BlockMap_1a883626b818429378972f28141a146de2" prot="public" static="no" mutable="no">
         <type>size_t</type>
@@ -86,7 +86,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1296" column="12" bodyfile="StarDS/include/stards.h" bodystart="1296" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="1297" column="12" bodyfile="StarDS/include/stards.h" bodystart="1297" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
@@ -94,7 +94,7 @@
     </briefdescription>
     <detaileddescription>
     </detaileddescription>
-    <location file="StarDS/include/stards.h" line="1290" column="1" bodyfile="StarDS/include/stards.h" bodystart="1290" bodyend="1297"/>
+    <location file="StarDS/include/stards.h" line="1291" column="1" bodyfile="StarDS/include/stards.h" bodystart="1291" bodyend="1298"/>
     <listofallmembers>
       <member refid="structstar_1_1BlockMap_1a3ee2733ba1c7645d5be2edbf953dd14f" prot="public" virt="non-virtual"><scope>star::BlockMap</scope><name>block_indices</name></member>
       <member refid="structstar_1_1BlockMap_1a17e2b1fe22e6b2e87ecfb4c4ccd64b9d" prot="public" virt="non-virtual"><scope>star::BlockMap</scope><name>block_offsets</name></member>

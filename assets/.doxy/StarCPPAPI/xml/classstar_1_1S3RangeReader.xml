@@ -17,7 +17,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="3590" column="10" bodyfile="StarDS/include/stards.h" bodystart="3590" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="3591" column="10" bodyfile="StarDS/include/stards.h" bodystart="3591" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classstar_1_1S3RangeReader_1afd851326b8a0388d44afc76dddc8276a" prot="private" static="no" mutable="no">
         <type>std::string</type>
@@ -31,7 +31,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="3591" column="17" bodyfile="StarDS/include/stards.h" bodystart="3591" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="3592" column="17" bodyfile="StarDS/include/stards.h" bodystart="3592" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classstar_1_1S3RangeReader_1a2505e3c341eab56cc912305c9bf43717" prot="private" static="no" mutable="no">
         <type>std::string</type>
@@ -45,7 +45,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="3591" column="26" bodyfile="StarDS/include/stards.h" bodystart="3591" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="3592" column="26" bodyfile="StarDS/include/stards.h" bodystart="3592" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classstar_1_1S3RangeReader_1a7958f43c91e2689190500dde6ecf7a1f" prot="private" static="no" mutable="no">
         <type>std::string</type>
@@ -59,7 +59,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="3591" column="32" bodyfile="StarDS/include/stards.h" bodystart="3591" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="3592" column="32" bodyfile="StarDS/include/stards.h" bodystart="3592" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classstar_1_1S3RangeReader_1a4ae34164a2b2c03a3b15ca7d2e0041e5" prot="private" static="no" mutable="no">
         <type><ref refid="structstar_1_1S3Credentials" kindref="compound">S3Credentials</ref></type>
@@ -73,7 +73,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="3592" column="19" bodyfile="StarDS/include/stards.h" bodystart="3592" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="3593" column="19" bodyfile="StarDS/include/stards.h" bodystart="3593" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classstar_1_1S3RangeReader_1acf4235746376984d65d5146162b3f979" prot="private" static="no" mutable="no">
         <type>std::unique_ptr&lt; <ref refid="classstar_1_1AWSV4Signer" kindref="compound">AWSV4Signer</ref> &gt;</type>
@@ -87,7 +87,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="3593" column="21" bodyfile="StarDS/include/stards.h" bodystart="3593" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="3594" column="21" bodyfile="StarDS/include/stards.h" bodystart="3594" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classstar_1_1S3RangeReader_1aea81aae4d375d12d7786907d04b9b80d" prot="private" static="no" mutable="no">
         <type>std::vector&lt; char &gt; *</type>
@@ -102,7 +102,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="3594" column="17" bodyfile="StarDS/include/stards.h" bodystart="3594" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="3595" column="17" bodyfile="StarDS/include/stards.h" bodystart="3595" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classstar_1_1S3RangeReader_1a11a98c4b4f351abbfcc149806ba7e43f" prot="private" static="no" mutable="no">
         <type>std::string</type>
@@ -116,7 +116,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="3595" column="17" bodyfile="StarDS/include/stards.h" bodystart="3595" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="3596" column="17" bodyfile="StarDS/include/stards.h" bodystart="3596" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classstar_1_1S3RangeReader_1ad101bf6ddaf973452ff82c03b236b791" prot="private" static="no" mutable="no">
         <type>std::vector&lt; char &gt;</type>
@@ -130,7 +130,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="3596" column="17" bodyfile="StarDS/include/stards.h" bodystart="3596" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="3597" column="17" bodyfile="StarDS/include/stards.h" bodystart="3597" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classstar_1_1S3RangeReader_1aa26067ad62cbc0fca5a67107eec567c6" prot="private" static="no" mutable="no">
         <type>bool</type>
@@ -145,7 +145,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="3597" column="10" bodyfile="StarDS/include/stards.h" bodystart="3597" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="3598" column="10" bodyfile="StarDS/include/stards.h" bodystart="3598" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classstar_1_1S3RangeReader_1ada83e9057f3abe87d3085e6a39861512" prot="private" static="no" mutable="no">
         <type>size_t</type>
@@ -160,7 +160,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="3598" column="12" bodyfile="StarDS/include/stards.h" bodystart="3598" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="3599" column="12" bodyfile="StarDS/include/stards.h" bodystart="3599" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="public-func">
@@ -192,7 +192,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="3422" column="5" bodyfile="StarDS/include/stards.h" bodystart="3422" bodyend="3437"/>
+        <location file="StarDS/include/stards.h" line="3423" column="5" bodyfile="StarDS/include/stards.h" bodystart="3423" bodyend="3438"/>
       </memberdef>
       <memberdef kind="function" id="classstar_1_1S3RangeReader_1ad705871bd873a31570d1d8e77772bbf9" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type></type>
@@ -206,7 +206,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="3438" column="5" bodyfile="StarDS/include/stards.h" bodystart="3438" bodyend="3438"/>
+        <location file="StarDS/include/stards.h" line="3439" column="5" bodyfile="StarDS/include/stards.h" bodystart="3439" bodyend="3439"/>
       </memberdef>
       <memberdef kind="function" id="classstar_1_1S3RangeReader_1af61f7c7991c11f682efc1b5cfb33c27a" prot="public" static="no" const="no" explicit="no" inline="yes" virt="virtual">
         <type>size_t</type>
@@ -233,7 +233,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="3440" column="12" bodyfile="StarDS/include/stards.h" bodystart="3440" bodyend="3447"/>
+        <location file="StarDS/include/stards.h" line="3441" column="12" bodyfile="StarDS/include/stards.h" bodystart="3441" bodyend="3448"/>
       </memberdef>
       <memberdef kind="function" id="classstar_1_1S3RangeReader_1afc720a948415d2ea530eef22a1e6cd89" prot="public" static="no" const="no" explicit="no" inline="yes" virt="virtual">
         <type>size_t</type>
@@ -248,7 +248,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="3449" column="12" bodyfile="StarDS/include/stards.h" bodystart="3449" bodyend="3449"/>
+        <location file="StarDS/include/stards.h" line="3450" column="12" bodyfile="StarDS/include/stards.h" bodystart="3450" bodyend="3450"/>
       </memberdef>
       <memberdef kind="function" id="classstar_1_1S3RangeReader_1a881f16e4b5c567835ff3e8d38f068d54" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="virtual">
         <type>bool</type>
@@ -263,7 +263,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="3450" column="10" bodyfile="StarDS/include/stards.h" bodystart="3450" bodyend="3450"/>
+        <location file="StarDS/include/stards.h" line="3451" column="10" bodyfile="StarDS/include/stards.h" bodystart="3451" bodyend="3451"/>
       </memberdef>
       <memberdef kind="function" id="classstar_1_1S3RangeReader_1ada5d026ee1de67edccc03ab370872b7c" prot="public" static="no" const="no" explicit="no" inline="yes" virt="virtual">
         <type>bool</type>
@@ -282,7 +282,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="3452" column="10" bodyfile="StarDS/include/stards.h" bodystart="3452" bodyend="3468"/>
+        <location file="StarDS/include/stards.h" line="3453" column="10" bodyfile="StarDS/include/stards.h" bodystart="3453" bodyend="3469"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="private-static-func">
@@ -314,7 +314,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="3471" column="19" bodyfile="StarDS/include/stards.h" bodystart="3471" bodyend="3476"/>
+        <location file="StarDS/include/stards.h" line="3472" column="19" bodyfile="StarDS/include/stards.h" bodystart="3472" bodyend="3477"/>
       </memberdef>
       <memberdef kind="function" id="classstar_1_1S3RangeReader_1abaa63f0f996f4914a1cf87263b3383ed" prot="private" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>size_t</type>
@@ -344,7 +344,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="3477" column="19" bodyfile="StarDS/include/stards.h" bodystart="3477" bodyend="3499"/>
+        <location file="StarDS/include/stards.h" line="3478" column="19" bodyfile="StarDS/include/stards.h" bodystart="3478" bodyend="3500"/>
       </memberdef>
       <memberdef kind="function" id="classstar_1_1S3RangeReader_1a205361cdcd78eda2132eab4a01a2cc10" prot="private" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>std::string</type>
@@ -358,7 +358,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="3508" column="24" bodyfile="StarDS/include/stards.h" bodystart="3508" bodyend="3520"/>
+        <location file="StarDS/include/stards.h" line="3509" column="24" bodyfile="StarDS/include/stards.h" bodystart="3509" bodyend="3521"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="private-func">
@@ -374,7 +374,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="3501" column="17" bodyfile="StarDS/include/stards.h" bodystart="3501" bodyend="3504"/>
+        <location file="StarDS/include/stards.h" line="3502" column="17" bodyfile="StarDS/include/stards.h" bodystart="3502" bodyend="3505"/>
       </memberdef>
       <memberdef kind="function" id="classstar_1_1S3RangeReader_1a5a78416b41083a5375469807a96acbf1" prot="private" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
         <type>std::string</type>
@@ -388,7 +388,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="3505" column="17" bodyfile="StarDS/include/stards.h" bodystart="3505" bodyend="3507"/>
+        <location file="StarDS/include/stards.h" line="3506" column="17" bodyfile="StarDS/include/stards.h" bodystart="3506" bodyend="3508"/>
       </memberdef>
       <memberdef kind="function" id="classstar_1_1S3RangeReader_1adac2d37b224f7eeb9a33549a3ac76199" prot="private" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>bool</type>
@@ -414,7 +414,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="3524" column="10" bodyfile="StarDS/include/stards.h" bodystart="3524" bodyend="3581"/>
+        <location file="StarDS/include/stards.h" line="3525" column="10" bodyfile="StarDS/include/stards.h" bodystart="3525" bodyend="3582"/>
       </memberdef>
       <memberdef kind="function" id="classstar_1_1S3RangeReader_1a238a252f146d7d543b1c68b62c6f36a7" prot="private" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>size_t</type>
@@ -440,7 +440,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="3583" column="12" bodyfile="StarDS/include/stards.h" bodystart="3583" bodyend="3588"/>
+        <location file="StarDS/include/stards.h" line="3584" column="12" bodyfile="StarDS/include/stards.h" bodystart="3584" bodyend="3589"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
@@ -471,7 +471,7 @@
         </childnode>
       </node>
     </collaborationgraph>
-    <location file="StarDS/include/stards.h" line="3420" column="1" bodyfile="StarDS/include/stards.h" bodystart="3420" bodyend="3599"/>
+    <location file="StarDS/include/stards.h" line="3421" column="1" bodyfile="StarDS/include/stards.h" bodystart="3421" bodyend="3600"/>
     <listofallmembers>
       <member refid="classstar_1_1S3RangeReader_1ada5d026ee1de67edccc03ab370872b7c" prot="public" virt="virtual"><scope>star::S3RangeReader</scope><name>ensure_whole_cached</name></member>
       <member refid="classstar_1_1S3RangeReader_1a5a78416b41083a5375469807a96acbf1" prot="private" virt="non-virtual"><scope>star::S3RangeReader</scope><name>getHost</name></member>

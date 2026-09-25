@@ -16,7 +16,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="4206" column="17" bodyfile="StarDS/include/stards.h" bodystart="4206" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="4207" column="17" bodyfile="StarDS/include/stards.h" bodystart="4207" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classstar_1_1ThreadPool_1ab596de65875f99930ae3141b55239a23" prot="private" static="no" mutable="no">
         <type>std::queue&lt; std::function&lt; void()&gt; &gt;</type>
@@ -30,7 +30,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="4207" column="16" bodyfile="StarDS/include/stards.h" bodystart="4207" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="4208" column="16" bodyfile="StarDS/include/stards.h" bodystart="4208" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classstar_1_1ThreadPool_1ae8666e7ffa45c3a77c262c91b8e573bb" prot="private" static="no" mutable="no">
         <type>std::mutex</type>
@@ -44,7 +44,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="4208" column="16" bodyfile="StarDS/include/stards.h" bodystart="4208" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="4209" column="16" bodyfile="StarDS/include/stards.h" bodystart="4209" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classstar_1_1ThreadPool_1a122bdbf6d93d03b4ca58cb45560cb016" prot="private" static="no" mutable="no">
         <type>std::condition_variable</type>
@@ -58,7 +58,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="4209" column="29" bodyfile="StarDS/include/stards.h" bodystart="4209" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="4210" column="29" bodyfile="StarDS/include/stards.h" bodystart="4210" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classstar_1_1ThreadPool_1a9a121716f1c110d4095bf5ce0cc9a76c" prot="private" static="no" mutable="no">
         <type>bool</type>
@@ -73,7 +73,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="4210" column="10" bodyfile="StarDS/include/stards.h" bodystart="4210" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="4211" column="10" bodyfile="StarDS/include/stards.h" bodystart="4211" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="public-func">
@@ -105,7 +105,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="4093" column="14" bodyfile="StarDS/include/stards.h" bodystart="4093" bodyend="4102"/>
+        <location file="StarDS/include/stards.h" line="4094" column="14" bodyfile="StarDS/include/stards.h" bodystart="4094" bodyend="4103"/>
       </memberdef>
       <memberdef kind="function" id="classstar_1_1ThreadPool_1a2a9e6fd15e414dffae69e9a5ebfe42d0" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type></type>
@@ -120,7 +120,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="4107" column="5" bodyfile="StarDS/include/stards.h" bodystart="4107" bodyend="4118"/>
+        <location file="StarDS/include/stards.h" line="4108" column="5" bodyfile="StarDS/include/stards.h" bodystart="4108" bodyend="4119"/>
       </memberdef>
       <memberdef kind="function" id="classstar_1_1ThreadPool_1a383df2d4ade87fed6d93debff846f8d6" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type></type>
@@ -137,7 +137,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="4121" column="5"/>
+        <location file="StarDS/include/stards.h" line="4122" column="5"/>
       </memberdef>
       <memberdef kind="function" id="classstar_1_1ThreadPool_1a0081e4c508801510309f7785865b30a5" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type><ref refid="classstar_1_1ThreadPool_1ab5421e3dea6950c267608dcfccdc254e" kindref="member">ThreadPool</ref> &amp;</type>
@@ -154,7 +154,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="4122" column="16"/>
+        <location file="StarDS/include/stards.h" line="4123" column="16"/>
       </memberdef>
       <memberdef kind="function" id="classstar_1_1ThreadPool_1a8da1bdfe6bcc8c49a8f0530d6ad20c61" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type></type>
@@ -171,7 +171,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="4123" column="5"/>
+        <location file="StarDS/include/stards.h" line="4124" column="5"/>
       </memberdef>
       <memberdef kind="function" id="classstar_1_1ThreadPool_1acf2a0b8267ceca1b8dc107626c05c638" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type><ref refid="classstar_1_1ThreadPool_1ab5421e3dea6950c267608dcfccdc254e" kindref="member">ThreadPool</ref> &amp;</type>
@@ -188,7 +188,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="4124" column="16"/>
+        <location file="StarDS/include/stards.h" line="4125" column="16"/>
       </memberdef>
       <memberdef kind="function" id="classstar_1_1ThreadPool_1a4e5464b540d16d7438f321cbbab287aa" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <templateparamlist>
@@ -246,7 +246,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="4133" column="10" bodyfile="StarDS/include/stards.h" bodystart="4133" bodyend="4153"/>
+        <location file="StarDS/include/stards.h" line="4134" column="10" bodyfile="StarDS/include/stards.h" bodystart="4134" bodyend="4154"/>
       </memberdef>
       <memberdef kind="function" id="classstar_1_1ThreadPool_1a8eda89a0062e8ff4d5ac15d8862269b0" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <templateparamlist>
@@ -282,7 +282,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="4161" column="17" bodyfile="StarDS/include/stards.h" bodystart="4161" bodyend="4175"/>
+        <location file="StarDS/include/stards.h" line="4162" column="17" bodyfile="StarDS/include/stards.h" bodystart="4162" bodyend="4176"/>
       </memberdef>
       <memberdef kind="function" id="classstar_1_1ThreadPool_1afcb6ef96de3891f175867101419191b2" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
         <type>size_t</type>
@@ -297,7 +297,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="4180" column="12" bodyfile="StarDS/include/stards.h" bodystart="4180" bodyend="4180"/>
+        <location file="StarDS/include/stards.h" line="4181" column="12" bodyfile="StarDS/include/stards.h" bodystart="4181" bodyend="4181"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="private-func">
@@ -314,7 +314,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="4186" column="10" bodyfile="StarDS/include/stards.h" bodystart="4186" bodyend="4204"/>
+        <location file="StarDS/include/stards.h" line="4187" column="10" bodyfile="StarDS/include/stards.h" bodystart="4187" bodyend="4205"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
@@ -323,7 +323,7 @@
     <detaileddescription>
 <para>Provides work-stealing task execution for parallel compression/decompression. Thread-safe and exception-safe. </para>
     </detaileddescription>
-    <location file="StarDS/include/stards.h" line="4087" column="1" bodyfile="StarDS/include/stards.h" bodystart="4087" bodyend="4211"/>
+    <location file="StarDS/include/stards.h" line="4088" column="1" bodyfile="StarDS/include/stards.h" bodystart="4088" bodyend="4212"/>
     <listofallmembers>
       <member refid="classstar_1_1ThreadPool_1a122bdbf6d93d03b4ca58cb45560cb016" prot="private" virt="non-virtual"><scope>star::ThreadPool</scope><name>condition</name></member>
       <member refid="classstar_1_1ThreadPool_1a8eda89a0062e8ff4d5ac15d8862269b0" prot="public" virt="non-virtual"><scope>star::ThreadPool</scope><name>enqueue</name></member>

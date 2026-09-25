@@ -16,7 +16,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="3087" column="17" bodyfile="StarDS/include/stards.h" bodystart="3087" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="3088" column="17" bodyfile="StarDS/include/stards.h" bodystart="3088" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classstar_1_1LocalRangeReader_1ac97505ff0f64ec479072e483704a58bc" prot="private" static="no" mutable="no">
         <type>std::vector&lt; char &gt;</type>
@@ -30,7 +30,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="3088" column="17" bodyfile="StarDS/include/stards.h" bodystart="3088" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="3089" column="17" bodyfile="StarDS/include/stards.h" bodystart="3089" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classstar_1_1LocalRangeReader_1a4fa27120afc9f1f0977d77c38316cff4" prot="private" static="no" mutable="no">
         <type>bool</type>
@@ -45,7 +45,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="3089" column="10" bodyfile="StarDS/include/stards.h" bodystart="3089" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="3090" column="10" bodyfile="StarDS/include/stards.h" bodystart="3090" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="public-func">
@@ -65,7 +65,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="2993" column="14" bodyfile="StarDS/include/stards.h" bodystart="2993" bodyend="2993"/>
+        <location file="StarDS/include/stards.h" line="2994" column="14" bodyfile="StarDS/include/stards.h" bodystart="2994" bodyend="2994"/>
       </memberdef>
       <memberdef kind="function" id="classstar_1_1LocalRangeReader_1aafb100591e197179dd3ac480b382fa3f" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type></type>
@@ -79,7 +79,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="2995" column="5" bodyfile="StarDS/include/stards.h" bodystart="2995" bodyend="3001"/>
+        <location file="StarDS/include/stards.h" line="2996" column="5" bodyfile="StarDS/include/stards.h" bodystart="2996" bodyend="3002"/>
       </memberdef>
       <memberdef kind="function" id="classstar_1_1LocalRangeReader_1a1571e734a7f9cb5aff4b19792463a9e2" prot="public" static="no" const="no" explicit="no" inline="yes" virt="virtual">
         <type>size_t</type>
@@ -106,7 +106,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="3003" column="12" bodyfile="StarDS/include/stards.h" bodystart="3003" bodyend="3021"/>
+        <location file="StarDS/include/stards.h" line="3004" column="12" bodyfile="StarDS/include/stards.h" bodystart="3004" bodyend="3022"/>
       </memberdef>
       <memberdef kind="function" id="classstar_1_1LocalRangeReader_1a0ae5d7a339d340eecb075afce4592eaa" prot="public" static="no" const="no" explicit="no" inline="yes" virt="virtual">
         <type>size_t</type>
@@ -121,7 +121,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="3023" column="12" bodyfile="StarDS/include/stards.h" bodystart="3023" bodyend="3032"/>
+        <location file="StarDS/include/stards.h" line="3024" column="12" bodyfile="StarDS/include/stards.h" bodystart="3024" bodyend="3033"/>
       </memberdef>
       <memberdef kind="function" id="classstar_1_1LocalRangeReader_1a092a1a885ccbd4f38b69729faf55706d" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="virtual">
         <type>bool</type>
@@ -136,7 +136,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="3034" column="10" bodyfile="StarDS/include/stards.h" bodystart="3034" bodyend="3037"/>
+        <location file="StarDS/include/stards.h" line="3035" column="10" bodyfile="StarDS/include/stards.h" bodystart="3035" bodyend="3038"/>
       </memberdef>
       <memberdef kind="function" id="classstar_1_1LocalRangeReader_1a445d226dc57ae9e55e737a3ea688123e" prot="public" static="no" const="no" explicit="no" inline="yes" virt="virtual">
         <type>bool</type>
@@ -155,7 +155,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="3039" column="10" bodyfile="StarDS/include/stards.h" bodystart="3039" bodyend="3052"/>
+        <location file="StarDS/include/stards.h" line="3040" column="10" bodyfile="StarDS/include/stards.h" bodystart="3040" bodyend="3053"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="private-static-func">
@@ -191,7 +191,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="3058" column="19" bodyfile="StarDS/include/stards.h" bodystart="3058" bodyend="3064"/>
+        <location file="StarDS/include/stards.h" line="3059" column="19" bodyfile="StarDS/include/stards.h" bodystart="3059" bodyend="3065"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
@@ -222,7 +222,7 @@
         <link refid="classstar_1_1RangeReader"/>
       </node>
     </collaborationgraph>
-    <location file="StarDS/include/stards.h" line="2991" column="1" bodyfile="StarDS/include/stards.h" bodystart="2991" bodyend="3095"/>
+    <location file="StarDS/include/stards.h" line="2992" column="1" bodyfile="StarDS/include/stards.h" bodystart="2992" bodyend="3096"/>
     <listofallmembers>
       <member refid="classstar_1_1LocalRangeReader_1a445d226dc57ae9e55e737a3ea688123e" prot="public" virt="virtual"><scope>star::LocalRangeReader</scope><name>ensure_whole_cached</name></member>
       <member refid="classstar_1_1LocalRangeReader_1a092a1a885ccbd4f38b69729faf55706d" prot="public" virt="virtual"><scope>star::LocalRangeReader</scope><name>good</name></member>

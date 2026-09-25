@@ -23,7 +23,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1806" column="19" bodyfile="StarDS/include/stards.h" bodystart="1806" bodyend="1816"/>
+        <location file="StarDS/include/stards.h" line="1807" column="19" bodyfile="StarDS/include/stards.h" bodystart="1807" bodyend="1817"/>
       </memberdef>
       <memberdef kind="function" id="stards_8h_1ac842bcf1160b8da3d81062f4a529f084" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>std::array&lt; unsigned char, 32 &gt;</type>
@@ -41,7 +41,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1818" column="19" bodyfile="StarDS/include/stards.h" bodystart="1818" bodyend="1820"/>
+        <location file="StarDS/include/stards.h" line="1819" column="19" bodyfile="StarDS/include/stards.h" bodystart="1819" bodyend="1821"/>
       </memberdef>
       <memberdef kind="function" id="stards_8h_1adddf18b4b2af23c622fd8bd781e88f78" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>std::array&lt; unsigned char, 32 &gt;</type>
@@ -71,7 +71,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1827" column="19" bodyfile="StarDS/include/stards.h" bodystart="1827" bodyend="1861"/>
+        <location file="StarDS/include/stards.h" line="1828" column="19" bodyfile="StarDS/include/stards.h" bodystart="1828" bodyend="1862"/>
       </memberdef>
       <memberdef kind="function" id="stards_8h_1aae2bd7f3d544ea774d187fa3e8da8d1f" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>std::array&lt; unsigned char, 32 &gt;</type>
@@ -93,13 +93,13 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1863" column="19" bodyfile="StarDS/include/stards.h" bodystart="1863" bodyend="1866"/>
+        <location file="StarDS/include/stards.h" line="1864" column="19" bodyfile="StarDS/include/stards.h" bodystart="1864" bodyend="1867"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
     </briefdescription>
     <detaileddescription>
     </detaileddescription>
-    <location file="StarDS/include/stards.h" line="1803" column="1"/>
+    <location file="StarDS/include/stards.h" line="1804" column="1"/>
   </compounddef>
 </doxygen>

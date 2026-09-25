@@ -17,7 +17,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1003" column="12" bodyfile="StarDS/include/stards.h" bodystart="1003" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="1004" column="12" bodyfile="StarDS/include/stards.h" bodystart="1004" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="structstar_1_1ByteUnshuffleSpec_1a4990904d01cffc68e36ee32373697122" prot="public" static="no" mutable="no">
         <type>bool</type>
@@ -32,7 +32,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1004" column="12" bodyfile="StarDS/include/stards.h" bodystart="1004" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="1005" column="12" bodyfile="StarDS/include/stards.h" bodystart="1005" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="structstar_1_1ByteUnshuffleSpec_1a0cc1dd76b4a912e45a68a1452631a10e" prot="public" static="no" mutable="no">
         <type>size_t</type>
@@ -47,7 +47,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1005" column="12" bodyfile="StarDS/include/stards.h" bodystart="1005" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="1006" column="12" bodyfile="StarDS/include/stards.h" bodystart="1006" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="structstar_1_1ByteUnshuffleSpec_1a010d0f5d06cb533b1bfb4c2498fe590e" prot="public" static="no" mutable="no">
         <type>size_t</type>
@@ -62,7 +62,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1006" column="12" bodyfile="StarDS/include/stards.h" bodystart="1006" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="1007" column="12" bodyfile="StarDS/include/stards.h" bodystart="1007" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
@@ -71,7 +71,7 @@
     <detaileddescription>
 <para>On the read hot path the decompressed bytes of a shuffle-codec array are byte-planes that must be transposed back to element order before use. Rather than unshuffle into a scratch buffer and then memcpy that buffer into the <ref refid="classstar_1_1NDArray" kindref="compound">NDArray</ref> (two full passes), deserialize_typed_value_bytes() can unshuffle straight into the freshly allocated <ref refid="classstar_1_1NDArray" kindref="compound">NDArray</ref> storage (one pass) when handed one of these. <computeroutput>active == false</computeroutput> means &quot;no shuffle — plain memcpy&quot;, preserving the exact behavior of the non-shuffle codecs. </para>
     </detaileddescription>
-    <location file="StarDS/include/stards.h" line="1002" column="1" bodyfile="StarDS/include/stards.h" bodystart="1002" bodyend="1007"/>
+    <location file="StarDS/include/stards.h" line="1003" column="1" bodyfile="StarDS/include/stards.h" bodystart="1003" bodyend="1008"/>
     <listofallmembers>
       <member refid="structstar_1_1ByteUnshuffleSpec_1a81e09506cf1d6ba54739e5e077148bc8" prot="public" virt="non-virtual"><scope>star::ByteUnshuffleSpec</scope><name>active</name></member>
       <member refid="structstar_1_1ByteUnshuffleSpec_1a010d0f5d06cb533b1bfb4c2498fe590e" prot="public" virt="non-virtual"><scope>star::ByteUnshuffleSpec</scope><name>block_size</name></member>

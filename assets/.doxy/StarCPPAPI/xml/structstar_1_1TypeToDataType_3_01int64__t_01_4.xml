@@ -18,14 +18,14 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="1189" column="31" bodyfile="StarDS/include/stards.h" bodystart="1189" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="1190" column="31" bodyfile="StarDS/include/stards.h" bodystart="1190" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
     </briefdescription>
     <detaileddescription>
     </detaileddescription>
-    <location file="StarDS/include/stards.h" line="1188" column="10" bodyfile="StarDS/include/stards.h" bodystart="1188" bodyend="1190"/>
+    <location file="StarDS/include/stards.h" line="1189" column="10" bodyfile="StarDS/include/stards.h" bodystart="1189" bodyend="1191"/>
     <listofallmembers>
       <member refid="structstar_1_1TypeToDataType_3_01int64__t_01_4_1a12c2ffaba6c678f435ce07f756b4d2eb" prot="public" virt="non-virtual"><scope>star::TypeToDataType&lt; int64_t &gt;</scope><name>value</name></member>
     </listofallmembers>

@@ -16,7 +16,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="4917" column="17" bodyfile="StarDS/include/stards.h" bodystart="4917" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="4918" column="17" bodyfile="StarDS/include/stards.h" bodystart="4918" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="structstar_1_1HotStorage_1a1170f7234af9ddac9ac49857ab64c743" prot="public" static="no" mutable="no">
         <type>std::vector&lt; DataType &gt;</type>
@@ -30,7 +30,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="4918" column="17" bodyfile="StarDS/include/stards.h" bodystart="4918" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="4919" column="17" bodyfile="StarDS/include/stards.h" bodystart="4919" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="structstar_1_1HotStorage_1aa59c0b2a2ca708d58c7ce3ef6a5ec7b8" prot="public" static="no" mutable="no">
         <type>std::vector&lt; StorageLocation &gt;</type>
@@ -44,7 +44,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="4919" column="17" bodyfile="StarDS/include/stards.h" bodystart="4919" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="4920" column="17" bodyfile="StarDS/include/stards.h" bodystart="4920" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="structstar_1_1HotStorage_1acf88236bb676fa26eaf3e13bc96c318c" prot="public" static="no" mutable="no">
         <type>std::vector&lt; bool &gt;</type>
@@ -58,7 +58,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="4920" column="17" bodyfile="StarDS/include/stards.h" bodystart="4920" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="4921" column="17" bodyfile="StarDS/include/stards.h" bodystart="4921" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="structstar_1_1HotStorage_1ad6c9391a9bc170f852f11c85cb1c5fe6" prot="public" static="no" mutable="no">
         <type>std::vector&lt; bool &gt;</type>
@@ -72,7 +72,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="4921" column="17" bodyfile="StarDS/include/stards.h" bodystart="4921" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="4922" column="17" bodyfile="StarDS/include/stards.h" bodystart="4922" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="structstar_1_1HotStorage_1a3f1b6e9e16fb8923201d29d272a71788" prot="public" static="no" mutable="no">
         <type>std::vector&lt; size_t &gt;</type>
@@ -86,7 +86,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="4922" column="17" bodyfile="StarDS/include/stards.h" bodystart="4922" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="4923" column="17" bodyfile="StarDS/include/stards.h" bodystart="4923" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
@@ -95,7 +95,7 @@
     <detaileddescription>
 <para>These fields are accessed during every get/put/contains operation. Packed together for better cache locality. </para>
     </detaileddescription>
-    <location file="StarDS/include/stards.h" line="4916" column="1" bodyfile="StarDS/include/stards.h" bodystart="4916" bodyend="4923"/>
+    <location file="StarDS/include/stards.h" line="4917" column="1" bodyfile="StarDS/include/stards.h" bodystart="4917" bodyend="4924"/>
     <listofallmembers>
       <member refid="structstar_1_1HotStorage_1a3f1b6e9e16fb8923201d29d272a71788" prot="public" virt="non-virtual"><scope>star::HotStorage</scope><name>data_indices</name></member>
       <member refid="structstar_1_1HotStorage_1acf88236bb676fa26eaf3e13bc96c318c" prot="public" virt="non-virtual"><scope>star::HotStorage</scope><name>dirty_flags</name></member>

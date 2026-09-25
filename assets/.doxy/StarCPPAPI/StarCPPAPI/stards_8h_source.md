@@ -41,6 +41,7 @@
 #include <optional>
 #include <ctime>
 #include <tuple>
+#include <utility>
 #ifndef _WIN32
 // POSIX-only headers, needed solely for the guarded fsync() durability block in
 // flush() (see the #ifndef _WIN32 block later in this file). MSVC has no

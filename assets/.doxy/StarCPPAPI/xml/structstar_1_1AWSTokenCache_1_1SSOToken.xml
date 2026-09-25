@@ -15,7 +15,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="2142" column="21" bodyfile="StarDS/include/stards.h" bodystart="2142" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="2143" column="21" bodyfile="StarDS/include/stards.h" bodystart="2143" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="structstar_1_1AWSTokenCache_1_1SSOToken_1ab4ae4fe03bde399db16d306a26b5fe22" prot="public" static="no" mutable="no">
         <type>std::string</type>
@@ -29,7 +29,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="2143" column="21" bodyfile="StarDS/include/stards.h" bodystart="2143" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="2144" column="21" bodyfile="StarDS/include/stards.h" bodystart="2144" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="structstar_1_1AWSTokenCache_1_1SSOToken_1a2d78871fba0a9db1d11eed5e78e53b53" prot="public" static="no" mutable="no">
         <type>std::string</type>
@@ -43,7 +43,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="2144" column="21" bodyfile="StarDS/include/stards.h" bodystart="2144" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="2145" column="21" bodyfile="StarDS/include/stards.h" bodystart="2145" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="structstar_1_1AWSTokenCache_1_1SSOToken_1aed6c556e9029456956efb5d3351d1f62" prot="public" static="no" mutable="no">
         <type>std::string</type>
@@ -57,7 +57,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="2145" column="21" bodyfile="StarDS/include/stards.h" bodystart="2145" bodyend="-1"/>
+        <location file="StarDS/include/stards.h" line="2146" column="21" bodyfile="StarDS/include/stards.h" bodystart="2146" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="public-func">
@@ -73,14 +73,14 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="2147" column="14" bodyfile="StarDS/include/stards.h" bodystart="2147" bodyend="2166"/>
+        <location file="StarDS/include/stards.h" line="2148" column="14" bodyfile="StarDS/include/stards.h" bodystart="2148" bodyend="2167"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
     </briefdescription>
     <detaileddescription>
     </detaileddescription>
-    <location file="StarDS/include/stards.h" line="2141" column="5" bodyfile="StarDS/include/stards.h" bodystart="2141" bodyend="2167"/>
+    <location file="StarDS/include/stards.h" line="2142" column="5" bodyfile="StarDS/include/stards.h" bodystart="2142" bodyend="2168"/>
     <listofallmembers>
       <member refid="structstar_1_1AWSTokenCache_1_1SSOToken_1a582b0aa21c1da2a73b9e241704c4f0d0" prot="public" virt="non-virtual"><scope>star::AWSTokenCache::SSOToken</scope><name>access_token</name></member>
       <member refid="structstar_1_1AWSTokenCache_1_1SSOToken_1ab4ae4fe03bde399db16d306a26b5fe22" prot="public" virt="non-virtual"><scope>star::AWSTokenCache::SSOToken</scope><name>expires_at</name></member>
