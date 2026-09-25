@@ -31,6 +31,7 @@
 #include <optional>
 #include <ctime>
 #include <tuple>
+#include <utility>
 #ifndef _WIN32
 // POSIX-only headers, needed solely for the guarded fsync() durability block in
 // flush() (see the #ifndef _WIN32 block later in this file). MSVC has no
@@ -476,17 +477,20 @@ namespace logger {
     }
   }
   
-  // Logging macros for different severity levels that avoid code generation if level is too low
-  #define LOG_TRACE(...) \
-      do { if (logger::STARDS_TRACE >= logger::current_log_level) logger::log_internal(logger::STARDS_TRACE, __LINE__, __func__, __VA_ARGS__); } while(0)
-  #define LOG_DEBUG(...) \
-      do { if (logger::STARDS_DEBUG >= logger::current_log_level) logger::log_internal(logger::STARDS_DEBUG, __LINE__, __func__, __VA_ARGS__); } while(0)
-  #define LOG_INFO(...) \
-      do { if (logger::STARDS_INFO >= logger::current_log_level) logger::log_internal(logger::STARDS_INFO, __LINE__, __func__, __VA_ARGS__); } while(0)
-  #define LOG_WARN(...) \
-      do { if (logger::STARDS_WARN >= logger::current_log_level) logger::log_internal(logger::STARDS_WARN, __LINE__, __func__, __VA_ARGS__); } while(0)
-  #define LOG_ERROR(...) \
-      do { if (logger::STARDS_ERROR >= logger::current_log_level) logger::log_internal(logger::STARDS_ERROR, __LINE__, __func__, __VA_ARGS__); } while(0)
+  // Logging macros for different severity levels that avoid code generation if level is too low.
+  // STAR_-prefixed and fully qualified on purpose: this is a public header, so unprefixed
+  // LOG_* names would collide with any consumer's own logging, and a bare logger:: would
+  // only resolve for callers already inside namespace star.
+  #define STAR_LOG_TRACE(...) \
+      do { if (star::logger::STARDS_TRACE >= star::logger::current_log_level) star::logger::log_internal(star::logger::STARDS_TRACE, __LINE__, __func__, __VA_ARGS__); } while(0)
+  #define STAR_LOG_DEBUG(...) \
+      do { if (star::logger::STARDS_DEBUG >= star::logger::current_log_level) star::logger::log_internal(star::logger::STARDS_DEBUG, __LINE__, __func__, __VA_ARGS__); } while(0)
+  #define STAR_LOG_INFO(...) \
+      do { if (star::logger::STARDS_INFO >= star::logger::current_log_level) star::logger::log_internal(star::logger::STARDS_INFO, __LINE__, __func__, __VA_ARGS__); } while(0)
+  #define STAR_LOG_WARN(...) \
+      do { if (star::logger::STARDS_WARN >= star::logger::current_log_level) star::logger::log_internal(star::logger::STARDS_WARN, __LINE__, __func__, __VA_ARGS__); } while(0)
+  #define STAR_LOG_ERROR(...) \
+      do { if (star::logger::STARDS_ERROR >= star::logger::current_log_level) star::logger::log_internal(star::logger::STARDS_ERROR, __LINE__, __func__, __VA_ARGS__); } while(0)
 
 
 
@@ -1384,14 +1388,14 @@ struct IndexEntry {
         position = read_u64(is);
         total_bytes = read_u64(is);
         datatype = static_cast<DataType>(read_u8(is));
-        LOG_TRACE("IndexEntry::read - position=", position, ", total_bytes=", total_bytes, ", datatype=", (int)datatype);
+        STAR_LOG_TRACE("IndexEntry::read - position=", position, ", total_bytes=", total_bytes, ", datatype=", (int)datatype);
 
         // Read shape (ndim = 0 means scalar)
         uint64_t ndim = read_u64(is);
-        LOG_TRACE("IndexEntry::read - ndim=", ndim);
+        STAR_LOG_TRACE("IndexEntry::read - ndim=", ndim);
         if (ndim > 0) {
             if (ndim > 100) {
-                LOG_ERROR("SUSPICIOUS: ndim=", ndim, " is too large!");
+                STAR_LOG_ERROR("SUSPICIOUS: ndim=", ndim, " is too large!");
                 throw std::runtime_error("Invalid ndim value: " + std::to_string(ndim));
             }
             shape.resize(static_cast<size_t>(ndim));
@@ -1404,14 +1408,14 @@ struct IndexEntry {
 
         compression = static_cast<CompressionAlgorithm>(read_u8(is));
         block_size = read_u64(is);
-        LOG_TRACE("IndexEntry::read - compression=", (int)compression, ", block_size=", block_size);
+        STAR_LOG_TRACE("IndexEntry::read - compression=", (int)compression, ", block_size=", block_size);
 
         // Read number of blocks
         uint64_t num_blocks = read_u64(is);
-        LOG_TRACE("IndexEntry::read - num_blocks=", num_blocks);
+        STAR_LOG_TRACE("IndexEntry::read - num_blocks=", num_blocks);
 
         if (num_blocks > 10000) {
-            LOG_ERROR("SUSPICIOUS: num_blocks=", num_blocks, " is too large!");
+            STAR_LOG_ERROR("SUSPICIOUS: num_blocks=", num_blocks, " is too large!");
             throw std::runtime_error("Invalid num_blocks value: " + std::to_string(num_blocks));
         }
 
@@ -1423,7 +1427,7 @@ struct IndexEntry {
 
         // Read stored_in_metadata flag
         stored_in_metadata = (read_u8(is) != 0);
-        LOG_TRACE("IndexEntry::read - complete, stored_in_metadata=", stored_in_metadata);
+        STAR_LOG_TRACE("IndexEntry::read - complete, stored_in_metadata=", stored_in_metadata);
     }
 
     size_t serialized_size() const {
@@ -2712,7 +2716,7 @@ public:
             auto resp = em_fetch_put(url, req_headers, data, size);
 
             if (resp.status == 301 && !resp.bucket_region.empty() && attempt == 0) {
-                LOG_TRACE("S3 PUT got 301, retrying with region ", resp.bucket_region);
+                STAR_LOG_TRACE("S3 PUT got 301, retrying with region ", resp.bucket_region);
                 std::string access_key = m_signer->m_access_key;
                 std::string secret_key = m_signer->m_secret_key;
                 std::string session_token = m_signer->m_session_token;
@@ -2810,7 +2814,7 @@ public:
 
             // If we got 301 and this is first attempt, retry with correct region
             if (response_code == 301 && !header_data.bucket_region.empty() && attempt == 0) {
-                LOG_TRACE("S3 PUT got 301, retrying with region ", header_data.bucket_region);
+                STAR_LOG_TRACE("S3 PUT got 301, retrying with region ", header_data.bucket_region);
                 // Get credentials before recreating signer
                 std::string access_key = m_signer->m_access_key;
                 std::string secret_key = m_signer->m_secret_key;
@@ -3896,7 +3900,7 @@ public:
      * @param os Output stream
      */
     friend std::ostream& operator<<(std::ostream& os, const NDArray<T>& arr) {
-        LOG_TRACE("Writing NDArray<", typeid(T).name(), "> to output stream at position ", os.tellp());
+        STAR_LOG_TRACE("Writing NDArray<", typeid(T).name(), "> to output stream at position ", os.tellp());
         // All counts/dims/lengths are written as fixed 64-bit little-endian
         // integers (not raw size_t, whose width varies by platform) so the
         // stream is portable across 32- and 64-bit builds.
@@ -3904,7 +3908,7 @@ public:
         // Write number of dimensions
         uint64_t num_dims = arr.m_shape.size();
         write_u64(os, num_dims);
-        LOG_TRACE("Wrote number of dimensions: ", num_dims);
+        STAR_LOG_TRACE("Wrote number of dimensions: ", num_dims);
 
         // Write shape
         for (size_t dim : arr.m_shape) {
@@ -3934,7 +3938,7 @@ public:
                 os.write(data_ptr + bytes_written, bytes_to_write);
                 bytes_written += bytes_to_write;
             }
-            LOG_TRACE("Completed writing data of size ", size_to_write);
+            STAR_LOG_TRACE("Completed writing data of size ", size_to_write);
         }
         return os;
     }
@@ -3944,11 +3948,11 @@ public:
      * @param is Input stream
      */
     friend std::istream& operator>>(std::istream& is, NDArray<T>& arr) {
-        LOG_TRACE("Reading NDArray<", typeid(T).name(), "> from input stream from byte position ", is.tellg());
+        STAR_LOG_TRACE("Reading NDArray<", typeid(T).name(), "> from input stream from byte position ", is.tellg());
 
         // Read number of dimensions (fixed u64, matching operator<<).
         size_t num_dims = static_cast<size_t>(read_u64(is));
-        LOG_TRACE("Read number of dimensions: ", num_dims);
+        STAR_LOG_TRACE("Read number of dimensions: ", num_dims);
 
         // Read shape
         arr.m_shape.resize(num_dims);
@@ -3972,11 +3976,11 @@ public:
                 is.read(&str[0], static_cast<std::streamsize>(str_len));
                 arr.m_data[i] = std::move(str);
             }
-            LOG_TRACE("Finished reading NDArray<std::string>");
+            STAR_LOG_TRACE("Finished reading NDArray<std::string>");
         } else {
             arr.m_data.resize(total_size);
             is.read(reinterpret_cast<char*>(arr.m_data.data()), sizeof(T) * total_size);
-            LOG_TRACE("Read data array of size ", sizeof(T) * total_size);
+            STAR_LOG_TRACE("Read data array of size ", sizeof(T) * total_size);
         }
         return is;
     }
@@ -4277,7 +4281,7 @@ compressBlocksBuffered(const char* data, size_t data_size,
     std::vector<BlockInfo> block_infos;
 
     size_t num_blocks = (data_size + block_size - 1) / block_size;
-    LOG_TRACE("Compressing ", data_size, " bytes into ", num_blocks, " blocks (buffered)");
+    STAR_LOG_TRACE("Compressing ", data_size, " bytes into ", num_blocks, " blocks (buffered)");
 
     // Check if we should use threading (heuristic fallback for small workloads)
     bool use_threading = thread_pool &&
@@ -4312,7 +4316,7 @@ compressBlocksBuffered(const char* data, size_t data_size,
             }
         }
 
-        LOG_TRACE("Phase 1: Estimated ", num_blocks, " block bounds");
+        STAR_LOG_TRACE("Phase 1: Estimated ", num_blocks, " block bounds");
 
         // Calculate block positions and pre-allocate output buffer
         std::vector<size_t> block_offsets(num_blocks);
@@ -4325,7 +4329,7 @@ compressBlocksBuffered(const char* data, size_t data_size,
 
         compressed_output.resize(total_bound);  // Pre-allocate with upper bound
 
-        LOG_TRACE("Phase 2: Pre-allocated ", total_bound, " bytes for ", num_blocks, " blocks");
+        STAR_LOG_TRACE("Phase 2: Pre-allocated ", total_bound, " bytes for ", num_blocks, " blocks");
 
         // Compress blocks in parallel, write directly to final positions
         thread_pool->parallel_for(0, num_blocks, [&](size_t i) {
@@ -4351,7 +4355,7 @@ compressBlocksBuffered(const char* data, size_t data_size,
 
                 block_infos[i].compressed_size = actual_compressed_size;
 
-                LOG_TRACE("Block ", i, ": ", block_uncompressed_size, " -> ",
+                STAR_LOG_TRACE("Block ", i, ": ", block_uncompressed_size, " -> ",
                          actual_compressed_size, " bytes (temp offset ", block_offsets[i], ")",
                          " (", (100.0 * actual_compressed_size / block_uncompressed_size), "%)");
                 #else
@@ -4372,7 +4376,7 @@ compressBlocksBuffered(const char* data, size_t data_size,
 
                 block_infos[i].compressed_size = compressed_size;
 
-                LOG_TRACE("Block ", i, ": ", block_uncompressed_size, " -> ",
+                STAR_LOG_TRACE("Block ", i, ": ", block_uncompressed_size, " -> ",
                          compressed_size, " bytes (temp offset ", block_offsets[i], ")",
                          " (", (100.0 * compressed_size / block_uncompressed_size), "%)");
                 #else
@@ -4389,7 +4393,7 @@ compressBlocksBuffered(const char* data, size_t data_size,
             }
         });
 
-        LOG_TRACE("Phase 3: Compressed ", num_blocks, " blocks in parallel");
+        STAR_LOG_TRACE("Phase 3: Compressed ", num_blocks, " blocks in parallel");
 
         // Calculate actual contiguous offsets
         size_t actual_offset = 0;
@@ -4411,7 +4415,7 @@ compressBlocksBuffered(const char* data, size_t data_size,
         // Trim output to actual contiguous size
         compressed_output.resize(actual_offset);
 
-        LOG_TRACE("Phase 4: Compacted blocks from ", total_bound, " to ", actual_offset, " bytes");
+        STAR_LOG_TRACE("Phase 4: Compacted blocks from ", total_bound, " to ", actual_offset, " bytes");
     } else {
         // SINGLE-THREADED PATH: Original sequential implementation
         compressed_output.reserve(data_size);
@@ -4501,7 +4505,7 @@ compressBlocksBuffered(const char* data, size_t data_size,
         }
 
             block_infos.push_back(info);
-            LOG_TRACE("Block ", i, ": ", info.uncompressed_size, " -> ", info.compressed_size,
+            STAR_LOG_TRACE("Block ", i, ": ", info.uncompressed_size, " -> ", info.compressed_size,
                       " bytes (", (100.0 * info.compressed_size / info.uncompressed_size), "%)");
         }
     }
@@ -5439,7 +5443,7 @@ public:
         }
 
         // For array entries, load individual entry from file
-        LOG_TRACE("Loading array entry at index ", idx);
+        STAR_LOG_TRACE("Loading array entry at index ", idx);
 
         size_t position = m_cold.file_positions[idx];
         size_t compressed_size = m_cold.compressed_sizes[idx];
@@ -5465,7 +5469,7 @@ public:
         m_hot.loaded_flags[idx] = true;
         m_hot.locations[idx] = StorageLocation::CACHED;
 
-        LOG_TRACE("Loaded array entry at index ", idx);
+        STAR_LOG_TRACE("Loaded array entry at index ", idx);
     }
 
     /**
@@ -5474,12 +5478,12 @@ public:
      * @return Deserialized key
      */
     std::string deserializeKey(std::istream& is) {
-        LOG_TRACE("Deserializing key");
+        STAR_LOG_TRACE("Deserializing key");
         size_t len = 0;
         is.read(reinterpret_cast<char*>(&len), sizeof(len));
         std::string key(len, '\0');
         is.read(&key[0], len);
-        LOG_TRACE("Deserialized key of length: ", len, " and value: ", key);
+        STAR_LOG_TRACE("Deserialized key of length: ", len, " and value: ", key);
         return key;
     }
     
@@ -5488,7 +5492,7 @@ public:
      * @return Size of the header in bytes
      */
     size_t calculateHeaderSize() {
-        LOG_TRACE("Calculating header size");
+        STAR_LOG_TRACE("Calculating header size");
 
         size_t size = FileHeader::size();  // Fixed header size (31 bytes in v1)
 
@@ -5543,7 +5547,7 @@ public:
             size += temp_entry.serialized_size();
         }
 
-        LOG_TRACE("Header size calculated to ", size);
+        STAR_LOG_TRACE("Header size calculated to ", size);
         return size;
     }
 
@@ -5551,7 +5555,7 @@ public:
      * @brief Loads the index from the file
      */
     void loadIndex() {
-        LOG_TRACE("Loading index for file ", m_filename);
+        STAR_LOG_TRACE("Loading index for file ", m_filename);
 
         // Use the dataset's persistent reader (one reused connection; no HEAD).
         if (!reader().good()) {
@@ -5564,7 +5568,7 @@ public:
         size_t bytes_read = initial.size();
         const char* initial_buffer = initial.data();
 
-        LOG_TRACE("Read initial ", bytes_read, " bytes");
+        STAR_LOG_TRACE("Read initial ", bytes_read, " bytes");
 
         // Too few bytes for even a header prefix: the object is absent or empty
         // (e.g. a remote path opened READ_WRITE that doesn't exist yet). Leave
@@ -5574,7 +5578,7 @@ public:
         // write_u64), NOT sizeof(size_t) — those differ on 32-bit builds (wasm32),
         // so use the fixed width here and below.
         if (bytes_read < MAGIC_STRING_LENGTH + sizeof(uint8_t) + sizeof(uint64_t)) {
-            LOG_TRACE("Initial read too short (", bytes_read, " bytes); treating as empty/new file");
+            STAR_LOG_TRACE("Initial read too short (", bytes_read, " bytes); treating as empty/new file");
             return;
         }
 
@@ -5587,26 +5591,26 @@ public:
         char magic[MAGIC_STRING_LENGTH];
         initial_stream.read(magic, MAGIC_STRING_LENGTH);
         std::string magic_string(magic, MAGIC_STRING_LENGTH);
-        LOG_TRACE("Read magic string: ", magic_string);
+        STAR_LOG_TRACE("Read magic string: ", magic_string);
         if(magic_string != MAGIC_STRING) {
-            LOG_ERROR("Magic string mismatch, expected ", MAGIC_STRING, " but got ", magic_string);
+            STAR_LOG_ERROR("Magic string mismatch, expected ", MAGIC_STRING, " but got ", magic_string);
             throw std::runtime_error("Magic string mismatch");
         }
 
         // Read format
         uint8_t format_version = 1;
         initial_stream.read(reinterpret_cast<char*>(&format_version), sizeof(format_version));
-        LOG_TRACE("Found format version: ", (int)format_version);
+        STAR_LOG_TRACE("Found format version: ", (int)format_version);
         m_file_header.format_version = format_version;
 
         // header_size is a fixed uint64_t on disk; read it as such (sizeof(size_t)
         // would read only 4 bytes on wasm32 and desync the stream).
         m_header_size = static_cast<size_t>(read_u64(initial_stream));
         if (m_header_size == 0) {
-            LOG_ERROR("Header size is 0, file is empty");
+            STAR_LOG_ERROR("Header size is 0, file is empty");
             throw std::runtime_error("Header size is 0, file is empty");
         }
-        LOG_TRACE("Found header size: ", m_header_size);
+        STAR_LOG_TRACE("Found header size: ", m_header_size);
         m_file_header.header_size = m_header_size;
 
         std::stringstream header_stream;
@@ -5614,12 +5618,12 @@ public:
         // If header is larger than our initial read, fetch the full header in one
         // more ranged request; otherwise reuse the bytes we already have.
         if (m_header_size > INITIAL_READ_SIZE) {
-            LOG_TRACE("Header size (", m_header_size, ") exceeds initial read (", INITIAL_READ_SIZE, "), reading full header");
+            STAR_LOG_TRACE("Header size (", m_header_size, ") exceeds initial read (", INITIAL_READ_SIZE, "), reading full header");
             std::vector<char> header_buffer = read_range(0, m_header_size);
             header_stream.write(header_buffer.data(), header_buffer.size());
         } else {
             // Use the data we already read
-            LOG_TRACE("Using initial read for header, size: ", m_header_size);
+            STAR_LOG_TRACE("Using initial read for header, size: ", m_header_size);
             header_stream.write(initial_buffer, m_header_size);
         }
 
@@ -5630,19 +5634,19 @@ public:
         header_stream.seekg(MAGIC_STRING_LENGTH + sizeof(format_version) + sizeof(uint64_t), std::ios::beg);
         size_t count = static_cast<size_t>(read_u64(header_stream));
 
-        LOG_TRACE("Found ", count, " entries in index");
+        STAR_LOG_TRACE("Found ", count, " entries in index");
         m_file_header.entry_count = count;
 
         // Read layer_count
         uint32_t layer_count = 0;
         header_stream.read(reinterpret_cast<char*>(&layer_count), sizeof(layer_count));
-        LOG_TRACE("Found ", layer_count, " layers");
+        STAR_LOG_TRACE("Found ", layer_count, " layers");
         m_file_header.layer_count = layer_count;
 
         // Read key_registry_count
         uint32_t key_registry_count = 0;
         header_stream.read(reinterpret_cast<char*>(&key_registry_count), sizeof(key_registry_count));
-        LOG_TRACE("Found ", key_registry_count, " keys in registry");
+        STAR_LOG_TRACE("Found ", key_registry_count, " keys in registry");
         m_file_header.key_registry_count = key_registry_count;
 
         // Read global key registry
@@ -5668,7 +5672,7 @@ public:
             m_key_registry.hash_to_index[hash] = i;
             m_key_registry.name_to_index[key] = i;
 
-            LOG_TRACE("Loaded key[", i, "]: ", key);
+            STAR_LOG_TRACE("Loaded key[", i, "]: ", key);
         }
 
         // Read layer metadata registry (layer_count + 1 to include __base__)
@@ -5716,7 +5720,7 @@ public:
             m_layer_metadata_registry.key_indices.push_back(std::move(key_indices_set));
             m_layer_metadata_registry.name_to_layer_index[layer_name] = i;
 
-            LOG_TRACE("Loaded layer[", i, "]: ", layer_name, " with ", metadata_key_count, " metadata keys");
+            STAR_LOG_TRACE("Loaded layer[", i, "]: ", layer_name, " with ", metadata_key_count, " metadata keys");
         }
 
         // Initialize layer metadata loaded flags
@@ -5731,7 +5735,7 @@ public:
             header_stream.read(reinterpret_cast<char*>(bitmap.data()), bitmap_words * sizeof(uint64_t));
             uint64_t first_word = bitmap.empty() ? 0 : bitmap[0];
             m_layer_presence[layer_name] = std::move(bitmap);
-            LOG_DEBUG("Loaded presence bitmap for layer '", layer_name, "': ", bitmap_words, " words, first word = ",
+            STAR_LOG_DEBUG("Loaded presence bitmap for layer '", layer_name, "': ", bitmap_words, " words, first word = ",
                      first_word);
         }
 
@@ -5751,19 +5755,19 @@ public:
         m_cold.stored_in_metadata_flags.reserve(count);
 
         for (size_t i = 0; i < count; i++) {
-            LOG_DEBUG("Reading index entry ", i, " of ", count, ", stream position: ", header_stream.tellg());
+            STAR_LOG_DEBUG("Reading index entry ", i, " of ", count, ", stream position: ", header_stream.tellg());
 
             // v1 format: Read key index instead of full string
             uint16_t key_idx;
             header_stream.read(reinterpret_cast<char*>(&key_idx), sizeof(uint16_t));
-            LOG_DEBUG("Read key_idx=", key_idx);
+            STAR_LOG_DEBUG("Read key_idx=", key_idx);
 
             // Look up key name from registry
             if (key_idx >= m_key_registry.names.size()) {
                 throw std::runtime_error("Invalid key index in file");
             }
             std::string key = m_key_registry.names[key_idx];
-            LOG_TRACE("Key name: ", key);
+            STAR_LOG_TRACE("Key name: ", key);
 
             // Read IndexEntry
             IndexEntry entry;
@@ -5771,7 +5775,7 @@ public:
 
             // Skip metadata-only entries - they exist only in layer metadata system
             if (entry.stored_in_metadata) {
-                LOG_TRACE("Skipping metadata-only entry: ", key);
+                STAR_LOG_TRACE("Skipping metadata-only entry: ", key);
                 continue;
             }
 
@@ -5801,12 +5805,12 @@ public:
 
             m_key_to_index[m_hot.keys[idx]] = idx;
 
-            LOG_TRACE("Loaded key ", key, " at index ", idx, " with position ", entry.position, " and bytes ", entry.total_bytes);
+            STAR_LOG_TRACE("Loaded key ", key, " at index ", idx, " with position ", entry.position, " and bytes ", entry.total_bytes);
         }
 
         m_header_dirty = false;
         m_file_header.entry_count = count;
-        LOG_TRACE("Index loaded successfully with ", count, " entries");
+        STAR_LOG_TRACE("Index loaded successfully with ", count, " entries");
 
         // v1 format: Load base layer metadata eagerly for compatibility
         // Other layers are lazy-loaded via ensure_layer_metadata_loaded()
@@ -5915,7 +5919,7 @@ public:
      * @param layer_name Layer name
      */
     void serialize_layer_metadata_block(std::ostream& os, const std::string& layer_name) {
-        LOG_DEBUG("serialize_layer_metadata_block: layer_name=", layer_name);
+        STAR_LOG_DEBUG("serialize_layer_metadata_block: layer_name=", layer_name);
 
         // Ensure this layer's metadata is loaded before serializing
         size_t layer_idx = m_layer_metadata_registry.get_layer_index(layer_name);
@@ -5946,12 +5950,12 @@ public:
 
         // Count entries for this layer
         uint16_t entry_count = static_cast<uint16_t>(m_layer_metadata_registry.key_indices[layer_idx].size());
-        LOG_DEBUG("  entry_count=", entry_count);
+        STAR_LOG_DEBUG("  entry_count=", entry_count);
         os.write(reinterpret_cast<const char*>(&entry_count), sizeof(uint16_t));
 
         // Serialize each entry
         for (uint16_t key_idx : m_layer_metadata_registry.key_indices[layer_idx]) {
-            LOG_DEBUG("  Serializing key_idx=", key_idx);
+            STAR_LOG_DEBUG("  Serializing key_idx=", key_idx);
 
             // Write key index
             os.write(reinterpret_cast<const char*>(&key_idx), sizeof(uint16_t));
@@ -5961,14 +5965,14 @@ public:
                 throw std::runtime_error("Invalid key_idx during serialization: " + std::to_string(key_idx));
             }
             const std::string& key = m_key_registry.names[key_idx];
-            LOG_DEBUG("    key=", key);
+            STAR_LOG_DEBUG("    key=", key);
 
             auto it = m_layer_metadata_indices[layer_idx].find(key_idx);
             if (it == m_layer_metadata_indices[layer_idx].end()) {
                 throw std::runtime_error("Key not found in layer metadata indices during serialization: " + key);
             }
             size_t storage_idx = it->second;
-            LOG_DEBUG("    storage_idx=", storage_idx);
+            STAR_LOG_DEBUG("    storage_idx=", storage_idx);
 
             // Get data from storage
             if (storage_idx >= m_data_storage.size()) {
@@ -6261,7 +6265,7 @@ public:
             return;  // Already loaded
         }
 
-        LOG_DEBUG("Loading metadata for layer: ", layer_name);
+        STAR_LOG_DEBUG("Loading metadata for layer: ", layer_name);
 
         // Get layer metadata info
         uint64_t position = m_layer_metadata_registry.block_positions[layer_idx];
@@ -6269,7 +6273,7 @@ public:
         CompressionAlgorithm compression = m_layer_metadata_registry.compressions[layer_idx];
 
         if (size == 0) {
-            LOG_DEBUG("Layer has no metadata block: ", layer_name);
+            STAR_LOG_DEBUG("Layer has no metadata block: ", layer_name);
             m_layer_metadata_loaded[layer_idx] = true;
             return;
         }
@@ -6290,7 +6294,7 @@ public:
         parse_layer_metadata_block(layer_idx, decompressed);
 
         m_layer_metadata_loaded[layer_idx] = true;
-        LOG_DEBUG("Loaded metadata for layer: ", layer_name);
+        STAR_LOG_DEBUG("Loaded metadata for layer: ", layer_name);
     }
 
     /**
@@ -6331,17 +6335,17 @@ public:
         // Read entry count
         uint16_t entry_count = read_u16(stream);
 
-        LOG_TRACE("Parsing STARMeta block for layer ", layer_name, " with ", entry_count, " entries");
+        STAR_LOG_TRACE("Parsing STARMeta block for layer ", layer_name, " with ", entry_count, " entries");
 
         // Parse each entry
         for (uint16_t i = 0; i < entry_count; ++i) {
             // Read key index
             uint16_t key_index = read_u16(stream);
-            LOG_TRACE("  Entry ", i, ": key_index=", key_index);
+            STAR_LOG_TRACE("  Entry ", i, ": key_index=", key_index);
 
             // Read data type
             uint8_t dtype_byte = read_u8(stream);
-            LOG_TRACE("  Entry ", i, ": dtype_byte=", static_cast<int>(dtype_byte));
+            STAR_LOG_TRACE("  Entry ", i, ": dtype_byte=", static_cast<int>(dtype_byte));
             DataType dtype = static_cast<DataType>(dtype_byte);
 
             // Read shape: 1-byte ndim, then each dimension as a fixed u64
@@ -6452,7 +6456,7 @@ public:
      * @return Decompressed data
      */
     std::vector<char> decompress_single_block(const std::vector<char>& compressed, CompressionAlgorithm compression) {
-        LOG_DEBUG("decompress_single_block called, compressed size: ", compressed.size(), " compression: ", static_cast<int>(compression));
+        STAR_LOG_DEBUG("decompress_single_block called, compressed size: ", compressed.size(), " compression: ", static_cast<int>(compression));
 
         if (compression == CompressionAlgorithm::NONE) {
             return compressed;
@@ -6537,7 +6541,7 @@ public:
             m_metadata_loaded = true;
         } catch (const std::exception& e) {
             // If base layer doesn't exist or has no metadata, that's okay
-            LOG_TRACE("Could not load base layer metadata: ", e.what());
+            STAR_LOG_TRACE("Could not load base layer metadata: ", e.what());
             m_metadata_loaded = true;
         }
     }
@@ -6609,22 +6613,22 @@ private:
      */
     void flush_internal() {
         // Caller must hold m_mutex
-        LOG_DEBUG("flush_internal() called");
+        STAR_LOG_DEBUG("flush_internal() called");
 
         // Early return if already flushed
         if (m_flushed) {
-            LOG_TRACE("flush() - already flushed, skipping");
+            STAR_LOG_TRACE("flush() - already flushed, skipping");
             return;
         }
-        LOG_DEBUG("Proceeding with flush");
+        STAR_LOG_DEBUG("Proceeding with flush");
 
         // Check read-only mode
         if (m_file_mode == FileMode::READ_ONLY) {
-            LOG_DEBUG("File opened in read-only mode, skipping flush");
+            STAR_LOG_DEBUG("File opened in read-only mode, skipping flush");
             return;  // Don't throw, just skip flush
         }
 
-        LOG_DEBUG("flush() starting for ", m_filename);
+        STAR_LOG_DEBUG("flush() starting for ", m_filename);
 
         // Collect dirty entries
         std::vector<size_t> dirty_indices;
@@ -6640,7 +6644,7 @@ private:
             }
         }
 
-        LOG_DEBUG("flush() - found ", dirty_indices.size(), " dirty entries, ",
+        STAR_LOG_DEBUG("flush() - found ", dirty_indices.size(), " dirty entries, ",
                   metadata_indices.size(), " metadata entries");
 
 
@@ -6662,7 +6666,7 @@ private:
                 size_t idx = dirty_indices[i];
 
                 if (m_hot.data_indices[idx] == SIZE_MAX) {
-                    LOG_WARN("Skipping dirty entry '", m_hot.keys[idx], "' - data not loaded");
+                    STAR_LOG_WARN("Skipping dirty entry '", m_hot.keys[idx], "' - data not loaded");
                     return;
                 }
 
@@ -6719,7 +6723,7 @@ private:
             // Serial fallback
             for (size_t idx : dirty_indices) {
                 if (m_hot.data_indices[idx] == SIZE_MAX) {
-                    LOG_WARN("Skipping dirty entry '", m_hot.keys[idx], "' - data not loaded");
+                    STAR_LOG_WARN("Skipping dirty entry '", m_hot.keys[idx], "' - data not loaded");
                     continue;
                 }
 
@@ -6819,7 +6823,7 @@ private:
             }
         }
 
-        LOG_DEBUG("flush() - Phase 1 complete: estimated sizes using deflateBound");
+        STAR_LOG_DEBUG("flush() - Phase 1 complete: estimated sizes using deflateBound");
 
         // Update SoA with estimated metadata for arrays
         for (size_t i = 0; i < array_metadata.size(); i++) {
@@ -6858,7 +6862,7 @@ private:
         // Calculate total file size (using estimated metadata size)
         size_t total_file_size = metadata_position + metadata_estimated_size;
 
-        LOG_DEBUG("flush() - Phase 2 complete: calculated file layout, header_size=", header_size,
+        STAR_LOG_DEBUG("flush() - Phase 2 complete: calculated file layout, header_size=", header_size,
                   ", total_size=", total_file_size);
 
         // Track actual block_infos (estimates may differ from actual)
@@ -7110,7 +7114,7 @@ private:
             }
             S3Writer writer(m_path_info.bucket, m_path_info.key, m_path_info.region, *m_s3_credentials);
             writer.putObject(image.data(), image.size());
-            LOG_DEBUG("Successfully uploaded ", image.size(), " bytes to S3: ", m_filename);
+            STAR_LOG_DEBUG("Successfully uploaded ", image.size(), " bytes to S3: ", m_filename);
 #else
             throw std::runtime_error("S3 support not enabled: cannot write to " + m_filename);
 #endif
@@ -7130,10 +7134,10 @@ private:
                 ::close(fd);
             }
             #endif
-            LOG_DEBUG("Wrote ", image.size(), " bytes to local file: ", m_filename);
+            STAR_LOG_DEBUG("Wrote ", image.size(), " bytes to local file: ", m_filename);
         }
 
-        LOG_DEBUG("flush() - Phase 3 complete: parallel compress and write finished");
+        STAR_LOG_DEBUG("flush() - Phase 3 complete: parallel compress and write finished");
 
         for (size_t idx : dirty_indices) {
             m_hot.dirty_flags[idx] = false;
@@ -7154,17 +7158,17 @@ private:
 
         // Shrink persistent buffers if they've grown too large (memory optimization)
         if (m_serialize_buffer.capacity() > m_config.buffer_shrink_threshold) {
-            LOG_TRACE("Shrinking serialize_buffer from ", m_serialize_buffer.capacity(), " bytes");
+            STAR_LOG_TRACE("Shrinking serialize_buffer from ", m_serialize_buffer.capacity(), " bytes");
             m_serialize_buffer.clear();
             m_serialize_buffer.shrink_to_fit();
         }
         if (m_compress_buffer.capacity() > m_config.buffer_shrink_threshold) {
-            LOG_TRACE("Shrinking compress_buffer from ", m_compress_buffer.capacity(), " bytes");
+            STAR_LOG_TRACE("Shrinking compress_buffer from ", m_compress_buffer.capacity(), " bytes");
             m_compress_buffer.clear();
             m_compress_buffer.shrink_to_fit();
         }
 
-        LOG_DEBUG("flush() completed - wrote ", dirty_indices.size(), " entries, ",
+        STAR_LOG_DEBUG("flush() completed - wrote ", dirty_indices.size(), " entries, ",
                   metadata_indices.size(), " metadata entries");
     }
 
@@ -7603,7 +7607,7 @@ public:
      * @brief Destructor - writes all pending changes to disk (RAII)
      */
     ~StarDataset() {
-        LOG_DEBUG("~StarDataset() destructor called");
+        STAR_LOG_DEBUG("~StarDataset() destructor called");
         try {
             flush_quiet();  // best-effort; never throws on read-only
         } catch (const std::exception& e) {
@@ -7611,7 +7615,7 @@ public:
         } catch (...) {
             std::cerr << "Unknown exception in ~StarDataset()" << std::endl;
         }
-        LOG_DEBUG("~StarDataset() destructor finished");
+        STAR_LOG_DEBUG("~StarDataset() destructor finished");
     }
 
     /**
@@ -7665,7 +7669,7 @@ public:
     void set_layer_presence(const std::string& layer_name, const std::string& key, bool present) {
         std::unique_lock<std::shared_mutex> lock(m_mutex);
 
-        LOG_DEBUG("set_layer_presence: layer=", layer_name, " key=", key, " present=", present);
+        STAR_LOG_DEBUG("set_layer_presence: layer=", layer_name, " key=", key, " present=", present);
 
         // The presence bitmap is indexed by DATA ORDINAL (a key's position among
         // data arrays == its m_hot index), the same quantity flush()/loadIndex()
@@ -7679,7 +7683,7 @@ public:
         // the bitmap past the size the header reserved for it.
         auto ord_it = m_key_to_index.find(key);
         if (ord_it == m_key_to_index.end()) {
-            LOG_DEBUG("  key '", key, "' is not a data array; presence bit not tracked");
+            STAR_LOG_DEBUG("  key '", key, "' is not a data array; presence bit not tracked");
             return;
         }
         size_t data_ordinal = ord_it->second;
@@ -7697,7 +7701,7 @@ public:
         // Set or clear bit
         if (present) {
             bitmap[word_idx] |= (uint64_t(1) << bit_idx);
-            LOG_DEBUG("  Set bit ", bit_idx, " (data_ordinal=", data_ordinal, ") in word ", word_idx, " for layer ", layer_name);
+            STAR_LOG_DEBUG("  Set bit ", bit_idx, " (data_ordinal=", data_ordinal, ") in word ", word_idx, " for layer ", layer_name);
         } else {
             bitmap[word_idx] &= ~(uint64_t(1) << bit_idx);
         }
@@ -7856,7 +7860,7 @@ public:
         auto shape_vec = std::vector<size_t>(value.shape().begin(), value.shape().end());
         uint32_t uncompressed_size = value.size() * sizeof(ElementType);
 
-        LOG_DEBUG("put() storing key '", key, "' as separate array with ", uncompressed_size, " bytes (", value.size(), " elements)");
+        STAR_LOG_DEBUG("put() storing key '", key, "' as separate array with ", uncompressed_size, " bytes (", value.size(), " elements)");
 
         if (it != m_key_to_index.end()) {
             // Update existing entry
@@ -8235,7 +8239,7 @@ public:
             throw std::runtime_error("Type mismatch for key: " + key);
         }
 
-        LOG_TRACE("get_slice: Found entry with ", m_cold.block_infos[idx].size(), " blocks, ",
+        STAR_LOG_TRACE("get_slice: Found entry with ", m_cold.block_infos[idx].size(), " blocks, ",
                  "stored_in_metadata=", (int)m_cold.stored_in_metadata_flags[idx]);
 
         // Only support slicing for 1D, 2D, and 3D arrays
@@ -8387,15 +8391,15 @@ public:
 
         // Map to blocks (pure)
         BlockMap block_map = createBlockMap(entry, spec);
-        LOG_TRACE("get_slice: BlockMap has ", block_map.block_indices.size(), " blocks");
+        STAR_LOG_TRACE("get_slice: BlockMap has ", block_map.block_indices.size(), " blocks");
 
         // Create extraction plan (pure)
         ExtractionPlan plan = createExtractionPlan(spec, block_map, entry.shape, entry.blocks, sizeof(T));
-        LOG_TRACE("get_slice: ExtractionPlan has ", plan.ranges.size(), " ranges");
+        STAR_LOG_TRACE("get_slice: ExtractionPlan has ", plan.ranges.size(), " ranges");
 
         // Read blocks
         std::vector<char> compressed = readBlocks(entry, block_map);
-        LOG_TRACE("get_slice: Read ", compressed.size(), " compressed bytes");
+        STAR_LOG_TRACE("get_slice: Read ", compressed.size(), " compressed bytes");
 
         // Adjust block offsets for decompression
         // The compressed buffer contains selected blocks sequentially,
@@ -9077,7 +9081,7 @@ private:
 
         // Sanity check: output_offset should equal total_elements
         if (output_offset != spec.total_elements) {
-            LOG_TRACE("createExtractionPlan: WARNING! output_offset=", output_offset,
+            STAR_LOG_TRACE("createExtractionPlan: WARNING! output_offset=", output_offset,
                      " != spec.total_elements=", spec.total_elements);
         }
 
@@ -9200,20 +9204,20 @@ private:
         const std::vector<size_t>& block_indices,
         size_t element_size) const {
 
-        LOG_TRACE("extractElements: decompressed size=", decompressed.size(),
+        STAR_LOG_TRACE("extractElements: decompressed size=", decompressed.size(),
                  " plan.ranges=", plan.ranges.size(),
                  " element_size=", element_size);
 
         std::vector<char> result;
         if (plan.ranges.empty()) {
-            LOG_TRACE("extractElements: No ranges to extract");
+            STAR_LOG_TRACE("extractElements: No ranges to extract");
             return result;
         }
 
         // Pre-allocate exact size
         size_t total_bytes = plan.total_elements * element_size;
         result.resize(total_bytes);
-        LOG_TRACE("extractElements: Allocated result buffer of ", total_bytes, " bytes");
+        STAR_LOG_TRACE("extractElements: Allocated result buffer of ", total_bytes, " bytes");
 
         // Build block offset table in decompressed buffer
         // The decompressed data contains blocks appended sequentially
@@ -9223,14 +9227,14 @@ private:
             size_t block_idx = block_indices[i];
             size_t offset = block_offsets.back() + blocks[block_idx].uncompressed_size;
             block_offsets.push_back(offset);
-            LOG_TRACE("extractElements: Block ", i, " (idx=", block_idx, ") offset=",
+            STAR_LOG_TRACE("extractElements: Block ", i, " (idx=", block_idx, ") offset=",
                      block_offsets[i], " size=", blocks[block_idx].uncompressed_size);
         }
 
         // Extract each range
         for (size_t r = 0; r < plan.ranges.size(); ++r) {
             const auto& range = plan.ranges[r];
-            LOG_TRACE("extractElements: Range ", r, " block_idx=", range.block_idx,
+            STAR_LOG_TRACE("extractElements: Range ", r, " block_idx=", range.block_idx,
                      " element_start=", range.element_start,
                      " element_count=", range.element_count,
                      " output_offset=", range.output_offset);
@@ -9238,7 +9242,7 @@ private:
             // range.block_idx is the index in the decompressed buffer (0, 1, 2, ...)
             // which corresponds to block_indices[range.block_idx] in the original array
             if (range.block_idx >= block_offsets.size() - 1) {
-                LOG_TRACE("extractElements: Skipping range - block_idx out of bounds");
+                STAR_LOG_TRACE("extractElements: Skipping range - block_idx out of bounds");
                 continue; // Safety check
             }
 
@@ -9247,7 +9251,7 @@ private:
             size_t dst_offset = range.output_offset * element_size;
             size_t copy_bytes = range.element_count * element_size;
 
-            LOG_TRACE("extractElements: Copying ", copy_bytes, " bytes from src_offset=",
+            STAR_LOG_TRACE("extractElements: Copying ", copy_bytes, " bytes from src_offset=",
                      src_offset, " to dst_offset=", dst_offset);
 
             if (src_offset + copy_bytes <= decompressed.size() &&
@@ -9255,9 +9259,9 @@ private:
                 std::memcpy(result.data() + dst_offset,
                            decompressed.data() + src_offset,
                            copy_bytes);
-                LOG_TRACE("extractElements: Copy successful");
+                STAR_LOG_TRACE("extractElements: Copy successful");
             } else {
-                LOG_TRACE("extractElements: Copy SKIPPED - bounds check failed");
+                STAR_LOG_TRACE("extractElements: Copy SKIPPED - bounds check failed");
             }
         }
 
@@ -9515,37 +9519,37 @@ inline void MetadataAccessor::remove(const std::string& key) {
     // v1 format: Remove from layer metadata system (separate namespace from arrays)
     std::unique_lock<std::shared_mutex> lock(m_store->m_mutex);
 
-    LOG_DEBUG("MetadataAccessor::remove called for key: ", key);
+    STAR_LOG_DEBUG("MetadataAccessor::remove called for key: ", key);
 
     // Check if key exists first
     if (!m_store->m_key_registry.contains(key)) {
-        LOG_DEBUG("Key not in registry, returning");
+        STAR_LOG_DEBUG("Key not in registry, returning");
         return;  // Key doesn't exist, nothing to remove
     }
 
-    LOG_DEBUG("Key found in registry");
+    STAR_LOG_DEBUG("Key found in registry");
     uint16_t key_idx = m_store->m_key_registry.get_index(key);
-    LOG_DEBUG("key_idx: ", key_idx);
+    STAR_LOG_DEBUG("key_idx: ", key_idx);
 
     size_t base_layer_idx = m_store->m_layer_metadata_registry.get_layer_index("__base__");
-    LOG_DEBUG("base_layer_idx: ", base_layer_idx);
+    STAR_LOG_DEBUG("base_layer_idx: ", base_layer_idx);
 
     // Remove from layer metadata indices
     auto& layer_metadata_map = m_store->m_layer_metadata_indices[base_layer_idx];
     auto it = layer_metadata_map.find(key_idx);
     if (it != layer_metadata_map.end()) {
-        LOG_DEBUG("Found in layer metadata map, removing");
+        STAR_LOG_DEBUG("Found in layer metadata map, removing");
         // Note: We don't remove from m_data_storage to avoid shifting indices
         // Just remove the mapping
         layer_metadata_map.erase(it);
         m_store->m_layer_metadata_registry.key_indices[base_layer_idx].erase(key_idx);
     } else {
-        LOG_DEBUG("Not found in layer metadata map");
+        STAR_LOG_DEBUG("Not found in layer metadata map");
     }
 
     m_store->m_flushed = false;
     m_store->m_header_dirty = true;
-    LOG_DEBUG("MetadataAccessor::remove completed");
+    STAR_LOG_DEBUG("MetadataAccessor::remove completed");
 }
 
 inline void MetadataAccessor::clear() {
