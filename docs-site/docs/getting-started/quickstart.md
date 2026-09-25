@@ -237,17 +237,12 @@ See the [Slicing guide](../guides/slicing.md) for more.
     import { loadStarDS } from './stards.mjs';
 
     const { Dataset } = await loadStarDS({
-    env: {
-        AWS_ACCESS_KEY_ID: '...',
-        AWS_SECRET_ACCESS_KEY: '...',
-        AWS_SESSION_TOKEN: '...',        // only for STS/temporary creds
-        AWS_DEFAULT_REGION: 'us-west-2',
-
-        // Optional — for S3-compatible stores (MinIO, R2, etc.):
-        // ENV.AWS_S3_ENDPOINT     = 'localhost:9000';
-        // ENV.AWS_VIRTUAL_HOSTING = 'FALSE';       // path-style: endpoint/bucket/key
-        // ENV.AWS_HTTPS           = 'NO';          // http:// instead of https://…
-    },
+        env: {
+            AWS_ACCESS_KEY_ID: '...',
+            AWS_SECRET_ACCESS_KEY: '...',
+            AWS_SESSION_TOKEN: '...',        // only for STS/temporary creds
+            AWS_DEFAULT_REGION: 'us-west-2',
+        },
     });
 
     const ds = await new Dataset('s3://your-s3-bucket/path/yourfile.stards', 'w');
