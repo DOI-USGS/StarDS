@@ -5,34 +5,6 @@ Get started with StarDS in 5 minutes. This guide uses the Python bindings; see
 
 ## Your first dataset
 
-=== "C++"
-
-    ```cpp
-    #include "stards.h"
-    #include <stdio.h>
-    using namespace star;
-
-    void main() {
-         // 1. Create Dataset
-        auto ds = StarDataset::create("data.stards");
-
-        // 2. Store Arrays
-        ds->put("temperatures", NDArray<double>(std::vector<double>{20.4, 21.3, 19.8, 22.1}, {4}));
-        ds->put("measurements", NDArray<double>::zeros({100, 50}));
-
-        // 3. Add Metadata
-        ds->meta.put("sensor_id", NDArray<std::string>({}, "TEMP-001"));
-        ds->meta.put("location", NDArray<std::string>({}, "Lab A"));
-        ds->meta.put("date", NDArray<std::string>({}, "2024-04-21"));
-
-        // 4. Save
-        ds->flush();
-        ds->close();
-
-        printf("✓ Dataset created! \n");
-    }
-    ```
-
 === "Python"
 
     ```python
@@ -83,26 +55,35 @@ Get started with StarDS in 5 minutes. This guide uses the Python bindings; see
     console.info("✓ Dataset created!");
     ```
 
-## Reading data
-
 === "C++"
 
     ```cpp
-    // Open for reading
-    auto ds = StarDataset::open("data.stards", "r");
+    #include "stards.h"
+    #include <stdio.h>
+    using namespace star;
 
-    // Access Arrays
-    auto temps = ds->get<double>("temperatures");
-    for(int i = 0; i < temps.size(); i++) {
-        printf("Temp %d: %f\n", i, temps(i));
+    void main() {
+         // 1. Create Dataset
+        auto ds = StarDataset::create("data.stards");
+
+        // 2. Store Arrays
+        ds->put("temperatures", NDArray<double>(std::vector<double>{20.4, 21.3, 19.8, 22.1}, {4}));
+        ds->put("measurements", NDArray<double>::zeros({100, 50}));
+
+        // 3. Add Metadata
+        ds->meta.put("sensor_id", NDArray<std::string>({}, "TEMP-001"));
+        ds->meta.put("location", NDArray<std::string>({}, "Lab A"));
+        ds->meta.put("date", NDArray<std::string>({}, "2024-04-21"));
+
+        // 4. Save
+        ds->flush();
+        ds->close();
+
+        printf("✓ Dataset created! \n");
     }
-
-    // Access Metadata
-    auto sensor = ds->meta.get("sensor_id")->as<std::string>().flat(0);
-    printf("Sensor ID: %s\n", sensor.c_str());
-
-    ds->close();
     ```
+
+## Reading data
 
 === "Python"
 
@@ -145,16 +126,37 @@ Get started with StarDS in 5 minutes. This guide uses the Python bindings; see
     });
     ```
 
+=== "C++"
+
+    ```cpp
+    // Open for reading
+    auto ds = StarDataset::open("data.stards", "r");
+
+    // Access Arrays
+    auto temps = ds->get<double>("temperatures");
+    for(int i = 0; i < temps.size(); i++) {
+        printf("Temp %d: %f\n", i, temps(i));
+    }
+
+    // Access Metadata
+    auto sensor = ds->meta.get("sensor_id")->as<std::string>().flat(0);
+    printf("Sensor ID: %s\n", sensor.c_str());
+
+    ds->close();
+    ```
+
 ## Common patterns
 
 ### Context manager (recommended)
 
-```python
-with StarDataset.create("data.stards") as ds:
-    ds["data"] = np.arange(1000)
-    ds.meta["note"] = "Auto-flushed on exit"
-# File automatically closed and flushed
-```
+=== "Python"
+
+    ```python
+    with StarDataset.create("data.stards") as ds:
+        ds["data"] = np.arange(1000)
+        ds.meta["note"] = "Auto-flushed on exit"
+    # File automatically closed and flushed
+    ```
 
 ### Array slicing
 
@@ -174,29 +176,36 @@ with StarDataset.create("data.stards") as ds:
 === "JS"
 
     ```js
-    // Open a large Array
-    const URL = 'https://asc-isisdata.s3.us-west-2.amazonaws.com/cnf_test_data/largenet.stards';
-    const linearReader = await new Dataset(URL);
 
-    // Read only a slice (efficient!)
-    console.info('Slice', await linearReader.getSlice('m.sample', 0, 6));
+    const ds = await new Dataset('data.stards', 'r');
 
-
-    const rectWriter = await new Dataset('data.stards', 'w');
-    rectWriter.put('big-matrix', NDArray.full([512, 512], 3.14, 'float64'));
-    rectWriter.flush();
+    // Read a 1-D Slice (use getSlice for convenience)
+    console.info('Slice', await ds.getSlice('m.sample', 0, 6));
     
-    const rectReader = await new Dataset('data.stards', 'r');
-    // 2D Slice from [32, 64] to [48, 96].
-    // at 1/4 resolution (step 4 gets every 4th value, step 1 gets full resolution).
+    // Read a 2-D Slice:
+    // from [32, 64] to [48, 96],
+    // at 1/4 resolution
+    // (step 4 gets every 4th value, step 1 would gets full resolution).
     console.info('2D Slice', await rectReader.getSliceND('big-matrix', [[32, 48, 4],[64, 96, 4]]));
 
     // use yourdataset.getSliceNDArray() to get an NDArray instead of a JS Object.
     ```
 
+=== "C++"
+
+    ```cpp
+    // this file should have "big_matrix" that you are slicing from
+    auto ds = StarDataset::open("data.stards", "r");
+
+    // Slice specs are per-dimension {start, stop[, step]}
+    // subset will be is a 100x100 NDArray
+    auto subset = ds->get_slice<double>("big_matrix", {{0, 100}, {0, 100}});
+    
+    ```
+
 See the [Slicing guide](../guides/slicing.md) for more.
 
-### Cloud storage (S3)
+### Cloud Storage & S3
 
 === "Python"
 
@@ -215,18 +224,16 @@ See the [Slicing guide](../guides/slicing.md) for more.
 
 === "JS"
 
-    If a URL is configured for public readability, StarDS should be able to read it:
-
-    ```js title="Web Read"
-    const URL = 's3://asc-isisdata/cnf_test_data/largenet.stards';
-    // Can also read from http://, https://, /vsis3/ prefixes
+    ```js title="Reading Public URLs"
+    const URL = 'https://asc-isisdata.s3.amazonaws.com/cnf_test_data/largenet.stards';
     const remoteReader = await new Dataset(URL);
     console.info('Shape of remote array', remoteReader.shape('m.sample'));
     ```
 
-    For writing to an S3 bucket, configure your AWS Credentials:
+    For reading or writing to an S3 bucket, configure your AWS Credentials in  
+    `loadStarDS({ env: { AWS_... } })`:
 
-    ```js title="S3 Write"
+    ```js title="S3 Read & Write"
     import { loadStarDS } from './stards.mjs';
 
     const { Dataset } = await loadStarDS({
