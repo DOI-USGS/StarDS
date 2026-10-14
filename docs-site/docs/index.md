@@ -76,7 +76,7 @@ reads.
 
     // Create a dataset and store an array + metadata
     auto store = StarDataset::create("data.stards");
-    store->put("matrix", NDArray<double>::zeros({100, 100}));
+    store->putArray("matrix", NDArray<double>::zeros({100, 100}));
     store->meta.put("timestamp", NDArray<int64_t>({}, {1234567890}));
     store->flush();
 
@@ -84,6 +84,29 @@ reads.
     auto store2 = StarDataset::open("data.stards");
     auto matrix = store2->get<double>("matrix");
     auto ts = store2->meta.get("timestamp")->as<int64_t>();
+    ```
+
+=== "JS"
+
+    ```js
+    import { loadStarDS } from '../stards.mjs';
+    const { Dataset, NDArray } = await loadStarDS();
+
+    const store = await new Dataset('data.stards', 'w');
+    // store.put('matrix', new Int32Array([1, 1, 1, 1, 1, 1]));         // flat
+    // store.put('matrix', new Int32Array([1, 1, 1, 2, 2, 2]), [2, 3]); // with shape
+    store.put('matrix', NDArray.zeros([5, 10], 'float64'));
+    store.metaPut('timestamp', '01-02-03T04:05.06');
+    store.flush();
+    
+    const store2 = await new Dataset('data.stards', 'r');
+    const matrix = store2.getArray('matrix');
+    const ts = store2.metaGet('timestamp');
+
+    console.info('matrix data:', matrix.data());
+    console.info('matrix shape:', matrix.shape());
+    console.info('matrix datatype:', matrix.dtype());
+    console.info('timestamp:', ts);
     ```
 
 ## Where to Next

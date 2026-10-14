@@ -149,6 +149,14 @@ if(EMSCRIPTEN)
   # ===========================================================================
   message(STATUS "Configuring StarDS for WebAssembly (emscripten)")
 
+  # Clear inherited flags that may be incompatible with wasm-ld
+  set(CMAKE_C_FLAGS "")
+  set(CMAKE_CXX_FLAGS "")
+  set(CMAKE_EXE_LINKER_FLAGS "")
+  set(CMAKE_SHARED_LINKER_FLAGS "")
+  set(CMAKE_MODULE_LINKER_FLAGS "")
+  message(STATUS "Cleared conda host compiler/linker flags for WebAssembly")
+
   if(STARDS_ENABLE_CURL)
     add_definitions(-DENABLE_CURL)
     # The header's WASM network backend is EM_ASYNC_JS + await fetch() (the JS
@@ -203,111 +211,111 @@ if(EMSCRIPTEN)
 
 else()  # ---- native (non-emscripten) build ----
 
-if(STARDS_ENABLE_CURL)
-  add_definitions(-DENABLE_CURL)
-  # Find curl package if needed
-  find_package(CURL REQUIRED)
-  target_link_libraries(StarDS INTERFACE ${CURL_LIBRARIES})
-  target_include_directories(StarDS INTERFACE ${CURL_INCLUDE_DIRS})
-endif()
-
-# Option to enable zlib support
-if(STARDS_ENABLE_ZLIB)
-  add_definitions(-DENABLE_ZLIB)
-  find_package(ZLIB REQUIRED)
-  target_include_directories(StarDS INTERFACE ${ZLIB_INCLUDE_DIRS})
-  target_link_libraries(StarDS INTERFACE ${ZLIB_LIBRARIES})
-endif()
-
-# Option to enable LZ4 support
-if(STARDS_ENABLE_LZ4)
-  add_definitions(-DENABLE_LZ4)
-
-  # Try pkg-config first, then manual search
-  find_package(PkgConfig QUIET)
-  if(PKG_CONFIG_FOUND)
-    pkg_check_modules(LZ4 QUIET liblz4)
+  if(STARDS_ENABLE_CURL)
+    add_definitions(-DENABLE_CURL)
+    # Find curl package if needed
+    find_package(CURL REQUIRED)
+    target_link_libraries(StarDS INTERFACE ${CURL_LIBRARIES})
+    target_include_directories(StarDS INTERFACE ${CURL_INCLUDE_DIRS})
   endif()
 
-  # Fallback to manual search if pkg-config didn't find it. NAMES is a superset of
-  # the historical list — it can only find MORE than before (adds the conda-forge /
-  # MSVC import- and static-lib spellings so Windows resolves lz4-c reliably).
-  if(NOT LZ4_FOUND)
-    find_path(LZ4_INCLUDE_DIR lz4.h)
-    find_library(LZ4_LIBRARY NAMES lz4 liblz4 lz4_static liblz4_static)
+  # Option to enable zlib support
+  if(STARDS_ENABLE_ZLIB)
+    add_definitions(-DENABLE_ZLIB)
+    find_package(ZLIB REQUIRED)
+    target_include_directories(StarDS INTERFACE ${ZLIB_INCLUDE_DIRS})
+    target_link_libraries(StarDS INTERFACE ${ZLIB_LIBRARIES})
+  endif()
 
-    if(LZ4_INCLUDE_DIR AND LZ4_LIBRARY)
-      set(LZ4_FOUND TRUE)
-      set(LZ4_INCLUDE_DIRS ${LZ4_INCLUDE_DIR})
-      set(LZ4_LIBRARIES ${LZ4_LIBRARY})
+  # Option to enable LZ4 support
+  if(STARDS_ENABLE_LZ4)
+    add_definitions(-DENABLE_LZ4)
+
+    # Try pkg-config first, then manual search
+    find_package(PkgConfig QUIET)
+    if(PKG_CONFIG_FOUND)
+      pkg_check_modules(LZ4 QUIET liblz4)
+    endif()
+
+    # Fallback to manual search if pkg-config didn't find it. NAMES is a superset of
+    # the historical list — it can only find MORE than before (adds the conda-forge /
+    # MSVC import- and static-lib spellings so Windows resolves lz4-c reliably).
+    if(NOT LZ4_FOUND)
+      find_path(LZ4_INCLUDE_DIR lz4.h)
+      find_library(LZ4_LIBRARY NAMES lz4 liblz4 lz4_static liblz4_static)
+
+      if(LZ4_INCLUDE_DIR AND LZ4_LIBRARY)
+        set(LZ4_FOUND TRUE)
+        set(LZ4_INCLUDE_DIRS ${LZ4_INCLUDE_DIR})
+        set(LZ4_LIBRARIES ${LZ4_LIBRARY})
+      endif()
+    endif()
+
+    if(LZ4_FOUND)
+      message(STATUS "Found LZ4: ${LZ4_LIBRARIES}")
+      target_include_directories(StarDS INTERFACE ${LZ4_INCLUDE_DIRS})
+      target_link_libraries(StarDS INTERFACE ${LZ4_LIBRARIES})
+    else()
+      message(WARNING "LZ4 library not found. Disabling LZ4 support.")
+      remove_definitions(-DENABLE_LZ4)
     endif()
   endif()
 
-  if(LZ4_FOUND)
-    message(STATUS "Found LZ4: ${LZ4_LIBRARIES}")
-    target_include_directories(StarDS INTERFACE ${LZ4_INCLUDE_DIRS})
-    target_link_libraries(StarDS INTERFACE ${LZ4_LIBRARIES})
+  # Option to enable S3 support
+  if(STARDS_ENABLE_S3)
+    # S3 requires CURL for HTTP and OpenSSL for signing
+    if(NOT STARDS_ENABLE_CURL)
+      message(FATAL_ERROR "S3 support requires CURL. Enable STARDS_ENABLE_CURL.")
+    endif()
+
+    # Find OpenSSL for SHA256 and HMAC-SHA256
+    find_package(OpenSSL REQUIRED)
+
+    # Add preprocessor definition
+    add_definitions(-DENABLE_S3)
+
+    # Link OpenSSL
+    target_link_libraries(StarDS INTERFACE ${OPENSSL_LIBRARIES})
+    target_include_directories(StarDS INTERFACE ${OPENSSL_INCLUDE_DIR})
+
+    message(STATUS "S3 support: enabled (requires CURL and OpenSSL)")
   else()
-    message(WARNING "LZ4 library not found. Disabling LZ4 support.")
-    remove_definitions(-DENABLE_LZ4)
-  endif()
-endif()
-
-# Option to enable S3 support
-if(STARDS_ENABLE_S3)
-  # S3 requires CURL for HTTP and OpenSSL for signing
-  if(NOT STARDS_ENABLE_CURL)
-    message(FATAL_ERROR "S3 support requires CURL. Enable STARDS_ENABLE_CURL.")
+    message(STATUS "S3 support: disabled")
   endif()
 
-  # Find OpenSSL for SHA256 and HMAC-SHA256
-  find_package(OpenSSL REQUIRED)
+  # Install the (header-only INTERFACE) target as an export set so a matching
+  # STARDSTargets.cmake is generated for find_package(STARDS).
+  install(TARGETS StarDS EXPORT StarDSTargets
+          LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
-  # Add preprocessor definition
-  add_definitions(-DENABLE_S3)
+  # Generate/install STARDSTargets.cmake with the STARDS:: namespace that
+  # config.cmake.in expects (STARDS::StarDS).
+  install(EXPORT StarDSTargets
+          FILE ${PROJECT_NAME}Targets.cmake
+          NAMESPACE ${PROJECT_NAME}::
+          DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
 
-  # Link OpenSSL
-  target_link_libraries(StarDS INTERFACE ${OPENSSL_LIBRARIES})
-  target_include_directories(StarDS INTERFACE ${OPENSSL_INCLUDE_DIR})
+  # Generate the package config
+  configure_file(cmake/config.cmake.in
+                ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.cmake
+                @ONLY)
 
-  message(STATUS "S3 support: enabled (requires CURL and OpenSSL)")
-else()
-  message(STATUS "S3 support: disabled")
-endif()
+  # Install the package config
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.cmake
+                DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
 
 endif()  # EMSCRIPTEN / native feature-detection branch
 
-
-# Install the (header-only INTERFACE) target as an export set so a matching
-# STARDSTargets.cmake is generated for find_package(STARDS).
-install(TARGETS StarDS EXPORT StarDSTargets
-        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
-
-# Generate/install STARDSTargets.cmake with the STARDS:: namespace that
-# config.cmake.in expects (STARDS::StarDS).
-install(EXPORT StarDSTargets
-        FILE ${PROJECT_NAME}Targets.cmake
-        NAMESPACE ${PROJECT_NAME}::
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
-
-# Generate the package config
-configure_file(cmake/config.cmake.in
-              ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.cmake
-              @ONLY)
-
-# Install the package config
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.cmake
-              DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
-
 # Install the headers
 install(FILES ${STARDS_HEADER_FILES} DESTINATION ${STARDS_INSTALL_INCLUDE_DIR})
-
 
 ###############
 # Tools Build #
 ###############
 
-cmake_dependent_option (STARDS_BUILD_TOOLS "Build the StarDS Command-Line Tools" ON STARDS_BUILD_LIB OFF)
+cmake_dependent_option (STARDS_BUILD_TOOLS 
+    "Build the StarDS Command-Line Tools" ON
+    "STARDS_BUILD_LIB;NOT EMSCRIPTEN" OFF)
 
 # Built before the tests so the conversion-parity test can reference the
 # stards_translate target (via $<TARGET_FILE:...> and add_dependencies).
@@ -321,7 +329,9 @@ endif()
 # Tests Build #
 ###############
 
-cmake_dependent_option (STARDS_BUILD_TESTS "Build the StarDS Tests" ON STARDS_BUILD_LIB OFF)
+cmake_dependent_option (STARDS_BUILD_TESTS 
+    "Build the StarDS Tests" ON 
+    "STARDS_BUILD_LIB;NOT EMSCRIPTEN" OFF)
 
 if(STARDS_BUILD_TESTS)
   include(GoogleTest)
@@ -339,12 +349,75 @@ endif()
 # Bindings Build #
 ##################
 
+# Python Bindings
 cmake_dependent_option(STARDS_BUILD_PYTHON_BINDINGS
     "Build Python bindings using SWIG" ON
-    "STARDS_BUILD_LIB" OFF)
+    "STARDS_BUILD_LIB;NOT EMSCRIPTEN" OFF)
 
 if(STARDS_BUILD_PYTHON_BINDINGS)
   add_subdirectory(bindings/python)
 else()
   message(STATUS "Skipping Python bindings")
+endif()
+
+# Wasm Bindings
+if(EMSCRIPTEN)
+  add_executable(stards_wasm bindings/wasm/stards_bind.cpp)
+  target_link_libraries(stards_wasm PRIVATE StarDS)
+  set_target_properties(stards_wasm PROPERTIES SUFFIX ".mjs")
+  # lets embind surface C++ errors to JS. Used in Stards control flow.
+  target_compile_options(stards_wasm PRIVATE -fexceptions)
+  target_link_options(stards_wasm PRIVATE
+      -lembind
+      -sMODULARIZE=1
+      -sEXPORT_ES6=1
+      -sEXPORT_NAME=initStarDS
+      -sFETCH=1
+      -sALLOW_MEMORY_GROWTH=1
+      -fexceptions
+      # int64/uint64 parse as JS BigInt, this marshals them without precision loss.
+      -sWASM_BIGINT
+      # Lets JS `catch (e)` get a C++ exception message instead of just a number.
+      -sEXPORT_EXCEPTION_HANDLING_HELPERS=1
+      # Expose Module.ENV so the loader can set S3 environment variables.
+      -sEXPORTED_RUNTIME_METHODS=ENV
+  )
+  
+  # Copy loader and Wasm Tests to output
+  add_custom_command(TARGET stards_wasm POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy
+          "${CMAKE_CURRENT_SOURCE_DIR}/bindings/wasm/stards.mjs"
+          "${CMAKE_CURRENT_BINARY_DIR}/stards.mjs"
+      COMMAND ${CMAKE_COMMAND} -E copy_directory
+          "${CMAKE_CURRENT_SOURCE_DIR}/bindings/wasm/tests"
+          "${CMAKE_CURRENT_BINARY_DIR}/tests"
+      COMMENT "Staging WASM loader + tests next to the module")
+
+  # `cmake --build <dir> --target wasm_tests` builds + stages + runs the suite.
+  # It re-stages the loader + tests itself (not only via the POST_BUILD above),
+  # because editing just the .mjs files doesn't relink stards_wasm — so without
+  # this the run could use stale staged copies. emcmake sets
+  # CMAKE_CROSSCOMPILING_EMULATOR to node; fall back to a plain `node` on PATH.
+  set(STARDS_WASM_NODE "${CMAKE_CROSSCOMPILING_EMULATOR}")
+  if(NOT STARDS_WASM_NODE)
+    find_program(STARDS_WASM_NODE node)
+  endif()
+  if(STARDS_WASM_NODE)
+    add_custom_target(wasm_tests
+        COMMAND ${CMAKE_COMMAND} -E copy
+            "${CMAKE_CURRENT_SOURCE_DIR}/bindings/wasm/stards.mjs"
+            "${CMAKE_CURRENT_BINARY_DIR}/stards.mjs"
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${CMAKE_CURRENT_SOURCE_DIR}/bindings/wasm/tests"
+            "${CMAKE_CURRENT_BINARY_DIR}/tests"
+        COMMAND "${STARDS_WASM_NODE}" "${CMAKE_CURRENT_BINARY_DIR}/tests/run_all.mjs"
+        DEPENDS stards_wasm
+        USES_TERMINAL
+        COMMENT "Staging + running StarDS WASM binding tests")
+  else()
+    message(STATUS "node not found; skipping the wasm_tests target "
+                   "(run: node ${CMAKE_CURRENT_BINARY_DIR}/tests/run_all.mjs)")
+  endif()
+else()
+  message(STATUS "Skipping Wasm Bindings")
 endif()

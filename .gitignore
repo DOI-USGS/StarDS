@@ -59,6 +59,7 @@ cmake_install.cmake
 CTestTestfile.cmake
 Makefile
 build/
+build-wasm/
 CMakeScripts/
 Testing/
 install_manifest.txt
