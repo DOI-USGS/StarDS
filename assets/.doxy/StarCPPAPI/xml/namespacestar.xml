@@ -1616,7 +1616,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="9406" column="24" bodyfile="StarDS/include/stards.h" bodystart="9406" bodyend="9419"/>
+        <location file="StarDS/include/stards.h" line="9410" column="24" bodyfile="StarDS/include/stards.h" bodystart="9410" bodyend="9423"/>
       </memberdef>
       <memberdef kind="function" id="stards_8h_1a2767eb5622de6c7d32b5bcafffec295c" prot="public" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>std::vector&lt; size_t &gt;</type>
@@ -1634,7 +1634,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="StarDS/include/stards.h" line="9421" column="27" bodyfile="StarDS/include/stards.h" bodystart="9421" bodyend="9425"/>
+        <location file="StarDS/include/stards.h" line="9425" column="27" bodyfile="StarDS/include/stards.h" bodystart="9425" bodyend="9429"/>
       </memberdef>
     </sectiondef>
     <briefdescription>

@@ -80,7 +80,7 @@ reads.
 
     // Create a dataset and store an array + metadata
     auto store = StarDataset::create("data.stards");
-    store->put("matrix", NDArray<double>::zeros({100, 100}));
+    store->putArray("matrix", NDArray<double>::zeros({100, 100}));
     store->meta.put("timestamp", NDArray<int64_t>({}, {1234567890}));
     store->flush();
 
@@ -88,6 +88,29 @@ reads.
     auto store2 = StarDataset::open("data.stards");
     auto matrix = store2->get<double>("matrix");
     auto ts = store2->meta.get("timestamp")->as<int64_t>();
+    ```
+
+=== "JS"
+
+    ```js
+    import { loadStarDS } from '../stards.mjs';
+    const { Dataset, NDArray } = await loadStarDS();
+
+    const store = await new Dataset('data.stards', 'w');
+    // store.put('matrix', new Int32Array([1, 1, 1, 1, 1, 1]));         // flat
+    // store.put('matrix', new Int32Array([1, 1, 1, 2, 2, 2]), [2, 3]); // with shape
+    store.put('matrix', NDArray.zeros([5, 10], 'float64'));
+    store.metaPut('timestamp', '01-02-03T04:05.06');
+    store.flush();
+    
+    const store2 = await new Dataset('data.stards', 'r');
+    const matrix = store2.getArray('matrix');
+    const ts = store2.metaGet('timestamp');
+
+    console.info('matrix data:', matrix.data());
+    console.info('matrix shape:', matrix.shape());
+    console.info('matrix datatype:', matrix.dtype());
+    console.info('timestamp:', ts);
     ```
 
 ## Where to Next
@@ -257,90 +280,252 @@ Get started with StarDS in 5 minutes. This guide uses the Python bindings; see
 
 ## Your first dataset
 
-```python
-import numpy as np
-from pystards import StarDataset
+=== "Python"
 
-# 1. Create dataset
-ds = StarDataset.create("mydata.stards")
+    ```python
+    import numpy as np
+    from pystards import StarDataset
 
-# 2. Store arrays
-ds["temperatures"] = np.array([20.5, 21.3, 19.8, 22.1])
-ds["measurements"] = np.random.rand(100, 50)
+    # 1. Create dataset
+    ds = StarDataset.create("mydata.stards")
 
-# 3. Add metadata
-ds.meta["sensor_id"] = "TEMP-001"
-ds.meta["location"] = "Lab A"
-ds.meta["date"] = "2024-04-21"
+    # 2. Store arrays
+    ds["temperatures"] = np.array([20.5, 21.3, 19.8, 22.1])
+    ds["measurements"] = np.random.rand(100, 50)
 
-# 4. Save
-ds.flush()
-ds.close()
+    # 3. Add metadata
+    ds.meta["sensor_id"] = "TEMP-001"
+    ds.meta["location"] = "Lab A"
+    ds.meta["date"] = "2024-04-21"
 
-print("✓ Dataset created!")
-```
+    # 4. Save
+    ds.flush()
+    ds.close()
+
+    print("✓ Dataset created!")
+    ```
+
+=== "JS"
+
+    ```js
+    import { loadStarDS } from './stards.mjs';
+    const { Dataset, NDArray, openBytes } = await loadStarDS();
+    
+    // 1. Create dataset
+    const ds = await new Dataset('data.stards', 'w');
+
+    // 2. Store arrays
+    ds.put('temperatures', NDArray(new Float64Array([20.5, 21.3, 19.8, 22.1])));
+    ds.put('measurements', NDArray.zeros([100, 50], 'float64'));
+
+    // 3. Add metadata
+    ds.metaPut('sensor_id', 'TEMP-001');
+    ds.metaPut('location', 'Lab A');
+    ds.metaPut('date', '2024-04-21');
+
+    // 4. Save
+    const dataSetBytes = ds.writeBytes();
+    ds.close();
+
+    console.info("✓ Dataset created!");
+    ```
+
+=== "C++"
+
+    ```cpp
+    #include "stards.h"
+    #include <stdio.h>
+    using namespace star;
+
+    void main() {
+         // 1. Create Dataset
+        auto ds = StarDataset::create("data.stards");
+
+        // 2. Store Arrays
+        ds->put("temperatures", NDArray<double>(std::vector<double>{20.4, 21.3, 19.8, 22.1}, {4}));
+        ds->put("measurements", NDArray<double>::zeros({100, 50}));
+
+        // 3. Add Metadata
+        ds->meta.put("sensor_id", NDArray<std::string>({}, "TEMP-001"));
+        ds->meta.put("location", NDArray<std::string>({}, "Lab A"));
+        ds->meta.put("date", NDArray<std::string>({}, "2024-04-21"));
+
+        // 4. Save
+        ds->flush();
+        ds->close();
+
+        printf("✓ Dataset created! \n");
+    }
+    ```
 
 ## Reading data
 
-```python
-# Open for reading
-ds = StarDataset.open("mydata.stards", mode="r")
+=== "Python"
 
-# Access arrays
-temps = ds["temperatures"]
-print(f"Temperatures: {temps}")
+    ```python
+    # Open for reading
+    ds = StarDataset.open("mydata.stards", mode="r")
 
-# Access metadata
-sensor = ds.meta["sensor_id"]
-print(f"Sensor: {sensor}")
+    # Access arrays
+    temps = ds["temperatures"]
+    print(f"Temperatures: {temps}")
 
-# List all arrays
-for key in ds:
-    print(f"  - {key}: shape {ds[key].shape}")
+    # Access metadata
+    sensor = ds.meta["sensor_id"]
+    print(f"Sensor: {sensor}")
 
-ds.close()
-```
+    # List all arrays
+    for key in ds:
+        print(f"  - {key}: shape {ds[key].shape}")
+
+    ds.close()
+    ```
+
+=== "JS"
+
+    ```js
+    // Open Dataset from Byte object
+    const ds = await openBytes(dataSetBytes);
+
+    // Access Arrays
+    const temps = ds.getArray('temperatures');
+    console.info('temperatures', temps.data());
+
+    // Access Metadata
+    const sensor = ds.metaGet('sensor_id');
+    console.info('sensor_id', sensor);
+
+    // List all arrays
+    ds.keys().forEach((key, idx, arr) => {
+        console.info(key + ": shape:", ds.shape(key));
+    });
+    ```
+
+=== "C++"
+
+    ```cpp
+    // Open for reading
+    auto ds = StarDataset::open("data.stards", "r");
+
+    // Access Arrays
+    auto temps = ds->get<double>("temperatures");
+    for(int i = 0; i < temps.size(); i++) {
+        printf("Temp %d: %f\n", i, temps(i));
+    }
+
+    // Access Metadata
+    auto sensor = ds->meta.get("sensor_id")->as<std::string>().flat(0);
+    printf("Sensor ID: %s\n", sensor.c_str());
+
+    ds->close();
+    ```
 
 ## Common patterns
 
 ### Context manager (recommended)
 
-```python
-with StarDataset.create("data.stards") as ds:
-    ds["data"] = np.arange(1000)
-    ds.meta["note"] = "Auto-flushed on exit"
-# File automatically closed and flushed
-```
+=== "Python"
+
+    ```python
+    with StarDataset.create("data.stards") as ds:
+        ds["data"] = np.arange(1000)
+        ds.meta["note"] = "Auto-flushed on exit"
+    # File automatically closed and flushed
+    ```
 
 ### Array slicing
 
-```python
-# Store large array
-with StarDataset.create("large.stards") as ds:
-    ds["big_matrix"] = np.random.rand(10000, 10000)
+=== "Python"
 
-# Read only a slice (efficient!)
-with StarDataset.open("large.stards", mode="r") as ds:
-    subset = ds.get_slice("big_matrix", [(0, 100), (0, 100)])
-    print(subset.shape)  # (100, 100)
-```
+    ```python
+    # Store large array
+    with StarDataset.create("large.stards") as ds:
+        ds["big_matrix"] = np.random.rand(10000, 10000)
+
+    # Read only a slice (efficient!)
+    with StarDataset.open("large.stards", mode="r") as ds:
+        subset = ds.get_slice("big_matrix", [(0, 100), (0, 100)])
+        print(subset.shape)  # (100, 100)
+    ```
+
+=== "JS"
+
+    ```js
+
+    const ds = await new Dataset('data.stards', 'r');
+
+    // Read a 1-D Slice (use getSlice for convenience)
+    console.info('Slice', await ds.getSlice('m.sample', 0, 6));
+    
+    // Read a 2-D Slice:
+    // from [32, 64] to [48, 96],
+    // at 1/4 resolution
+    // (step 4 gets every 4th value, step 1 would gets full resolution).
+    console.info('2D Slice', await rectReader.getSliceND('big-matrix', [[32, 48, 4],[64, 96, 4]]));
+
+    // use yourdataset.getSliceNDArray() to get an NDArray instead of a JS Object.
+    ```
+
+=== "C++"
+
+    ```cpp
+    // this file should have "big_matrix" that you are slicing from
+    auto ds = StarDataset::open("data.stards", "r");
+
+    // Slice specs are per-dimension {start, stop[, step]}
+    // subset will be is a 100x100 NDArray
+    auto subset = ds->get_slice<double>("big_matrix", {{0, 100}, {0, 100}});
+    
+    ```
 
 See the [Slicing guide](../guides/slicing.md) for more.
 
-### Cloud storage (S3)
+### Cloud Storage & S3
 
-```python
-import os
-os.environ["AWS_PROFILE"] = "my-profile"
+=== "Python"
 
-# Read from S3 (s3:// URI or the /vsis3/ prefix)
-with StarDataset.open("s3://my-bucket/data.stards", mode="r") as ds:
-    data = ds["array_name"]
+    ```python
+    import os
+    os.environ["AWS_PROFILE"] = "my-profile"
 
-# Write to S3
-with StarDataset.create("s3://my-bucket/output.stards") as ds:
-    ds["results"] = processed_data
-```
+    # Read from S3 (s3:// URI or the /vsis3/ prefix)
+    with StarDataset.open("s3://my-bucket/data.stards", mode="r") as ds:
+        data = ds["array_name"]
+
+    # Write to S3
+    with StarDataset.create("s3://my-bucket/output.stards") as ds:
+        ds["results"] = processed_data
+    ```
+
+=== "JS"
+
+    ```js title="Reading Public URLs"
+    const URL = 'https://asc-isisdata.s3.amazonaws.com/cnf_test_data/largenet.stards';
+    const remoteReader = await new Dataset(URL);
+    console.info('Shape of remote array', remoteReader.shape('m.sample'));
+    ```
+
+    For reading or writing to an S3 bucket, configure your AWS Credentials in  
+    `loadStarDS({ env: { AWS_... } })`:
+
+    ```js title="S3 Read & Write"
+    import { loadStarDS } from './stards.mjs';
+
+    const { Dataset } = await loadStarDS({
+        env: {
+            AWS_ACCESS_KEY_ID: '...',
+            AWS_SECRET_ACCESS_KEY: '...',
+            AWS_SESSION_TOKEN: '...',        // only for STS/temporary creds
+            AWS_DEFAULT_REGION: 'us-west-2',
+        },
+    });
+
+    const ds = await new Dataset('s3://your-s3-bucket/path/yourfile.stards', 'w');
+    ds.put('elevation', new Float32Array([1,2,3,4,5,6]));
+    await ds.flush();
+    ds.close();
+    ds.delete();
+    ```
 
 See the [Cloud Storage guide](../guides/cloud-storage.md) for authentication details.
 
@@ -354,13 +539,26 @@ See the [Cloud Storage guide](../guides/cloud-storage.md) for authentication det
 Arrays and metadata use **separate namespaces**, so the same key can live in
 both:
 
-```python
-ds["matrix"] = np.random.rand(100, 100)   # store array
-ds.meta["matrix"] = "Covariance matrix"   # store metadata about it
+=== "Python"
 
-print(ds["matrix"].shape)  # (100, 100)
-print(ds.meta["matrix"])   # "Covariance matrix"
-```
+    ```python
+    ds["matrix"] = np.random.rand(100, 100)   # store array
+    ds.meta["matrix"] = "Covariance matrix"   # store metadata about it
+
+    print(ds["matrix"].shape)  # (100, 100)
+    print(ds.meta["matrix"])   # "Covariance matrix"
+    ```
+
+=== "JS"
+
+    ```js
+    const ds = await new Dataset("data.stards", 'w');
+    ds.put('matrix', NDArray.zeros([100, 100], 'float64')); // array
+    ds.metaPut('matrix', 'Covariance Matrix');              // metadata about the array
+
+    console.info(ds.shape('matrix'));   //  Shape of array
+    console.info(ds.metaGet('matrix')); // "Covariance Matrix"
+    ```
 
 See [Concepts](concepts.md) for the full model.
 
@@ -390,6 +588,8 @@ proc_img = proc["image"]          # processed (overridden)
 proc_meta = proc["metadata"]      # inherited from base!
 proc_waves = proc["wavelengths"]  # inherited from base!
 ```
+
+
 
 See the [Layers guide](../guides/layers.md) for a full walkthrough.
 
@@ -479,6 +679,16 @@ both without conflict:
 
     auto arr  = store2->get<double>("matrix");
     auto note = store2->meta.get("matrix")->as<std::string>();
+    ```
+
+=== "JS"
+
+    ```js
+    ds.put('matrix', NDArray.zeros([100, 100], 'float64'));
+    ds.metaPut('matrix', 'Covariance Matrix');
+
+    ds.get('matrix').shape(); // [100, 100]
+    ds.metaGet('matrix');     // 'Covariance Matrix'
     ```
 
 | Namespace | Python | C++ | Best for |
@@ -595,6 +805,20 @@ You can enable it two ways:
     auto ds2 = StarDataset::open("data.stards");
     ds2->set_layer_inheritance(true);
     bool on = ds2->layer_inheritance();  // true
+    ```
+
+=== "JS"
+
+    ```js
+    // Set at open
+    const opts = { layerInheritance: true };
+    const ds = await new Dataset('ex5.stards', 'w', opts);
+    console.info('Layer Inheritance:', ds.layerInheritance()); // true
+
+    // Or after opening
+    const ds2 = await new Dataset('ex5.stards', 'w');
+    ds2.setLayerInheritance(true);
+    console.info('Layer Inheritance:', ds2.layerInheritance()); // true
     ```
 
 With inheritance **off** (the default), a layer lookup for a base-only key raises
@@ -914,46 +1138,115 @@ These require the library to be built with `STARDS_ENABLE_CURL` (HTTP) and
 `STARDS_ENABLE_S3` (S3) — both on by default; see
 [Installation](../getting-started/installation.md).
 
-## Python
+=== "Python"
 
-```python
-import os
-from pystards import StarDataset
+    ```python
+    import os
+    from pystards import StarDataset
 
-os.environ["AWS_PROFILE"] = "my-profile"
+    os.environ["AWS_PROFILE"] = "my-profile"
 
-# Read from S3 (s3:// URI or the /vsis3/ prefix — both work)
-with StarDataset.open("s3://my-bucket/data.stards", mode="r") as ds:
-    data = ds["array_name"]
+    # Read from S3 (s3:// URI or the /vsis3/ prefix — both work)
+    with StarDataset.open("s3://my-bucket/data.stards", mode="r") as ds:
+        data = ds["array_name"]
 
-# Write to S3
-with StarDataset.create("s3://my-bucket/output.stards") as ds:
-    ds["results"] = processed_data
+    # Write to S3
+    with StarDataset.create("s3://my-bucket/output.stards") as ds:
+        ds["results"] = processed_data
 
-# Read from HTTP (read-only) — plain URL or the /vsicurl/ prefix
-with StarDataset.open("https://example.com/data.stards", mode="r") as ds:
-    data = ds["array_name"]
-```
+    # Read from HTTP (read-only) — plain URL or the /vsicurl/ prefix
+    with StarDataset.open("https://example.com/data.stards", mode="r") as ds:
+        data = ds["array_name"]
+    ```
 
-## C++
+=== "JS"
 
-```cpp
-#include "stards.h"
-using namespace star;
+    To read/write with an S3 bucket, configure your AWS Credentials in  
+    `loadStarDS({ env: { AWS_... } })`:
 
-// Read from S3 (s3:// URI or the /vsis3/ prefix — both work)
-auto store = StarDataset::open("s3://my-bucket/data.stards", "r");
-auto data = store->get<double>("sensor_data");
+    ```js title="Using Credentials and Writing to S3"
+    import { loadStarDS } from './stards.mjs';
 
-// Write to S3
-auto output = StarDataset::create("s3://output-bucket/results.stards");
-output->put("results", std::move(processed_data));
-output->flush();
+    const { Dataset } = await loadStarDS({
+        env: {
+            AWS_ACCESS_KEY_ID: '...',
+            AWS_SECRET_ACCESS_KEY: '...',
+            AWS_SESSION_TOKEN: '...',        // only for STS/temporary creds
+            AWS_DEFAULT_REGION: 'us-west-2',
 
-// Read from HTTP (read-only), then save a local copy
-auto http = StarDataset::open("https://example.com/data.stards", "r");
-http->save_to("/tmp/local-copy.stards");
-```
+            // Optional — for S3-compatible stores (MinIO, R2, etc.):
+            // ENV.AWS_S3_ENDPOINT     = 'localhost:9000';
+            // ENV.AWS_VIRTUAL_HOSTING = 'FALSE';       // path-style: endpoint/bucket/key
+            // ENV.AWS_HTTPS           = 'NO';          // http:// instead of https://…
+        },
+    });
+
+    const ds = await new Dataset('s3://your-s3-bucket/path/yourfile.stards', 'w');
+    ds.put('elevation', new Float32Array([1,2,3,4,5,6]));
+    await ds.flush();
+    ds.close();
+    ds.delete();
+    ```
+
+    ```js title="Reading Public URLs"
+    import { loadStarDS } from './stards.mjs';
+    const { Dataset } = await loadStarDS();
+
+    const URL = 'https://asc-isisdata.s3.amazonaws.com/cnf_test_data/largenet.stards';
+    const remoteReader = await new Dataset(URL);
+    console.info('Shape of remote array', remoteReader.shape('m.sample'));
+    ```
+
+    ```js title="Downloading a File"
+
+    // HTML should have a download button for this example: <button id="download">
+    // For security, browsers require the user to click something to trigger a download.
+
+    import { loadStarDS } from './stards.mjs';
+    const { Dataset } = await loadStarDS();
+
+    const ds = await new Dataset("https://asc-isisdata.s3.amazonaws.com/cnf_test_data/test123456.stards");
+
+    function downloadBytes(bytes, filename) {
+      // Copy out the Uint8Array off the WASM heap into a Blob
+      const blob = new Blob([bytes], { type: 'application/octet-stream' });
+      const href = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = href;
+      a.download = filename;   // instructs the browser to save, not navigate
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(href), 0);  // free the blob once handled
+    }
+
+    // Download Button Click Listener
+    document.querySelector('#download').addEventListener('click', async () => {
+      const bytes = await ds.writeBytes(); // await — writeBytes() returns a Promise
+      downloadBytes(bytes, "test123456.stards");
+    });
+    ```
+    
+
+=== "C++"
+
+    ```cpp
+    #include "stards.h"
+    using namespace star;
+
+    // Read from S3 (s3:// URI or the /vsis3/ prefix — both work)
+    auto store = StarDataset::open("s3://my-bucket/data.stards", "r");
+    auto data = store->get<double>("sensor_data");
+
+    // Write to S3
+    auto output = StarDataset::create("s3://output-bucket/results.stards");
+    output->put("results", std::move(processed_data));
+    output->flush();
+
+    // Read from HTTP (read-only), then save a local copy
+    auto http = StarDataset::open("https://example.com/data.stards", "r");
+    http->save_to("/tmp/local-copy.stards");
+    ```
 
 `save_to()` writes a local copy of a remote (or read-only) dataset — useful when
 you've opened an HTTP source you can't write back to.
@@ -1034,34 +1327,114 @@ blocks a slice touches.
 Pass a list of `(start, stop)` or `(start, stop, step)` tuples — one per
 dimension:
 
-```python
-import numpy as np
-from pystards import StarDataset
+=== "Python"
 
-# Store a large array
-with StarDataset.create("large.stards") as ds:
-    ds["big_matrix"] = np.random.rand(10000, 10000)
+    ```python
+    import numpy as np
+    from pystards import StarDataset
 
-# Read only a 100×100 corner (efficient!)
-with StarDataset.open("large.stards", mode="r") as ds:
-    subset = ds.get_slice("big_matrix", [(0, 100), (0, 100)])
-    print(subset.shape)  # (100, 100)
-```
+    # Store a large array
+    with StarDataset.create("large.stards") as ds:
+        ds["big_matrix"] = np.random.rand(10000, 10000)
+
+    # Read only a 100×100 corner (efficient!)
+    with StarDataset.open("large.stards", mode="r") as ds:
+        subset = ds.get_slice("big_matrix", [(0, 100), (0, 100)])
+        print(subset.shape)  # (100, 100)
+    ```
+
+=== "JS"
+
+    ```js
+    import { loadStarDS } from './stards.mjs';
+    const { Dataset, NDArray } = await loadStarDS();
+
+    // Open a large Array
+    const URL = 'https://asc-isisdata.s3.us-west-2.amazonaws.com/cnf_test_data/largenet.stards';
+    const linearReader = await new Dataset(URL);
+
+    // Read a 1-D Slice (use getSlice for convenience)
+    console.info('Slice', await linearReader.getSlice('m.sample', 0, 6));
+
+    // Write a 2-D Array
+    const rectWriter = await new Dataset('data.stards', 'w');
+    rectWriter.put('big-matrix', NDArray.full([512, 512], 3.14, 'float64'));
+    rectWriter.flush();
+    
+    // Read a 2-D Slice
+    const rectReader = await new Dataset('data.stards', 'r');
+    // 2D Slice from [32, 64] to [48, 96].
+    // at 1/4 resolution (step 4 gets every 4th value, step 1 gets full resolution).
+    console.info('2D Slice', await rectReader.getSliceND('big-matrix', [[32, 48, 4],[64, 96, 4]]));
+
+    // use yourdataset.getSliceNDArray() to get an NDArray instead of a JS Object.
+    ```
+
+=== "C++"
+
+    ```cpp
+    #include <stdio.h>
+    #include "stards.h"
+    using namespace star;
+
+    auto ds = StarDataset::create("data.stards");
+    ds->put("big_matrix", NDArray<double>::zeros({10000, 10000}));
+    ds->flush();
+    ds->close();
+
+    auto sliceReader = StarDataset::open("data.stards", "r");
+    // Slice specs are per-dimension {start, stop[, step]}
+    auto subset = sliceReader->get_slice<double>("big_matrix", {{0, 100}, {0, 100}});
+    auto shape = subset.shape();
+    printf("Shape: ");
+    for(size_t i = 0; i < shape.size(); i++){
+        printf("%zu ", shape[i]);
+    }
+    printf("\n");
+    ```
 
 ### 1D, 2D, and 3D examples
 
-```python
-# 1D slice [1000:2000]
-subset = store.get_slice("large_array", [(1000, 2000)])
-print(subset.shape)  # (1000,)
+=== "Python"
 
-# 2D slice [10:20, 30:40]
-subset_2d = store.get_slice("big_matrix", [(10, 20), (30, 40)])
-print(subset_2d.shape)  # (10, 10)
+    ```python
+    # 1D slice [1000:2000]
+    subset = store.get_slice("large_array", [(1000, 2000)])
+    print(subset.shape)  # (1000,)
 
-# 3D slice with a step in the first dimension
-subset_3d = store.get_slice("3d_data", [(0, 20, 2), (5, 15), (0, 20)])
-```
+    # 2D slice [10:20, 30:40]
+    subset_2d = store.get_slice("big_matrix", [(10, 20), (30, 40)])
+    print(subset_2d.shape)  # (10, 10)
+
+    # 3D slice with a step in the first dimension
+    subset_3d = store.get_slice("3d_data", [(0, 20, 2), (5, 15), (0, 20)])
+    ```
+
+=== "JS"
+
+    ```js
+    // 1D Slice: getSlice(key, start, count)
+    // returns flat typed array. 1D only.
+    const subset = ds.getSlice("large_array", 1000, 1000);
+    console.log(subset.length);
+
+    // Alt 1D Slice: getSliceND(key, [[start, end]])
+    // ds.getSliceND("big_matrix", [[1000, 2000]]);
+    // returns {data: [], shape: []}
+
+    // 2D Slice from (33, 34) to (43, 44).
+    // getSliceND(key, [[1stDimStart, end], [2ndDimStart, end]])
+    // returns {data: [], shape: []}
+    const subset2D = ds.getSliceND("big_matrix", [[33, 43], [34, 44]]);
+
+    // 3D Slice
+    // getSliceND(key, [[1stDimStart, end, step], [2ndDimStart, end], [3rdDimStart, end]])
+    // returns {data: [], shape: []}
+    const subset3D = ds.getSliceND("3d_data", [[0, 20, 2], [5, 15], [0, 20]]);
+
+    // use getSliceNDArray() to return an NDArray
+    // instead of a plain {data:[], shape:[]} object.
+    ```
 
 ## Checking whether an array is sliceable
 
@@ -1073,24 +1446,15 @@ to the **metadata namespace** (`ds.meta["key"] = …`) live in the shared
 `is_sliceable()` reports this — check first if you're unsure which namespace a key
 came from:
 
-```python
-if store.is_sliceable("large_array"):
-    subset = store.get_slice("large_array", [(1000, 2000)])
-```
+=== "Python"
+
+    ```python
+    if store.is_sliceable("large_array"):
+        subset = store.get_slice("large_array", [(1000, 2000)])
+    ```
 
 So to keep something sliceable, simply store it as an array (the default) rather
 than as metadata.
-
-## C++
-
-```cpp
-#include "stards.h"
-using namespace star;
-
-auto store = StarDataset::open("large.stards", "r");
-// Slice specs are per-dimension {start, stop[, step]}
-auto subset = store->get_slice<double>("big_matrix", {{0, 100}, {0, 100}});
-```
 
 ## Notes and limits
 
@@ -1778,6 +2142,22 @@ both without conflicts.
     auto metadata = store2->meta.get("matrix")->as<std::string>();
     ```
 
+=== "Node JS"
+
+    ```js
+    import { loadStarDS } from './stards.mjs';
+    const { Dataset, NDArray } = await loadStarDS();
+
+    const ds = await new Dataset('ex6.stards', 'w');
+    ds.put('matrix', NDArray.zeros([100, 100], 'float64'));
+    ds.metaPut('matrix', 'Covariance Matrix from Sensor A');
+    ds.flush()
+
+    const ds2 = await new Dataset('ex6.stards', 'r');
+    console.info('get:', ds2.shape('matrix'));
+    console.info('metaGet:', ds2.metaGet('matrix'));    
+    ```
+
 **Key points**
 
 - Arrays: `ds["key"]` / `store->put(key, data)`
@@ -1845,6 +2225,33 @@ afterward.
     // Inheritance is off by default; opt in at open time or afterward
     auto store2 = StarDataset::open("data.stards");
     store2->set_layer_inheritance(true);
+    ```
+
+=== "JS"
+
+    ```js
+    const store = new Dataset('data.stards', 'w');
+    store.setLayerInheritance(true);
+
+
+    store.put('image', base_image);        // base_image, wavelengths, etc
+    store.put('wavelengths', wavelengths); // should be previously defined
+                                           // arrays.
+
+    const layer1 = store.createLayer('processed');
+    layer1.put('image', processed_image);  // diferent data.
+                                           // wavelengths inherited from base
+                                           // if layer inheritance is on.
+
+    const layer2 = store.createLayer('calibrated');
+    layer2.put('image', calibrated_image);
+    layer2.put('wavelengths', adjusted_wavelengths);
+
+    store.flush();
+
+    // Inheritance is off by default, you can set it at open time:
+    const store2 = new Dataset('data.stards', 'r', { layerInheritance: true });
+    // or later, with store2.setLayerInheritance(true);
     ```
 
 ### Key features

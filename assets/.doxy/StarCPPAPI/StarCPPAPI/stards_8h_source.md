@@ -6100,8 +6100,9 @@ private:
         // ---------------------------------------------------------------------
 
         // HTTP/vsicurl is read-only — there is no write verb. Fail loudly rather
-        // than silently producing nothing.
-        if (m_path_info.type == FilePathInfo::HTTP) {
+        // than silently producing nothing. But an in-memory capture (write_bytes())
+        // never touches the source, so it is allowed even for an HTTP-backed dataset.
+        if (m_capture_image == nullptr && m_path_info.type == FilePathInfo::HTTP) {
             throw std::runtime_error(
                 "Cannot write to an HTTP (/vsicurl) source: HTTP is read-only. "
                 "Write to a local path or an S3 (/vsis3) URL, or use save_to().");
@@ -7633,9 +7634,12 @@ private:
 
         // For contiguous slices starting at first element
         if (spec.is_contiguous && spec.slices[0].start == 0) {
-            // Calculate flat element range
+            // Calculate flat element range.
             size_t start_element = 0;
-            size_t end_element = spec.total_elements;
+            size_t end_element = 1;
+            for (const auto& s : spec.slices) {
+                end_element *= (s.stop - s.start);
+            }
 
             // Find blocks covering this range
             size_t first_block = start_element / elements_per_block;
